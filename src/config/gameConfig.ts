@@ -1,19 +1,12 @@
-// Configuración del juego basada en variables de entorno
-// Permite ajustar velocidades y tiempos para debugging
+// Configuración simplificada del juego con velocidad global
 
 export interface GameConfig {
-  gameSpeedMultiplier: number;
-  gameClockInterval: number;
-  statDecaySpeed: number;
-  autopoiesisInterval: number;
-  entityMovementSpeed: number;
-  activityChangeFrequency: number;
-  zoneEffectsInterval: number;
-  targetFPS: number;
+  gameSpeedMultiplier: number; // VARIABLE PRINCIPAL - controla toda la velocidad del juego
   debugMode: boolean;
+  targetFPS: number;
+  movementUpdateFPS: number;
   dialogueDuration: number;
   criticalEventProbability: number;
-  movementUpdateFPS: number;
 }
 
 // Función helper para parsear variables de entorno
@@ -30,109 +23,67 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
   return value.toLowerCase() === 'true';
 };
 
-// Configuración principal del juego
+// Configuración principal del juego - TODO SE BASA EN gameSpeedMultiplier
 export const gameConfig: GameConfig = {
-  gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 1.0),
-  gameClockInterval: getEnvNumber('VITE_GAME_CLOCK_INTERVAL', 500),
-  statDecaySpeed: getEnvNumber('VITE_STAT_DECAY_SPEED', 1.0),
-  autopoiesisInterval: getEnvNumber('VITE_AUTOPOIESIS_INTERVAL', 2000),
-  entityMovementSpeed: getEnvNumber('VITE_ENTITY_MOVEMENT_SPEED', 0.8),
-  activityChangeFrequency: getEnvNumber('VITE_ACTIVITY_CHANGE_FREQUENCY', 0.15),
-  zoneEffectsInterval: getEnvNumber('VITE_ZONE_EFFECTS_INTERVAL', 1000),
+  gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 3.0), // 🚀 CONTROL MAESTRO - Más rápido por defecto
+  debugMode: getEnvBoolean('VITE_DEBUG_MODE', true), // Debug activado por defecto
   targetFPS: getEnvNumber('VITE_TARGET_FPS', 60),
-  debugMode: getEnvBoolean('VITE_DEBUG_MODE', false),
-  dialogueDuration: getEnvNumber('VITE_DIALOGUE_DURATION', 2500),
-  criticalEventProbability: getEnvNumber('VITE_CRITICAL_EVENT_PROBABILITY', 0.02),
-  movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30)
+  movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
+  dialogueDuration: 2500, // Fijo, no necesita ser configurable
+  criticalEventProbability: 0.02 // Fijo, se multiplica por gameSpeedMultiplier donde se usa
 };
 
-// Configuraciones predefinidas para diferentes escenarios
-export const debugConfig: Partial<GameConfig> = {
-  gameSpeedMultiplier: 3.0,
-  gameClockInterval: 200,
-  statDecaySpeed: 5.0,
-  autopoiesisInterval: 1000,
-  activityChangeFrequency: 0.5,
-  zoneEffectsInterval: 500,
-  debugMode: true,
-  dialogueDuration: 1000,
-  criticalEventProbability: 0.1
+// Configuraciones predefinidas
+export const speedPresets = {
+  'Súper Lento (0.2x)': 0.2,
+  'Lento (0.5x)': 0.5,
+  'Normal (1x)': 1.0,
+  'Rápido (2x)': 2.0,
+  'Muy Rápido (3x)': 3.0,
+  'Turbo (5x)': 5.0,
+  'Hiper (10x)': 10.0
+} as const;
+
+// Función para cambiar velocidad en tiempo real
+export const setGameSpeed = (multiplier: number) => {
+  gameConfig.gameSpeedMultiplier = Math.max(0.1, Math.min(20, multiplier));
+  console.log(`🎮 Velocidad del juego: ${gameConfig.gameSpeedMultiplier}x`);
 };
 
-export const performanceConfig: Partial<GameConfig> = {
-  targetFPS: 30,
-  movementUpdateFPS: 20,
-  autopoiesisInterval: 3000,
-  zoneEffectsInterval: 2000,
-  debugMode: false
-};
-
-export const productionConfig: Partial<GameConfig> = {
-  gameSpeedMultiplier: 1.0,
-  gameClockInterval: 1000,
-  statDecaySpeed: 1.0,
-  autopoiesisInterval: 4000,
-  activityChangeFrequency: 0.1,
-  targetFPS: 60,
-  debugMode: false,
-  criticalEventProbability: 0.01
-};
-
-// Función para aplicar una configuración específica
-export const applyConfig = (config: Partial<GameConfig>): GameConfig => {
-  return { ...gameConfig, ...config };
+// Función para aplicar preset de velocidad
+export const applySpeedPreset = (presetName: keyof typeof speedPresets) => {
+  setGameSpeed(speedPresets[presetName]);
 };
 
 // Helper para logging de configuración en modo debug
 export const logConfig = () => {
   if (gameConfig.debugMode) {
     console.group('🎮 Game Configuration');
-    console.table(gameConfig);
+    console.table({
+      'Velocidad del Juego': `${gameConfig.gameSpeedMultiplier}x`,
+      'FPS Objetivo': gameConfig.targetFPS,
+      'FPS Movimiento': gameConfig.movementUpdateFPS,
+      'Modo Debug': gameConfig.debugMode ? 'ON' : 'OFF'
+    });
     console.groupEnd();
   }
 };
 
-// Función para cambiar configuración en tiempo de ejecución (solo en desarrollo)
-export const setDebugMode = (enabled: boolean) => {
-  if (import.meta.env.DEV) {
-    (gameConfig as any).debugMode = enabled;
-    if (enabled) {
-      console.log('🐛 Debug mode enabled');
-      logConfig();
-    }
-  }
-};
-
-// Función para acelerar el juego temporalmente (solo en desarrollo)
-export const setTurboMode = (enabled: boolean) => {
-  if (import.meta.env.DEV) {
-    if (enabled) {
-      Object.assign(gameConfig, debugConfig);
-      console.log('🚀 Turbo mode enabled - Game speed increased for testing');
-    } else {
-      // Reset to original values
-      const originalConfig = {
-        gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 1.0),
-        gameClockInterval: getEnvNumber('VITE_GAME_CLOCK_INTERVAL', 500),
-        statDecaySpeed: getEnvNumber('VITE_STAT_DECAY_SPEED', 1.0),
-        autopoiesisInterval: getEnvNumber('VITE_AUTOPOIESIS_INTERVAL', 2000),
-        activityChangeFrequency: getEnvNumber('VITE_ACTIVITY_CHANGE_FREQUENCY', 0.15),
-        zoneEffectsInterval: getEnvNumber('VITE_ZONE_EFFECTS_INTERVAL', 1000),
-        dialogueDuration: getEnvNumber('VITE_DIALOGUE_DURATION', 2500),
-        criticalEventProbability: getEnvNumber('VITE_CRITICAL_EVENT_PROBABILITY', 0.02)
-      };
-      Object.assign(gameConfig, originalConfig);
-      console.log('🐌 Normal mode restored');
-    }
-    logConfig();
-  }
-};
+// Cálculos derivados basados en gameSpeedMultiplier (intervalos más frecuentes)
+export const getGameIntervals = () => ({
+  // Todos los intervalos se calculan basándose en la velocidad global
+  autopoiesisInterval: 800 / gameConfig.gameSpeedMultiplier,     // Base: 0.8 segundos (más frecuente)
+  gameClockInterval: 400 / gameConfig.gameSpeedMultiplier,       // Base: 0.4 segundos (más frecuente)
+  zoneEffectsInterval: 1000 / gameConfig.gameSpeedMultiplier,    // Base: 1 segundo (más frecuente)
+  entityMovementSpeed: 1.2 * gameConfig.gameSpeedMultiplier,    // Base: 1.2 píxeles por frame (más rápido)
+});
 
 // Hacer funciones disponibles globalmente en desarrollo
 if (import.meta.env.DEV) {
   (window as any).gameConfig = gameConfig;
-  (window as any).setDebugMode = setDebugMode;
-  (window as any).setTurboMode = setTurboMode;
+  (window as any).setGameSpeed = setGameSpeed;
+  (window as any).applySpeedPreset = applySpeedPreset;
+  (window as any).speedPresets = speedPresets;
   (window as any).logConfig = logConfig;
 }
 

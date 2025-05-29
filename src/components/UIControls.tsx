@@ -3,6 +3,7 @@ import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
 import type { InteractionType } from '../types';
+import { gameConfig, speedPresets, setGameSpeed } from '../config/gameConfig';
 
 interface UIControlsProps {
   selectedEntityId?: string | null;
@@ -12,6 +13,7 @@ interface UIControlsProps {
 const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect }) => {
   const { gameState, dispatch } = useGame();
   const [showStats, setShowStats] = useState(false);
+  const [gameSpeed, setGameSpeedState] = useState(gameConfig.gameSpeedMultiplier);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
 
@@ -128,8 +130,123 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
     return statNames[stat] || stat;
   };
 
+  const handleSpeedChange = (newSpeed: number) => {
+    setGameSpeed(newSpeed);
+    setGameSpeedState(newSpeed);
+  };
+
   return (
     <div style={{ position: 'relative' }}>
+      {/* Desarrollo: Control de velocidad */}
+      {gameConfig.debugMode && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          background: 'rgba(30, 41, 59, 0.95)',
+          border: '1px solid #475569',
+          borderRadius: '12px',
+          padding: '16px',
+          color: '#f1f5f9',
+          minWidth: '250px',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          zIndex: 1000
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px'
+          }}>
+            <span style={{ fontSize: '16px' }}>⚡</span>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+              Control de Velocidad
+            </h3>
+          </div>
+
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: '12px', 
+              color: '#94a3b8', 
+              display: 'block',
+              marginBottom: '6px'
+            }}>
+              Velocidad del Juego: {gameSpeed.toFixed(1)}x
+            </label>
+            <input
+              type="range"
+              min="0.1"
+              max="10"
+              step="0.1"
+              value={gameSpeed}
+              onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+              style={{
+                width: '100%',
+                height: '6px',
+                borderRadius: '3px',
+                background: '#374151',
+                outline: 'none',
+                opacity: 0.7,
+                transition: 'opacity 0.2s'
+              }}
+            />
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '10px',
+              color: '#6b7280',
+              marginTop: '4px'
+            }}>
+              <span>0.1x</span>
+              <span>1x</span>
+              <span>10x</span>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '6px'
+          }}>
+            {Object.entries(speedPresets).slice(0, 6).map(([name, speed]) => (
+              <button
+                key={name}
+                onClick={() => handleSpeedChange(speed)}
+                style={{
+                  background: gameSpeed === speed 
+                    ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' 
+                    : 'rgba(51, 65, 85, 0.5)',
+                  border: gameSpeed === speed ? '2px solid #60a5fa' : '1px solid #475569',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  color: '#f1f5f9',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {name.split('(')[0].trim()}
+              </button>
+            ))}
+          </div>
+          
+          <div style={{
+            marginTop: '12px',
+            padding: '8px',
+            background: 'rgba(15, 20, 25, 0.5)',
+            borderRadius: '6px',
+            fontSize: '11px',
+            color: '#94a3b8'
+          }}>
+            <div>Estadísticas: {gameSpeed}x más rápido</div>
+            <div>Movimiento: {gameSpeed}x más rápido</div>
+            <div>Eventos: {gameSpeed}x más frecuentes</div>
+          </div>
+        </div>
+      )}
+
       {/* Entity Selection and Stats Overlay */}
       {selectedEntity && (
         <div style={{

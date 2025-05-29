@@ -12,7 +12,6 @@ export const usePerformanceMonitor = () => {
 
     const measurePerformance = () => {
       const now = performance.now();
-      const delta = now - lastTime.current;
       lastTime.current = now;
       frameCount.current++;
 

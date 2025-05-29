@@ -10,6 +10,7 @@ import { useEntityMovement } from './hooks/useEntityMovement';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useAutopoiesis } from './hooks/useAutopoiesis';
 import { useZoneEffects } from './hooks/useZoneEffects';
+import { gameConfig } from './config/gameConfig';
 
 // Memoized game content component for better performance
 const GameContent: React.FC = memo(() => {
@@ -108,10 +109,46 @@ const GameContent: React.FC = memo(() => {
 
 GameContent.displayName = 'GameContent';
 
+// Componente interno que usa los hooks
+const GameEngine: React.FC = () => {
+  // Activar todos los sistemas del juego
+  useAutopoiesis();      // Sistema de decay de estadísticas
+  useGameClock();        // Reloj principal del juego
+  useEntityMovement();   // Movimiento de entidades
+  useZoneEffects();      // Efectos de zonas
+  useDialogueSystem();   // Sistema de diálogos
+
+  return null; // Este componente solo ejecuta hooks
+};
+
 function App() {
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+
   return (
     <GameProvider>
-      <GameContent />
+      <div className="app">
+        {/* Motor del juego - ejecuta todos los sistemas */}
+        <GameEngine />
+        
+        <div className="game-container">
+          <div className="canvas-container">
+            <Canvas
+              width={800}
+              height={600}
+              onEntityClick={setSelectedEntityId}
+            />
+            <DialogOverlay />
+          </div>
+          
+          <UIControls
+            selectedEntityId={selectedEntityId}
+            onEntitySelect={setSelectedEntityId}
+          />
+        </div>
+        
+        {/* Overlay de rendimiento en modo debug */}
+        <PerformanceOverlay enabled={gameConfig.debugMode} />
+      </div>
     </GameProvider>
   );
 }
