@@ -10,13 +10,16 @@ export const useGameClockOptimized = () => {
   const tickCounter = useRef<number>(0);
 
   useEffect(() => {
-    // Optimize game clock to run at 2fps instead of 1fps for better performance
+    // Optimize game clock to run at configurable interval
+    const interval = gameConfig.gameClockInterval / gameConfig.gameSpeedMultiplier;
+    
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const deltaTime = now - lastTickTime.current;
       
       // Skip tick if not enough time has passed (throttling)
-      if (deltaTime < 400) return; // Minimum 400ms between ticks
+      const minInterval = Math.max(100, interval * 0.8); // Minimum interval
+      if (deltaTime < minInterval) return;
       
       lastTickTime.current = now;
       tickCounter.current++;
@@ -31,7 +34,7 @@ export const useGameClockOptimized = () => {
                                  entity.stats.sleepiness > 95 || 
                                  entity.stats.loneliness > 95;
             
-            if (criticalStats && Math.random() < 0.015) { // Slightly reduced chance
+            if (criticalStats && Math.random() < (gameConfig.criticalEventProbability * gameConfig.gameSpeedMultiplier)) {
               dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
               dispatch({
                 type: 'SHOW_DIALOGUE',
