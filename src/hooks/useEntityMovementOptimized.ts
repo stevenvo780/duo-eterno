@@ -102,7 +102,7 @@ export const useEntityMovementOptimized = () => {
   };
 
   // Calcular el siguiente paso en el movimiento hacia un objetivo
-  const calculateMovementStep = (
+  const calculateMovementStep = useCallback((
     entity: Entity, 
     target: Position, 
     companion: Entity | null
@@ -158,7 +158,7 @@ export const useEntityMovementOptimized = () => {
     }
 
     return newPosition;
-  };
+  }, [gameState.mapElements]);
 
   useEffect(() => {
     function updateMovement() {
@@ -228,8 +228,8 @@ export const useEntityMovementOptimized = () => {
           const currentZone = getEntityZone(entity.position, gameState.zones);
           if (currentZone) {
             const session = getActivitySession(entity.id);
-            if (session && session.zone === currentZone.id) {
-              // La entidad está en su zona objetivo, puede cambiar estado a activo
+            if (session && session.startTime) {
+              // La entidad está en una zona, puede cambiar estado a activo
               if (entity.state === 'SEEKING') {
                 dispatch({
                   type: 'UPDATE_ENTITY_STATE',
