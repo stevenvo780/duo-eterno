@@ -56,7 +56,7 @@ export const useGameClockOptimized = () => {
           entity.stats.loneliness > 90 || entity.stats.happiness < 10
         );
         
-        if (bothEntitiesCritical && gameState.resonance < 5 && Math.random() < 0.008) {
+        if (bothEntitiesCritical && gameState.resonance < 5 && Math.random() < (0.008 * gameConfig.gameSpeedMultiplier)) {
           dispatch({ type: 'BREAK_RELATIONSHIP' });
           dispatch({
             type: 'SHOW_DIALOGUE',
@@ -129,7 +129,7 @@ export const useGameClockOptimized = () => {
         }
       }
 
-    }, 500); // 500ms interval for better performance (was 1000ms)
+    }, interval); // Configurable interval
 
     return () => {
       if (intervalRef.current) {

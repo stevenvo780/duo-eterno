@@ -1,10 +1,11 @@
 import { useRef, useCallback } from 'react';
+import { gameConfig } from '../config/gameConfig';
 
 // Hook para optimizar el rendering del canvas
 export const useOptimizedRenderer = () => {
   const lastFrameTime = useRef<number>(0);
   const frameCount = useRef<number>(0);
-  const fpsTarget = useRef<number>(60);
+  const fpsTarget = useRef<number>(gameConfig.targetFPS);
 
   // Throttle rendering to target FPS
   const shouldRender = useCallback((currentTime: number = performance.now()): boolean => {

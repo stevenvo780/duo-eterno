@@ -5,7 +5,7 @@ Una simulación interactiva minimalista donde dos entes pixelados representan la
 ## 🎮 Descripción del Juego
 
 **Dúo Eterno** es un Tamagotchi conceptual que explora la naturaleza de las conexiones humanas a través de dos entidades abstractas:
-- Un **círculo** y un **cuadrado** que existen en un lienzo de 400×400 píxeles
+- Un **círculo** y un **cuadrado** que existen en un lienzo optimizado
 - Su **resonancia** (energía del vínculo) disminuye con el tiempo
 - Solo tu intervención puede nutrir y mantener viva su conexión
 
@@ -24,6 +24,9 @@ cd duo-eterno
 # Instala las dependencias
 npm install
 
+# Configura el entorno de desarrollo (opcional)
+cp .env.example .env
+
 # Inicia el servidor de desarrollo
 npm run dev
 
@@ -39,11 +42,43 @@ npm run preview  # Vista previa de la construcción
 npm run lint     # Ejecutar ESLint
 ```
 
+## ⚙️ Configuración de Desarrollo
+
+### Variables de Entorno
+
+El juego incluye un sistema de configuración avanzado para facilitar el desarrollo y debugging:
+
+```bash
+# Configuración rápida con script
+./dev-config.sh debug        # Modo debug (eventos acelerados)
+./dev-config.sh normal       # Modo normal de desarrollo
+./dev-config.sh performance  # Modo de alto rendimiento
+./dev-config.sh production   # Configuración de producción
+```
+
+### Variables Principales
+
+- `VITE_GAME_SPEED_MULTIPLIER` - Multiplicador de velocidad general (1.0 = normal, 5.0 = muy rápido)
+- `VITE_STAT_DECAY_SPEED` - Velocidad de degradación de estadísticas (útil para testing)
+- `VITE_DEBUG_MODE` - Habilita métricas de rendimiento y logs detallados
+- `VITE_TARGET_FPS` - FPS objetivo para optimizar rendimiento
+
+### Funciones de Debug en Consola
+
+Durante el desarrollo, puedes usar estas funciones en la consola del navegador:
+
+```javascript
+setTurboMode(true)   // Acelera temporalmente todos los eventos
+setDebugMode(true)   // Muestra métricas de rendimiento
+logConfig()          // Muestra la configuración actual
+gameConfig           // Acceso directo al objeto de configuración
+```
+
 ## 🎯 Mecánicas del Juego
 
 ### Estados de los Entes
 
-Cada entidad puede estar en uno de estos cuatro estados:
+Cada entidad puede estar en uno de estos estados:
 
 1. **IDLE** - En reposo, movimiento aleatorio ocasional cuando la resonancia > 75%
 2. **SEEKING** - Buscan activamente al otro cuando la resonancia < 50%
@@ -122,6 +157,53 @@ El juego guarda automáticamente:
 - Estado de desvanecimiento
 
 Los datos se preservan entre sesiones usando `localStorage` con la clave `duoEternoState`.
+
+## 🚀 Optimizaciones de Rendimiento
+
+### Versiones Disponibles
+
+El juego incluye dos versiones optimizadas para diferentes necesidades:
+
+- **Versión Estándar** (`App.tsx`) - Funcionalidad completa con todos los efectos
+- **Versión Optimizada** (`AppOptimized.tsx`) - Rendimiento mejorado con efectos adaptativos
+
+La versión se selecciona automáticamente según:
+- Entorno de producción → Versión optimizada
+- `VITE_TARGET_FPS < 60` → Versión optimizada  
+- `VITE_USE_OPTIMIZED=true` → Forzar versión optimizada
+
+### Técnicas de Optimización Implementadas
+
+#### 🎨 Renderizado Optimizado
+- **Frame rate limiting** - Control de FPS objetivo configurable
+- **Quality scaling** - Reducción automática de calidad en bajo rendimiento
+- **Object pooling** - Reutilización de partículas y objetos
+- **Gradient caching** - Cacheo de gradientes CSS para evitar recreación
+
+#### 🔄 Lógica de Juego Optimizada
+- **Throttled updates** - Actualizaciones menos frecuentes en componentes costosos
+- **Delta time calculations** - Actualizaciones basadas en tiempo transcurrido
+- **Collision optimization** - Verificaciones de colisión más eficientes
+- **State batching** - Agrupación de updates de estado
+
+#### 📊 Sistema de Monitoreo
+- **FPS monitoring** - Medición de rendimiento en tiempo real
+- **Performance overlay** - Visualización de métricas (modo debug)
+- **Adaptive quality** - Ajuste automático según rendimiento
+
+### Configuraciones de Rendimiento
+
+```bash
+# Alto rendimiento (máximo FPS)
+VITE_TARGET_FPS=30
+VITE_MOVEMENT_UPDATE_FPS=15
+VITE_USE_OPTIMIZED=true
+
+# Calidad visual (máxima calidad)
+VITE_TARGET_FPS=60
+VITE_MOVEMENT_UPDATE_FPS=60
+VITE_DEBUG_MODE=true
+```
 
 ## 🎭 Filosofía del Diseño
 

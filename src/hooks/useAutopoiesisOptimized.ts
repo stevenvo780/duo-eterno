@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { getRandomDialogue } from '../utils/dialogues';
+import { gameConfig } from '../config/gameConfig';
 import type { Entity, EntityActivity, EntityMood } from '../types';
 
 // Hook para comportamientos autónomos optimizado
@@ -105,7 +106,7 @@ export const useAutopoiesisOptimized = () => {
       payload: { 
         message,
         speaker: entityId as 'circle' | 'square',
-        duration: 2500 // Shorter duration for better performance
+        duration: gameConfig.dialogueDuration // Use configurable duration
       }
     });
   }, [dispatch]);
@@ -131,25 +132,28 @@ export const useAutopoiesisOptimized = () => {
       payload: {
         entityId,
         stats: {
-          hunger: 1.5, // Slower decay for better performance
-          sleepiness: 1.2,
-          boredom: 1.0,
-          loneliness: 0.8,
-          happiness: -0.8,
-          energy: -0.5
+          hunger: 1.5 * gameConfig.statDecaySpeed, // Configurable decay speed
+          sleepiness: 1.2 * gameConfig.statDecaySpeed,
+          boredom: 1.0 * gameConfig.statDecaySpeed,
+          loneliness: 0.8 * gameConfig.statDecaySpeed,
+          happiness: -0.8 * gameConfig.statDecaySpeed,
+          energy: -0.5 * gameConfig.statDecaySpeed
         }
       }
     });
   }, [dispatch]);
 
   useEffect(() => {
-    // Optimized autopoiesis with reduced frequency
+    // Optimized autopoiesis with configurable frequency
+    const interval = gameConfig.autopoiesisInterval / gameConfig.gameSpeedMultiplier;
+    
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const deltaTime = now - lastUpdateTime.current;
       
       // Update less frequently for better performance
-      if (deltaTime < 2000) return; // Minimum 2 seconds between updates
+      const minInterval = Math.max(1000, interval * 0.8);
+      if (deltaTime < minInterval) return;
       
       lastUpdateTime.current = now;
       updateCounter.current++;
@@ -188,7 +192,7 @@ export const useAutopoiesisOptimized = () => {
           } else if (entity.stats.loneliness > 50 && entity.activity !== 'CONTEMPLATING') {
             newActivity = 'CONTEMPLATING';
             shouldChangeActivity = true;
-          } else if (Math.random() < 0.15) { // Reduced random chance
+          } else if (Math.random() < (gameConfig.activityChangeFrequency * gameConfig.gameSpeedMultiplier)) {
             newActivity = selectRandomActivity(entity);
             shouldChangeActivity = newActivity !== entity.activity;
           }
@@ -206,7 +210,7 @@ export const useAutopoiesisOptimized = () => {
           }
         }
       }
-    }, 2000); // 2 second interval instead of variable timing
+    }, interval); // Configurable interval
 
     return () => {
       if (intervalRef.current) {

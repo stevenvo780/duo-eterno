@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { getAttractionTarget, checkCollisionWithObstacles } from '../utils/mapGeneration';
+import { gameConfig } from '../config/gameConfig';
 
 export const useEntityMovementOptimized = () => {
   const { gameState, dispatch } = useGame();
@@ -13,8 +14,9 @@ export const useEntityMovementOptimized = () => {
     const now = performance.now();
     const deltaTime = now - lastUpdateTime.current;
     
-    // Limit movement updates to 30fps for better performance
-    if (deltaTime < 33.33) {
+    // Limit movement updates to configurable FPS for better performance
+    const targetFrameTime = 1000 / gameConfig.movementUpdateFPS;
+    if (deltaTime < targetFrameTime) {
       animationRef.current = requestAnimationFrame(updateMovement);
       return;
     }
@@ -41,7 +43,7 @@ export const useEntityMovementOptimized = () => {
 
     for (const entity of livingEntities) {
       const newPosition = { ...entity.position };
-      let speed = 0.8; // Base speed
+      let speed = gameConfig.entityMovementSpeed; // Configurable base speed
       
       // Find companion efficiently
       const companion = livingEntities.find(e => e.id !== entity.id);
