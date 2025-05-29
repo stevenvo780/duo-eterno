@@ -273,8 +273,9 @@ export const useZoneEffects = () => {
                 Object.entries(effects).forEach(([stat, value]) => {
                   const currentStat = entity.stats[stat as keyof EntityStats];
                   const newValue = Math.max(0, Math.min(100, currentStat + value));
+                  // Guardar valor absoluto nuevo, no delta, para evitar valores erráticos
                   if (Math.abs(newValue - currentStat) > 0.05) {
-                    finalEffects[stat as keyof EntityStats] = value;
+                    finalEffects[stat as keyof EntityStats] = newValue;
                   }
                 });
                 
