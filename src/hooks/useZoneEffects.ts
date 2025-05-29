@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
 import { getEntityZone } from '../utils/mapGeneration';
 import type { EntityStats } from '../types';
-import { getGameIntervals } from '../config/gameConfig';
+import { gameConfig } from '../config/gameConfig';
 
 // Función para calcular efectividad de zona basada en necesidad
 const calculateZoneEffectiveness = (
@@ -37,8 +37,8 @@ const calculateZoneEffectiveness = (
       return { effectiveness: 1.0, criticalNeed: false };
   }
   
-  // Efectividad basada en cuánto necesita la zona (más necesidad = más efectivo)
-  const needBasedEffectiveness = Math.min(3.0, 1.0 + (relevantStatValue / 50));
+  // Efectividad MÁS AGRESIVA basada en necesidad
+  const needBasedEffectiveness = Math.min(5.0, 1.0 + (relevantStatValue / 25)); // Hasta 5x más efectivo
   
   return { 
     effectiveness: needBasedEffectiveness,
@@ -58,82 +58,82 @@ const getContextualZoneMessage = (
   const messagesByZoneAndUrgency = {
     food: {
       critical: [
-        `${symbol} "¡Por fin! Alimento cuando más lo necesitaba..."`,
-        `${symbol} "Mi hambre se calma... era desesperante..."`,
-        `${symbol} "Estos nutrientes salvan mi esencia..."`
+        `${symbol} "¡SALVACIÓN! Este alimento llega justo a tiempo..."`,
+        `${symbol} "Mi hambre extrema se calma... puedo respirar de nuevo..."`,
+        `${symbol} "Estos nutrientes me devuelven a la vida..."`
       ],
       high: [
-        `${symbol} "Este jardín tiene exactamente lo que buscaba..."`,
-        `${symbol} "Siento cómo mi hambre se desvanece..."`,
-        `${symbol} "La comida nunca había sabido tan bien..."`
+        `${symbol} "Este jardín tiene exactamente lo que necesitaba..."`,
+        `${symbol} "Siento mi hambre desvanecerse rápidamente..."`,
+        `${symbol} "La comida sabe increíblemente bien ahora..."`
       ],
       normal: [
-        `${symbol} "Un refrigerio en el jardín siempre es agradable..."`,
-        `${symbol} "Los sabores de este lugar me reconfortan..."`
+        `${symbol} "Un bocado en el jardín siempre reconforta..."`,
+        `${symbol} "Los sabores naturales me nutren..."`
       ]
     },
     rest: {
       critical: [
-        `${symbol} "Finalmente... no podía más con este cansancio..."`,
-        `${symbol} "El descanso llega justo a tiempo..."`,
-        `${symbol} "Mis fuerzas se restauran por completo..."`
+        `${symbol} "¡Por fin! El cansancio era insoportable..."`,
+        `${symbol} "Este descanso me salva de colapsar..."`,
+        `${symbol} "Mis fuerzas se restauran completamente..."`
       ],
       high: [
-        `${symbol} "Este santuario es perfecto para recargar energías..."`,
-        `${symbol} "Siento cómo el cansancio abandona mi ser..."`,
+        `${symbol} "Este santuario es perfecto para recargar..."`,
+        `${symbol} "El cansancio se desvanece aquí..."`,
         `${symbol} "La paz de este lugar me revitaliza..."`
       ],
       normal: [
-        `${symbol} "Un momento de reposo sienta bien..."`,
+        `${symbol} "Un momento de reposo siempre ayuda..."`,
         `${symbol} "Aquí puedo relajarme verdaderamente..."`
       ]
     },
     play: {
       critical: [
-        `${symbol} "¡Al fin algo emocionante! El aburrimiento me estaba matando..."`,
-        `${symbol} "Esta diversión era exactamente lo que necesitaba..."`,
-        `${symbol} "Mi espíritu revive con esta actividad..."`
+        `${symbol} "¡AL FIN diversión! El aburrimiento me mataba..."`,
+        `${symbol} "Esta actividad era exactamente lo que necesitaba..."`,
+        `${symbol} "Mi espíritu revive con esta diversión..."`
       ],
       high: [
-        `${symbol} "¡Qué liberador es poder jugar y divertirse!"`,
-        `${symbol} "Este lugar despierta mi alegría interior..."`,
-        `${symbol} "El aburrimiento se disuelve con cada momento..."`
+        `${symbol} "¡Qué liberador poder jugar aquí!"`,
+        `${symbol} "Este lugar despierta mi alegría..."`,
+        `${symbol} "El aburrimiento se disuelve rápidamente..."`
       ],
       normal: [
         `${symbol} "Jugar siempre levanta el ánimo..."`,
-        `${symbol} "Esta área tiene una energía especial..."`
+        `${symbol} "Esta área tiene energía especial..."`
       ]
     },
     social: {
       critical: [
-        `${symbol} "Por fin siento conexión... la soledad era insoportable..."`,
-        `${symbol} "Esta plaza me recuerda que no estoy solo..."`,
-        `${symbol} "La energía social de este lugar me sana..."`
+        `${symbol} "Por fin conexión... la soledad era agónica..."`,
+        `${symbol} "Esta plaza me recuerda que existo..."`,
+        `${symbol} "La energía social me cura por completo..."`
       ],
       high: [
-        `${symbol} "Aquí siento la presencia de otros seres..."`,
-        `${symbol} "La soledad se desvanece en este espacio..."`,
-        `${symbol} "Esta plaza nutre mi necesidad de compañía..."`
+        `${symbol} "Aquí siento presencia de otros seres..."`,
+        `${symbol} "La soledad se desvanece aquí..."`,
+        `${symbol} "Esta plaza alimenta mi alma social..."`
       ],
       normal: [
-        `${symbol} "Este lugar tiene una calidez especial..."`,
-        `${symbol} "La energía social aquí es reconfortante..."`
+        `${symbol} "Este lugar tiene calidez humana..."`,
+        `${symbol} "La energía social es reconfortante..."`
       ]
     },
     comfort: {
       critical: [
-        `${symbol} "Este lugar restaura mi equilibrio emocional..."`,
-        `${symbol} "Encuentro la armonía que perdí..."`,
-        `${symbol} "Mi ser se centra y se calma profundamente..."`
+        `${symbol} "Este lugar restaura mi equilibrio perdido..."`,
+        `${symbol} "Encuentro la armonía que tanto necesitaba..."`,
+        `${symbol} "Mi ser se centra profundamente aquí..."`
       ],
       high: [
         `${symbol} "La serenidad de este bosque me tranquiliza..."`,
-        `${symbol} "Aquí todos mis problemas encuentran perspectiva..."`,
+        `${symbol} "Aquí todos mis problemas se resuelven..."`,
         `${symbol} "Este santuario equilibra mis emociones..."`
       ],
       normal: [
         `${symbol} "Un momento de meditación siempre ayuda..."`,
-        `${symbol} "Este lugar tiene una energía especial..."`
+        `${symbol} "Este lugar tiene energía especial..."`
       ]
     }
   };
@@ -144,7 +144,7 @@ const getContextualZoneMessage = (
   let messageType: 'critical' | 'high' | 'normal';
   if (criticalNeed) {
     messageType = 'critical';
-  } else if (effectiveness > 2.0) {
+  } else if (effectiveness > 3.0) {
     messageType = 'high';
   } else {
     messageType = 'normal';
@@ -161,13 +161,17 @@ export const useZoneEffects = () => {
   const messageCounter = useRef<number>(0);
 
   useEffect(() => {
-    const { zoneEffectsInterval } = getGameIntervals();
+    // Usar intervalo más frecuente pero coordinado con autopoiesis
+    const baseInterval = 150; // 150ms base
+    const interval = Math.max(50, baseInterval / gameConfig.gameSpeedMultiplier);
+    
+    console.log(`🏛️ Zone Effects iniciado con intervalo: ${interval}ms`);
     
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const deltaTime = now - lastUpdateTime.current;
       
-      if (deltaTime < zoneEffectsInterval * 0.8) return;
+      if (deltaTime < interval * 0.6) return; // Throttling menos agresivo
       
       lastUpdateTime.current = now;
       messageCounter.current++;
@@ -180,51 +184,52 @@ export const useZoneEffects = () => {
         const currentZone = getEntityZone(entity.position, gameState.zones);
         
         if (currentZone) {
-          // Calcular efectividad de la zona para esta entidad
+          // Calcular efectividad MÁS AGRESIVA
           const { effectiveness, criticalNeed } = calculateZoneEffectiveness(
             entity.stats, 
             currentZone.type
           );
           
-          // Efectos base de zona mejorados
+          // Efectos de zona MUCHO MÁS FUERTES
+          const timeMultiplier = (deltaTime / 1000) * gameConfig.gameSpeedMultiplier;
           const enhancedEffects: Record<string, Partial<EntityStats>> = {
             food: { 
-              hunger: -8 * effectiveness, 
-              energy: 3 * effectiveness, 
-              happiness: 2 * effectiveness 
+              hunger: -15 * effectiveness * timeMultiplier,  // Muy agresivo
+              energy: 5 * effectiveness * timeMultiplier, 
+              happiness: 3 * effectiveness * timeMultiplier 
             },
             rest: { 
-              sleepiness: -10 * effectiveness, 
-              energy: 6 * effectiveness, 
-              boredom: Math.min(3, 1 * effectiveness) // Descansar puede aburrir un poco
+              sleepiness: -18 * effectiveness * timeMultiplier, // Muy agresivo
+              energy: 12 * effectiveness * timeMultiplier, 
+              boredom: Math.min(5, 2 * effectiveness * timeMultiplier)
             },
             play: { 
-              boredom: -12 * effectiveness, 
-              happiness: 6 * effectiveness, 
-              energy: -2 * effectiveness,
-              loneliness: -3 * effectiveness // Jugar es social
+              boredom: -20 * effectiveness * timeMultiplier,  // Muy agresivo
+              happiness: 10 * effectiveness * timeMultiplier, 
+              energy: -3 * effectiveness * timeMultiplier,
+              loneliness: -5 * effectiveness * timeMultiplier
             },
             social: { 
-              loneliness: -15 * effectiveness, 
-              happiness: 5 * effectiveness, 
-              energy: -1 * effectiveness
+              loneliness: -25 * effectiveness * timeMultiplier, // Muy agresivo
+              happiness: 8 * effectiveness * timeMultiplier, 
+              energy: -2 * effectiveness * timeMultiplier
             },
             comfort: { 
-              happiness: 4 * effectiveness, 
-              sleepiness: -3 * effectiveness, 
-              boredom: -4 * effectiveness, 
-              loneliness: -2 * effectiveness 
+              happiness: 8 * effectiveness * timeMultiplier, 
+              sleepiness: -5 * effectiveness * timeMultiplier, 
+              boredom: -8 * effectiveness * timeMultiplier, 
+              loneliness: -4 * effectiveness * timeMultiplier 
             }
           };
 
           const effects = enhancedEffects[currentZone.type];
           if (effects) {
-            // Aplicar efectos con límites realistas
+            // Aplicar efectos con cambios más dramáticos
             const finalEffects: Partial<EntityStats> = {};
             Object.entries(effects).forEach(([stat, value]) => {
               const currentStat = entity.stats[stat as keyof EntityStats];
               const newValue = Math.max(0, Math.min(100, currentStat + value));
-              if (Math.abs(newValue - currentStat) > 0.1) {
+              if (Math.abs(newValue - currentStat) > 0.05) { // Umbral más bajo
                 finalEffects[stat as keyof EntityStats] = value;
               }
             });
@@ -237,10 +242,15 @@ export const useZoneEffects = () => {
                   stats: finalEffects
                 }
               });
+              
+              // Debug para verificar efectos
+              if (gameConfig.debugMode && Object.keys(finalEffects).length > 0) {
+                console.log(`🏛️ ${entity.id} en zona ${currentZone.type}:`, finalEffects);
+              }
             }
 
             // Mostrar mensajes contextuales menos frecuentes pero más relevantes
-            if (messageCounter.current % 8 === 0 && Math.random() < 0.4) {
+            if (messageCounter.current % 12 === 0 && Math.random() < 0.25) {
               const message = getContextualZoneMessage(
                 entity.id, 
                 currentZone.type, 
@@ -253,7 +263,7 @@ export const useZoneEffects = () => {
                   type: 'SHOW_DIALOGUE',
                   payload: {
                     message,
-                    duration: criticalNeed ? 4000 : 3000,
+                    duration: criticalNeed ? 3000 : 2000,
                     speaker: entity.id as 'circle' | 'square'
                   }
                 });
@@ -262,11 +272,12 @@ export const useZoneEffects = () => {
           }
         }
       }
-    }, zoneEffectsInterval);
+    }, interval);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        console.log('🏛️ Zone Effects detenido');
       }
     };
   }, [gameState.entities, gameState.zones, dispatch]);

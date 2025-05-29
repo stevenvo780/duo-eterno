@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
 import Canvas from './components/Canvas';
@@ -13,15 +13,15 @@ import { useZoneEffects } from './hooks/useZoneEffects';
 import { gameConfig } from './config/gameConfig';
 
 // Memoized game content component for better performance
-const GameContent: React.FC = memo(() => {
+const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   const [showPerformance, setShowPerformance] = useState<boolean>(false);
   
-  // Use  hooks
+  // Use system hooks
   useGameClock();
   useEntityMovement();
   useDialogueSystem();
-  useAutopoiesis();
+  useAutopoiesis(); // Nuevo sistema con dinámicas complejas
   useZoneEffects();
 
   const handleEntityClick = React.useCallback((entityId: string) => {
@@ -112,7 +112,7 @@ GameContent.displayName = 'GameContent';
 // Componente interno que usa los hooks
 const GameEngine: React.FC = () => {
   // Activar todos los sistemas del juego
-  useAutopoiesis();      // Sistema de decay de estadísticas
+  useAutopoiesis(); // Sistema de autopoiesis con dinámicas complejas
   useGameClock();        // Reloj principal del juego
   useEntityMovement();   // Movimiento de entidades
   useZoneEffects();      // Efectos de zonas

@@ -36,7 +36,7 @@ for (let i = 0; i < PARTICLE_COUNT; i++) {
 
 const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const lastRenderTime = useRef<number>(0);
   const frameCount = useRef<number>(0);
   const { gameState } = useGame();

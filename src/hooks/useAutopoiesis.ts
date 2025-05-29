@@ -1,338 +1,247 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
-import { gameConfig } from '../config/gameConfig';
-import { getRandomDialogue } from '../utils/dialogues';
+import { getGameIntervals } from '../config/gameConfig';
 import type { Entity, EntityActivity, EntityMood, EntityStats } from '../types';
+import type { GameAction } from '../state/GameContext';
+import { 
+  ACTIVITY_DYNAMICS, 
+  calculateActivityPriority, 
+  applyActivityEffects,
+  applySurvivalCosts
+} from '../utils/activityDynamics';
 
-// Sistema de decay estable por agente - UN SOLO PERFIL POR AGENTE
-const ENTITY_DECAY_PROFILES = new Map<string, {
-  baseRates: {
-    hunger: number;
-    sleepiness: number;
-    energy: number;
-    boredom: number;
-    loneliness: number;
-    happiness: number;
-  };
-  personality: 'energetic' | 'calm' | 'social' | 'solitary';
-  initialized: boolean;
+// Sistema híbrido optimizado que combina lo mejor de ambos enfoques
+const HYBRID_DECAY_RATES = {
+  // Decay base más agresivo para cambios visibles inmediatos
+  base: {
+    hunger: 3.0,        // Más agresivo que antes
+    sleepiness: 2.5,    
+    energy: -2.0,       // Pérdida de energía más notable
+    boredom: 2.2,       
+    loneliness: 1.8,    
+    happiness: -1.5     
+  },
+  // Multiplicadores por actividad (corregir tipos)
+  activityModifiers: {
+    'WORKING': { hunger: 1.5, energy: 2.0, boredom: 1.5 },
+    'SHOPPING': { happiness: -1.8, hunger: -0.8 },
+    'COOKING': { hunger: -2.5, happiness: -0.5 },
+    'EXERCISING': { energy: 1.5, hunger: 2.0, happiness: -1.0 },
+    'RESTING': { sleepiness: -3.0, energy: -2.5 },
+    'SOCIALIZING': { loneliness: -2.5, happiness: -1.0 },
+    'DANCING': { boredom: -2.8, happiness: -1.5, energy: 1.3 },
+    'EXPLORING': { hunger: 1.2, boredom: -1.0 },
+    'MEDITATING': { happiness: -1.8, boredom: -1.5, loneliness: 0.8 },
+    'CONTEMPLATING': { happiness: -1.5, boredom: -1.2 },
+    'WRITING': { boredom: -1.8, loneliness: 0.5 },
+    'WANDERING': { boredom: -0.5 },
+    'HIDING': { loneliness: 1.5, happiness: 1.0 }
+  } as Record<EntityActivity, Record<string, number>>
+};
+
+// Sistema de persistencia mejorado con dinámicas complejas
+const ACTIVITY_PERSISTENCE = new Map<string, {
+  currentActivity: EntityActivity;
+  startTime: number;
+  expectedDuration: number;
+  effectiveness: number;
+  lastDecision: number;
 }>();
 
-// Crear perfil único y persistente para cada agente
-const getOrCreateDecayProfile = (entityId: string) => {
-  if (!ENTITY_DECAY_PROFILES.has(entityId)) {
-    // Personalidades diferentes para cada agente
-    const personality = entityId === 'circle' ? 'energetic' : 'calm';
-    
-    ENTITY_DECAY_PROFILES.set(entityId, {
-      baseRates: {
-        // Tasas base MÁS ALTAS para ver cambios inmediatos
-        hunger: 2.5 + Math.random() * 1.5,        // 2.5-4.0 por segundo
-        sleepiness: 2.0 + Math.random() * 1.5,    // 2.0-3.5 por segundo
-        energy: -(1.5 + Math.random() * 1.0),     // -1.5 a -2.5 por segundo
-        boredom: 1.8 + Math.random() * 1.2,       // 1.8-3.0 por segundo
-        loneliness: 1.5 + Math.random() * 1.0,    // 1.5-2.5 por segundo
-        happiness: -(1.0 + Math.random() * 0.8)   // -1.0 a -1.8 por segundo
-      },
-      personality,
-      initialized: true
-    });
-    
-    console.log(`🧬 Perfil de Autopoiesis creado para ${entityId}:`, ENTITY_DECAY_PROFILES.get(entityId));
-  }
+// Aplicar efectos complejos de actividades (fusión de ambos sistemas)
+const applyComplexActivityEffects = (
+  entity: Entity, 
+  deltaTime: number, 
+  dispatch: React.Dispatch<GameAction>
+) => {
+  const timeMultiplier = deltaTime / 1000;
+  const activity = entity.activity;
   
-  return ENTITY_DECAY_PROFILES.get(entityId)!;
-};
-
-// Sistema AGRESIVO de decay para ver cambios inmediatos
-const applyAggressiveStatDecay = (entity: Entity, deltaTime: number, dispatch: any) => {
-  const profile = getOrCreateDecayProfile(entity.id);
-  const timeMultiplier = deltaTime / 1000; // Convertir ms a segundos
-  
-  const statChanges: Partial<EntityStats> = {};
-  
-  // Aplicar decay con modificadores de actividad MÁS DRÁSTICOS
-  const activityModifiers: Record<EntityActivity, Record<string, number>> = {
-    'EXPLORING': { hunger: 2.5, energy: 1.8, boredom: -1.5 },
-    'DANCING': { hunger: 3.0, energy: 2.0, boredom: -3.0, happiness: -2.0 },
-    'RESTING': { sleepiness: -4.0, energy: -3.0, boredom: 1.5 },
-    'SOCIALIZING': { loneliness: -3.0, happiness: -1.5, energy: 1.2 },
-    'CONTEMPLATING': { happiness: -2.0, boredom: -1.5, sleepiness: 1.0 },
-    'MEDITATING': { happiness: -2.5, boredom: -2.0, loneliness: 1.0 },
-    'WRITING': { boredom: -2.0, happiness: -1.0, energy: 1.0 },
-    'WANDERING': { boredom: -0.5 },
-  const maxNeed = Math.max(...Object.values(needLevels));
-  const urgentNeed = Object.entries(needLevels).find(([_, value]) => value === maxNeed)?.[0];
-
-  // Mapear necesidades urgentes a actividades específicas
-  const needToActivity: Record<string, EntityActivity> = {
-    hunger: 'EXPLORING',      // Buscar comida
-    sleepiness: 'RESTING',    // Descansar
-    energy: 'RESTING',        // También descansar para recuperar energía
-    boredom: 'DANCING',       // Actividad divertida
-    loneliness: 'SOCIALIZING', // Buscar compañía
-    happiness: 'CONTEMPLATING' // Meditar para equilibrar emociones
-  };
-
-  // Si la necesidad es crítica (>70%), priorizar esa actividad
-  if (maxNeed > 0.7 && urgentNeed) {
-    return needToActivity[urgentNeed] || 'WANDERING';
-  }
-
-  // Si no hay necesidades críticas, actividad basada en personalidad
-  const personalityActivities: EntityActivity[] = [
-    'WANDERING', 'MEDITATING', 'WRITING', 'CONTEMPLATING'
-  ];
-  
-  return personalityActivities[Math.floor(Math.random() * personalityActivities.length)];
-};
-
-// Sistema de decay dinámico por agente
-const applyDynamicStatDecay = (entity: Entity, gameSpeedMultiplier: number, dispatch: any) => {
-  const profile = getDecayProfile(entity.id);
-  const now = Date.now();
-  const deltaTime = now - profile.lastDecayUpdate;
-  
-  // Aplicar decay cada segundo aproximadamente (ajustable por velocidad)
-  if (deltaTime < (1000 / gameSpeedMultiplier)) return;
-  
-  const statChanges: Partial<EntityStats> = {};
-  const timeMultiplier = (deltaTime / 1000) * gameSpeedMultiplier;
-  
-  // Aplicar decay según el perfil único del agente
-  Object.entries(profile.decayRates).forEach(([stat, baseRate]) => {
-    let finalRate = baseRate * timeMultiplier;
+  // 1. Aplicar decay base agresivo
+  const baseChanges: Partial<EntityStats> = {};
+  Object.entries(HYBRID_DECAY_RATES.base).forEach(([stat, rate]) => {
+    const modifier = HYBRID_DECAY_RATES.activityModifiers[activity]?.[stat] || 1.0;
+    const finalRate = rate * modifier * timeMultiplier;
     
-    // Modificadores según actividad actual
-    const activityModifiers: Record<EntityActivity, Record<string, number>> = {
-      'EXPLORING': { hunger: 1.5, energy: 1.2 }, // Explorar da más hambre y cansa
-      'DANCING': { hunger: 1.8, energy: 1.5, boredom: -2.0, happiness: -1.0 }, // Bailar es muy activo
-      'RESTING': { sleepiness: -2.5, energy: -1.5, boredom: 1.2 }, // Descansar restaura pero aburre
-      'SOCIALIZING': { loneliness: -1.8, happiness: -0.8, energy: 1.1 }, // Socializar cansa un poco
-      'CONTEMPLATING': { happiness: -1.2, boredom: -0.8, sleepiness: 0.8 }, // Meditar equilibra
-      'MEDITATING': { happiness: -1.5, boredom: -1.0, loneliness: 0.6 }, // Meditar profundo
-      'WRITING': { boredom: -1.2, happiness: -0.5, energy: 0.8 }, // Escribir es creativo
-      'WANDERING': {}, // Sin modificadores especiales
-      'HIDING': { loneliness: 1.3, boredom: 1.2 } // Esconderse es aislante
-    };
+    // Eliminar currentValue no utilizada
+    const change = finalRate;
     
-    const modifier = activityModifiers[entity.activity]?.[stat] || 1.0;
-    finalRate *= modifier;
-    
-    // Aplicar límites realistas y variabilidad
-    const currentValue = entity.stats[stat as keyof EntityStats];
-    let newValue: number;
-    
-    if (stat === 'happiness' || stat === 'energy') {
-      // Para estadísticas que deberían mantenerse altas
-      newValue = Math.max(0, Math.min(100, currentValue + finalRate));
-    } else {
-      // Para estadísticas que deberían mantenerse bajas
-      newValue = Math.max(0, Math.min(100, currentValue + finalRate));
-    }
-    
-    // Solo aplicar cambio si es significativo
-    if (Math.abs(newValue - currentValue) > 0.1) {
-      statChanges[stat as keyof EntityStats] = newValue - currentValue;
+    if (Math.abs(change) > 0.1) {
+      baseChanges[stat as keyof EntityStats] = change;
     }
   });
 
-  // Actualizar timestamp
-  profile.lastDecayUpdate = now;
+  // 2. Aplicar efectos específicos de actividad (de activityDynamics)
+  if (ACTIVITY_DYNAMICS[activity]) {
+    const activityResult = applyActivityEffects(
+      entity.stats,
+      activity,
+      deltaTime,
+      false
+    );
+    
+    // Combinar cambios base con efectos específicos
+    Object.entries(activityResult.newStats).forEach(([stat, value]) => {
+      const currentChange = baseChanges[stat as keyof EntityStats] || 0;
+      const activityChange = value - entity.stats[stat as keyof EntityStats];
+      baseChanges[stat as keyof EntityStats] = currentChange + activityChange;
+    });
 
-  // Aplicar cambios si los hay
-  if (Object.keys(statChanges).length > 0) {
+    // 3. Aplicar costos y ganancias (dinero, etc.)
+    if (activityResult.cost > 0 && entity.stats.money >= activityResult.cost) {
+      baseChanges.money = (baseChanges.money || 0) - activityResult.cost;
+    }
+    
+    if (activityResult.gain > 0) {
+      baseChanges.money = (baseChanges.money || 0) + activityResult.gain;
+    }
+  }
+
+  // 4. Aplicar costos pasivos de supervivencia
+  const survivalChanges = applySurvivalCosts(entity.stats, deltaTime);
+  Object.entries(survivalChanges).forEach(([stat, value]) => {
+    const change = value - entity.stats[stat as keyof EntityStats];
+    if (Math.abs(change) > 0.05) {
+      baseChanges[stat as keyof EntityStats] = (baseChanges[stat as keyof EntityStats] || 0) + change;
+    }
+  });
+
+  // 5. Aplicar todos los cambios de una vez
+  if (Object.keys(baseChanges).length > 0) {
     dispatch({
       type: 'UPDATE_ENTITY_STATS',
-      payload: { entityId: entity.id, stats: statChanges }
+      payload: { entityId: entity.id, stats: baseChanges }
     });
   }
 };
 
-// Mejorar sistema de estado de ánimo con más granularidad
-const calculateMoodFromStats = (stats: EntityStats, resonance: number): EntityMood => {
-  const criticalStats = [
-    stats.hunger > 80,
-    stats.sleepiness > 80,
-    stats.loneliness > 80,
-    stats.energy < 20,
-    stats.happiness < 20
+// Decisión inteligente de actividad (sin parámetro resonance no utilizado)
+const intelligentActivityDecision = (
+  entity: Entity, 
+  now: number
+): EntityActivity => {
+  const persistence = ACTIVITY_PERSISTENCE.get(entity.id);
+  const currentActivity = entity.activity;
+  
+  // Inicializar persistencia si no existe
+  if (!persistence) {
+    const expectedDuration = ACTIVITY_DYNAMICS[currentActivity]?.minDuration || 15000;
+    ACTIVITY_PERSISTENCE.set(entity.id, {
+      currentActivity,
+      startTime: now,
+      expectedDuration,
+      effectiveness: 1.0,
+      lastDecision: now
+    });
+    return currentActivity;
+  }
+
+  // Verificar duración mínima y frecuencia de decisiones
+  const timeSinceStart = now - persistence.startTime;
+  const timeSinceLastDecision = now - persistence.lastDecision;
+  
+  // No cambiar muy frecuentemente (estabilidad)
+  if (timeSinceLastDecision < 2000) {
+    return currentActivity;
+  }
+
+  // Usar sistema de prioridades de activityDynamics
+  const priorities: Array<{activity: EntityActivity, priority: number}> = [];
+  
+  // Evaluar todas las actividades disponibles
+  const activities: EntityActivity[] = [
+    'WORKING', 'SHOPPING', 'COOKING', 'EXERCISING', 'RESTING', 
+    'SOCIALIZING', 'DANCING', 'EXPLORING', 'MEDITATING', 
+    'CONTEMPLATING', 'WRITING', 'WANDERING', 'HIDING'
+  ];
+
+  for (const activity of activities) {
+    const priority = calculateActivityPriority(activity, entity.stats, timeSinceStart);
+    priorities.push({ activity, priority });
+  }
+
+  // Ordenar por prioridad
+  priorities.sort((a, b) => b.priority - a.priority);
+  
+  const topActivity = priorities[0];
+  const currentPriority = priorities.find(p => p.activity === currentActivity)?.priority || 0;
+  
+  // Criterios para cambiar actividad:
+  // 1. La nueva actividad es significativamente mejor
+  // 2. Ha pasado tiempo suficiente en la actividad actual
+  // 3. Hay una necesidad crítica
+  const hasMinTimePassed = timeSinceStart >= persistence.expectedDuration;
+  const isCriticalNeed = topActivity.priority > 80;
+  const isSignificantImprovement = topActivity.priority > currentPriority + 20;
+  
+  if (topActivity.activity !== currentActivity && 
+      (hasMinTimePassed || isCriticalNeed || isSignificantImprovement)) {
+    
+    // Actualizar persistencia para nueva actividad
+    const newDuration = ACTIVITY_DYNAMICS[topActivity.activity]?.optimalDuration || 30000;
+    ACTIVITY_PERSISTENCE.set(entity.id, {
+      currentActivity: topActivity.activity,
+      startTime: now,
+      expectedDuration: newDuration,
+      effectiveness: 1.0,
+      lastDecision: now
+    });
+    
+    return topActivity.activity;
+  }
+
+  // Actualizar tiempo de última decisión pero mantener actividad
+  persistence.lastDecision = now;
+  return currentActivity;
+};
+
+// Cálculo de estado de ánimo optimizado
+const calculateOptimizedMood = (stats: EntityStats, resonance: number): EntityMood => {
+  // Factores críticos (muerte inminente)
+  const criticalFactors = [
+    stats.hunger > 85,
+    stats.sleepiness > 85,
+    stats.loneliness > 85,
+    stats.energy < 15,
+    stats.money < 10
   ].filter(Boolean).length;
 
-  // Estados críticos tienen prioridad
-  if (criticalStats >= 2) return 'ANXIOUS';
+  if (criticalFactors >= 2) return 'ANXIOUS';
   if (stats.energy < 20) return 'TIRED';
   if (stats.loneliness > 80 && resonance < 30) return 'SAD';
   
-  // Estados positivos
-  const positiveScore = (stats.happiness + stats.energy) / 2;
+  // Cálculo de bienestar general
+  const positiveScore = (stats.happiness + stats.energy + Math.min(100, stats.money)) / 3;
   const negativeScore = (stats.hunger + stats.sleepiness + stats.boredom + stats.loneliness) / 4;
-  const bondBonus = resonance > 70 ? 10 : resonance < 30 ? -10 : 0;
+  const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
   
   const moodScore = positiveScore - negativeScore + bondBonus;
   
-  if (moodScore > 40 && stats.energy > 60) return 'EXCITED';
+  if (moodScore > 50 && stats.energy > 60) return 'EXCITED';
   if (moodScore > 25) return 'HAPPY';
-  if (moodScore > 10) return 'CONTENT';
-  if (moodScore > -10) return 'CALM';
+  if (moodScore > 5) return 'CONTENT';
+  if (moodScore > -15) return 'CALM';
   return 'SAD';
 };
 
-// Sistema de pensamientos más contextual
-const generateContextualThought = (entity: Entity, resonance: number): string => {
-  const { stats, activity, mood } = entity;
-  const symbol = entity.id === 'circle' ? '●' : '■';
-  
-  // Pensamientos sobre necesidades críticas
-  if (stats.hunger > 85) {
-    return `${symbol} "Necesito encontrar alimento urgentemente... mi esencia se debilita..."`;
-  }
-  if (stats.sleepiness > 85) {
-    return `${symbol} "El cansancio me vence... debo descansar pronto..."`;
-  }
-  if (stats.loneliness > 85) {
-    return `${symbol} "La soledad me consume... ¿dónde está mi compañero?"`;
-  }
-  if (stats.boredom > 85) {
-    return `${symbol} "Esta monotonía es insoportable... necesito hacer algo..."`;
-  }
-  
-  // Pensamientos sobre el vínculo
-  if (resonance < 20) {
-    return `${symbol} "Siento cómo nuestro vínculo se desvanece... esto no puede continuar..."`;
-  }
-  if (resonance < 40) {
-    return `${symbol} "Algo no está bien entre nosotros... necesitamos reconectarnos..."`;
-  }
-  
-  // Pensamientos basados en actividad actual
-  const activityThoughts = {
-    'EXPLORING': [
-      `${symbol} "Busco algo que calme mis necesidades..."`,
-      `${symbol} "Cada paso me acerca a lo que necesito..."`,
-      `${symbol} "La búsqueda es parte de la supervivencia..."`
-    ],
-    'SOCIALIZING': [
-      `${symbol} "Busco a mi compañero... lo necesito cerca..."`,
-      `${symbol} "La soledad es mi mayor enemigo..."`,
-      `${symbol} "Juntos somos más fuertes..."`
-    ],
-    'RESTING': [
-      `${symbol} "Por fin puedo descansar... mi cuerpo lo necesitaba..."`,
-      `${symbol} "En el descanso encuentro renovación..."`,
-      `${symbol} "El sueño restaura mi esencia..."`
-    ],
-    'DANCING': [
-      `${symbol} "El movimiento libera mi energía acumulada..."`,
-      `${symbol} "Bailar aleja el aburrimiento de mi ser..."`,
-      `${symbol} "Cada paso es una celebración de la vida..."`
-    ],
-    'CONTEMPLATING': [
-      `${symbol} "Reflexiono sobre nuestro vínculo..."`,
-      `${symbol} "En la quietud encuentro claridad..."`,
-      `${symbol} "Meditar equilibra mis emociones..."`
-    ],
-    'WANDERING': [
-      `${symbol} "Camino sin rumbo fijo, explorando posibilidades..."`,
-      `${symbol} "Cada dirección puede llevarme a lo que necesito..."`,
-      `${symbol} "El movimiento es vida..."`
-    ]
-  };
-  
-  const thoughts = activityThoughts[activity] || [
-    `${symbol} "Continúo mi existencia, paso a paso..."`,
-    `${symbol} "Cada momento es una oportunidad de crecer..."`,
-    `${symbol} "La vida continúa, y yo con ella..."`
-  ];
-  
-  return thoughts[Math.floor(Math.random() * thoughts.length)];
-};
-
-// Función helper para calcular urgencia de necesidades
-const calculateNeedUrgency = (value: number, isPositiveStat: boolean = false): number => {
-  if (isPositiveStat) {
-    // Para happiness y energy, más bajo = más urgente
-    return (100 - value) / 100;
-  } else {
-    // Para hunger, sleepiness, etc., más alto = más urgente
-    return value / 100;
-  }
-};
-
-// Mostrar diálogos más inteligentes basados en contexto
-const showContextualDialogue = (entity: Entity, resonance: number, dispatch: any) => {
-  const { stats, mood, activity } = entity;
-  
-  // Probabilidad basada en urgencia de necesidades
-  const avgUrgency = (
-    calculateNeedUrgency(stats.hunger) +
-    calculateNeedUrgency(stats.sleepiness) +
-    calculateNeedUrgency(stats.loneliness) +
-    calculateNeedUrgency(stats.boredom) +
-    calculateNeedUrgency(stats.happiness, true) +
-    calculateNeedUrgency(stats.energy, true)
-  ) / 6;
-  
-  // Más probable mostrar diálogos cuando hay más urgencia
-  const dialogueProbability = 0.1 + (avgUrgency * 0.4);
-  
-  if (Math.random() < dialogueProbability) {
-    let dialogueType: keyof typeof import('../utils/dialogues').dialogues;
-    
-    // Seleccionar tipo de diálogo basado en el contexto
-    if (stats.hunger > 70) {
-      dialogueType = 'hungry';
-    } else if (stats.sleepiness > 70) {
-      dialogueType = 'tired';
-    } else if (stats.loneliness > 70 || resonance < 40) {
-      dialogueType = 'lonely';
-    } else if (mood === 'HAPPY' || mood === 'EXCITED') {
-      dialogueType = 'happy';
-    } else if (activity === 'CONTEMPLATING') {
-      dialogueType = 'meditation';
-    } else if (activity === 'WRITING') {
-      dialogueType = 'writing';
-    } else {
-      // Generar pensamiento contextual personalizado
-      const thought = generateContextualThought(entity, resonance);
-      dispatch({
-        type: 'SHOW_DIALOGUE',
-        payload: {
-          message: thought,
-          speaker: entity.id as 'circle' | 'square',
-          duration: 2500
-        }
-      });
-      return;
-    }
-    
-    dispatch({
-      type: 'SHOW_DIALOGUE',
-      payload: {
-        message: getRandomDialogue(dialogueType),
-        speaker: entity.id as 'circle' | 'square',
-        duration: 2500
-      }
-    });
-  }
-};
-
+// Sistema híbrido principal
 export const useAutopoiesis = () => {
   const { gameState, dispatch } = useGame();
   const intervalRef = useRef<number | undefined>(undefined);
-  const lastUpdateTime = useRef<number>(0);
+  const lastUpdateTime = useRef<number>(Date.now());
   const updateCounter = useRef<number>(0);
 
   useEffect(() => {
-    // Usar la velocidad global simplificada
-    const interval = 1000 / gameConfig.gameSpeedMultiplier; // Intervalo base de 1 segundo
+    const { autopoiesisInterval } = getGameIntervals();
+    
+    console.log(`🧬 Sistema Híbrido Autopoiesis iniciado - Intervalo: ${autopoiesisInterval}ms`);
     
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const deltaTime = now - lastUpdateTime.current;
       
-      // Throttling básico
-      if (deltaTime < interval * 0.8) return;
+      // Throttling optimizado
+      if (deltaTime < autopoiesisInterval * 0.7) return;
       
       lastUpdateTime.current = now;
       updateCounter.current++;
@@ -342,12 +251,24 @@ export const useAutopoiesis = () => {
       );
       
       for (const entity of livingEntities) {
-        // Aplicar decay dinámico por agente
-        applyDynamicStatDecay(entity, gameConfig.gameSpeedMultiplier, dispatch);
+        // Inicializar dinero si no existe
+        if (entity.stats.money === undefined) {
+          dispatch({
+            type: 'UPDATE_ENTITY_STATS',
+            payload: { 
+              entityId: entity.id, 
+              stats: { money: 50 }
+            }
+          });
+          continue;
+        }
+
+        // Aplicar efectos complejos híbridos
+        applyComplexActivityEffects(entity, deltaTime, dispatch);
         
-        // Actualizar actividad basada en priorización inteligente
-        if (updateCounter.current % 3 === 0) { // Cada 3 segundos
-          const newActivity = prioritizeActivity(entity);
+        // Decisión inteligente de actividad (remover parámetro resonance)
+        if (updateCounter.current % 3 === 0) {
+          const newActivity = intelligentActivityDecision(entity, now);
           if (newActivity !== entity.activity) {
             dispatch({
               type: 'UPDATE_ENTITY_ACTIVITY',
@@ -357,51 +278,21 @@ export const useAutopoiesis = () => {
         }
         
         // Actualizar estado de ánimo
-        if (updateCounter.current % 2 === 0) { // Cada 2 segundos
-          const newMood = calculateMoodFromStats(entity.stats, gameState.resonance);
-          if (newMood !== entity.mood) {
-            dispatch({
-              type: 'UPDATE_ENTITY_MOOD',
-              payload: { entityId: entity.id, mood: newMood }
-            });
-          }
-        }
-        
-        // Generar diálogos contextuales mejorados
-        if (updateCounter.current % 8 === 0) {
-          showContextualDialogue(entity, gameState.resonance, dispatch);
+        const newMood = calculateOptimizedMood(entity.stats, gameState.resonance);
+        if (newMood !== entity.mood) {
+          dispatch({
+            type: 'UPDATE_ENTITY_MOOD',
+            payload: { entityId: entity.id, mood: newMood }
+          });
         }
       }
       
-      // Decay del vínculo simplificado
-      const livingCount = livingEntities.length;
-      let resonanceDecay = 0.5; // Base decay por segundo
-      
-      if (livingCount === 2) {
-        const [entity1, entity2] = livingEntities;
-        const distance = Math.sqrt(
-          Math.pow(entity1.position.x - entity2.position.x, 2) +
-          Math.pow(entity1.position.y - entity2.position.y, 2)
-        );
-        
-        // Decay más rápido cuando están lejos
-        if (distance > 150) resonanceDecay = 1.2;
-        else if (distance > 100) resonanceDecay = 0.8;
-        else resonanceDecay = 0.3; // Decay mínimo cuando están cerca
-      } else if (livingCount === 1) {
-        resonanceDecay = 2.0; // Decay acelerado cuando solo queda uno
-      }
-      
-      dispatch({
-        type: 'UPDATE_RESONANCE',
-        payload: Math.max(0, gameState.resonance - (resonanceDecay * gameConfig.gameSpeedMultiplier))
-      });
-      
-    }, interval);
+    }, autopoiesisInterval);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        console.log('🧬 Sistema Híbrido Autopoiesis detenido');
       }
     };
   }, [gameState.entities, gameState.resonance, dispatch]);

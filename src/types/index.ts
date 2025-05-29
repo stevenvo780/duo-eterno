@@ -10,6 +10,7 @@ export interface EntityStats {
   happiness: number; // 0-100
   energy: number; // 0-100
   boredom: number; // 0-100
+  money: number; // Sistema de dinero para necesidades
 }
 
 export interface Entity {
@@ -40,7 +41,11 @@ export type EntityActivity =
   | 'EXPLORING'
   | 'CONTEMPLATING'
   | 'DANCING'
-  | 'HIDING';
+  | 'HIDING'
+  | 'WORKING'     // Gana dinero, consume energía
+  | 'SHOPPING'    // Gasta dinero, satisface necesidades
+  | 'EXERCISING'  // Mejora energía a largo plazo, cansa a corto plazo
+  | 'COOKING';    // Reduce hambre, cuesta dinero
 
 export type EntityMood = 'HAPPY' | 'SAD' | 'TIRED' | 'EXCITED' | 'CALM' | 'ANXIOUS' | 'CONTENT';
 

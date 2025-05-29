@@ -1,5 +1,15 @@
-// Configuración simplificada del juego con velocidad global
+// Mover declaración global al inicio del archivo
+declare global {
+  interface Window {
+    gameConfig: GameConfig;
+    setGameSpeed: (multiplier: number) => void;
+    applySpeedPreset: (presetName: keyof typeof speedPresets) => void;
+    speedPresets: typeof speedPresets;
+    logConfig: () => void;
+  }
+}
 
+// Configuración simplificada del juego con velocidad global
 export interface GameConfig {
   gameSpeedMultiplier: number; // VARIABLE PRINCIPAL - controla toda la velocidad del juego
   debugMode: boolean;
@@ -71,20 +81,20 @@ export const logConfig = () => {
 
 // Cálculos derivados basados en gameSpeedMultiplier (intervalos más frecuentes)
 export const getGameIntervals = () => ({
-  // Todos los intervalos se calculan basándose en la velocidad global
-  autopoiesisInterval: 800 / gameConfig.gameSpeedMultiplier,     // Base: 0.8 segundos (más frecuente)
-  gameClockInterval: 400 / gameConfig.gameSpeedMultiplier,       // Base: 0.4 segundos (más frecuente)
-  zoneEffectsInterval: 1000 / gameConfig.gameSpeedMultiplier,    // Base: 1 segundo (más frecuente)
-  entityMovementSpeed: 1.2 * gameConfig.gameSpeedMultiplier,    // Base: 1.2 píxeles por frame (más rápido)
+  // Intervalos más agresivos para ver cambios inmediatos
+  autopoiesisInterval: Math.max(200, 500 / gameConfig.gameSpeedMultiplier),     // Base: 0.5s, mínimo 200ms
+  gameClockInterval: Math.max(150, 300 / gameConfig.gameSpeedMultiplier),       // Base: 0.3s, mínimo 150ms  
+  zoneEffectsInterval: Math.max(100, 200 / gameConfig.gameSpeedMultiplier),     // Base: 0.2s, mínimo 100ms
+  entityMovementSpeed: 2.0 * gameConfig.gameSpeedMultiplier,                   // Movimiento más rápido
 });
 
 // Hacer funciones disponibles globalmente en desarrollo
 if (import.meta.env.DEV) {
-  (window as any).gameConfig = gameConfig;
-  (window as any).setGameSpeed = setGameSpeed;
-  (window as any).applySpeedPreset = applySpeedPreset;
-  (window as any).speedPresets = speedPresets;
-  (window as any).logConfig = logConfig;
+  window.gameConfig = gameConfig;
+  window.setGameSpeed = setGameSpeed;
+  window.applySpeedPreset = applySpeedPreset;
+  window.speedPresets = speedPresets;
+  window.logConfig = logConfig;
 }
 
 // Log inicial en modo debug

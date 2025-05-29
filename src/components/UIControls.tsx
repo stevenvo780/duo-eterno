@@ -100,7 +100,11 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       'EXPLORING': 'Explorando',
       'CONTEMPLATING': 'Contemplando',
       'DANCING': 'Bailando',
-      'HIDING': 'Escondiéndose'
+      'HIDING': 'Escondiéndose',
+      'WORKING': 'Trabajando',
+      'SHOPPING': 'Comprando',
+      'EXERCISING': 'Ejercitándose',
+      'COOKING': 'Cocinando'
     };
     return activityNames[activity] || activity;
   };
@@ -125,7 +129,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       'loneliness': 'Soledad',
       'happiness': 'Felicidad',
       'energy': 'Energía',
-      'boredom': 'Aburrimiento'
+      'boredom': 'Aburrimiento',
+      'money': 'Dinero'
     };
     return statNames[stat] || stat;
   };
@@ -148,7 +153,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           borderRadius: '12px',
           padding: '16px',
           color: '#f1f5f9',
-          minWidth: '250px',
+          minWidth: '280px',
           backdropFilter: 'blur(8px)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           zIndex: 1000
@@ -161,7 +166,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           }}>
             <span style={{ fontSize: '16px' }}>⚡</span>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-              Control de Velocidad
+              Control de Velocidad (DEBUG)
             </h3>
           </div>
 
@@ -207,7 +212,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: '6px'
+            gap: '6px',
+            marginBottom: '12px'
           }}>
             {Object.entries(speedPresets).slice(0, 6).map(([name, speed]) => (
               <button
@@ -238,11 +244,19 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             background: 'rgba(15, 20, 25, 0.5)',
             borderRadius: '6px',
             fontSize: '11px',
-            color: '#94a3b8'
+            color: '#94a3b8',
+            lineHeight: '1.4'
           }}>
-            <div>Estadísticas: {gameSpeed}x más rápido</div>
-            <div>Movimiento: {gameSpeed}x más rápido</div>
-            <div>Eventos: {gameSpeed}x más frecuentes</div>
+            <div style={{ fontWeight: '600', marginBottom: '4px', color: '#f1f5f9' }}>
+              Sistema Activo:
+            </div>
+            <div>🧬 Autopoiesis: {(200 / gameSpeed).toFixed(0)}ms</div>
+            <div>🏛️ Efectos de Zona: {(150 / gameSpeed).toFixed(0)}ms</div>
+            <div>🎯 Movimiento: {(2 * gameSpeed).toFixed(1)}px/frame</div>
+            <div>⚡ Decay: {gameSpeed.toFixed(1)}x más rápido</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', color: '#6b7280' }}>
+              Las estadísticas deberían cambiar visiblemente
+            </div>
           </div>
         </div>
       )}
