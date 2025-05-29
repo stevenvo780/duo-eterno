@@ -2,6 +2,50 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { getAttractionTarget, checkCollisionWithObstacles } from '../utils/mapGeneration';
 import { gameConfig } from '../config/gameConfig';
+import type { EntityStats, EntityActivity, Zone } from '../types';
+
+// Helper functions for need-based movement
+const getUrgentNeed = (stats: EntityStats): keyof EntityStats | null => {
+  const needsThreshold = 75; // Consider urgent when stat > 75
+  
+  if (stats.hunger > needsThreshold) return 'hunger';
+  if (stats.sleepiness > needsThreshold) return 'sleepiness';
+  if (stats.boredom > needsThreshold) return 'boredom';
+  if (stats.loneliness > needsThreshold) return 'loneliness';
+  
+  return null;
+};
+
+const findZoneForNeed = (need: keyof EntityStats, zones: Zone[]): Zone | null => {
+  const zoneTypeMapping: Record<string, string> = {
+    hunger: 'food',
+    sleepiness: 'rest',
+    boredom: 'play',
+    loneliness: 'social'
+  };
+  
+  const targetType = zoneTypeMapping[need];
+  return zones.find(zone => zone.type === targetType) || null;
+};
+
+const getUrgencyMultiplier = (need: keyof EntityStats, stats: EntityStats): number => {
+  const statValue = stats[need];
+  if (statValue > 90) return 2.5;
+  if (statValue > 80) return 2.0;
+  if (statValue > 75) return 1.5;
+  return 1.0;
+};
+
+const getActivityForNeed = (need: keyof EntityStats): EntityActivity => {
+  const activityMapping: Record<string, EntityActivity> = {
+    hunger: 'EXPLORING', // Buscar comida
+    sleepiness: 'RESTING',
+    boredom: 'DANCING', // Actividad divertida
+    loneliness: 'SOCIALIZING'
+  };
+  
+  return activityMapping[need] || 'WANDERING';
+};
 
 export const useEntityMovementOptimized = () => {
   const { gameState, dispatch } = useGame();
@@ -55,8 +99,41 @@ export const useEntityMovementOptimized = () => {
         companionDistance = Math.sqrt(dx * dx + dy * dy);
       }
       
-      // PRIORITY 1: Seek companion if lonely or far apart
-      if (companion && (entity.stats.loneliness > 60 || companionDistance > 150)) {
+      // PRIORITY 1: Check for urgent needs and move towards appropriate zones
+      const urgentNeed = getUrgentNeed(entity.stats);
+      if (urgentNeed && gameState.zones) {
+        const targetZone = findZoneForNeed(urgentNeed, gameState.zones);
+        if (targetZone) {
+          const targetCenter = {
+            x: targetZone.bounds.x + targetZone.bounds.width / 2,
+            y: targetZone.bounds.y + targetZone.bounds.height / 2
+          };
+          
+          const dx = targetCenter.x - entity.position.x;
+          const dy = targetCenter.y - entity.position.y;
+          const distanceToZone = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distanceToZone > 30) {
+            // Move urgently towards zone
+            const urgency = getUrgencyMultiplier(urgentNeed, entity.stats);
+            speed = speed * urgency;
+            
+            newPosition.x += (dx / distanceToZone) * speed;
+            newPosition.y += (dy / distanceToZone) * speed;
+            
+            // Update activity based on urgent need
+            const targetActivity = getActivityForNeed(urgentNeed);
+            if (entity.activity !== targetActivity) {
+              dispatch({
+                type: 'UPDATE_ENTITY_ACTIVITY',
+                payload: { entityId: entity.id, activity: targetActivity }
+              });
+            }
+          }
+        }
+      }
+      // PRIORITY 2: Seek companion if lonely or far apart (only if no urgent needs)
+      else if (companion && (entity.stats.loneliness > 60 || companionDistance > 150)) {
         const dx = companion.position.x - entity.position.x;
         const dy = companion.position.y - entity.position.y;
         
@@ -75,7 +152,7 @@ export const useEntityMovementOptimized = () => {
           });
         }
       }
-      // PRIORITY 2: Normal activity-based movement when not seeking companion
+      // PRIORITY 3: Normal activity-based movement when not seeking companion or zones
       else {
         // Activity-based movement patterns (optimized)
         switch (entity.activity) {

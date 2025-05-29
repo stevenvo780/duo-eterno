@@ -1,8 +1,31 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
-import { getRandomDialogue } from '../utils/dialogues';
 import { gameConfig } from '../config/gameConfig';
-import type { Entity, EntityActivity, EntityMood } from '../types';
+import { getEntityZone } from '../utils/mapGeneration';
+import type { Entity, EntityActivity, EntityMood, EntityStats, EntityState } from '../types';
+
+// Helper functions for urgent need detection and activity selection
+const getUrgentNeedForActivity = (stats: EntityStats): keyof EntityStats | null => {
+  const urgentThreshold = 75;
+  
+  if (stats.hunger > urgentThreshold) return 'hunger';
+  if (stats.sleepiness > urgentThreshold) return 'sleepiness';
+  if (stats.boredom > urgentThreshold) return 'boredom';
+  if (stats.loneliness > urgentThreshold) return 'loneliness';
+  
+  return null;
+};
+
+const getActivityForUrgentNeed = (need: keyof EntityStats): EntityActivity => {
+  const activityMapping: Record<string, EntityActivity> = {
+    hunger: 'EXPLORING', // Will look for food zones
+    sleepiness: 'RESTING',
+    boredom: 'DANCING',
+    loneliness: 'SOCIALIZING'
+  };
+  
+  return activityMapping[need] || 'WANDERING';
+};
 
 // Hook para comportamientos autónomos optimizado
 export const useAutopoiesisOptimized = () => {
@@ -21,6 +44,14 @@ export const useAutopoiesisOptimized = () => {
       return activityCache.current.get(cacheKey)!;
     }
 
+    // Check for urgent needs first and select appropriate activity
+    const urgentNeed = getUrgentNeedForActivity(entity.stats);
+    if (urgentNeed) {
+      const urgentActivity = getActivityForUrgentNeed(urgentNeed);
+      activityCache.current.set(cacheKey, urgentActivity);
+      return urgentActivity;
+    }
+
     const activities: EntityActivity[] = [
       'WANDERING', 'MEDITATING', 'WRITING', 'RESTING', 
       'CONTEMPLATING', 'EXPLORING', 'DANCING'
@@ -33,8 +64,10 @@ export const useAutopoiesisOptimized = () => {
       'WRITING': entity.stats.happiness > 60 ? 1.5 : 0.8,
       'RESTING': entity.stats.sleepiness > 60 ? 3.0 : 0.3,
       'CONTEMPLATING': entity.stats.loneliness > 40 ? 0.5 : 1.2,
-      'EXPLORING': entity.stats.energy > 50 ? 1.8 : 0.4,
-      'DANCING': entity.stats.happiness > 70 ? 2.5 : 0.2
+      'EXPLORING': entity.stats.energy > 50 && entity.stats.hunger > 40 ? 2.5 : 0.4, // More likely to explore when hungry
+      'DANCING': entity.stats.happiness > 70 ? 2.5 : 0.2,
+      'SOCIALIZING': entity.stats.loneliness > 50 ? 3.0 : 0.3,
+      'HIDING': entity.stats.happiness < 30 ? 1.5 : 0.1
     };
     
     // Weighted random selection
@@ -59,7 +92,7 @@ export const useAutopoiesisOptimized = () => {
     return 'WANDERING'; // Fallback
   }, []);
 
-  const showActivityDialogue = useCallback((entityId: string, activity: EntityActivity) => {
+  const showActivityDialogue = useCallback((entityId: 'circle' | 'square', activity: EntityActivity) => {
     const dialogueMap: Record<EntityActivity, string[]> = {
       'WANDERING': [
         "Mis pasos me llevan por caminos desconocidos...",
@@ -95,6 +128,16 @@ export const useAutopoiesisOptimized = () => {
         "Mi alegría se convierte en movimiento...",
         "Danzo con la música del universo...",
         "El ritmo de la vida me guía..."
+      ],
+      'SOCIALIZING': [
+        "Busco la compañía de mi ser querido...",
+        "La conexión con otros alimenta mi alma...",
+        "Necesito sentir que no estoy solo..."
+      ],
+      'HIDING': [
+        "Necesito un momento de soledad...",
+        "Me retiro para procesar mis emociones...",
+        "A veces es necesario estar solo..."
       ]
     };
 
