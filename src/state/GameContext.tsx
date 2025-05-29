@@ -150,7 +150,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
-            ? { ...entity, stats: { ...entity.stats, ...action.payload.stats } }
+            ? (() => {
+                // Clampear estadísticas entre 0 y 100 unificando actualizaciones absolutas
+                const updatedStats = { ...entity.stats };
+                Object.entries(action.payload.stats).forEach(([stat, value]) => {
+                  const num = typeof value === 'number' ? value : updatedStats[stat as keyof typeof updatedStats];
+                  updatedStats[stat as keyof typeof updatedStats] = Math.max(0, Math.min(100, num));
+                });
+                return { ...entity, stats: updatedStats };
+              })()
             : entity
         )
       };

@@ -35,7 +35,8 @@ export const mapNewStatsToOld = (newStats: NormalizedStats): Partial<EntityStats
   happiness: newStats.contentment,
   boredom: 100 - newStats.stimulation,
   loneliness: 100 - newStats.connection,
-  money: newStats.resources * 2 // escalar de vuelta
+  // Escalar recursos a dinero y clamped entre 0-100
+  money: Math.max(0, Math.min(100, newStats.resources * 2))
 });
 
 // Fuerzas homeostáticas: tendencia natural hacia 50 (equilibrio)
