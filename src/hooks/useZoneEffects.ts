@@ -258,7 +258,7 @@ export const useZoneEffects = () => {
                 loneliness: 4 * effectiveness * timeMultiplier    // +compañía
               },
               energy: {
-                energy: 80 * effectiveness * timeMultiplier,      // +energía
+                energy: 50 * effectiveness * timeMultiplier,      // +energía
                 sleepiness: -10 * effectiveness * timeMultiplier, // -sueño
                 happiness: 5 * effectiveness * timeMultiplier
               }

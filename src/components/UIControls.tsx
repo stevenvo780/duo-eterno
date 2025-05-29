@@ -646,7 +646,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             }}
           >
             <span>📊</span>
-            <span>Stats</span>
+            <span>Estadísticas</span>
           </button>
 
           <button

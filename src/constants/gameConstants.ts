@@ -1,4 +1,3 @@
-
 // Tipos derivados de las interfaces principales
 export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money'] as const;
 export type StatKey = typeof STAT_KEYS[number];
@@ -97,12 +96,12 @@ export const TRANSLATIONS = {
   } as Record<MoodType, string>,
   
   STATS: {
-    'hunger': 'Hambre',
+    'hunger': 'Saciedad',
     'sleepiness': 'Sueño',
-    'loneliness': 'Soledad',
+    'loneliness': 'Compañía',
     'happiness': 'Felicidad',
     'energy': 'Energía',
-    'boredom': 'Aburrimiento',
+    'boredom': 'Diversión',
     'money': 'Dinero'
   } as Record<StatKey, string>,
   
