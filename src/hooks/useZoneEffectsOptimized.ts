@@ -82,7 +82,7 @@ const getGeneralZoneMessage = (entityId: string, zoneType: string): string | nul
   return zoneMessages[Math.floor(Math.random() * zoneMessages.length)];
 };
 
-export const useZoneEffectsOptimized = () => {
+export const useZoneEffects = () => {
   const { gameState, dispatch } = useGame();
   const intervalRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);

@@ -3,7 +3,7 @@
 ## 🚀 Mejoras Implementadas para FPS
 
 ### 1. **Canvas Rendering Optimizado**
-- **CanvasOptimized.tsx**: Nueva versión del canvas con renderizado eficiente
+- **Canvas.tsx**: Nueva versión del canvas con renderizado eficiente
 - Sistema de partículas reducido (4 partículas vs 8 originales)
 - Implementación de niveles de calidad adaptativos (low/medium/high)
 - Throttling de frames para mantener 60 FPS objetivo
@@ -11,11 +11,11 @@
 - Uso de `Math.sqrt()` reducido, preferencia por distancias al cuadrado
 
 ### 2. **Hooks de Game Logic Optimizados**
-- **useGameClockOptimized.ts**: Reloj de juego con menor frecuencia de updates
-- **useEntityMovementOptimized.ts**: Movimiento de entidades con throttling
-- **useAutopoiesisOptimized.ts**: Comportamientos autónomos optimizados
-- **useZoneEffectsOptimized.ts**: Efectos de zona con menor impacto
-- **useOptimizedRenderer.ts**: Sistema de rendering inteligente
+- **useGameClock.ts**: Reloj de juego con menor frecuencia de updates
+- **useEntityMovement.ts**: Movimiento de entidades con throttling
+- **useAutopoiesis.ts**: Comportamientos autónomos optimizados
+- **useZoneEffects.ts**: Efectos de zona con menor impacto
+- **useRenderer.ts**: Sistema de rendering inteligente
 
 ### 3. **Sistema de Calidad Adaptativa**
 ```typescript
@@ -83,7 +83,7 @@
 
 ## 🔧 Uso de la Versión Optimizada
 
-La aplicación ahora usa automáticamente **AppOptimized.tsx** que incluye todas las optimizaciones.
+La aplicación ahora usa automáticamente **App.tsx** que incluye todas las optimizaciones.
 
 ### Controles de Debug:
 - **Tecla 'P'**: Alternar overlay de performance

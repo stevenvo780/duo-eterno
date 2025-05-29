@@ -165,7 +165,7 @@ Los datos se preservan entre sesiones usando `localStorage` con la clave `duoEte
 El juego incluye dos versiones optimizadas para diferentes necesidades:
 
 - **Versión Estándar** (`App.tsx`) - Funcionalidad completa con todos los efectos
-- **Versión Optimizada** (`AppOptimized.tsx`) - Rendimiento mejorado con efectos adaptativos
+- **Versión Optimizada** (`App.tsx`) - Rendimiento mejorado con efectos adaptativos
 
 La versión se selecciona automáticamente según:
 - Entorno de producción → Versión optimizada

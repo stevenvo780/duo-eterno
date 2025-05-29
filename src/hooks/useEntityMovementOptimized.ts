@@ -47,13 +47,13 @@ const getActivityForNeed = (need: keyof EntityStats): EntityActivity => {
   return activityMapping[need] || 'WANDERING';
 };
 
-export const useEntityMovementOptimized = () => {
+export const useEntityMovement = () => {
   const { gameState, dispatch } = useGame();
   const animationRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);
   const frameSkipCounter = useRef<number>(0);
 
-  // Optimized movement calculation with reduced frequency
+  //  movement calculation with reduced frequency
   const updateMovement = useCallback(() => {
     const now = performance.now();
     const deltaTime = now - lastUpdateTime.current;
@@ -282,7 +282,7 @@ export const useEntityMovementOptimized = () => {
         }
       }
 
-      // Optimized collision checking (only if position changed significantly)
+      //  collision checking (only if position changed significantly)
       const positionChanged = Math.abs(newPosition.x - entity.position.x) > 0.1 || 
                              Math.abs(newPosition.y - entity.position.y) > 0.1;
 

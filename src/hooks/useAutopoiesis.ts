@@ -1,199 +1,215 @@
-// Hook para comportamientos autónomos (autopoiesis)
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
-import { getRandomDialogue } from '../utils/dialogues';
-import { getRandomThought } from '../utils/interactions';
-import type { EntityActivity, EntityMood, Entity } from '../types';
+import { gameConfig } from '../config/gameConfig';
+import { getEntityZone } from '../utils/mapGeneration';
+import type { Entity, EntityActivity, EntityMood, EntityStats, EntityState } from '../types';
 
+// Helper functions for urgent need detection and activity selection
+const getUrgentNeedForActivity = (stats: EntityStats): keyof EntityStats | null => {
+  const urgentThreshold = 75;
+  
+  if (stats.hunger > urgentThreshold) return 'hunger';
+  if (stats.sleepiness > urgentThreshold) return 'sleepiness';
+  if (stats.boredom > urgentThreshold) return 'boredom';
+  if (stats.loneliness > urgentThreshold) return 'loneliness';
+  
+  return null;
+};
+
+const getActivityForUrgentNeed = (need: keyof EntityStats): EntityActivity => {
+  const activityMapping: Record<string, EntityActivity> = {
+    hunger: 'EXPLORING', // Will look for food zones
+    sleepiness: 'RESTING',
+    boredom: 'DANCING',
+    loneliness: 'SOCIALIZING'
+  };
+  
+  return activityMapping[need] || 'WANDERING';
+};
+
+// Hook para comportamientos autónomos optimizado
 export const useAutopoiesis = () => {
   const { gameState, dispatch } = useGame();
   const intervalRef = useRef<number | undefined>(undefined);
+  const lastUpdateTime = useRef<number>(0);
+  const updateCounter = useRef<number>(0);
+
+  // Cached activity selection for better performance
+  const activityCache = useRef<Map<string, EntityActivity>>(new Map());
 
   const selectRandomActivity = useCallback((entity: Entity): EntityActivity => {
+    // Use cached activity if recently calculated
+    const cacheKey = `${entity.id}-${Math.floor(Date.now() / 10000)}`; // Cache for 10 seconds
+    if (activityCache.current.has(cacheKey)) {
+      return activityCache.current.get(cacheKey)!;
+    }
+
+    // Check for urgent needs first and select appropriate activity
+    const urgentNeed = getUrgentNeedForActivity(entity.stats);
+    if (urgentNeed) {
+      const urgentActivity = getActivityForUrgentNeed(urgentNeed);
+      activityCache.current.set(cacheKey, urgentActivity);
+      return urgentActivity;
+    }
+
     const activities: EntityActivity[] = [
       'WANDERING', 'MEDITATING', 'WRITING', 'RESTING', 
       'CONTEMPLATING', 'EXPLORING', 'DANCING'
     ];
-
-    // Actividades influenciadas por estadísticas
-    if (entity.stats.energy < 30) {
-      return Math.random() < 0.7 ? 'RESTING' : 'MEDITATING';
+    
+    // Weight activities based on stats for more intelligent behavior
+    const weights: Record<EntityActivity, number> = {
+      'WANDERING': 1.0,
+      'MEDITATING': entity.stats.boredom > 50 ? 2.0 : 0.5,
+      'WRITING': entity.stats.happiness > 60 ? 1.5 : 0.8,
+      'RESTING': entity.stats.sleepiness > 60 ? 3.0 : 0.3,
+      'CONTEMPLATING': entity.stats.loneliness > 40 ? 0.5 : 1.2,
+      'EXPLORING': entity.stats.energy > 50 && entity.stats.hunger > 40 ? 2.5 : 0.4, // More likely to explore when hungry
+      'DANCING': entity.stats.happiness > 70 ? 2.5 : 0.2,
+      'SOCIALIZING': entity.stats.loneliness > 50 ? 3.0 : 0.3,
+      'HIDING': entity.stats.happiness < 30 ? 1.5 : 0.1
+    };
+    
+    // Weighted random selection
+    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const activity of activities) {
+      random -= weights[activity];
+      if (random <= 0) {
+        activityCache.current.set(cacheKey, activity);
+        
+        // Limit cache size
+        if (activityCache.current.size > 20) {
+          const firstKey = activityCache.current.keys().next().value;
+          activityCache.current.delete(firstKey);
+        }
+        
+        return activity;
+      }
     }
     
-    if (entity.stats.boredom > 70) {
-      return Math.random() < 0.6 ? 'EXPLORING' : 'DANCING';
-    }
-    
-    if (entity.stats.loneliness > 60) {
-      return Math.random() < 0.5 ? 'WANDERING' : 'CONTEMPLATING';
-    }
-
-    if (entity.stats.happiness > 80) {
-      return Math.random() < 0.4 ? 'DANCING' : 'WRITING';
-    }
-
-    return activities[Math.floor(Math.random() * activities.length)];
+    return 'WANDERING'; // Fallback
   }, []);
 
-  const showActivityDialogue = useCallback((entityId: string, activity: EntityActivity) => {
-    const dialogueMap: Record<EntityActivity, keyof typeof import('../utils/dialogues').dialogues> = {
-      'MEDITATING': 'meditation',
-      'WRITING': 'writing',
-      'RESTING': 'tired',
-      'WANDERING': 'lonely',
-      'SOCIALIZING': 'happy',
-      'EXPLORING': 'happy',
-      'CONTEMPLATING': 'meditation',
-      'DANCING': 'happy',
-      'HIDING': 'lonely'
+  const showActivityDialogue = useCallback((entityId: 'circle' | 'square', activity: EntityActivity) => {
+    const dialogueMap: Record<EntityActivity, string[]> = {
+      'WANDERING': [
+        "Mis pasos me llevan por caminos desconocidos...",
+        "Cada movimiento es una búsqueda...",
+        "Exploro este mundo en busca de algo..."
+      ],
+      'MEDITATING': [
+        "Encuentro paz en la quietud...",
+        "Mis pensamientos fluyen como agua...",
+        "En el silencio encuentro respuestas..."
+      ],
+      'WRITING': [
+        "Mis palabras danzan en el aire...",
+        "Escribo nuestra historia en el tiempo...",
+        "Cada letra es un latido del corazón..."
+      ],
+      'RESTING': [
+        "El descanso alimenta mi alma...",
+        "En el reposo encuentro fuerzas...",
+        "Mi espíritu se renueva..."
+      ],
+      'CONTEMPLATING': [
+        "Reflexiono sobre nuestra conexión...",
+        "Los misterios del vínculo me intrigan...",
+        "Busco significado en cada momento..."
+      ],
+      'EXPLORING': [
+        "La aventura me llama...",
+        "Descubro nuevos horizontes...",
+        "Cada rincón guarda secretos..."
+      ],
+      'DANCING': [
+        "Mi alegría se convierte en movimiento...",
+        "Danzo con la música del universo...",
+        "El ritmo de la vida me guía..."
+      ],
+      'SOCIALIZING': [
+        "Busco la compañía de mi ser querido...",
+        "La conexión con otros alimenta mi alma...",
+        "Necesito sentir que no estoy solo..."
+      ],
+      'HIDING': [
+        "Necesito un momento de soledad...",
+        "Me retiro para procesar mis emociones...",
+        "A veces es necesario estar solo..."
+      ]
     };
 
-    const dialogueType = dialogueMap[activity];
-    if (dialogueType) {
-      dispatch({
-        type: 'SHOW_DIALOGUE',
-        payload: {
-          message: getRandomDialogue(dialogueType),
-          speaker: entityId as 'circle' | 'square',
-          duration: 2500
-        }
-      });
-    }
+    const messages = dialogueMap[activity] || ["Sigo mi camino..."];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    
+    dispatch({
+      type: 'SHOW_DIALOGUE',
+      payload: { 
+        message,
+        speaker: entityId as 'circle' | 'square',
+        duration: gameConfig.dialogueDuration // Use configurable duration
+      }
+    });
   }, [dispatch]);
 
   const calculateMoodFromStats = useCallback((stats: Entity['stats']): EntityMood => {
-    const { happiness, energy, loneliness, hunger, sleepiness, boredom } = stats;
+    // Simplified mood calculation
+    const happiness = stats.happiness;
+    const energy = stats.energy;
+    const loneliness = stats.loneliness;
     
-    if (happiness > 80 && energy > 60) return 'HAPPY';
-    if (happiness > 70 && boredom < 30) return 'CONTENT';
-    if (energy < 30 || sleepiness > 70) return 'TIRED';
-    if (loneliness > 60) return 'SAD';
-    if (boredom > 70 || hunger > 70) return 'ANXIOUS';
-    if (happiness > 60 && energy > 70) return 'EXCITED';
-    if (energy > 40 && loneliness < 40) return 'CALM';
-    
-    return 'CONTENT';
+    if (happiness > 80 && energy > 60) return 'EXCITED';
+    if (happiness > 60) return 'HAPPY';
+    if (loneliness > 70) return 'SAD';
+    if (energy < 30) return 'TIRED';
+    if (stats.boredom > 60) return 'ANXIOUS';
+    if (happiness > 40 && loneliness < 40) return 'CONTENT';
+    return 'CALM';
   }, []);
 
   const applyStatDecay = useCallback((entityId: string) => {
-    const decayRates = {
-      hunger: 0.8,
-      energy: 0.5,
-      boredom: 1.2,
-      loneliness: 0.3,
-      sleepiness: 0.6,
-      happiness: 0.2
-    };
-
-    const decayAmounts: Record<string, number> = {};
-    Object.entries(decayRates).forEach(([stat, rate]) => {
-      if (Math.random() < rate / 100) {
-        decayAmounts[stat] = Math.random() * 2 + 0.5; // 0.5-2.5 decay
+    dispatch({
+      type: 'UPDATE_ENTITY_STATS',
+      payload: {
+        entityId,
+        stats: {
+          hunger: 1.5 * gameConfig.statDecaySpeed, // Configurable decay speed
+          sleepiness: 1.2 * gameConfig.statDecaySpeed,
+          boredom: 1.0 * gameConfig.statDecaySpeed,
+          loneliness: 0.8 * gameConfig.statDecaySpeed,
+          happiness: -0.8 * gameConfig.statDecaySpeed,
+          energy: -0.5 * gameConfig.statDecaySpeed
+        }
       }
     });
-
-    if (Object.keys(decayAmounts).length > 0) {
-      dispatch({
-        type: 'UPDATE_ENTITY_STATS',
-        payload: { entityId, stats: decayAmounts }
-      });
-    }
   }, [dispatch]);
 
   useEffect(() => {
+    //  autopoiesis with configurable frequency
+    const interval = gameConfig.autopoiesisInterval / gameConfig.gameSpeedMultiplier;
+    
     intervalRef.current = window.setInterval(() => {
-      // Check separation distance for loneliness effects
-      if (gameState.entities.length === 2) {
-        const [entity1, entity2] = gameState.entities;
+      const now = Date.now();
+      const deltaTime = now - lastUpdateTime.current;
+      
+      // Update less frequently for better performance
+      const minInterval = Math.max(1000, interval * 0.8);
+      if (deltaTime < minInterval) return;
+      
+      lastUpdateTime.current = now;
+      updateCounter.current++;
+
+      // Process living entities only
+      const livingEntities = gameState.entities.filter(entity => !entity.isDead && entity.state !== 'DEAD');
+      
+      for (const entity of livingEntities) {
+        // Apply stat decay (every update)
+        applyStatDecay(entity.id);
         
-        if (!entity1.isDead && !entity2.isDead) {
-          const distance = Math.sqrt(
-            Math.pow(entity1.position.x - entity2.position.x, 2) +
-            Math.pow(entity1.position.y - entity2.position.y, 2)
-          );
-
-          // Increase loneliness when entities are far apart
-          if (distance > 120) {
-            const separationLoneliness = Math.min(3, distance / 60); // More separation = more loneliness
-            
-            [entity1, entity2].forEach(entity => {
-              if (entity.stats.loneliness < 95) {
-                dispatch({
-                  type: 'UPDATE_ENTITY_STATS',
-                  payload: {
-                    entityId: entity.id,
-                    stats: { loneliness: Math.min(100, entity.stats.loneliness + separationLoneliness) }
-                  }
-                });
-              }
-            });
-
-            // Show occasional separation message
-            if (Math.random() < 0.05 && distance > 200) {
-              const messages = [
-                "La distancia duele...",
-                "¿Dónde estás, mi compañero?",
-                "Esta separación se siente eterna...",
-                "Necesito sentir tu presencia..."
-              ];
-              
-              dispatch({
-                type: 'SHOW_DIALOGUE',
-                payload: {
-                  message: messages[Math.floor(Math.random() * messages.length)],
-                  duration: 3000,
-                  speaker: Math.random() < 0.5 ? 'circle' : 'square'
-                }
-              });
-            }
-          }
-          // Reduce loneliness when close together
-          else if (distance < 60) {
-            [entity1, entity2].forEach(entity => {
-              if (entity.stats.loneliness > 5) {
-                dispatch({
-                  type: 'UPDATE_ENTITY_STATS',
-                  payload: {
-                    entityId: entity.id,
-                    stats: { loneliness: Math.max(0, entity.stats.loneliness - 1) }
-                  }
-                });
-              }
-            });
-          }
-        }
-      }
-
-      gameState.entities.forEach(entity => {
-        const now = Date.now();
-        const timeSinceLastActivity = now - entity.lastActivityChange;
-        const timeSinceLastInteraction = now - entity.lastInteraction;
-
-        // Cambio de actividad cada 15-30 segundos
-        if (timeSinceLastActivity > 15000 + Math.random() * 15000) {
-          const newActivity = selectRandomActivity(entity);
-          dispatch({ 
-            type: 'UPDATE_ENTITY_ACTIVITY', 
-            payload: { entityId: entity.id, activity: newActivity } 
-          });
-
-          // Diálogo basado en la nueva actividad
-          if (Math.random() < 0.4) {
-            showActivityDialogue(entity.id, newActivity);
-          }
-        }
-
-        // Generar pensamientos autónomos cada 20-40 segundos
-        if (Math.random() < 0.002 && timeSinceLastInteraction > 20000) {
-          const thought = getRandomThought();
-          dispatch({
-            type: 'ADD_THOUGHT',
-            payload: { entityId: entity.id, thought }
-          });
-        }
-
-        // Cambios de humor basados en estadísticas
-        if (Math.random() < 0.01) {
+        // Update mood based on stats (less frequent)
+        if (updateCounter.current % 3 === 0) {
           const newMood = calculateMoodFromStats(entity.stats);
           if (newMood !== entity.mood) {
             dispatch({
@@ -202,18 +218,47 @@ export const useAutopoiesis = () => {
             });
           }
         }
-
-        // Decaimiento gradual de estadísticas (autopoiesis requiere mantenimiento)
-        if (Math.random() < 0.1) {
-          applyStatDecay(entity.id);
+        
+        // Autonomous activity changes (even less frequent)
+        if (updateCounter.current % 5 === 0) {
+          // Higher chance to change activity based on needs
+          let shouldChangeActivity = false;
+          let newActivity = entity.activity;
+          
+          // Need-based activity selection
+          if (entity.stats.sleepiness > 70 && entity.activity !== 'RESTING') {
+            newActivity = 'RESTING';
+            shouldChangeActivity = true;
+          } else if (entity.stats.boredom > 60 && entity.activity !== 'EXPLORING') {
+            newActivity = 'EXPLORING';
+            shouldChangeActivity = true;
+          } else if (entity.stats.loneliness > 50 && entity.activity !== 'CONTEMPLATING') {
+            newActivity = 'CONTEMPLATING';
+            shouldChangeActivity = true;
+          } else if (Math.random() < (gameConfig.activityChangeFrequency * gameConfig.gameSpeedMultiplier)) {
+            newActivity = selectRandomActivity(entity);
+            shouldChangeActivity = newActivity !== entity.activity;
+          }
+          
+          if (shouldChangeActivity) {
+            dispatch({
+              type: 'UPDATE_ENTITY_ACTIVITY',
+              payload: { entityId: entity.id, activity: newActivity }
+            });
+            
+            // Show dialogue only occasionally to reduce spam
+            if (Math.random() < 0.3) {
+              showActivityDialogue(entity.id, newActivity);
+            }
+          }
         }
-      });
-    }, 1000);
+      }
+    }, interval); // Configurable interval
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [gameState, dispatch, applyStatDecay, showActivityDialogue, selectRandomActivity, calculateMoodFromStats]);
+  }, [gameState.entities, dispatch, applyStatDecay, showActivityDialogue, selectRandomActivity, calculateMoodFromStats]);
 };

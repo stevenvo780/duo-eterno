@@ -1,27 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
+import './App.css';
 import { GameProvider } from './state/GameContext';
 import Canvas from './components/Canvas';
-import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
+import UIControls from './components/UIControls';
+import PerformanceOverlay from './components/PerformanceOverlay';
 import { useGameClock } from './hooks/useGameClock';
 import { useEntityMovement } from './hooks/useEntityMovement';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useAutopoiesis } from './hooks/useAutopoiesis';
 import { useZoneEffects } from './hooks/useZoneEffects';
-import './App.css';
 
-const GameContent: React.FC = () => {
+// Memoized game content component for better performance
+const GameContent: React.FC = memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [showPerformance, setShowPerformance] = useState<boolean>(false);
   
+  // Use  hooks
   useGameClock();
   useEntityMovement();
   useDialogueSystem();
   useAutopoiesis();
-  useZoneEffects(); // ✨ Nuevo hook para efectos de zona
+  useZoneEffects();
 
-  const handleEntityClick = (entityId: string) => {
+  const handleEntityClick = React.useCallback((entityId: string) => {
     setSelectedEntityId(entityId);
-  };
+  }, []);
+
+  const handleEntitySelect = React.useCallback((entityId: string | null) => {
+    setSelectedEntityId(entityId);
+  }, []);
+
+  // Toggle performance overlay with 'P' key
+  React.useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'p' || event.key === 'P') {
+        setShowPerformance(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   return (
     <div style={{
@@ -33,72 +53,60 @@ const GameContent: React.FC = () => {
       overflow: 'hidden',
       fontFamily: 'system-ui, sans-serif'
     }}>
-      {/* Header Bar */}
-      <header style={{
-        height: '60px',
-        background: 'linear-gradient(90deg, #1e293b 0%, #334155 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 24px',
-        borderBottom: '1px solid #334155',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      {/* Header */}
+      <div style={{
+        padding: '16px',
+        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        borderBottom: '2px solid #475569',
+        textAlign: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: '#10b981',
-            boxShadow: '0 0 12px #10b981'
-          }} />
-          <h1 style={{
-            fontSize: '20px',
-            fontWeight: '600',
-            color: '#f1f5f9',
-            margin: 0
-          }}>
-            Dúo Eterno
-          </h1>
-        </div>
-        <div style={{
-          fontSize: '14px',
-          color: '#94a3b8',
-          fontStyle: 'italic'
+        <h1 style={{
+          margin: 0,
+          color: '#f1f5f9',
+          fontSize: '24px',
+          fontWeight: 600,
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
         }}>
-          Mundo Autónomo de Vínculos
-        </div>
-      </header>
+          Dúo Eterno
+        </h1>
+        <p style={{
+          margin: '4px 0 0 0',
+          color: '#cbd5e1',
+          fontSize: '14px',
+          opacity: 0.8
+        }}>
+          Un Tamagotchi del Vínculo
+        </p>
+      </div>
 
-      {/* Main Game Area */}
+      {/* Main game area */}
       <div style={{
         flex: 1,
         display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '20px',
         position: 'relative'
       }}>
-        {/* Game World (Canvas) - Takes most of the space */}
-        <div style={{
-          flex: 1,
-          position: 'relative',
-          background: 'radial-gradient(ellipse at center, #1e293b 0%, #0f1419 70%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Canvas 
-            width={Math.min(800, window.innerWidth - 100)} 
-            height={Math.min(600, window.innerHeight - 200)}
-            onEntityClick={handleEntityClick}
-          />
-          <DialogOverlay />
-        </div>
+        <Canvas 
+          width={800} 
+          height={600} 
+          onEntityClick={handleEntityClick}
+        />
+        <DialogOverlay />
+        <PerformanceOverlay enabled={showPerformance} />
       </div>
 
-      {/* Bottom Action Bar */}
-      <UIControls selectedEntityId={selectedEntityId} onEntitySelect={setSelectedEntityId} />
+      {/* Controls */}
+      <UIControls 
+        selectedEntityId={selectedEntityId} 
+        onEntitySelect={handleEntitySelect} 
+      />
     </div>
   );
-};
+});
+
+GameContent.displayName = 'GameContent';
 
 function App() {
   return (
