@@ -4,136 +4,114 @@ import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import type { Entity, EntityMood, EntityStats } from '../types';
 import type { GameAction } from '../state/GameContext';
 import { 
-  ACTIVITY_DYNAMICS, 
-  applyActivityEffects,
-  applySurvivalCosts,
-  HYBRID_DECAY_RATES
-} from '../utils/activityDynamics';
-import { 
-  makeIntelligentDecision, 
-  updateActivityEffectiveness 
-} from '../utils/aiDecisionEngine';
-import { 
   shouldUpdateAutopoiesis, 
   measureExecutionTime,
   getPooledStatsUpdate,
   releasePooledStatsUpdate
 } from '../utils/performanceOptimizer';
 import { useUpgrades } from './useUpgrades';
-import { 
-  createUpgradeEffectsContext,
-  applyUpgradeToStatDecay,
-  type UpgradeEffectsContext
-} from '../utils/upgradeEffects';
 import { logAutopoiesis } from '../utils/logger';
+import { 
+  makeIntelligentDecision, 
+  updateActivityEffectiveness 
+} from '../utils/aiDecisionEngine';
+// Importar el nuevo sistema homeostático
+import {
+  mapOldStatsToNew,
+  mapNewStatsToOld,
+  applyHomeostasis,
+  applyNormalizedActivityEffects
+} from '../utils/homeostasisSystem';
 
-// Aplicar efectos complejos de actividades (fusión de ambos sistemas) - REFACTORIZADO
+// Aplicar efectos del nuevo sistema homeostático normalizado
 const applyComplexActivityEffects = (
   entity: Entity, 
   deltaTime: number, 
-  dispatch: React.Dispatch<GameAction>,
-  upgradeEffectsContext: UpgradeEffectsContext
+  dispatch: React.Dispatch<GameAction>
 ) => {
   return measureExecutionTime(`applyComplexActivityEffects-${entity.id}`, () => {
-    const timeMultiplier = deltaTime / 1000;
-    const activity = entity.activity;
-    
-    // Usar pool para cambios de stats
-    const baseChanges = getPooledStatsUpdate();
-    
     try {
-      // 1. Aplicar decay base con nuevos multiplicadores de config Y efectos de upgrades
-      Object.entries(HYBRID_DECAY_RATES.base).forEach(([stat, rate]) => {
-        const modifier = HYBRID_DECAY_RATES.activityModifiers[activity]?.[stat] || 1.0;
-        const configMultiplier = gameConfig.baseDecayMultiplier;
-        
-        // Aplicar efectos de upgrades al decay rate
-        const upgradeModifiedRate = applyUpgradeToStatDecay(rate, upgradeEffectsContext);
-        
-        const finalRate = upgradeModifiedRate * modifier * timeMultiplier * configMultiplier;
-        
-        const change = finalRate;
+      // Convertir stats actuales al sistema normalizado
+      const normalizedStats = mapOldStatsToNew(entity.stats);
+      
+      // Aplicar homeostasis natural (tendencia hacia equilibrio)
+      const afterHomeostasis = applyHomeostasis(normalizedStats, deltaTime);
+      
+      // Aplicar efectos de la actividad actual
+      const afterActivity = applyNormalizedActivityEffects(
+        afterHomeostasis,
+        entity.activity,
+        deltaTime
+      );
+      
+      // Convertir de vuelta al formato original
+      const newStats = mapNewStatsToOld(afterActivity);
+      
+      // Obtener objeto del pool para los cambios
+      const statsChanges = getPooledStatsUpdate();
+      
+      // Calcular diferencias y aplicar solo cambios significativos
+      let hasSignificantChanges = false;
+      for (const [key, newValue] of Object.entries(newStats)) {
+        const currentValue = entity.stats[key as keyof EntityStats] || 0;
+        const change = newValue - currentValue;
         
         if (Math.abs(change) > 0.1) {
-          baseChanges[stat as keyof EntityStats] = change;
-        }
-      });
-
-      // 2. Aplicar efectos específicos de actividad (de activityDynamics)
-      if (ACTIVITY_DYNAMICS[activity]) {
-        const activityResult = applyActivityEffects(
-          entity.stats,
-          activity,
-          deltaTime,
-          false
-        );
-        
-        // Combinar cambios base con efectos específicos
-        Object.entries(activityResult.newStats).forEach(([stat, value]) => {
-          const currentChange = baseChanges[stat as keyof EntityStats] || 0;
-          const activityChange = value - entity.stats[stat as keyof EntityStats];
-          baseChanges[stat as keyof EntityStats] = currentChange + activityChange;
-        });
-
-        // 3. Aplicar costos y ganancias (dinero, etc.)
-        if (activityResult.cost > 0 && entity.stats.money >= activityResult.cost) {
-          baseChanges.money = (baseChanges.money || 0) - activityResult.cost;
-        }
-        
-        if (activityResult.gain > 0) {
-          baseChanges.money = (baseChanges.money || 0) + activityResult.gain;
+          statsChanges[key as keyof EntityStats] = newValue;
+          hasSignificantChanges = true;
         }
       }
 
-      // 4. Aplicar costos pasivos de supervivencia
-      const survivalChanges = applySurvivalCosts(entity.stats, deltaTime);
-      Object.entries(survivalChanges).forEach(([stat, value]) => {
-        const change = value - entity.stats[stat as keyof EntityStats];
-        if (Math.abs(change) > 0.05) {
-          baseChanges[stat as keyof EntityStats] = (baseChanges[stat as keyof EntityStats] || 0) + change;
-        }
-      });
-
-      // 5. Aplicar todos los cambios de una vez
-      if (Object.keys(baseChanges).length > 0) {
+      if (hasSignificantChanges) {
         dispatch({
           type: 'UPDATE_ENTITY_STATS',
-          payload: { entityId: entity.id, stats: { ...baseChanges } }
+          payload: { entityId: entity.id, stats: { ...statsChanges } }
         });
       }
-    } finally {
+      
       // Devolver objeto al pool
-      releasePooledStatsUpdate(baseChanges);
+      releasePooledStatsUpdate(statsChanges);
+    } catch (error) {
+      console.error('Error in applyComplexActivityEffects:', error);
     }
   });
 };
 
-// Cálculo de estado de ánimo optimizado
+// Cálculo de estado de ánimo optimizado para sistema normalizado
 const calculateOptimizedMood = (stats: EntityStats, resonance: number): EntityMood => {
-  // Factores críticos (muerte inminente)
+  // En el sistema normalizado, 50 es óptimo, valores extremos (0-20 o 80-100) son problemáticos
   const criticalFactors = [
-    stats.hunger > 85,
-    stats.sleepiness > 85,
-    stats.loneliness > 85,
-    stats.energy < 15,
-    stats.money < 10
+    stats.hunger > 80 || stats.hunger < 20,
+    stats.sleepiness > 80 || stats.sleepiness < 20,
+    stats.loneliness > 80 || stats.loneliness < 20,
+    stats.energy < 20 || stats.energy > 80,
+    stats.boredom > 80 || stats.boredom < 20
   ].filter(Boolean).length;
 
-  if (criticalFactors >= 2) return 'ANXIOUS';
-  if (stats.energy < 20) return 'TIRED';
-  if (stats.loneliness > 80 && resonance < 30) return 'SAD';
+  // Situaciones críticas
+  if (criticalFactors >= 3) return 'ANXIOUS';
+  if (stats.energy < 25) return 'TIRED';
+  if (stats.loneliness > 75 && resonance < 30) return 'SAD';
   
-  // Cálculo de bienestar general
-  const positiveScore = (stats.happiness + stats.energy + Math.min(100, stats.money)) / 3;
-  const negativeScore = (stats.hunger + stats.sleepiness + stats.boredom + stats.loneliness) / 4;
+  // Calcular distancia del equilibrio homeostático (50 es óptimo)
+  const statKeys = ['hunger', 'sleepiness', 'loneliness', 'energy', 'boredom'] as const;
+  const balanceScore = statKeys.reduce((sum, key) => {
+    const value = stats[key] || 50;
+    const distanceFromOptimal = Math.abs(value - 50);
+    return sum + (50 - distanceFromOptimal); // Mejor puntuación si está cerca de 50
+  }, 0) / statKeys.length;
+  
+  // Bonus por happiness y dinero
+  const happinessBonus = (stats.happiness - 50) * 0.5;
+  const moneyBonus = Math.min((stats.money - 50) * 0.2, 10);
   const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
   
-  const moodScore = positiveScore - negativeScore + bondBonus;
+  const totalMoodScore = balanceScore + happinessBonus + moneyBonus + bondBonus;
   
-  if (moodScore > 50 && stats.energy > 60) return 'EXCITED';
-  if (moodScore > 25) return 'HAPPY';
-  if (moodScore > 5) return 'CONTENT';
-  if (moodScore > -15) return 'CALM';
+  if (totalMoodScore > 60 && stats.energy > 40 && stats.energy < 70) return 'EXCITED';
+  if (totalMoodScore > 45) return 'HAPPY';
+  if (totalMoodScore > 35) return 'CONTENT';
+  if (totalMoodScore > 25) return 'CALM';
   return 'SAD';
 };
 
@@ -147,9 +125,6 @@ export const useAutopoiesis = () => {
 
   useEffect(() => {
     const { autopoiesisInterval } = getGameIntervals();
-    
-    // Crear contexto de efectos de upgrades
-    const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
     
     logAutopoiesis.info('Sistema Híbrido Autopoiesis Mejorado iniciado', { interval: autopoiesisInterval });
     
@@ -184,7 +159,7 @@ export const useAutopoiesis = () => {
           }
 
           // Aplicar efectos complejos híbridos
-          applyComplexActivityEffects(entity, deltaTime, dispatch, upgradeEffects);
+          applyComplexActivityEffects(entity, deltaTime, dispatch);
           
           // Decisión inteligente de actividad usando nueva IA (menos frecuente)
           if (updateCounter.current % 3 === 0) {

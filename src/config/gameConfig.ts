@@ -41,14 +41,14 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
 
 // Configuración principal del juego - Basado en gameSpeedMultiplier
 export const gameConfig: GameConfig = {
-  gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 3.0), // 🚀 CONTROL MAESTRO - Más rápido por defecto
+  gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 1.0), // 🚀 CONTROL MAESTRO - Velocidad normal por defecto
   debugMode: getEnvBoolean('VITE_DEBUG_MODE', true), // Debug activado por defecto
   targetFPS: getEnvNumber('VITE_TARGET_FPS', 60),
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
   dialogueDuration: 2500, // Fijo, no necesita ser configurable
   criticalEventProbability: 0.02, // Fijo, se multiplica por gameSpeedMultiplier donde se usa
   // Nuevas configuraciones de equilibrio
-  baseDecayMultiplier: getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 1.0),
+  baseDecayMultiplier: getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 0.5), // Más suave
   zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
   activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
