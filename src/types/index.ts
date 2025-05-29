@@ -33,49 +33,7 @@ export interface Entity {
   timeOfDeath?: number;
 }
 
-export type EntityState = EntityStateType;
-export type EntityActivity = ActivityType; 
 export type EntityMood = MoodType;
-
-export interface GameState {
-  entities: Entity[];
-  resonance: number; // 0-100 (vínculo entre entidades)
-  cycles: number;
-  lastSave: number;
-  togetherTime: number; // time in ms when entities are together
-  connectionAnimation: {
-    active: boolean;
-    startTime: number;
-    type: InteractionType;
-  };
-  zones: Zone[];
-  mapElements: MapElement[];
-  upgrades: UpgradeState; // Sistema de upgrades
-}
-
-export interface DialogueState {
-  visible: boolean;
-  message: string;
-  startTime: number;
-  duration: number;
-  speaker?: 'circle' | 'square' | 'system';
-}
-
-export type DialogueType = 
-  | 'post-nutrition' 
-  | 'low-resonance' 
-  | 'autonomous-encounter' 
-  | 'revival'
-  | 'feeding'
-  | 'playing'
-  | 'comforting'
-  | 'disturbing'
-  | 'meditation'
-  | 'writing'
-  | 'tired'
-  | 'hungry'
-  | 'lonely'
-  | 'happy';
 
 export type InteractionType = 
   | 'NOURISH'
@@ -85,13 +43,6 @@ export type InteractionType =
   | 'DISTURB'
   | 'WAKE_UP'
   | 'LET_SLEEP';
-
-export interface InteractionEffect {
-  stats: Partial<EntityStats>;
-  resonance?: number;
-  mood?: EntityMood;
-  duration?: number;
-}
 
 // Tipos para elementos del mapa y zonas especiales
 export interface MapElement {
@@ -116,12 +67,37 @@ export interface Zone {
     height: number;
   };
   type: ZoneType;
-  effects: {
-    [K in keyof EntityStats]?: number;
-  };
+  // Opcional: efectos predefinidos (no usado en el nuevo sistema de zonas)
+  effects?: Partial<Record<keyof EntityStats, number>>;
   color: string;
   attractiveness: number; // 0-1, qué tan atractiva es la zona para las entidades
 }
 
 // Re-exportar tipos de constantes para conveniencia
 export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
+
+// Local types that were removed but are still needed
+export interface InteractionEffect {
+  stats: Partial<EntityStats>;
+  resonance?: number;
+  mood?: EntityMood;
+  duration?: number;
+}
+
+export type EntityActivity = ActivityType;
+
+export interface GameState {
+  entities: Entity[];
+  resonance: number;
+  cycles: number;
+  lastSave: number;
+  togetherTime: number;
+  connectionAnimation: {
+    active: boolean;
+    startTime: number;
+    type: InteractionType;
+  };
+  zones: Zone[];
+  mapElements: MapElement[];
+  upgrades: UpgradeState; // Using proper UpgradeState type
+}

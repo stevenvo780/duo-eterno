@@ -45,61 +45,6 @@ export const applyUpgradeToActivityEffectiveness = (
   return boostedEffect;
 };
 
-// Aplicar efectos de upgrades a generación de dinero
-export const applyUpgradeToMoneyGeneration = (
-  originalAmount: number,
-  activityType: string,
-  effects: UpgradeEffectsContext
-): number => {
-  const specificBonus = effects.getUpgradeEffect('MONEY_GENERATION', activityType);
-  const passiveBonus = effects.getUpgradeEffect('MONEY_GENERATION', 'PASSIVE');
-  
-  let totalBonus = specificBonus;
-  
-  // El bonus pasivo se aplica siempre (cada minuto/ciclo)
-  if (activityType === 'PASSIVE_INCOME') {
-    totalBonus = passiveBonus;
-  }
-  
-  return Math.round(originalAmount + totalBonus);
-};
-
-// Aplicar efectos de upgrades a reducción de costos
-export const applyUpgradeToCostReduction = (
-  originalCost: number,
-  activityType: string,
-  effects: UpgradeEffectsContext
-): number => {
-  const reductionPercent = effects.getUpgradeEffect('COST_REDUCTION', activityType);
-  return Math.max(1, Math.round(originalCost * (1 - reductionPercent / 100)));
-};
-
-// Aplicar efectos de upgrades a bonus de resonancia
-export const applyUpgradeToResonanceGain = (
-  originalGain: number,
-  effects: UpgradeEffectsContext
-): number => {
-  const bonusPercent = effects.getUpgradeEffect('RESONANCE_BONUS');
-  return Math.round(originalGain * (1 + bonusPercent / 100));
-};
-
-// Aplicar efectos de upgrades a probabilidad de supervivencia
-export const applyUpgradeToSurvivalRate = (
-  originalDeathProbability: number,
-  effects: UpgradeEffectsContext
-): number => {
-  const survivalBoostPercent = effects.getUpgradeEffect('SURVIVAL_BOOST');
-  return originalDeathProbability * (1 - survivalBoostPercent / 100);
-};
-
-// Verificar si hay upgrades de automatización activos
-export const getAutoActivityChance = (
-  activityType: string,
-  effects: UpgradeEffectsContext
-): number => {
-  return effects.getUpgradeEffect('AUTO_ACTIVITY', activityType);
-};
-
 // Wrapper para simplificar el uso en otros archivos
 export const createUpgradeEffectsContext = (
   getUpgradeEffect: (effectType: UpgradeEffect['type'], target?: string) => number

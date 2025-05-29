@@ -11,7 +11,7 @@ export interface Upgrade {
   isUnlocked: boolean;
 }
 
-export type UpgradeCategory = 
+type UpgradeCategory = 
   | 'EFFICIENCY' // Mejoras de eficiencia de actividades
   | 'ECONOMY' // Mejoras económicas
   | 'SURVIVAL' // Mejoras de supervivencia
@@ -24,7 +24,7 @@ export interface UpgradeEffect {
   target?: string; // Stat específico o actividad
 }
 
-export type UpgradeEffectType =
+type UpgradeEffectType =
   | 'STAT_DECAY_REDUCTION' // Reduce el decay de stats
   | 'ACTIVITY_EFFECTIVENESS' // Aumenta efectividad de actividades
   | 'MONEY_GENERATION' // Aumenta generación de dinero
@@ -33,7 +33,7 @@ export type UpgradeEffectType =
   | 'SURVIVAL_BOOST' // Reduce probabilidad de muerte
   | 'AUTO_ACTIVITY'; // Actividades automáticas ocasionales
 
-export interface UnlockRequirement {
+interface UnlockRequirement {
   type: 'MONEY' | 'RESONANCE' | 'CYCLES' | 'TOGETHER_TIME';
   value: number;
 }

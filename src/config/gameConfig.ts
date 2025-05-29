@@ -75,13 +75,8 @@ export const setGameSpeed = (multiplier: number) => {
   });
 };
 
-// Función para aplicar preset de velocidad
-export const applySpeedPreset = (presetName: keyof typeof speedPresets) => {
-  setGameSpeed(speedPresets[presetName]);
-};
-
 // Helper para logging de configuración en modo debug
-export const logConfig = () => {
+const logConfig = () => {
   if (gameConfig.debugMode) {
     // Importación lazy para evitar dependencias circulares
     import('../utils/logger').then(({ logGeneral }) => {
@@ -108,7 +103,6 @@ export const getGameIntervals = () => ({
 if (import.meta.env.DEV) {
   window.gameConfig = gameConfig;
   window.setGameSpeed = setGameSpeed;
-  window.applySpeedPreset = applySpeedPreset;
   window.speedPresets = speedPresets;
   window.logConfig = logConfig;
 }

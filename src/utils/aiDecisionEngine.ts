@@ -71,7 +71,7 @@ const activitySessions = new Map<string, ActivitySession>();
 /**
  * Obtiene el perfil de personalidad de una entidad
  */
-export const getPersonalityProfile = (entityId: 'circle' | 'square'): PersonalityProfile => {
+const getPersonalityProfile = (entityId: 'circle' | 'square'): PersonalityProfile => {
   return ENTITY_PERSONALITIES[entityId];
 };
 
@@ -202,21 +202,6 @@ const startActivitySession = (
 };
 
 /**
- * Actualiza la efectividad de una sesión de actividad
- */
-export const updateActivityEffectiveness = (
-  entityId: string,
-  effectiveness: number,
-  satisfaction: number
-): void => {
-  const session = activitySessions.get(entityId);
-  if (session) {
-    session.effectiveness = Math.max(0, Math.min(1, effectiveness));
-    session.satisfactionLevel = Math.max(0, Math.min(1, satisfaction));
-  }
-};
-
-/**
  * Motor principal de decisiones de IA mejorado
  */
 export const makeIntelligentDecision = (
@@ -293,6 +278,4 @@ export const getActivitySession = (entityId: string): ActivitySession | undefine
 /**
  * Limpia sesiones de actividad (útil para reset del juego)
  */
-export const clearActivitySessions = (): void => {
-  activitySessions.clear();
-};
+

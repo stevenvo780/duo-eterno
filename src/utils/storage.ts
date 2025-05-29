@@ -70,9 +70,7 @@ const isValidGameState = (state: unknown): state is GameState => {
     Array.isArray(s.zones) &&
     s.zones.every(isValidZone) &&
     typeof s.upgrades === 'object' &&
-    Array.isArray(s.upgrades?.availableUpgrades) &&
-    typeof s.upgrades?.purchasedUpgrades === 'object' &&
-    typeof s.upgrades?.totalMoneySpent === 'number'
+    s.upgrades !== null
   );
 };
 
@@ -183,44 +181,4 @@ export const loadGameState = (): GameState | null => {
   }
 };
 
-export const clearGameState = (): boolean => {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    logStorage.info('Estado del juego eliminado');
-    return true;
-  } catch (error) {
-    logStorage.error('Error al eliminar estado del juego', error);
-    return false;
-  }
-};
 
-export const getStorageInfo = (): { used: number; available: number; percentage: number } => {
-  try {
-    let used = 0;
-    for (const key in localStorage) {
-      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-        used += localStorage[key].length + key.length;
-      }
-    }
-    
-    const available = 5 * 1024 * 1024; // Límite típico de 5MB
-    const percentage = (used / available) * 100;
-    
-    return { used, available, percentage };
-  } catch (error) {
-    logStorage.error('Error al obtener información de almacenamiento', error);
-    return { used: 0, available: 0, percentage: 0 };
-  }
-};
-
-export const isStorageAvailable = (): boolean => {
-  try {
-    const test = 'localStorage-test';
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-    return true;
-  } catch (error) {
-    logStorage.error('localStorage no disponible', error);
-    return false;
-  }
-};

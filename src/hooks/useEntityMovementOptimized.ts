@@ -37,19 +37,19 @@ export const useEntityMovementOptimized = () => {
     for (const stat of criticalStats) {
       if (stat === 'sleepiness') {
         // Para sleepiness, necesitamos que la zona la reduzca (valor negativo)
-        if (zone.effects[stat] && zone.effects[stat]! < 0) {
+        if (zone.effects?.[stat] && zone.effects[stat]! < 0) {
           return true;
         }
       } else {
         // Para el resto (hunger, loneliness, boredom, energy, happiness), necesitamos que la zona las aumente (valor positivo)
-        if (zone.effects[stat] && zone.effects[stat]! > 0) {
+        if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
           return true;
         }
       }
     }
 
     // Verificar si la zona genera dinero cuando se necesita
-    if (entity.stats.money < 30 && zone.effects.money && zone.effects.money > 0) {
+    if (entity.stats.money < 30 && zone.effects?.money && zone.effects.money > 0) {
       return true;
     }
 
@@ -62,8 +62,9 @@ export const useEntityMovementOptimized = () => {
     
     // Si necesita dinero urgentemente
     if (entity.stats.money < 20) {
-      const workZone = zones.find(z => z.type === 'work');
-      if (workZone) return workZone;
+      // Buscar una zona que genere dinero
+      const moneyZone = zones.find(z => z.effects?.money && z.effects.money > 0);
+      if (moneyZone) return moneyZone;
     }
 
     // Buscar zona que atienda la necesidad más crítica

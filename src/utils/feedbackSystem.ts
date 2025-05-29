@@ -13,7 +13,7 @@ import { TRANSLATIONS, MOVEMENT_CONFIG } from '../constants/gameConstants';
 import { getActivitySession } from './aiDecisionEngine';
 
 // Tipos para el sistema de feedback
-export interface IntentionIndicator {
+interface IntentionIndicator {
   type: 'SEEKING_ZONE' | 'SEEKING_COMPANION' | 'ACTIVITY_FOCUSED' | 'CRITICAL_NEED' | 'CONTENT';
   message: string;
   targetPosition?: { x: number; y: number };
@@ -38,7 +38,7 @@ const entityFeedbacks = new Map<string, EntityFeedback>();
 /**
  * Genera un indicador de intención basado en el estado de la entidad
  */
-export const generateIntentionIndicator = (
+const generateIntentionIndicator = (
   entity: Entity,
   companion: Entity | null,
   resonance: number
@@ -126,7 +126,7 @@ export const generateIntentionIndicator = (
 /**
  * Genera un mensaje de estado descriptivo
  */
-export const generateStatusMessage = (entity: Entity): string => {
+const generateStatusMessage = (entity: Entity): string => {
   const activity = TRANSLATIONS.ACTIVITIES[entity.activity];
   const mood = TRANSLATIONS.MOODS[entity.mood];
   
@@ -163,7 +163,7 @@ export const generateStatusMessage = (entity: Entity): string => {
 /**
  * Genera indicador visual de humor
  */
-export const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): string => {
+const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): string => {
   const moodEmojis: Record<EntityMood, string> = {
     'HAPPY': '😊',
     'EXCITED': '🤩',
@@ -228,57 +228,9 @@ export const updateEntityFeedback = (
 /**
  * Obtiene el feedback actual de una entidad
  */
-export const getEntityFeedback = (entityId: string): EntityFeedback | null => {
-  return entityFeedbacks.get(entityId) || null;
-};
 
-/**
- * Obtiene todos los feedbacks actuales
- */
-export const getAllEntityFeedbacks = (): EntityFeedback[] => {
-  return Array.from(entityFeedbacks.values());
-};
 
-/**
- * Limpia el feedback (útil para reset del juego)
- */
-export const clearEntityFeedbacks = (): void => {
-  entityFeedbacks.clear();
-};
 
-/**
- * Genera información detallada para tooltips o paneles de debug
- */
-export const generateDetailedInfo = (entity: Entity, resonance: number): string => {
-  const stats = entity.stats;
-  const session = getActivitySession(entity.id);
-  
-  let info = `=== ${TRANSLATIONS.ENTITIES[entity.id]} ===\n`;
-  info += `Estado: ${entity.state}\n`;
-  info += `Humor: ${TRANSLATIONS.MOODS[entity.mood]}\n`;
-  info += `Actividad: ${TRANSLATIONS.ACTIVITIES[entity.activity]}\n\n`;
-  
-  info += `📊 Estadísticas:\n`;
-  Object.entries(stats).forEach(([key, value]) => {
-    const name = TRANSLATIONS.STATS[key as keyof typeof TRANSLATIONS.STATS];
-    const percentage = key === 'money' ? `${value}💰` : `${value.toFixed(1)}%`;
-    info += `  ${name}: ${percentage}\n`;
-  });
-  
-  info += `\n🔗 Resonancia: ${resonance.toFixed(1)}%\n`;
-  
-  if (session) {
-    const elapsed = (Date.now() - session.startTime) / 1000;
-    const planned = session.plannedDuration / 1000;
-    info += `\n⏱️ Actividad:\n`;
-    info += `  Tiempo: ${elapsed.toFixed(1)}s / ${planned.toFixed(1)}s\n`;
-    info += `  Efectividad: ${(session.effectiveness * 100).toFixed(1)}%\n`;
-    info += `  Satisfacción: ${(session.satisfactionLevel * 100).toFixed(1)}%\n`;
-    info += `  Interrupciones: ${session.interruptions}\n`;
-  }
-  
-  return info;
-};
 
 /**
  * Calcula la posición óptima para mostrar indicadores de intención

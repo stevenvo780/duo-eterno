@@ -1,8 +1,37 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import type { GameState, DialogueState, EntityState, EntityActivity, EntityMood, EntityStats, InteractionType } from '../types';
-import { DEFAULT_UPGRADES } from '../types/upgrades';
+import type { EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
+import { DEFAULT_UPGRADES, type UpgradeState } from '../types/upgrades';
 import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
+import type { ActivityType, EntityStateType } from '../constants/gameConstants';
+
+// Local type definitions
+interface GameState {
+  entities: Entity[];
+  resonance: number;
+  cycles: number;
+  lastSave: number;
+  togetherTime: number;
+  connectionAnimation: {
+    active: boolean;
+    startTime: number;
+    type: InteractionType;
+  };
+  zones: Zone[];
+  mapElements: MapElement[];
+  upgrades: UpgradeState;
+}
+
+interface DialogueState {
+  visible: boolean;
+  message: string;
+  startTime: number;
+  duration: number;
+  speaker?: 'circle' | 'square' | 'system';
+}
+
+type EntityState = EntityStateType;
+type EntityActivity = ActivityType;
 
 interface GameContextType {
   gameState: GameState;
@@ -10,7 +39,7 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>;
 }
 
-export type GameAction = 
+type GameAction = 
   | { type: 'UPDATE_RESONANCE'; payload: number }
   | { type: 'UPDATE_ENTITY_POSITION'; payload: { entityId: string; position: { x: number; y: number } } }
   | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityState } }

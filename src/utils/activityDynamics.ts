@@ -1,17 +1,18 @@
 // Sistema de dinámicas complejas para actividades
-import type { EntityStats, EntityActivity, EntityMood } from '../types';
+import type { EntityStats, EntityMood } from '../types';
+import type { ActivityType } from '../constants/gameConstants';
 import { 
-  applyUpgradeToActivityEffectiveness, 
-  applyUpgradeToMoneyGeneration, 
-  applyUpgradeToCostReduction,
   applyUpgradeToStatDecay,
   type UpgradeEffectsContext 
 } from './upgradeEffects';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
 
+// Local type alias
+type EntityActivity = ActivityType;
+
 // Definición de efectos complejos por actividad
-export interface ActivityEffect {
+interface ActivityEffect {
   // Efectos inmediatos (por tick)
   immediate: Partial<EntityStats>;
   // Efectos por minuto de actividad
@@ -262,153 +263,8 @@ export const calculateActivityPriority = (
   return Math.max(0, priority);
 };
 
-// Determinar cuánto tiempo más debería continuar una actividad
-export const getOptimalActivityDuration = (
-  activity: EntityActivity,
-  currentStats: EntityStats,
-  timeAlreadySpent: number
-): number => {
-  const dynamics = ACTIVITY_DYNAMICS[activity];
-  const urgencyMultiplier = calculateActivityUrgency(activity, currentStats);
-  
-  const baseDuration = dynamics.optimalDuration;
-  const adjustedDuration = baseDuration * urgencyMultiplier;
-  
-  // No menos del mínimo, no más del doble del óptimo
-  return Math.max(
-    dynamics.minDuration - timeAlreadySpent,
-    Math.min(adjustedDuration - timeAlreadySpent, dynamics.optimalDuration * 2 - timeAlreadySpent)
-  );
-};
-
-// Calcular urgencia de una actividad específica - SISTEMA POSITIVO
-const calculateActivityUrgency = (activity: EntityActivity, stats: EntityStats): number => {
-  switch (activity) {
-    case 'WORKING':
-      return Math.max(0.3, (50 - stats.money) / 50 * 2);
-    case 'RESTING':
-      // SISTEMA POSITIVO: urgente cuando sueño alto o energía baja
-      return Math.max(0.5, (stats.sleepiness + (100 - stats.energy)) / 200 * 2);
-    case 'SHOPPING':
-    case 'COOKING':
-      // SISTEMA POSITIVO: urgente cuando saciedad baja
-      return Math.max(0.3, (100 - stats.hunger) / 100 * 1.5);
-    case 'SOCIALIZING':
-      // SISTEMA POSITIVO: urgente cuando compañía baja
-      return Math.max(0.3, (100 - stats.loneliness) / 100 * 1.5);
-    case 'DANCING':
-    case 'EXERCISING':
-      // SISTEMA POSITIVO: urgente cuando diversión baja
-      return Math.max(0.3, (100 - stats.boredom) / 100 * 1.2);
-    default:
-      return 1.0;
-  }
-};
-
-// Aplicar efectos de actividad
-export const applyActivityEffects = (
-  currentStats: EntityStats,
-  activity: EntityActivity,
-  deltaTimeMs: number,
-  isJustStarted: boolean = false,
-  upgradeEffects?: UpgradeEffectsContext
-): { newStats: EntityStats; cost: number; gain: number } => {
-  const dynamics = ACTIVITY_DYNAMICS[activity];
-  const newStats = { ...currentStats };
-  let totalCost = 0;
-  let totalGain = 0;
-
-  // Aplicar efectos inmediatos (solo al empezar)
-  if (isJustStarted && dynamics.immediate) {
-    let immediateEffects = dynamics.immediate;
-    
-    // Aplicar mejoras de efectividad
-    if (upgradeEffects) {
-      immediateEffects = applyUpgradeToActivityEffectiveness(
-        dynamics.immediate, 
-        activity, 
-        upgradeEffects
-      );
-    }
-    
-    Object.entries(immediateEffects).forEach(([stat, value]) => {
-      if (stat in newStats && typeof value === 'number') {
-        const statKey = stat as keyof EntityStats;
-        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value)) as EntityStats[keyof EntityStats];
-      }
-    });
-  }
-
-  // Aplicar efectos por tiempo
-  const minutesElapsed = deltaTimeMs / 60000;
-  if (dynamics.perMinute) {
-    let perMinuteEffects = dynamics.perMinute;
-    
-    // Aplicar mejoras de efectividad
-    if (upgradeEffects) {
-      perMinuteEffects = applyUpgradeToActivityEffectiveness(
-        dynamics.perMinute, 
-        activity, 
-        upgradeEffects
-      );
-    }
-    
-    Object.entries(perMinuteEffects).forEach(([stat, value]) => {
-      if (stat in newStats && typeof value === 'number') {
-        const change = value * minutesElapsed;
-        const statKey = stat as keyof EntityStats;
-        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change)) as EntityStats[keyof EntityStats];
-      }
-    });
-  }
-
-  // Aplicar costos (con posibles reducciones de upgrades)
-  if (dynamics.cost) {
-    if (dynamics.cost.money && newStats.money >= dynamics.cost.money) {
-      let costPerMinute = dynamics.cost.money;
-      
-      // Aplicar reducción de costos de upgrades
-      if (upgradeEffects) {
-        costPerMinute = applyUpgradeToCostReduction(costPerMinute, activity, upgradeEffects);
-      }
-      
-      const totalActivityCost = costPerMinute * minutesElapsed;
-      newStats.money -= totalActivityCost;
-      totalCost += totalActivityCost;
-    }
-  }
-
-  // Aplicar ganancias (con posibles bonificaciones de upgrades)
-  if (dynamics.gain) {
-    if (dynamics.gain.money) {
-      let gainPerMinute = dynamics.gain.money;
-      
-      // Aplicar bonificaciones de dinero de upgrades
-      if (upgradeEffects) {
-        gainPerMinute = applyUpgradeToMoneyGeneration(gainPerMinute, activity, upgradeEffects);
-      }
-      
-      const gainAmount = gainPerMinute * minutesElapsed;
-      newStats.money += gainAmount;
-      totalGain += gainAmount;
-    }
-  }
-
-  // Mantener stats en rango válido
-  Object.keys(newStats).forEach(key => {
-    const statKey = key as keyof EntityStats;
-    if (statKey === 'money') {
-      newStats.money = Math.max(0, newStats.money); // El dinero no puede ser negativo
-    } else {
-      newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey])) as EntityStats[keyof EntityStats];
-    }
-  });
-
-  return { newStats, cost: totalCost, gain: totalGain };
-};
-
 // Sistema híbrido de decay rates para complementar las dinámicas de actividad - SISTEMA POSITIVO
-export const HYBRID_DECAY_RATES = {
+const HYBRID_DECAY_RATES = {
   // Decay base para sistema positivo (valores altos decaen hacia valores medios)
   base: {
     hunger: -0.8,       // Saciedad baja gradualmente (necesitas comer)
@@ -483,7 +339,7 @@ export const applyHybridDecay = (
 };
 
 // Costos pasivos de supervivencia (se aplican constantemente)
-export const SURVIVAL_COSTS = {
+const SURVIVAL_COSTS = {
   // Costo base de supervivencia por minuto
   LIVING_COST: 2, // dinero por minuto
   // Umbrales críticos para forzar actividades
