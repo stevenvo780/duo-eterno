@@ -324,8 +324,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
 
     case 'CHECK_UNLOCK_REQUIREMENTS': {
-      const totalMoney = state.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
-      
       const updatedUpgrades = state.upgrades.availableUpgrades.map(upgrade => {
         if (upgrade.isUnlocked || !upgrade.unlockRequirement) return upgrade;
         

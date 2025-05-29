@@ -8,7 +8,7 @@
  * - Información de estado más clara
  */
 
-import type { Entity, EntityMood, EntityStats, Zone } from '../types';
+import type { Entity, EntityMood, EntityStats } from '../types';
 import { TRANSLATIONS, MOVEMENT_CONFIG } from '../constants/gameConstants';
 import { getActivitySession } from './aiDecisionEngine';
 
@@ -40,7 +40,6 @@ const entityFeedbacks = new Map<string, EntityFeedback>();
  */
 export const generateIntentionIndicator = (
   entity: Entity,
-  zones: Zone[],
   companion: Entity | null,
   resonance: number
 ): IntentionIndicator | null => {
@@ -127,8 +126,7 @@ export const generateIntentionIndicator = (
 /**
  * Genera un mensaje de estado descriptivo
  */
-export const generateStatusMessage = (entity: Entity, resonance: number): string => {
-  const stats = entity.stats;
+export const generateStatusMessage = (entity: Entity): string => {
   const activity = TRANSLATIONS.ACTIVITIES[entity.activity];
   const mood = TRANSLATIONS.MOODS[entity.mood];
   
@@ -148,7 +146,6 @@ export const generateStatusMessage = (entity: Entity, resonance: number): string
   // Estados normales con contexto
   const session = getActivitySession(entity.id);
   if (session) {
-    const progress = Math.min(1, (Date.now() - session.startTime) / session.plannedDuration);
     const effectiveness = session.effectiveness;
     
     if (effectiveness > 0.8) {
@@ -193,12 +190,11 @@ export const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): str
  */
 export const updateEntityFeedback = (
   entity: Entity,
-  zones: Zone[],
   companion: Entity | null,
   resonance: number
 ): EntityFeedback => {
-  const intention = generateIntentionIndicator(entity, zones, companion, resonance);
-  const statusMessage = generateStatusMessage(entity, resonance);
+  const intention = generateIntentionIndicator(entity, companion, resonance);
+  const statusMessage = generateStatusMessage(entity);
   const moodIndicator = generateMoodIndicator(entity.mood, entity.stats);
   
   // Calcular progreso de actividad

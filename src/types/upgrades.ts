@@ -1,5 +1,3 @@
-import type { EntityStats } from './index';
-
 export interface Upgrade {
   id: string;
   name: string;

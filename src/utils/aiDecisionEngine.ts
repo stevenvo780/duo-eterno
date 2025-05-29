@@ -8,13 +8,9 @@
  * - Decisiones más inteligentes basadas en contexto
  */
 
-import type { Entity, EntityActivity, EntityMood, EntityStats, Zone } from '../types';
+import type { Entity, EntityActivity, EntityMood } from '../types';
 import { 
-  ACTIVITY_TYPES, 
-  MOOD_TYPES, 
-  SURVIVAL_THRESHOLDS,
-  PERSONALITY_TRAITS,
-  type PersonalityTrait 
+  ACTIVITY_TYPES 
 } from '../constants/gameConstants';
 import { ACTIVITY_DYNAMICS, calculateActivityPriority } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
@@ -119,7 +115,6 @@ const calculateActivityInertia = (
  */
 const shouldChangeActivity = (
   entity: Entity,
-  newActivity: EntityActivity,
   currentTime: number,
   urgencyScore: number
 ): boolean => {
@@ -161,8 +156,7 @@ const shouldChangeActivity = (
 const applyMoodModifiers = (
   baseScore: number,
   activity: EntityActivity,
-  mood: EntityMood,
-  stats: EntityStats
+  mood: EntityMood
 ): number => {
   const moodModifier = MOOD_MODIFIERS[mood];
   let modifiedScore = baseScore;
@@ -227,8 +221,6 @@ export const updateActivityEffectiveness = (
 export const makeIntelligentDecision = (
   entity: Entity,
   companion: Entity | null,
-  zones: Zone[],
-  resonance: number,
   currentTime: number
 ): EntityActivity => {
   const personality = getPersonalityProfile(entity.id);
@@ -238,10 +230,10 @@ export const makeIntelligentDecision = (
   
   for (const activity of ACTIVITY_TYPES) {
     // Puntaje base del sistema existente
-    let baseScore = calculateActivityPriority(activity, entity.stats, currentTime - (entity.lastActivityChange || 0));
+    const baseScore = calculateActivityPriority(activity, entity.stats, currentTime - (entity.lastActivityChange || 0));
     
     // Aplicar modificadores de humor
-    const moodModifiedScore = applyMoodModifiers(baseScore, activity, entity.mood, entity.stats);
+    const moodModifiedScore = applyMoodModifiers(baseScore, activity, entity.mood);
     
     // Aplicar preferencias de personalidad
     let personalityModifiedScore = moodModifiedScore;
@@ -263,13 +255,12 @@ export const makeIntelligentDecision = (
   activityScores.sort((a, b) => b.score - a.score);
   
   const topActivity = activityScores[0];
-  const currentScore = activityScores.find(s => s.activity === entity.activity)?.score || 0;
   
   // Decidir si cambiar de actividad usando lógica mejorada
   if (topActivity.activity !== entity.activity) {
     const urgencyScore = topActivity.score;
     
-    if (shouldChangeActivity(entity, topActivity.activity, currentTime, urgencyScore)) {
+    if (shouldChangeActivity(entity, currentTime, urgencyScore)) {
       // Interrumpir sesión anterior si existe
       const oldSession = activitySessions.get(entity.id);
       if (oldSession) {

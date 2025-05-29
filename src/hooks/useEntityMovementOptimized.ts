@@ -13,6 +13,67 @@ export const useEntityMovementOptimized = () => {
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
 
+  // Obtener estadísticas críticas (valores altos que necesitan atención)
+  const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
+    const critical: (keyof typeof entity.stats)[] = [];
+    
+    if (entity.stats.hunger > 60) critical.push('hunger');
+    if (entity.stats.sleepiness > 60) critical.push('sleepiness');
+    if (entity.stats.loneliness > 60) critical.push('loneliness');
+    if (entity.stats.boredom > 60) critical.push('boredom');
+    if (entity.stats.energy < 40) critical.push('energy');
+    if (entity.stats.money < 30) critical.push('money');
+    
+    return critical;
+  }, []);
+
+  // Verificar si una zona es beneficiosa para la entidad
+  const isZoneBeneficialForEntity = useCallback((entity: Entity, zone: Zone): boolean => {
+    // Verificar si la zona ayuda con las estadísticas críticas
+    const criticalStats = getCriticalStats(entity);
+    
+    for (const stat of criticalStats) {
+      if (zone.effects[stat] && zone.effects[stat]! < 0) {
+        return true; // La zona reduce una estadística crítica
+      }
+    }
+
+    // Verificar si la zona genera dinero cuando se necesita
+    if (entity.stats.money < 30 && zone.effects.money && zone.effects.money > 0) {
+      return true;
+    }
+
+    return false;
+  }, [getCriticalStats]);
+
+  // Encontrar la zona más necesaria para la entidad
+  const findMostNeededZone = useCallback((entity: Entity, zones: Zone[]): Zone | null => {
+    const criticalStats = getCriticalStats(entity);
+    
+    // Si necesita dinero urgentemente
+    if (entity.stats.money < 20) {
+      const workZone = zones.find(z => z.type === 'work');
+      if (workZone) return workZone;
+    }
+
+    // Buscar zona que atienda la necesidad más crítica
+    for (const stat of criticalStats) {
+      const zoneType = NEED_TO_ZONE_MAPPING[stat];
+      if (zoneType) {
+        const suitableZone = zones.find(z => z.type === zoneType);
+        if (suitableZone) return suitableZone;
+      }
+    }
+
+    // Si no hay críticos, buscar zonas que mejoren el bienestar general
+    if (entity.stats.happiness < 50) {
+      const comfortZone = zones.find(z => z.type === 'comfort');
+      if (comfortZone) return comfortZone;
+    }
+
+    return null;
+  }, [getCriticalStats]);
+
   // Función para calcular el objetivo de una entidad basado en sus necesidades
   const getEntityTarget = useCallback((entity: Entity, zones: Zone[]): Position | undefined => {
     // Priorizar zona actual si está en una zona beneficiosa
@@ -38,68 +99,7 @@ export const useEntityMovementOptimized = () => {
     // Si no hay zona específica, usar el sistema de atracción general
     const attractionTarget = getAttractionTarget(entity.stats, zones, entity.position);
     return attractionTarget || undefined;
-  }, []);
-
-  // Verificar si una zona es beneficiosa para la entidad
-  const isZoneBeneficialForEntity = (entity: Entity, zone: Zone): boolean => {
-    // Verificar si la zona ayuda con las estadísticas críticas
-    const criticalStats = getCriticalStats(entity);
-    
-    for (const stat of criticalStats) {
-      if (zone.effects[stat] && zone.effects[stat]! < 0) {
-        return true; // La zona reduce una estadística crítica
-      }
-    }
-
-    // Verificar si la zona genera dinero cuando se necesita
-    if (entity.stats.money < 30 && zone.effects.money && zone.effects.money > 0) {
-      return true;
-    }
-
-    return false;
-  };
-
-  // Obtener estadísticas críticas (valores altos que necesitan atención)
-  const getCriticalStats = (entity: Entity): (keyof typeof entity.stats)[] => {
-    const critical: (keyof typeof entity.stats)[] = [];
-    
-    if (entity.stats.hunger > 60) critical.push('hunger');
-    if (entity.stats.sleepiness > 60) critical.push('sleepiness');
-    if (entity.stats.loneliness > 60) critical.push('loneliness');
-    if (entity.stats.boredom > 60) critical.push('boredom');
-    if (entity.stats.energy < 40) critical.push('energy');
-    if (entity.stats.money < 30) critical.push('money');
-    
-    return critical;
-  };
-
-  // Encontrar la zona más necesaria para la entidad
-  const findMostNeededZone = (entity: Entity, zones: Zone[]): Zone | null => {
-    const criticalStats = getCriticalStats(entity);
-    
-    // Si necesita dinero urgentemente
-    if (entity.stats.money < 20) {
-      const workZone = zones.find(z => z.type === 'work');
-      if (workZone) return workZone;
-    }
-
-    // Buscar zona que atienda la necesidad más crítica
-    for (const stat of criticalStats) {
-      const zoneType = NEED_TO_ZONE_MAPPING[stat];
-      if (zoneType) {
-        const suitableZone = zones.find(z => z.type === zoneType);
-        if (suitableZone) return suitableZone;
-      }
-    }
-
-    // Si no hay críticos, buscar zonas que mejoren el bienestar general
-    if (entity.stats.happiness < 50) {
-      const comfortZone = zones.find(z => z.type === 'comfort');
-      if (comfortZone) return comfortZone;
-    }
-
-    return null;
-  };
+  }, [findMostNeededZone, isZoneBeneficialForEntity]);
 
   // Calcular el siguiente paso en el movimiento hacia un objetivo
   const calculateMovementStep = useCallback((
@@ -183,8 +183,6 @@ export const useEntityMovementOptimized = () => {
             const newActivity = makeIntelligentDecision(
               entity,
               companion,
-              gameState.zones,
-              gameState.resonance,
               now
             );
             
@@ -259,5 +257,5 @@ export const useEntityMovementOptimized = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gameState.entities, gameState.zones, gameState.resonance, gameState.mapElements, dispatch]);
+  }, [gameState.entities, gameState.zones, gameState.resonance, gameState.mapElements, dispatch, calculateMovementStep, getEntityTarget]);
 };

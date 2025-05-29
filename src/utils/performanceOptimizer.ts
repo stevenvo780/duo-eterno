@@ -113,7 +113,7 @@ const statsUpdatePool = new ObjectPool(
 );
 
 // Métricas de rendimiento
-let performanceMetrics: PerformanceMetrics = {
+const performanceMetrics: PerformanceMetrics = {
   fps: 60,
   frameTime: 16.67,
   updateTime: 0,
@@ -190,7 +190,10 @@ export const updatePerformanceMetrics = (): PerformanceMetrics => {
   
   // Estimar uso de memoria (si está disponible)
   if ('memory' in performance) {
-    performanceMetrics.memoryUsage = (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
+    const perfWithMemory = performance as Performance & { 
+      memory: { usedJSHeapSize: number } 
+    };
+    performanceMetrics.memoryUsage = perfWithMemory.memory.usedJSHeapSize / 1024 / 1024; // MB
   }
   
   // Contar timers activos (estimación)
@@ -230,7 +233,7 @@ export const releasePooledStatsUpdate = (stats: Record<string, number>): void =>
 /**
  * Optimiza la ejecución de una función costosa usando debouncing
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -253,7 +256,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 /**
  * Optimiza la ejecución de una función usando throttling
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): ((...args: Parameters<T>) => void) => {
@@ -335,7 +338,7 @@ const countActiveTimers = (): number => {
 export const garbageCollect = (): void => {
   // Forzar garbage collection si es posible (solo en desarrollo)
   if (gameConfig.debugMode && 'gc' in window) {
-    (window as any).gc();
+    (window as unknown as { gc: () => void }).gc();
   }
 };
 

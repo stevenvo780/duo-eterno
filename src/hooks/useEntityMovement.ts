@@ -24,8 +24,6 @@ export const useEntityMovement = () => {
           const newActivity = makeIntelligentDecision(
             entity,
             companion,
-            gameState.zones,
-            gameState.resonance,
             now
           );
           if (newActivity !== entity.activity) {

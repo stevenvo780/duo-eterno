@@ -79,7 +79,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
         for (const entity of gameState.entities) {
           // Encontrar el compañero
           const companion = gameState.entities.find(e => e.id !== entity.id) || null;
-          const feedback = updateEntityFeedback(entity, gameState.zones || [], companion, gameState.resonance);
+          const feedback = updateEntityFeedback(entity, companion, gameState.resonance);
           newFeedbacks.set(entity.id, feedback);
         }
         

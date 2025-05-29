@@ -219,8 +219,6 @@ export const useAutopoiesis = () => {
             const newActivity = makeIntelligentDecision(
               entity, 
               companion,
-              gameState.zones,
-              gameState.resonance,
               now
             );
             

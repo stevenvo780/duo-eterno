@@ -4,7 +4,6 @@ import {
   applyUpgradeToActivityEffectiveness, 
   applyUpgradeToMoneyGeneration, 
   applyUpgradeToCostReduction,
-  applyUpgradeToStatDecay,
   type UpgradeEffectsContext 
 } from './upgradeEffects';
 
@@ -323,7 +322,7 @@ export const applyActivityEffects = (
     Object.entries(immediateEffects).forEach(([stat, value]) => {
       if (stat in newStats && typeof value === 'number') {
         const statKey = stat as keyof EntityStats;
-        (newStats as any)[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value));
+        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value)) as EntityStats[keyof EntityStats];
       }
     });
   }
@@ -346,7 +345,7 @@ export const applyActivityEffects = (
       if (stat in newStats && typeof value === 'number') {
         const change = value * minutesElapsed;
         const statKey = stat as keyof EntityStats;
-        (newStats as any)[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
+        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change)) as EntityStats[keyof EntityStats];
       }
     });
   }
@@ -385,10 +384,11 @@ export const applyActivityEffects = (
 
   // Mantener stats en rango válido
   Object.keys(newStats).forEach(key => {
-    if (key === 'money') {
+    const statKey = key as keyof EntityStats;
+    if (statKey === 'money') {
       newStats.money = Math.max(0, newStats.money); // El dinero no puede ser negativo
     } else {
-      (newStats as any)[key] = Math.max(0, Math.min(100, (newStats as any)[key]));
+      newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey])) as EntityStats[keyof EntityStats];
     }
   });
 

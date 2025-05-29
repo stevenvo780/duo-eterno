@@ -27,7 +27,6 @@ const UpgradePanel: React.FC<UpgradePanelProps> = ({ visible, onClose }) => {
   const {
     totalMoney,
     unlockedUpgrades,
-    purchasedUpgrades,
     totalMoneySpent,
     canPurchaseUpgrade,
     getUpgradeCost,
