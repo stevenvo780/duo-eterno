@@ -5,7 +5,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
-import { getGameIntervals, gameConfig } from '../config/gameConfig';
+import { getGameIntervals } from '../config/gameConfig';
+import { applyUnifiedHomeostasis } from '../utils/homeostasisSystem';
+import { getEntityZone } from '../utils/mapGeneration';
 import type { Entity, EntityMood, EntityStats } from '../types';
 
 interface GameLoopStats {
@@ -52,30 +54,91 @@ export const useUnifiedGameLoop = () => {
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
     intervalRef.current = window.setInterval(() => {
-      // Actualizar estado y mood de cada entidad
-      const decay = gameConfig.baseDecayMultiplier;
+      // Actualizar estado y mood de cada entidad usando homeostasis unificada
       gameState.entities.forEach(entity => {
+        const companion = gameState.entities.find(e => e.id !== entity.id);
+        const currentZone = getEntityZone(entity.position, gameState.zones);
+        
+        // Aplicar homeostasis unificada que incluye todos los efectos
+        const newStats = applyUnifiedHomeostasis(
+          entity,
+          companion || null,
+          gameState.resonance,
+          currentZone,
+          1.0 // deltaTime incrementado de 0.5 a 1.0 para más cambio por tick
+        );
+        
         // Mood
-        const newMood = calculateOptimizedMood(entity.stats, gameState.resonance);
+        const newMood = calculateOptimizedMood(newStats, gameState.resonance);
         if (newMood !== entity.mood) {
           dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: newMood } });
         }
-        // Decaimiento y regeneración de stats
-        const updated: Partial<EntityStats> = {
-          hunger: entity.stats.hunger + decay,
-          sleepiness: entity.stats.sleepiness + decay,
-          loneliness: entity.stats.loneliness + decay,
-          boredom: entity.stats.boredom + decay,
-          energy: entity.stats.energy - decay,
-          happiness: entity.stats.happiness - decay
-        };
-        dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: updated } });
+        
+        // Actualizar stats solo si han cambiado significativamente
+        const hasSignificantChange = Object.keys(newStats).some(key => {
+          const statKey = key as keyof EntityStats;
+          return Math.abs(newStats[statKey] - entity.stats[statKey]) > 0.2; // Umbral reducido para detectar más cambios
+        });
+        
+        if (hasSignificantChange) {
+          dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: newStats } });
+        }
       });
+
+      // Sistema Together-Time: Incrementar resonancia cuando los agentes están cerca
+      const livingEntities = gameState.entities.filter(e => !e.isDead);
+      if (livingEntities.length === 2) {
+        const [entity1, entity2] = livingEntities;
+        const distance = Math.sqrt(
+          Math.pow(entity1.position.x - entity2.position.x, 2) + 
+          Math.pow(entity1.position.y - entity2.position.y, 2)
+        );
+
+        const CLOSE_DISTANCE = 60; // Aumentar distancia de "cerca" para ser más permisivo
+        
+        if (distance < CLOSE_DISTANCE) {
+          // Cerca uno del otro - acumular tiempo juntos
+          const newTogetherTime = gameState.togetherTime + gameClockInterval;
+          dispatch({ type: 'UPDATE_TOGETHER_TIME', payload: newTogetherTime });
+
+          // Auto-sustain: +1 resonancia cada 2 segundos cuando están cerca
+          if (newTogetherTime > 0 && newTogetherTime % 2000 < gameClockInterval && gameState.resonance < 100) {
+            const resonanceBonus = Math.min(1, 100 - gameState.resonance);
+            dispatch({ type: 'UPDATE_RESONANCE', payload: gameState.resonance + resonanceBonus });
+            
+            // Mostrar diálogo ocasional (solo cada 10 segundos para no spamear)
+            if (newTogetherTime % 10000 < gameClockInterval && Math.random() < 0.5) {
+              const messages = [
+                "Siento la calidez de tu presencia...",
+                "Juntos somos más fuertes...", 
+                "Nuestro vínculo se fortalece...",
+                "Esta cercanía me tranquiliza..."
+              ];
+              const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+              dispatch({
+                type: 'SHOW_DIALOGUE',
+                payload: { 
+                  message: randomMessage,
+                  speaker: Math.random() < 0.5 ? 'circle' : 'square',
+                  duration: 3000
+                }
+              });
+            }
+          }
+        } else {
+          // Están lejos - perder tiempo juntos gradualmente
+          if (gameState.togetherTime > 0) {
+            const decay = Math.min(gameState.togetherTime, gameClockInterval * 2); // Decay 2x más rápido de lo que acumula
+            dispatch({ type: 'UPDATE_TOGETHER_TIME', payload: gameState.togetherTime - decay });
+          }
+        }
+      }
+
       dispatch({ type: 'TICK' });
       statsRef.current.totalTicks++;
     }, gameClockInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [gameState.entities, gameState.resonance, dispatch]);
+  }, [gameState.entities, gameState.resonance, gameState.zones, gameState.togetherTime, dispatch]);
 
   return {
     stats: statsRef.current

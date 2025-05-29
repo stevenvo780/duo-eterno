@@ -78,101 +78,76 @@ export const useZoneEffects = () => {
         !entity.isDead && entity.state !== 'DEAD'
       );
 
-      for (const entity of livingEntities) {
+        for (const entity of livingEntities) {
           const currentZone = getEntityZone(entity.position, gameState.zones);
           
-          if (currentZone) {
+          if (currentZone && currentZone.effects) {
             // Calcular efectividad con configuración mejorada
             const { effectiveness, criticalNeed } = calculateZoneEffectiveness(
               entity.stats, 
               currentZone.type
             );
             
-            // Efectos de zona más fuertes con configuración - SISTEMA POSITIVO
+            // Usar los efectos definidos en la zona del mapa
             const timeMultiplier = (deltaTime / 1000) * gameConfig.gameSpeedMultiplier;
-            const enhancedEffects: Record<string, Partial<EntityStats>> = {
-              food: { 
-                hunger: 15 * effectiveness * timeMultiplier,     // +saciedad
-                energy: 5 * effectiveness * timeMultiplier, 
-                happiness: 3 * effectiveness * timeMultiplier 
-              },
-              rest: { 
-                sleepiness: -18 * effectiveness * timeMultiplier, // -sueño (único negativo)
-                energy: 12 * effectiveness * timeMultiplier, 
-                boredom: 2 * effectiveness * timeMultiplier       // +diversión
-              },
-              play: { 
-                boredom: 20 * effectiveness * timeMultiplier,     // +diversión
-                happiness: 10 * effectiveness * timeMultiplier, 
-                energy: -3 * effectiveness * timeMultiplier,      // -energía (gasta energía)
-                loneliness: 5 * effectiveness * timeMultiplier    // +compañía
-              },
-              social: { 
-                loneliness: 25 * effectiveness * timeMultiplier,  // +compañía
-                happiness: 8 * effectiveness * timeMultiplier, 
-                energy: -2 * effectiveness * timeMultiplier       // -energía (gasta un poco)
-              },
-              comfort: { 
-                happiness: 8 * effectiveness * timeMultiplier, 
-                sleepiness: -5 * effectiveness * timeMultiplier,  // -sueño
-                boredom: 8 * effectiveness * timeMultiplier,      // +diversión
-                loneliness: 4 * effectiveness * timeMultiplier    // +compañía
-              },
-              energy: {
-                energy: 50 * effectiveness * timeMultiplier,      // +energía
-                sleepiness: -10 * effectiveness * timeMultiplier, // -sueño
-                happiness: 5 * effectiveness * timeMultiplier
+            const finalEffects: Partial<EntityStats> = {};
+            
+            Object.entries(currentZone.effects).forEach(([stat, baseValue]) => {
+              const statKey = stat as keyof EntityStats;
+              if (statKey !== 'money' && typeof baseValue === 'number') {
+                const currentStat = entity.stats[statKey];
+                
+                // Aplicar efectividad y multiplicadores de tiempo de manera MUY gradual
+                const effectValue = baseValue * effectiveness * timeMultiplier * 0.05; // Reducir significativamente
+                const newValue = Math.max(0, Math.min(100, currentStat + effectValue));
+                
+                // Solo aplicar si hay cambio significativo (mayor umbral)
+                if (Math.abs(newValue - currentStat) > 0.5) {
+                  finalEffects[statKey] = newValue;
+                }
+              } else if (statKey === 'money' && typeof baseValue === 'number') {
+                // El dinero no tiene límite de 100 pero también debe ser gradual
+                const currentMoney = entity.stats.money;
+                const moneyGain = baseValue * effectiveness * timeMultiplier * 0.05;
+                if (moneyGain > 0.5) {
+                  finalEffects.money = currentMoney + moneyGain;
+                }
               }
-            };
-
-            const effects = enhancedEffects[currentZone.type];
-            if (effects) {
-              // Crear objeto para efectos finales
-              const finalEffects: Partial<EntityStats> = {};
-              
-              Object.entries(effects).forEach(([stat, value]) => {
-                const currentStat = entity.stats[stat as keyof EntityStats];
-                const newValue = Math.max(0, Math.min(100, currentStat + value));
-                // Guardar valor absoluto nuevo, no delta, para evitar valores erráticos
-                if (Math.abs(newValue - currentStat) > 0.05) {
-                  finalEffects[stat as keyof EntityStats] = newValue;
+            });
+            
+            if (Object.keys(finalEffects).length > 0) {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATS',
+                payload: {
+                  entityId: entity.id,
+                  stats: { ...finalEffects }
                 }
               });
               
-              if (Object.keys(finalEffects).length > 0) {
-                dispatch({
-                  type: 'UPDATE_ENTITY_STATS',
-                  payload: {
-                    entityId: entity.id,
-                    stats: { ...finalEffects }
-                  }
+              // Debug optimizado
+              if (gameConfig.debugMode && messageCounter.current % 10 === 0) {
+                logZones.debug(`Zone effects applied to ${entity.id}`, {
+                  zone: currentZone.name,
+                  effects: finalEffects,
+                  effectiveness: effectiveness.toFixed(2),
+                  critical: criticalNeed
                 });
-                
-                // Debug optimizado
-                if (gameConfig.debugMode && Object.keys(finalEffects).length > 0) {
-                  logZones.debug(`${entity.id} en zona ${currentZone.type}`, finalEffects);
-                }
               }
-
-              // Mostrar mensajes contextuales menos frecuentes
-              if (messageCounter.current % 12 === 0 && Math.random() < 0.25) {
-                const message = getContextualZoneMessage(
-                  entity.id, 
-                  currentZone.type, 
-                  effectiveness, 
-                  criticalNeed
-                );
-                
-                if (message) {
-                  dispatch({
-                    type: 'SHOW_DIALOGUE',
-                    payload: {
-                      message,
-                      duration: criticalNeed ? 3000 : 2000,
-                      speaker: entity.id as 'circle' | 'square'
-                    }
-                  });
-                }
+            }
+            
+            // Mostrar mensaje contextual ocasionalmente
+            if (criticalNeed && messageCounter.current % 15 === 0) {
+              const message = getContextualZoneMessage(
+                entity.id, 
+                currentZone.type, 
+                effectiveness, 
+                criticalNeed
+              );
+              if (message) {
+                dispatch({
+                  type: 'SHOW_DIALOGUE',
+                  payload: { message, duration: 2000 }
+                });
               }
             }
           }

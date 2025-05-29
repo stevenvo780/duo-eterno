@@ -5,7 +5,6 @@ import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
 import { getRandomDialogue } from '../utils/dialogues';
 import type { InteractionType } from '../types';
-import { gameConfig, speedPresets, setGameSpeed } from '../config/gameConfig';
 import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
 import UpgradePanel from './UpgradePanel';
 
@@ -19,7 +18,6 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   const { totalMoney, unlockedUpgrades, checkUnlockRequirements, getUpgradeEffect } = useUpgrades();
   const [showStats, setShowStats] = useState(false);
   const [showUpgrades, setShowUpgrades] = useState(false);
-  const [gameSpeed, setGameSpeedState] = useState(gameConfig.gameSpeedMultiplier);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
 
@@ -113,132 +111,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
     return TRANSLATIONS.STATS[stat as StatKey] || stat;
   };
 
-  const handleSpeedChange = (newSpeed: number) => {
-    setGameSpeed(newSpeed);
-    setGameSpeedState(newSpeed);
-  };
-
   return (
     <div style={{ position: 'relative' }}>
-      {/* Desarrollo: Control de velocidad */}
-      {gameConfig.debugMode && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '20px',
-          background: 'rgba(30, 41, 59, 0.95)',
-          border: '1px solid #475569',
-          borderRadius: '12px',
-          padding: '16px',
-          color: '#f1f5f9',
-          minWidth: '280px',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          zIndex: 1000
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }}>
-            <span style={{ fontSize: '16px' }}>⚡</span>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-              Control de Velocidad (DEBUG)
-            </h3>
-          </div>
-
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: '12px', 
-              color: '#94a3b8', 
-              display: 'block',
-              marginBottom: '6px'
-            }}>
-              Velocidad del Juego: {gameSpeed.toFixed(1)}x
-            </label>
-            <input
-              type="range"
-              min="0.1"
-              max="10"
-              step="0.1"
-              value={gameSpeed}
-              onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-              style={{
-                width: '100%',
-                height: '6px',
-                borderRadius: '3px',
-                background: '#374151',
-                outline: 'none',
-                opacity: 0.7,
-                transition: 'opacity 0.2s'
-              }}
-            />
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '10px',
-              color: '#6b7280',
-              marginTop: '4px'
-            }}>
-              <span>0.1x</span>
-              <span>1x</span>
-              <span>10x</span>
-            </div>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '6px',
-            marginBottom: '12px'
-          }}>
-            {Object.entries(speedPresets).slice(0, 6).map(([name, speed]) => (
-              <button
-                key={name}
-                onClick={() => handleSpeedChange(speed)}
-                style={{
-                  background: gameSpeed === speed 
-                    ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' 
-                    : 'rgba(51, 65, 85, 0.5)',
-                  border: gameSpeed === speed ? '2px solid #60a5fa' : '1px solid #475569',
-                  borderRadius: '4px',
-                  padding: '4px 8px',
-                  color: '#f1f5f9',
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {name.split('(')[0].trim()}
-              </button>
-            ))}
-          </div>
-          
-          <div style={{
-            marginTop: '12px',
-            padding: '8px',
-            background: 'rgba(15, 20, 25, 0.5)',
-            borderRadius: '6px',
-            fontSize: '11px',
-            color: '#94a3b8',
-            lineHeight: '1.4'
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '4px', color: '#f1f5f9' }}>
-              Sistema Activo:
-            </div>
-            <div>🧬 Autopoiesis: {(200 / gameSpeed).toFixed(0)}ms</div>
-            <div>🏛️ Efectos de Zona: {(150 / gameSpeed).toFixed(0)}ms</div>
-            <div>🎯 Movimiento: {(2 * gameSpeed).toFixed(1)}px/frame</div>
-            <div>⚡ Decay: {gameSpeed.toFixed(1)}x más rápido</div>
-            <div style={{ marginTop: '6px', fontSize: '10px', color: '#6b7280' }}>
-              Las estadísticas deberían cambiar visiblemente
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Entity Selection and Stats Overlay */}
       {selectedEntity && (
         <div style={{
@@ -510,24 +384,24 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         </div>
       )}
 
-      {/* Bottom Action Bar */}
+      {/* Bottom Action Bar - Compacto */}
       <div style={{
-        height: '80px',
+        height: '50px',
         background: 'linear-gradient(90deg, #1e293b 0%, #334155 100%)',
         borderTop: '1px solid #475569',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 24px',
-        boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)'
+        padding: '0 16px',
+        boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)'
       }}>
         {/* Left: Entity Selectors */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ 
-            fontSize: '14px', 
+            fontSize: '12px', 
             color: '#94a3b8', 
             fontWeight: '500',
-            marginRight: '8px'
+            marginRight: '4px'
           }}>
             Entidades:
           </span>
@@ -542,45 +416,45 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
                     ? 'rgba(239, 68, 68, 0.2)'
                     : 'rgba(51, 65, 85, 0.5)',
                 border: selectedEntity?.id === entity.id 
-                  ? '2px solid #60a5fa' 
+                  ? '1px solid #60a5fa' 
                   : entity.isDead
-                    ? '2px solid #ef4444'
-                    : '2px solid #475569',
-                borderRadius: '8px',
-                padding: '8px 16px',
+                    ? '1px solid #ef4444'
+                    : '1px solid #475569',
+                borderRadius: '6px',
+                padding: '4px 8px',
                 color: entity.isDead ? '#fca5a5' : '#f1f5f9',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '12px',
                 fontWeight: '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '4px',
                 transition: 'all 0.2s ease',
                 opacity: entity.isDead ? 0.7 : 1
               }}
             >
-              <span style={{ fontSize: '16px' }}>{getEntityIcon(entity.id)}</span>
+              <span style={{ fontSize: '14px' }}>{getEntityIcon(entity.id)}</span>
               <span>{getEntityName(entity.id)}</span>
-              {entity.isDead && <span style={{ fontSize: '12px' }}>💀</span>}
+              {entity.isDead && <span style={{ fontSize: '10px' }}>💀</span>}
             </button>
           ))}
         </div>
 
-        {/* Center: Resonance and Global Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Center: Resonance compacto */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ 
-              fontSize: '12px', 
+              fontSize: '10px', 
               color: '#94a3b8', 
-              marginBottom: '4px' 
+              marginBottom: '2px' 
             }}>
               Vínculo
             </div>
             <div style={{
-              width: '120px',
-              height: '6px',
+              width: '80px',
+              height: '4px',
               background: '#374151',
-              borderRadius: '3px',
+              borderRadius: '2px',
               overflow: 'hidden',
               position: 'relative'
             }}>
@@ -592,9 +466,9 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
               }} />
             </div>
             <div style={{ 
-              fontSize: '12px', 
+              fontSize: '10px', 
               color: '#f1f5f9', 
-              marginTop: '2px',
+              marginTop: '1px',
               fontWeight: '600'
             }}>
               {Math.round(gameState.resonance)}%
@@ -606,47 +480,47 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             style={{
               background: 'linear-gradient(135deg, #10b981, #059669)',
               border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
+              borderRadius: '6px',
+              padding: '6px 12px',
               color: 'white',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '600',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              gap: '4px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
               transition: 'all 0.2s ease'
             }}
           >
             <span>💚</span>
-            <span>Nutrir Vínculo</span>
+            <span>Nutrir</span>
           </button>
         </div>
 
-        {/* Right: Utility Actions */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        {/* Right: Utility Actions compacto */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             onClick={() => setShowStats(!showStats)}
             style={{
               background: showStats 
                 ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' 
                 : 'rgba(51, 65, 85, 0.5)',
-              border: '2px solid #6366f1',
-              borderRadius: '8px',
-              padding: '8px 16px',
+              border: '1px solid #6366f1',
+              borderRadius: '6px',
+              padding: '4px 8px',
               color: '#f1f5f9',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '500',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               transition: 'all 0.2s ease'
             }}
           >
             <span>📊</span>
-            <span>Estadísticas</span>
+            <span>Stats</span>
           </button>
 
           <button

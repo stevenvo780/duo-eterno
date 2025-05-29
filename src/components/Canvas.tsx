@@ -16,6 +16,9 @@ interface CanvasProps {
   width: number;
   height: number;
   onEntityClick?: (entityId: string) => void;
+  zoom?: number;
+  panX?: number;
+  panY?: number;
 }
 
 //  particle system with reduced count and object pooling
@@ -43,7 +46,7 @@ for (let i = 0; i < PARTICLE_COUNT; i++) {
   });
 }
 
-const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
+const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1, panX = 0, panY = 0 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const lastRenderTime = useRef<number>(0);
@@ -228,8 +231,9 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    const clickX = (event.clientX - rect.left) * scaleX;
-    const clickY = (event.clientY - rect.top) * scaleY;
+    // Apply transformations to get world coordinates
+    const clickX = ((event.clientX - rect.left) * scaleX - panX) / zoom;
+    const clickY = ((event.clientY - rect.top) * scaleY - panY) / zoom;
 
     // Use for...of for better performance than forEach
     for (const entity of gameState.entities) {
@@ -243,7 +247,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
         break;
       }
     }
-  }, [onEntityClick, gameState.entities]);
+  }, [onEntityClick, gameState.entities, zoom, panX, panY]);
 
   //  entity drawing function with quality levels
   const drawEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number, quality: 'low' | 'medium' | 'high') => {
@@ -389,16 +393,21 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
 
+    // Apply zoom and pan transformations
+    ctx.save();
+    ctx.translate(panX, panY);
+    ctx.scale(zoom, zoom);
+
     // Draw background (use cached gradient when possible)
     if (backgroundGradient) {
       ctx.fillStyle = backgroundGradient;
     } else {
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      const gradient = ctx.createLinearGradient(0, 0, width / zoom, height / zoom);
       gradient.addColorStop(0, '#1e293b');
       gradient.addColorStop(1, '#0f172a');
       ctx.fillStyle = gradient;
     }
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(-panX / zoom, -panY / zoom, width / zoom, height / zoom);
 
     // Draw zones (simplified for low quality)
     if (gameState.zones && quality !== 'low') {
@@ -558,6 +567,9 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     frameCount.current++;
     lastRenderTime.current = now;
 
+    // Restore transformations
+    ctx.restore();
+
     // Opcional: verificar rendimiento cada 60 frames
     if (frameCount.current % 60 === 0) {
       const metrics = getCurrentMetrics();
@@ -573,6 +585,9 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     backgroundGradient,
     width,
     height,
+    panX,
+    panY,
+    zoom,
     gameState.zones,
     gameState.mapElements,
     gameState.entities,

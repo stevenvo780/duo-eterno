@@ -10,7 +10,12 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 50, y: 50, width: 140, height: 100 },
       type: 'food',
       color: 'rgba(34, 197, 94, 0.25)',
-      attractiveness: 0.9
+      attractiveness: 0.9,
+      effects: {
+        hunger: -25,     // Reduce hambre
+        happiness: 8,    // Aumenta felicidad
+        energy: -5       // Consume un poco de energía
+      }
     },
     // Cocina Comunal
     {
@@ -19,7 +24,12 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 220, y: 40, width: 120, height: 80 },
       type: 'food',
       color: 'rgba(34, 197, 94, 0.3)',
-      attractiveness: 1.0
+      attractiveness: 1.0,
+      effects: {
+        hunger: -35,     // Reduce hambre significativamente
+        happiness: 12,   // Aumenta felicidad
+        energy: -8       // Consume energía cocinando
+      }
     },
     // Santuario de Descanso
     {
@@ -28,7 +38,13 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 400, y: 50, width: 140, height: 100 },
       type: 'rest',
       color: 'rgba(168, 85, 247, 0.25)',
-      attractiveness: 0.8
+      attractiveness: 0.8,
+      effects: {
+        sleepiness: -30, // Reduce sueño
+        energy: 25,      // Restaura energía
+        happiness: 10,   // Aumenta felicidad
+        boredom: 5       // Puede aburrir un poco
+      }
     },
     // Área de Juegos
     {
@@ -37,7 +53,13 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 350, y: 220, width: 200, height: 140 },
       type: 'play',
       color: 'rgba(251, 191, 36, 0.3)',
-      attractiveness: 1.0
+      attractiveness: 1.0,
+      effects: {
+        boredom: -40,    // Reduce aburrimiento significativamente
+        happiness: 20,   // Aumenta felicidad mucho
+        loneliness: -15, // Reduce soledad (jugar es social)
+        energy: -12      // Consume energía jugando
+      }
     },
     // Plaza Social
     {
@@ -46,7 +68,13 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 50, y: 400, width: 180, height: 120 },
       type: 'social',
       color: 'rgba(236, 72, 153, 0.3)',
-      attractiveness: 0.9
+      attractiveness: 0.9,
+      effects: {
+        loneliness: -35, // Reduce soledad significativamente
+        happiness: 18,   // Aumenta felicidad
+        boredom: -10,    // Reduce aburrimiento
+        energy: -5       // Consume poca energía
+      }
     },
     // Bosque de Meditación
     {
@@ -55,7 +83,14 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 280, y: 420, width: 160, height: 130 },
       type: 'comfort',
       color: 'rgba(139, 92, 246, 0.25)',
-      attractiveness: 0.7
+      attractiveness: 0.7,
+      effects: {
+        happiness: 15,   // Aumenta felicidad
+        boredom: -15,    // Reduce aburrimiento
+        loneliness: -10, // Reduce soledad un poco
+        sleepiness: -10, // Ayuda con el sueño
+        energy: 8        // Restaura energía lentamente
+      }
     },
     // Estación Energética
     {
@@ -64,7 +99,13 @@ export const createDefaultZones = (): Zone[] => {
       bounds: { x: 800, y: 200, width: 120, height: 100 },
       type: 'energy',
       color: 'rgba(245, 158, 11, 0.25)',
-      attractiveness: 1.0
+      attractiveness: 1.0,
+      effects: {
+        energy: 40,      // Restaura energía significativamente
+        sleepiness: -15, // Reduce sueño
+        happiness: 8,    // Aumenta felicidad
+        boredom: 5       // Puede aburrir un poco
+      }
     }
   ];
 };

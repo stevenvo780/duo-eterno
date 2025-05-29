@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { shouldUpdateMovement, measureExecutionTime } from '../utils/performanceOptimizer';
-import { makeIntelligentDecision, getActivitySession } from '../utils/aiDecisionEngine';
+import { makeSimpleIntelligentDecision } from '../utils/aiDecisionEngineSimple';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
 import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING } from '../constants/gameConstants';
 import type { Entity, Zone, Position } from '../types';
@@ -191,7 +191,7 @@ export const useEntityMovementOptimized = () => {
           
           // Decisión de IA para actividad (menos frecuente)
           if (now % 1000 < 50) { // Cada segundo aproximadamente
-            const newActivity = makeIntelligentDecision(
+            const newActivity = makeSimpleIntelligentDecision(
               entity,
               companion,
               now
@@ -236,15 +236,12 @@ export const useEntityMovementOptimized = () => {
           // Actualizar estado basado en zona actual
           const currentZone = getEntityZone(entity.position, gameState.zones);
           if (currentZone) {
-            const session = getActivitySession(entity.id);
-            if (session && session.startTime) {
-              // La entidad está en una zona, puede cambiar estado a activo
-              if (entity.state === 'SEEKING') {
-                dispatch({
-                  type: 'UPDATE_ENTITY_STATE',
-                  payload: { entityId: entity.id, state: 'IDLE' }
-                });
-              }
+            // La entidad está en una zona, puede cambiar estado a activo
+            if (entity.state === 'SEEKING') {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATE',
+                payload: { entityId: entity.id, state: 'IDLE' }
+              });
             }
           } else {
             // La entidad no está en ninguna zona, está buscando
