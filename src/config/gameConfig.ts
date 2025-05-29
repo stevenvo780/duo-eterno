@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-// Configuración simplificada del juego con velocidad global
+// Configuración completa del juego con equilibrio y velocidad global
 export interface GameConfig {
   gameSpeedMultiplier: number; // VARIABLE PRINCIPAL - controla toda la velocidad del juego
   debugMode: boolean;
@@ -17,6 +17,12 @@ export interface GameConfig {
   movementUpdateFPS: number;
   dialogueDuration: number;
   criticalEventProbability: number;
+  // Nuevas configuraciones de equilibrio
+  baseDecayMultiplier: number;
+  zoneEffectivenessMultiplier: number;
+  aiPersonalityInfluence: number;
+  activityInertiaBonus: number;
+  moodInfluenceStrength: number;
 }
 
 // Función helper para parsear variables de entorno
@@ -33,14 +39,20 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
   return value.toLowerCase() === 'true';
 };
 
-// Configuración principal del juego - TODO SE BASA EN gameSpeedMultiplier
+// Configuración principal del juego - Basado en gameSpeedMultiplier
 export const gameConfig: GameConfig = {
   gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 3.0), // 🚀 CONTROL MAESTRO - Más rápido por defecto
   debugMode: getEnvBoolean('VITE_DEBUG_MODE', true), // Debug activado por defecto
   targetFPS: getEnvNumber('VITE_TARGET_FPS', 60),
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
   dialogueDuration: 2500, // Fijo, no necesita ser configurable
-  criticalEventProbability: 0.02 // Fijo, se multiplica por gameSpeedMultiplier donde se usa
+  criticalEventProbability: 0.02, // Fijo, se multiplica por gameSpeedMultiplier donde se usa
+  // Nuevas configuraciones de equilibrio
+  baseDecayMultiplier: getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 1.0),
+  zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
+  aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
+  activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
+  moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5)
 };
 
 // Configuraciones predefinidas

@@ -1,3 +1,6 @@
+import type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
+import type { UpgradeState } from './upgrades';
+
 export interface Position {
   x: number;
   y: number;
@@ -16,38 +19,23 @@ export interface EntityStats {
 export interface Entity {
   id: 'circle' | 'square';
   position: Position;
-  state: EntityState;
-  activity: EntityActivity;
+  state: EntityStateType;
+  activity: ActivityType;
   stats: EntityStats;
   lastStateChange: number;
   lastActivityChange: number;
   lastInteraction: number;
   pulsePhase: number;
   colorHue: number;
-  mood: EntityMood;
+  mood: MoodType;
   thoughts: string[];
   isDead: boolean;
   timeOfDeath?: number;
 }
 
-export type EntityState = 'IDLE' | 'SEEKING' | 'LOW_RESONANCE' | 'FADING' | 'DEAD' | 'SLEEPING' | 'EATING' | 'PLAYING';
-
-export type EntityActivity = 
-  | 'WANDERING' 
-  | 'MEDITATING' 
-  | 'WRITING' 
-  | 'RESTING' 
-  | 'SOCIALIZING'
-  | 'EXPLORING'
-  | 'CONTEMPLATING'
-  | 'DANCING'
-  | 'HIDING'
-  | 'WORKING'     // Gana dinero, consume energía
-  | 'SHOPPING'    // Gasta dinero, satisface necesidades
-  | 'EXERCISING'  // Mejora energía a largo plazo, cansa a corto plazo
-  | 'COOKING';    // Reduce hambre, cuesta dinero
-
-export type EntityMood = 'HAPPY' | 'SAD' | 'TIRED' | 'EXCITED' | 'CALM' | 'ANXIOUS' | 'CONTENT';
+export type EntityState = EntityStateType;
+export type EntityActivity = ActivityType; 
+export type EntityMood = MoodType;
 
 export interface GameState {
   entities: Entity[];
@@ -62,6 +50,7 @@ export interface GameState {
   };
   zones: Zone[];
   mapElements: MapElement[];
+  upgrades: UpgradeState; // Sistema de upgrades
 }
 
 export interface DialogueState {
@@ -126,10 +115,13 @@ export interface Zone {
     width: number;
     height: number;
   };
-  type: 'comfort' | 'social' | 'food' | 'rest' | 'play';
+  type: ZoneType;
   effects: {
     [K in keyof EntityStats]?: number;
   };
   color: string;
   attractiveness: number; // 0-1, qué tan atractiva es la zona para las entidades
 }
+
+// Re-exportar tipos de constantes para conveniencia
+export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';

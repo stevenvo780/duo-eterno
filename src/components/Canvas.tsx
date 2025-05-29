@@ -1,7 +1,15 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { useRenderer } from '../hooks/useRenderer';
 import type { Entity } from '../types';
+import { 
+  updateEntityFeedback, 
+  generateContextualAnimation,
+  calculateIndicatorPosition,
+  type EntityFeedback,
+  type ContextualAnimation
+} from '../utils/feedbackSystem';
+import { getCurrentMetrics } from '../utils/performanceOptimizer';
 
 interface CanvasProps {
   width: number;
@@ -41,6 +49,11 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
   const frameCount = useRef<number>(0);
   const { gameState } = useGame();
   const { shouldRender, getQualityLevel } = useRenderer();
+  
+  // Estado para el sistema de feedback
+  const [entityFeedbacks, setEntityFeedbacks] = useState<Map<string, EntityFeedback>>(new Map());
+  const [contextualAnimations, setContextualAnimations] = useState<ContextualAnimation[]>([]);
+  const feedbackUpdateRef = useRef<number>(0);
 
   // Memoize background gradient to avoid recreating it every frame
   const backgroundGradient = useMemo(() => {
@@ -55,6 +68,153 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     gradient.addColorStop(1, '#0f172a');
     return gradient;
   }, [width, height]);
+
+  // Actualizar feedback de entidades cada 500ms
+  useEffect(() => {
+    const updateFeedback = () => {
+      const now = performance.now();
+      if (now - feedbackUpdateRef.current > 500) {
+        const newFeedbacks = new Map<string, EntityFeedback>();
+        
+        for (const entity of gameState.entities) {
+          // Encontrar el compañero
+          const companion = gameState.entities.find(e => e.id !== entity.id) || null;
+          const feedback = updateEntityFeedback(entity, gameState.zones || [], companion, gameState.resonance);
+          newFeedbacks.set(entity.id, feedback);
+        }
+        
+        setEntityFeedbacks(newFeedbacks);
+        feedbackUpdateRef.current = now;
+      }
+    };
+
+    const interval = setInterval(updateFeedback, 500);
+    return () => clearInterval(interval);
+  }, [gameState.entities, gameState.zones, gameState.resonance]);
+
+  // Generar animaciones contextuales basadas en eventos
+  useEffect(() => {
+    const newAnimations: ContextualAnimation[] = [];
+    
+    for (const entity of gameState.entities) {
+      const animation = generateContextualAnimation(entity, gameState.resonance);
+      if (animation) {
+        newAnimations.push(animation);
+      }
+    }
+    
+    setContextualAnimations(newAnimations);
+  }, [gameState.entities, gameState.resonance]);
+
+  // Función para renderizar indicadores de feedback
+  const drawEntityFeedback = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number, quality: 'low' | 'medium' | 'high') => {
+    if (quality === 'low') return; // Skip feedback en calidad baja
+    
+    const feedback = entityFeedbacks.get(entity.id);
+    if (!feedback) return;
+
+    // Dibujar indicador de intención
+    if (feedback.intention && quality === 'high') {
+      const position = calculateIndicatorPosition(entity, width, height);
+      
+      // Fondo del indicador
+      ctx.save();
+      ctx.globalAlpha = 0.8;
+      ctx.fillStyle = feedback.intention.color;
+      ctx.shadowColor = feedback.intention.color;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(position.x - 40, position.y - 15, 80, 20);
+      
+      // Texto del indicador
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'white';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(feedback.intention.message, position.x, position.y - 3);
+      ctx.restore();
+    }
+
+    // Indicador de humor (emoji)
+    if (feedback.moodIndicator && quality === 'medium' || quality === 'high') {
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(feedback.moodIndicator, entity.position.x + 20, entity.position.y - 20);
+    }
+
+    // Barra de progreso de actividad
+    if (feedback.activityProgress > 0 && quality === 'high') {
+      const barWidth = 30;
+      const barHeight = 4;
+      const barX = entity.position.x - barWidth / 2;
+      const barY = entity.position.y + 25;
+      
+      // Fondo de la barra
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+      
+      // Progreso
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(barX, barY, barWidth * feedback.activityProgress, barHeight);
+    }
+
+    // Alerta de necesidades críticas
+    if (feedback.needsAlert && (quality === 'medium' || quality === 'high')) {
+      const pulse = Math.sin(now * 0.008) * 0.5 + 0.5;
+      ctx.save();
+      ctx.globalAlpha = pulse * 0.6;
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(entity.position.x, entity.position.y, 25, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }, [entityFeedbacks, width, height]);
+
+  // Función para aplicar animaciones contextuales
+  const applyContextualAnimations = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number) => {
+    for (const animation of contextualAnimations) {
+      ctx.save();
+      
+      switch (animation.type) {
+        case 'PULSE': {
+          const pulseScale = 1 + Math.sin(now * 0.01) * 0.2 * animation.intensity;
+          ctx.translate(entity.position.x, entity.position.y);
+          ctx.scale(pulseScale, pulseScale);
+          ctx.translate(-entity.position.x, -entity.position.y);
+          break;
+        }
+          
+        case 'GLOW': {
+          ctx.shadowColor = animation.color;
+          ctx.shadowBlur = 20 * animation.intensity;
+          break;
+        }
+          
+        case 'SHAKE': {
+          const shakeX = (Math.random() - 0.5) * 4 * animation.intensity;
+          const shakeY = (Math.random() - 0.5) * 4 * animation.intensity;
+          ctx.translate(shakeX, shakeY);
+          break;
+        }
+          
+        case 'BOUNCE': {
+          const bounceOffset = Math.abs(Math.sin(now * 0.015)) * 10 * animation.intensity;
+          ctx.translate(0, -bounceOffset);
+          break;
+        }
+          
+        case 'TRAIL': {
+          ctx.globalAlpha *= 0.7;
+          ctx.fillStyle = animation.color;
+          break;
+        }
+      }
+      
+      ctx.restore();
+    }
+  }, [contextualAnimations]);
 
   //  entity click handler
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -311,7 +471,13 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
 
     // Draw entities
     for (const entity of gameState.entities) {
+      // Aplicar animaciones contextuales antes de dibujar
+      applyContextualAnimations(ctx, entity, now);
+      
       drawEntity(ctx, entity, now, quality);
+      
+      // Dibujar feedback de entidad después de la entidad
+      drawEntityFeedback(ctx, entity, now, quality);
       
       // Draw zone effect indicators only for high quality
       if (gameState.zones && quality === 'high') {
@@ -391,6 +557,14 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     frameCount.current++;
     lastRenderTime.current = now;
 
+    // Opcional: verificar rendimiento cada 60 frames
+    if (frameCount.current % 60 === 0) {
+      const metrics = getCurrentMetrics();
+      if (metrics.fps < 30) {
+        console.warn(`FPS bajo detectado: ${metrics.fps.toFixed(1)} FPS`);
+      }
+    }
+
     animationRef.current = requestAnimationFrame(render);
   }, [
     shouldRender,
@@ -402,7 +576,9 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     gameState.mapElements,
     gameState.entities,
     drawEntity,
-    updateParticles
+    updateParticles,
+    drawEntityFeedback,
+    applyContextualAnimations
   ]);
 
   useEffect(() => {

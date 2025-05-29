@@ -1,9 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
 import { gameConfig, getGameIntervals } from '../config/gameConfig';
+import { useUpgrades } from './useUpgrades';
+import { 
+  createUpgradeEffectsContext,
+  applyUpgradeToSurvivalRate,
+  applyUpgradeToResonanceGain,
+  applyUpgradeToMoneyGeneration,
+  getAutoActivityChance
+} from '../utils/upgradeEffects';
+import { ACTIVITY_DYNAMICS } from '../utils/activityDynamics';
+import type { EntityActivity } from '../types';
 
 export const useGameClock = () => {
   const { gameState, dispatch } = useGame();
+  const { getUpgradeEffect } = useUpgrades();
   const intervalRef = useRef<number | undefined>(undefined);
   const lastTickTime = useRef<number>(Date.now());
   const tickCounter = useRef<number>(0);
@@ -11,11 +22,14 @@ export const useGameClock = () => {
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
     
+    // Crear contexto de efectos de upgrades
+    const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
+    
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const deltaTime = now - lastTickTime.current;
       
-      // Throttling simplificado
+      // Throttling optimizado para mejor rendimiento
       if (deltaTime < gameClockInterval * 0.8) return;
       
       lastTickTime.current = now;
@@ -23,7 +37,104 @@ export const useGameClock = () => {
 
       dispatch({ type: 'TICK' });
 
-      // Verificar muerte de entidades (cada 4 ticks)
+      // === INGRESOS PASIVOS DE UPGRADES ===
+      if (tickCounter.current % 6 === 0) { // Cada ~6 segundos (1/10 de minuto)
+        const passiveIncome = applyUpgradeToMoneyGeneration(0, 'PASSIVE_INCOME', upgradeEffects);
+        
+        if (passiveIncome > 0) {
+          // Aplicar ingresos pasivos a todas las entidades vivas
+          gameState.entities.forEach(entity => {
+            if (!entity.isDead) {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATS',
+                payload: {
+                  entityId: entity.id,
+                  stats: { money: entity.stats.money + passiveIncome }
+                }
+              });
+            }
+          });
+        }
+      }
+
+      // === AUTOMATIZACIÓN DE ACTIVIDADES ===
+      if (tickCounter.current % 10 === 0) { // Cada ~10 segundos
+        gameState.entities.forEach(entity => {
+          if (!entity.isDead) {
+            // Lista de actividades que pueden automatizarse
+            const autoActivities: EntityActivity[] = ['WORKING', 'COOKING', 'SHOPPING', 'EXERCISING'];
+            
+            for (const activity of autoActivities) {
+              const autoChance = getAutoActivityChance(activity, upgradeEffects);
+              
+              if (autoChance > 0 && Math.random() < autoChance / 100) {
+                // Ejecutar actividad automática por un período corto
+                if (ACTIVITY_DYNAMICS[activity]) {
+                  const activityResult = ACTIVITY_DYNAMICS[activity];
+                  const effects = { ...activityResult.immediate };
+                  
+                  // Aplicar efectos inmediatos reducidos (50% para automatización)
+                  Object.entries(effects).forEach(([stat, value]) => {
+                    if (typeof value === 'number') {
+                      effects[stat as keyof typeof effects] = value * 0.5;
+                    }
+                  });
+                  
+                  // Aplicar costos si hay
+                  if (activityResult.cost?.money && entity.stats.money >= activityResult.cost.money) {
+                    effects.money = -(activityResult.cost.money * 0.5); // Costo reducido
+                  }
+                  
+                  // Aplicar ganancias si hay
+                  if (activityResult.gain?.money) {
+                    effects.money = (effects.money || 0) + (activityResult.gain.money * 0.3); // Ganancia reducida
+                  }
+                  
+                  dispatch({
+                    type: 'UPDATE_ENTITY_STATS',
+                    payload: {
+                      entityId: entity.id,
+                      stats: effects
+                    }
+                  });
+                  
+                  // Mostrar mensaje ocasional
+                  if (Math.random() < 0.3) {
+                    const autoMessages: Record<EntityActivity, string> = {
+                      'WORKING': '⚙️ Auto-trabajo: genero recursos mientras descanso...',
+                      'COOKING': '🍳 Auto-cocina: mis habilidades culinarias se han automatizado...',
+                      'SHOPPING': '🛒 Auto-compras: obtengo lo necesario automáticamente...',
+                      'EXERCISING': '💪 Auto-ejercicio: mi cuerpo se mantiene en forma solo...',
+                      'WANDERING': '',
+                      'RESTING': '',
+                      'SOCIALIZING': '',
+                      'DANCING': '',
+                      'EXPLORING': '',
+                      'MEDITATING': '',
+                      'CONTEMPLATING': '',
+                      'WRITING': '',
+                      'HIDING': ''
+                    };
+                    
+                    if (autoMessages[activity]) {
+                      dispatch({
+                        type: 'SHOW_DIALOGUE',
+                        payload: { 
+                          message: autoMessages[activity],
+                          speaker: entity.id as 'circle' | 'square',
+                          duration: 2000 
+                        }
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Verificar muerte de entidades (cada 4 ticks) - CON MEJORAS DE SUPERVIVENCIA
       if (tickCounter.current % 4 === 0) {
         for (const entity of gameState.entities) {
           if (!entity.isDead) {
@@ -40,15 +151,18 @@ export const useGameClock = () => {
             
             let deathProbability = 0;
             if (criticalCount >= 2) {
-              deathProbability = 0.15; // 15% si tiene 2+ stats críticos
+              deathProbability = 0.12; // Reducido de 0.15 para mejor balance
             } else if (criticalCount === 1 && resonanceIsCritical) {
-              deathProbability = 0.08; // 8% si tiene 1 stat crítico y vínculo roto
+              deathProbability = 0.06; // Reducido de 0.08
             } else if (criticalCount === 1) {
-              deathProbability = 0.03; // 3% si solo tiene 1 stat crítico
+              deathProbability = 0.02; // Reducido de 0.03
             }
             
             // Aplicar multiplicador de velocidad
             deathProbability *= gameConfig.criticalEventProbability * gameConfig.gameSpeedMultiplier;
+            
+            // APLICAR MEJORAS DE SUPERVIVENCIA DE UPGRADES
+            deathProbability = applyUpgradeToSurvivalRate(deathProbability, upgradeEffects);
             
             if (deathProbability > 0 && Math.random() < deathProbability) {
               dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
@@ -174,7 +288,7 @@ export const useGameClock = () => {
         }
       }
 
-      // Actualizar tiempo juntos cuando están cerca
+      // Actualizar tiempo juntos cuando están cerca - CON BONUS DE RESONANCIA MEJORADO
       if (gameState.entities.length === 2 && tickCounter.current % 2 === 0) {
         const [entity1, entity2] = gameState.entities;
         if (!entity1.isDead && !entity2.isDead) {
@@ -189,9 +303,13 @@ export const useGameClock = () => {
               payload: gameState.togetherTime + gameClockInterval 
             });
             
-            // Bonus de vínculo cuando están juntos
+            // Bonus de vínculo cuando están juntos - CON MEJORAS DE UPGRADES
             if (tickCounter.current % 8 === 0) {
-              const bondBonus = Math.min(2, 60 / distance) * gameConfig.gameSpeedMultiplier;
+              let bondBonus = Math.min(2, 60 / distance) * gameConfig.gameSpeedMultiplier;
+              
+              // APLICAR BONUS DE RESONANCIA DE UPGRADES
+              bondBonus = applyUpgradeToResonanceGain(bondBonus, upgradeEffects);
+              
               dispatch({ 
                 type: 'UPDATE_RESONANCE', 
                 payload: Math.min(100, gameState.resonance + bondBonus) 
@@ -201,7 +319,10 @@ export const useGameClock = () => {
         }
       }
 
-      // Auto-save game state less frequently
+      // === VERIFICACIÓN DE DESBLOQUEO DE UPGRADES ===
+      if (tickCounter.current % 15 === 0) { // Cada ~15 segundos
+        dispatch({ type: 'CHECK_UNLOCK_REQUIREMENTS' });
+      }
       if (tickCounter.current % 20 === 0) { // Save every 20th tick
         try {
           localStorage.setItem('duoEternoState', JSON.stringify({
@@ -220,5 +341,5 @@ export const useGameClock = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [gameState, dispatch]);
+  }, [gameState, dispatch, getUpgradeEffect]);
 };

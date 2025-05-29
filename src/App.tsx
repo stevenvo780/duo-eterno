@@ -2,26 +2,23 @@ import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
 import Canvas from './components/Canvas';
-import DialogOverlay from './components/DialogOverlay';
 import UIControls from './components/UIControls';
+import DialogOverlay from './components/DialogOverlay';
 import PerformanceOverlay from './components/PerformanceOverlay';
 import { useGameClock } from './hooks/useGameClock';
-import { useEntityMovement } from './hooks/useEntityMovement';
+import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useAutopoiesis } from './hooks/useAutopoiesis';
 import { useZoneEffects } from './hooks/useZoneEffects';
 import { gameConfig } from './config/gameConfig';
 
-// Memoized game content component for better performance
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  const [showPerformance, setShowPerformance] = useState<boolean>(false);
-  
-  // Use system hooks
+  const [showPerformance, setShowPerformance] = useState<boolean>(gameConfig.debugMode);
   useGameClock();
-  useEntityMovement();
+  useEntityMovementOptimized();
   useDialogueSystem();
-  useAutopoiesis(); // Nuevo sistema con dinámicas complejas
+  useAutopoiesis();
   useZoneEffects();
 
   const handleEntityClick = React.useCallback((entityId: string) => {
@@ -32,14 +29,12 @@ const GameContent: React.FC = React.memo(() => {
     setSelectedEntityId(entityId);
   }, []);
 
-  // Toggle performance overlay with 'P' key
   React.useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'p' || event.key === 'P') {
+      if (event.key.toLowerCase() === 'p') {
         setShowPerformance(prev => !prev);
       }
     };
-
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
@@ -86,13 +81,14 @@ const GameContent: React.FC = React.memo(() => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
         padding: '20px',
         position: 'relative'
       }}>
         <Canvas 
-          width={800} 
+          width={1000} 
           height={600} 
-          onEntityClick={handleEntityClick}
+          onEntityClick={handleEntityClick} 
         />
         <DialogOverlay />
         <PerformanceOverlay enabled={showPerformance} />
@@ -100,8 +96,8 @@ const GameContent: React.FC = React.memo(() => {
 
       {/* Controls */}
       <UIControls 
-        selectedEntityId={selectedEntityId} 
-        onEntitySelect={handleEntitySelect} 
+        selectedEntityId={selectedEntityId}
+        onEntitySelect={handleEntitySelect}
       />
     </div>
   );
@@ -109,46 +105,10 @@ const GameContent: React.FC = React.memo(() => {
 
 GameContent.displayName = 'GameContent';
 
-// Componente interno que usa los hooks
-const GameEngine: React.FC = () => {
-  // Activar todos los sistemas del juego
-  useAutopoiesis(); // Sistema de autopoiesis con dinámicas complejas
-  useGameClock();        // Reloj principal del juego
-  useEntityMovement();   // Movimiento de entidades
-  useZoneEffects();      // Efectos de zonas
-  useDialogueSystem();   // Sistema de diálogos
-
-  return null; // Este componente solo ejecuta hooks
-};
-
 function App() {
-  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-
   return (
     <GameProvider>
-      <div className="app">
-        {/* Motor del juego - ejecuta todos los sistemas */}
-        <GameEngine />
-        
-        <div className="game-container">
-          <div className="canvas-container">
-            <Canvas
-              width={800}
-              height={600}
-              onEntityClick={setSelectedEntityId}
-            />
-            <DialogOverlay />
-          </div>
-          
-          <UIControls
-            selectedEntityId={selectedEntityId}
-            onEntitySelect={setSelectedEntityId}
-          />
-        </div>
-        
-        {/* Overlay de rendimiento en modo debug */}
-        <PerformanceOverlay enabled={gameConfig.debugMode} />
-      </div>
+      <GameContent />
     </GameProvider>
   );
 }

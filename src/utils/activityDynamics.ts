@@ -1,5 +1,12 @@
 // Sistema de dinámicas complejas para actividades
 import type { EntityStats, EntityActivity, EntityMood } from '../types';
+import { 
+  applyUpgradeToActivityEffectiveness, 
+  applyUpgradeToMoneyGeneration, 
+  applyUpgradeToCostReduction,
+  applyUpgradeToStatDecay,
+  type UpgradeEffectsContext 
+} from './upgradeEffects';
 
 // Definición de efectos complejos por actividad
 export interface ActivityEffect {
@@ -292,7 +299,8 @@ export const applyActivityEffects = (
   currentStats: EntityStats,
   activity: EntityActivity,
   deltaTimeMs: number,
-  isJustStarted: boolean = false
+  isJustStarted: boolean = false,
+  upgradeEffects?: UpgradeEffectsContext
 ): { newStats: EntityStats; cost: number; gain: number } => {
   const dynamics = ACTIVITY_DYNAMICS[activity];
   const newStats = { ...currentStats };
@@ -301,9 +309,21 @@ export const applyActivityEffects = (
 
   // Aplicar efectos inmediatos (solo al empezar)
   if (isJustStarted && dynamics.immediate) {
-    Object.entries(dynamics.immediate).forEach(([stat, value]) => {
+    let immediateEffects = dynamics.immediate;
+    
+    // Aplicar mejoras de efectividad
+    if (upgradeEffects) {
+      immediateEffects = applyUpgradeToActivityEffectiveness(
+        dynamics.immediate, 
+        activity, 
+        upgradeEffects
+      );
+    }
+    
+    Object.entries(immediateEffects).forEach(([stat, value]) => {
       if (stat in newStats && typeof value === 'number') {
-        (newStats as any)[stat] = Math.max(0, Math.min(100, newStats[stat as keyof EntityStats] + value));
+        const statKey = stat as keyof EntityStats;
+        (newStats as any)[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value));
       }
     });
   }
@@ -311,26 +331,53 @@ export const applyActivityEffects = (
   // Aplicar efectos por tiempo
   const minutesElapsed = deltaTimeMs / 60000;
   if (dynamics.perMinute) {
-    Object.entries(dynamics.perMinute).forEach(([stat, value]) => {
+    let perMinuteEffects = dynamics.perMinute;
+    
+    // Aplicar mejoras de efectividad
+    if (upgradeEffects) {
+      perMinuteEffects = applyUpgradeToActivityEffectiveness(
+        dynamics.perMinute, 
+        activity, 
+        upgradeEffects
+      );
+    }
+    
+    Object.entries(perMinuteEffects).forEach(([stat, value]) => {
       if (stat in newStats && typeof value === 'number') {
         const change = value * minutesElapsed;
-        (newStats as any)[stat] = Math.max(0, Math.min(100, newStats[stat as keyof EntityStats] + change));
+        const statKey = stat as keyof EntityStats;
+        (newStats as any)[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
       }
     });
   }
 
-  // Aplicar costos
+  // Aplicar costos (con posibles reducciones de upgrades)
   if (dynamics.cost) {
     if (dynamics.cost.money && newStats.money >= dynamics.cost.money) {
-      newStats.money -= dynamics.cost.money * minutesElapsed;
-      totalCost += dynamics.cost.money * minutesElapsed;
+      let costPerMinute = dynamics.cost.money;
+      
+      // Aplicar reducción de costos de upgrades
+      if (upgradeEffects) {
+        costPerMinute = applyUpgradeToCostReduction(costPerMinute, activity, upgradeEffects);
+      }
+      
+      const totalActivityCost = costPerMinute * minutesElapsed;
+      newStats.money -= totalActivityCost;
+      totalCost += totalActivityCost;
     }
   }
 
-  // Aplicar ganancias
+  // Aplicar ganancias (con posibles bonificaciones de upgrades)
   if (dynamics.gain) {
     if (dynamics.gain.money) {
-      const gainAmount = dynamics.gain.money * minutesElapsed;
+      let gainPerMinute = dynamics.gain.money;
+      
+      // Aplicar bonificaciones de dinero de upgrades
+      if (upgradeEffects) {
+        gainPerMinute = applyUpgradeToMoneyGeneration(gainPerMinute, activity, upgradeEffects);
+      }
+      
+      const gainAmount = gainPerMinute * minutesElapsed;
       newStats.money += gainAmount;
       totalGain += gainAmount;
     }

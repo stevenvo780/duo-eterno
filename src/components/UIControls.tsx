@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
+import { useUpgrades } from '../hooks/useUpgrades';
 import { applyInteractionEffect, getStatColor } from '../utils/interactions';
+import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
 import { getRandomDialogue } from '../utils/dialogues';
 import type { InteractionType } from '../types';
 import { gameConfig, speedPresets, setGameSpeed } from '../config/gameConfig';
+import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
+import UpgradePanel from './UpgradePanel';
 
 interface UIControlsProps {
   selectedEntityId?: string | null;
@@ -12,18 +16,23 @@ interface UIControlsProps {
 
 const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect }) => {
   const { gameState, dispatch } = useGame();
+  const { totalMoney, unlockedUpgrades, checkUnlockRequirements, getUpgradeEffect } = useUpgrades();
   const [showStats, setShowStats] = useState(false);
+  const [showUpgrades, setShowUpgrades] = useState(false);
   const [gameSpeed, setGameSpeedState] = useState(gameConfig.gameSpeedMultiplier);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
+    // Crear contexto de efectos de upgrades
+    const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
+    
     if (entityId) {
       // Apply to specific entity
       const entity = gameState.entities.find(e => e.id === entityId);
       if (!entity || entity.isDead) return;
 
-      const result = applyInteractionEffect(entity.stats, type);
+      const result = applyInteractionEffect(entity.stats, type, upgradeEffects);
       
       dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId, stats: result.stats } });
       if (result.mood) {
@@ -54,16 +63,18 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       gameState.entities.forEach(entity => {
         if (entity.isDead) return;
         
-        const result = applyInteractionEffect(entity.stats, type);
+        const result = applyInteractionEffect(entity.stats, type, upgradeEffects);
         dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: result.stats } });
         if (result.mood) {
           dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: result.mood } });
         }
       });
 
-      // Global resonance boost for NOURISH
+      // Global resonance boost for NOURISH with upgrade effects
       if (type === 'NOURISH') {
-        dispatch({ type: 'UPDATE_RESONANCE', payload: Math.min(100, gameState.resonance + 30) });
+        const baseResonanceGain = 30;
+        const enhancedGain = Math.round(baseResonanceGain * (1 + getUpgradeEffect('RESONANCE_BONUS') / 100));
+        dispatch({ type: 'UPDATE_RESONANCE', payload: Math.min(100, gameState.resonance + enhancedGain) });
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
@@ -87,52 +98,19 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   };
 
   const getEntityName = (id: string): string => {
-    return id === 'circle' ? 'Círculo' : 'Cuadrado';
+    return TRANSLATIONS.ENTITIES[id as keyof typeof TRANSLATIONS.ENTITIES] || id;
   };
 
   const getActivityName = (activity: string): string => {
-    const activityNames: Record<string, string> = {
-      'WANDERING': 'Vagando',
-      'MEDITATING': 'Meditando',
-      'WRITING': 'Escribiendo',
-      'RESTING': 'Descansando',
-      'SOCIALIZING': 'Socializando',
-      'EXPLORING': 'Explorando',
-      'CONTEMPLATING': 'Contemplando',
-      'DANCING': 'Bailando',
-      'HIDING': 'Escondiéndose',
-      'WORKING': 'Trabajando',
-      'SHOPPING': 'Comprando',
-      'EXERCISING': 'Ejercitándose',
-      'COOKING': 'Cocinando'
-    };
-    return activityNames[activity] || activity;
+    return TRANSLATIONS.ACTIVITIES[activity as ActivityType] || activity;
   };
 
   const getMoodName = (mood: string): string => {
-    const moodNames: Record<string, string> = {
-      'HAPPY': 'Feliz',
-      'EXCITED': 'Emocionado',
-      'CALM': 'Tranquilo',
-      'CONTENT': 'Contento',
-      'SAD': 'Triste',
-      'TIRED': 'Cansado',
-      'ANXIOUS': 'Ansioso'
-    };
-    return moodNames[mood] || mood;
+    return TRANSLATIONS.MOODS[mood as MoodType] || mood;
   };
 
   const getStatName = (stat: string): string => {
-    const statNames: Record<string, string> = {
-      'hunger': 'Hambre',
-      'sleepiness': 'Sueño',
-      'loneliness': 'Soledad',
-      'happiness': 'Felicidad',
-      'energy': 'Energía',
-      'boredom': 'Aburrimiento',
-      'money': 'Dinero'
-    };
-    return statNames[stat] || stat;
+    return TRANSLATIONS.STATS[stat as StatKey] || stat;
   };
 
   const handleSpeedChange = (newSpeed: number) => {
@@ -672,6 +650,60 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           </button>
 
           <button
+            onClick={() => {
+              checkUnlockRequirements();
+              setShowUpgrades(!showUpgrades);
+            }}
+            style={{
+              background: showUpgrades
+                ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                : 'rgba(51, 65, 85, 0.5)',
+              border: '2px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              color: '#f1f5f9',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🛠️</span>
+            <span>Mejoras</span>
+            {unlockedUpgrades.length > 0 && (
+              <span style={{
+                background: '#ef4444',
+                color: 'white',
+                borderRadius: '10px',
+                padding: '2px 6px',
+                fontSize: '10px',
+                fontWeight: 'bold'
+              }}>
+                {unlockedUpgrades.length}
+              </span>
+            )}
+          </button>
+
+          <div style={{
+            background: 'rgba(34, 197, 94, 0.2)',
+            border: '2px solid #22c55e',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: '#f1f5f9',
+            fontSize: '14px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}>
+            <span>💰</span>
+            <span>{totalMoney}</span>
+          </div>
+
+          <button
             onClick={resetGame}
             style={{
               background: 'rgba(239, 68, 68, 0.2)',
@@ -693,6 +725,11 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           </button>
         </div>
       </div>
+      
+      <UpgradePanel 
+        visible={showUpgrades} 
+        onClose={() => setShowUpgrades(false)} 
+      />
     </div>
   );
 };

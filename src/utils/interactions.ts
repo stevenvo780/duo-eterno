@@ -1,4 +1,5 @@
 import type { InteractionType, InteractionEffect, EntityStats, EntityMood } from '../types';
+import { applyUpgradeToActivityEffectiveness, type UpgradeEffectsContext } from './upgradeEffects';
 
 export const interactionEffects: Record<InteractionType, InteractionEffect> = {
   NOURISH: {
@@ -33,15 +34,29 @@ export const interactionEffects: Record<InteractionType, InteractionEffect> = {
 
 export const applyInteractionEffect = (
   currentStats: EntityStats, 
-  interaction: InteractionType
+  interaction: InteractionType,
+  upgradeEffects?: UpgradeEffectsContext
 ): { stats: EntityStats; mood?: EntityMood } => {
   const effect = interactionEffects[interaction];
+  let effectiveStats = effect.stats;
+  
+  // Aplicar efectos de upgrades si están disponibles
+  if (upgradeEffects) {
+    effectiveStats = applyUpgradeToActivityEffectiveness(
+      effect.stats, 
+      interaction, 
+      upgradeEffects
+    );
+  }
+  
   const newStats = { ...currentStats };
 
   // Apply stat changes
-  Object.entries(effect.stats).forEach(([stat, change]) => {
+  Object.entries(effectiveStats).forEach(([stat, change]) => {
     const statKey = stat as keyof EntityStats;
-    newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
+    if (typeof change === 'number') {
+      newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
+    }
   });
 
   return {
