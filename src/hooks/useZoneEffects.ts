@@ -9,6 +9,7 @@ import {
   getPooledStatsUpdate,
   releasePooledStatsUpdate
 } from '../utils/performanceOptimizer';
+import { logZones } from '../utils/logger';
 
 // Función para calcular efectividad de zona basada en necesidad - MEJORADA
 const calculateZoneEffectiveness = (
@@ -170,7 +171,7 @@ export const useZoneEffects = () => {
   useEffect(() => {
     const { zoneEffectsInterval } = getGameIntervals();
     
-    console.log(`🏛️ Zone Effects Optimizado iniciado con intervalo: ${zoneEffectsInterval}ms`);
+    logZones.info(`Zone Effects Optimizado iniciado`, { interval: zoneEffectsInterval });
     
     intervalRef.current = window.setInterval(() => {
       // Usar throttling inteligente
@@ -256,7 +257,7 @@ export const useZoneEffects = () => {
                   
                   // Debug optimizado
                   if (gameConfig.debugMode && Object.keys(finalEffects).length > 0) {
-                    console.log(`🏛️ ${entity.id} en zona ${currentZone.type}:`, finalEffects);
+                    logZones.debug(`${entity.id} en zona ${currentZone.type}`, finalEffects);
                   }
                 }
               } finally {
@@ -293,7 +294,7 @@ export const useZoneEffects = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        console.log('🏛️ Zone Effects Optimizado detenido');
+        logZones.info('Zone Effects Optimizado detenido');
       }
     };
   }, [gameState.entities, gameState.zones, dispatch]);

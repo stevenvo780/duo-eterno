@@ -9,6 +9,7 @@ import {
   applyUpgradeToMoneyGeneration,
   getAutoActivityChance
 } from '../utils/upgradeEffects';
+import { logStorage } from '../utils/logger';
 import { ACTIVITY_DYNAMICS } from '../utils/activityDynamics';
 import type { EntityActivity } from '../types';
 
@@ -330,7 +331,7 @@ export const useGameClock = () => {
             lastSave: now
           }));
         } catch (error) {
-          console.warn('Failed to auto-save:', error);
+          logStorage.error('Error en auto-guardado', error);
         }
       }
 

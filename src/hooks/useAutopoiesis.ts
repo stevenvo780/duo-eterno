@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
-import type { Entity, EntityActivity, EntityMood, EntityStats } from '../types';
+import type { Entity, EntityMood, EntityStats } from '../types';
 import type { GameAction } from '../state/GameContext';
 import { 
   ACTIVITY_DYNAMICS, 
   applyActivityEffects,
-  applySurvivalCosts
+  applySurvivalCosts,
+  HYBRID_DECAY_RATES
 } from '../utils/activityDynamics';
 import { 
   makeIntelligentDecision, 
@@ -24,35 +25,7 @@ import {
   applyUpgradeToStatDecay,
   type UpgradeEffectsContext
 } from '../utils/upgradeEffects';
-
-// Sistema híbrido optimizado que combina lo mejor de ambos enfoques
-const HYBRID_DECAY_RATES = {
-  // Decay base más agresivo para cambios visibles inmediatos
-  base: {
-    hunger: 3.0,        // Más agresivo que antes
-    sleepiness: 2.5,    
-    energy: -2.0,       // Pérdida de energía más notable
-    boredom: 2.2,       
-    loneliness: 1.8,    
-    happiness: -1.5     
-  },
-  // Multiplicadores por actividad (corregir tipos)
-  activityModifiers: {
-    'WORKING': { hunger: 1.5, energy: 2.0, boredom: 1.5 },
-    'SHOPPING': { happiness: -1.8, hunger: -0.8 },
-    'COOKING': { hunger: -2.5, happiness: -0.5 },
-    'EXERCISING': { energy: 1.5, hunger: 2.0, happiness: -1.0 },
-    'RESTING': { sleepiness: -3.0, energy: -2.5 },
-    'SOCIALIZING': { loneliness: -2.5, happiness: -1.0 },
-    'DANCING': { boredom: -2.8, happiness: -1.5, energy: 1.3 },
-    'EXPLORING': { hunger: 1.2, boredom: -1.0 },
-    'MEDITATING': { happiness: -1.8, boredom: -1.5, loneliness: 0.8 },
-    'CONTEMPLATING': { happiness: -1.5, boredom: -1.2 },
-    'WRITING': { boredom: -1.8, loneliness: 0.5 },
-    'WANDERING': { boredom: -0.5 },
-    'HIDING': { loneliness: 1.5, happiness: 1.0 }
-  } as Record<EntityActivity, Record<string, number>>
-};
+import { logAutopoiesis } from '../utils/logger';
 
 // Aplicar efectos complejos de actividades (fusión de ambos sistemas) - REFACTORIZADO
 const applyComplexActivityEffects = (
@@ -178,7 +151,7 @@ export const useAutopoiesis = () => {
     // Crear contexto de efectos de upgrades
     const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
     
-    console.log(`🧬 Sistema Híbrido Autopoiesis Mejorado iniciado - Intervalo: ${autopoiesisInterval}ms`);
+    logAutopoiesis.info('Sistema Híbrido Autopoiesis Mejorado iniciado', { interval: autopoiesisInterval });
     
     intervalRef.current = window.setInterval(() => {
       // Usar throttling inteligente para optimización
@@ -229,7 +202,7 @@ export const useAutopoiesis = () => {
               });
               
               if (gameConfig.debugMode) {
-                console.log(`🤖 ${entity.id}: ${entity.activity} → ${newActivity}`);
+                logAutopoiesis.debug(`${entity.id}: ${entity.activity} → ${newActivity}`);
               }
             }
           }
@@ -266,7 +239,7 @@ export const useAutopoiesis = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        console.log('🧬 Sistema Híbrido Autopoiesis Mejorado detenido');
+        logAutopoiesis.info('Sistema Híbrido Autopoiesis Mejorado detenido');
       }
     };
   }, [gameState.entities, gameState.zones, gameState.resonance, dispatch, getUpgradeEffect]);

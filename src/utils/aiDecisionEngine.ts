@@ -14,6 +14,7 @@ import {
 } from '../constants/gameConstants';
 import { ACTIVITY_DYNAMICS, calculateActivityPriority } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
+import { logAI } from './logger';
 
 // Perfiles de personalidad para cada entidad
 interface PersonalityProfile {
@@ -271,7 +272,7 @@ export const makeIntelligentDecision = (
       startActivitySession(entity.id, topActivity.activity, currentTime);
       
       if (gameConfig.debugMode) {
-        console.log(`🤖 ${entity.id} cambia actividad: ${entity.activity} → ${topActivity.activity} (urgencia: ${urgencyScore.toFixed(1)})`);
+        logAI.debug(`${entity.id} cambia actividad: ${entity.activity} → ${topActivity.activity}`, { urgencia: urgencyScore.toFixed(1) });
       }
       
       return topActivity.activity;

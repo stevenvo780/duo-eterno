@@ -69,7 +69,10 @@ export const speedPresets = {
 // Función para cambiar velocidad en tiempo real
 export const setGameSpeed = (multiplier: number) => {
   gameConfig.gameSpeedMultiplier = Math.max(0.1, Math.min(20, multiplier));
-  console.log(`🎮 Velocidad del juego: ${gameConfig.gameSpeedMultiplier}x`);
+  // Importación lazy para evitar dependencias circulares
+  import('../utils/logger').then(({ logGeneral }) => {
+    logGeneral.info(`Velocidad del juego actualizada: ${gameConfig.gameSpeedMultiplier}x`);
+  });
 };
 
 // Función para aplicar preset de velocidad
@@ -80,14 +83,15 @@ export const applySpeedPreset = (presetName: keyof typeof speedPresets) => {
 // Helper para logging de configuración en modo debug
 export const logConfig = () => {
   if (gameConfig.debugMode) {
-    console.group('🎮 Game Configuration');
-    console.table({
-      'Velocidad del Juego': `${gameConfig.gameSpeedMultiplier}x`,
-      'FPS Objetivo': gameConfig.targetFPS,
-      'FPS Movimiento': gameConfig.movementUpdateFPS,
-      'Modo Debug': gameConfig.debugMode ? 'ON' : 'OFF'
+    // Importación lazy para evitar dependencias circulares
+    import('../utils/logger').then(({ logGeneral }) => {
+      logGeneral.info('Configuración del Juego', {
+        'Velocidad del Juego': `${gameConfig.gameSpeedMultiplier}x`,
+        'FPS Objetivo': gameConfig.targetFPS,
+        'FPS Movimiento': gameConfig.movementUpdateFPS,
+        'Modo Debug': gameConfig.debugMode ? 'ON' : 'OFF'
+      });
     });
-    console.groupEnd();
   }
 };
 

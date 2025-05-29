@@ -9,6 +9,7 @@ import {
   type EntityFeedback,
   type ContextualAnimation
 } from '../utils/feedbackSystem';
+import { logRender } from '../utils/logger';
 import { getCurrentMetrics } from '../utils/performanceOptimizer';
 
 interface CanvasProps {
@@ -561,7 +562,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick }) => {
     if (frameCount.current % 60 === 0) {
       const metrics = getCurrentMetrics();
       if (metrics.fps < 30) {
-        console.warn(`FPS bajo detectado: ${metrics.fps.toFixed(1)} FPS`);
+        logRender.warn(`FPS bajo detectado: ${metrics.fps.toFixed(1)} FPS`);
       }
     }
 

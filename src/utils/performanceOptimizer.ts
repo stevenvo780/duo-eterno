@@ -9,6 +9,7 @@
  */
 
 import { gameConfig } from '../config/gameConfig';
+import { logGeneral } from './logger';
 
 // Interfaz para métricas de rendimiento
 export interface PerformanceMetrics {
@@ -285,7 +286,7 @@ export const measureExecutionTime = <T>(
   if (gameConfig.debugMode) {
     const time = end - start;
     if (time > 5) { // Solo logear si toma más de 5ms
-      console.log(`⏱️ ${name}: ${time.toFixed(2)}ms`);
+      logGeneral.debug(`⏱️ ${name}: ${time.toFixed(2)}ms`);
     }
   }
   
@@ -376,11 +377,11 @@ export const setupPerformanceMonitoring = (): void => {
     const metrics = updatePerformanceMetrics();
     
     if (metrics.fps < 30) {
-      console.warn(`⚠️ FPS bajo detectado: ${metrics.fps.toFixed(1)}`);
+      logGeneral.warn(`FPS bajo detectado: ${metrics.fps.toFixed(1)}`);
     }
     
     if (metrics.memoryUsage > 100) { // > 100MB
-      console.warn(`⚠️ Uso alto de memoria: ${metrics.memoryUsage.toFixed(1)}MB`);
+      logGeneral.warn(`Uso alto de memoria: ${metrics.memoryUsage.toFixed(1)}MB`);
     }
     
   }, 5000); // Verificar cada 5 segundos

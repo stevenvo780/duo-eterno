@@ -4,8 +4,11 @@ import {
   applyUpgradeToActivityEffectiveness, 
   applyUpgradeToMoneyGeneration, 
   applyUpgradeToCostReduction,
+  applyUpgradeToStatDecay,
   type UpgradeEffectsContext 
 } from './upgradeEffects';
+import { gameConfig } from '../config/gameConfig';
+import { logAutopoiesis } from './logger';
 
 // Definición de efectos complejos por actividad
 export interface ActivityEffect {
@@ -393,6 +396,81 @@ export const applyActivityEffects = (
   });
 
   return { newStats, cost: totalCost, gain: totalGain };
+};
+
+// Sistema híbrido de decay rates para complementar las dinámicas de actividad
+export const HYBRID_DECAY_RATES = {
+  // Decay base más agresivo para cambios visibles inmediatos
+  base: {
+    hunger: 3.0,        // Más agresivo que antes
+    sleepiness: 2.5,    
+    energy: -2.0,       // Pérdida de energía más notable
+    boredom: 2.2,       
+    loneliness: 1.8,    
+    happiness: -1.5     
+  },
+  // Multiplicadores por actividad
+  activityModifiers: {
+    'WORKING': { hunger: 1.5, energy: 2.0, boredom: 1.5 },
+    'SHOPPING': { happiness: -1.8, hunger: -0.8 },
+    'COOKING': { hunger: -2.5, happiness: -0.5 },
+    'EXERCISING': { energy: 1.5, hunger: 2.0, happiness: -1.0 },
+    'RESTING': { sleepiness: -3.0, energy: -2.5 },
+    'SOCIALIZING': { loneliness: -2.5, happiness: -1.0 },
+    'DANCING': { boredom: -2.8, happiness: -1.5, energy: 1.3 },
+    'EXPLORING': { hunger: 1.2, boredom: -1.0 },
+    'MEDITATING': { happiness: -1.8, boredom: -1.5, loneliness: 0.8 },
+    'CONTEMPLATING': { happiness: -1.5, boredom: -1.2 },
+    'WRITING': { boredom: -1.8, loneliness: 0.5 },
+    'WANDERING': { boredom: -0.5 },
+    'HIDING': { loneliness: 1.5, happiness: 1.0 }
+  } as Record<EntityActivity, Record<string, number>>
+};
+
+// Aplicar decay híbrido a las estadísticas de una entidad
+export const applyHybridDecay = (
+  currentStats: EntityStats,
+  activity: EntityActivity,
+  deltaTimeMs: number,
+  upgradeEffects?: UpgradeEffectsContext
+): EntityStats => {
+  const newStats = { ...currentStats };
+  const timeMultiplier = deltaTimeMs / 1000;
+  
+  // Aplicar decay base con modificadores de actividad
+  Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
+    if (statName in newStats) {
+      let finalRate = baseRate;
+      
+      // Aplicar modificador de actividad si existe
+      const activityMod = HYBRID_DECAY_RATES.activityModifiers[activity];
+      if (activityMod && statName in activityMod) {
+        finalRate += activityMod[statName];
+      }
+      
+      // Aplicar mejoras de upgrades para reducir decay
+      if (upgradeEffects) {
+        finalRate = applyUpgradeToStatDecay ? applyUpgradeToStatDecay(finalRate, upgradeEffects) : finalRate;
+      }
+      
+      // Aplicar decay ajustado por configuración
+      const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;
+      const statKey = statName as keyof EntityStats;
+      
+      if (statKey !== 'money') { // El dinero se maneja por separado
+        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + configuredRate)) as EntityStats[keyof EntityStats];
+      }
+    }
+  });
+
+  logAutopoiesis.debug(`Decay aplicado a entidad`, { 
+    activity, 
+    changes: Object.fromEntries(
+      Object.entries(newStats).map(([k, v]) => [k, v - currentStats[k as keyof EntityStats]])
+    )
+  });
+
+  return newStats;
 };
 
 // Costos pasivos de supervivencia (se aplican constantemente)
