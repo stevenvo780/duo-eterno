@@ -11,7 +11,7 @@ import {
 } from '../utils/performanceOptimizer';
 import { logZones } from '../utils/logger';
 
-// Función para calcular efectividad de zona basada en necesidad - MEJORADA
+// Función para calcular efectividad de zona basada en necesidad - SISTEMA POSITIVO
 const calculateZoneEffectiveness = (
   stats: EntityStats, 
   zoneType: string
@@ -21,31 +21,42 @@ const calculateZoneEffectiveness = (
   
   switch (zoneType) {
     case 'food':
+      // stats.hunger ahora es "saciedad" (0=hambriento, 100=lleno)
       relevantStatValue = stats.hunger;
-      criticalNeed = relevantStatValue > 80;
+      criticalNeed = relevantStatValue < 20;
       break;
     case 'rest':
-      relevantStatValue = Math.max(stats.sleepiness, 100 - stats.energy);
+      // stats.sleepiness sigue siendo sueño (0=despierto, 100=somnoliento)
+      relevantStatValue = stats.sleepiness;
       criticalNeed = stats.sleepiness > 80 || stats.energy < 20;
       break;
     case 'play':
+      // stats.boredom ahora es "diversión" (0=aburrido, 100=divertido)
       relevantStatValue = stats.boredom;
-      criticalNeed = relevantStatValue > 80;
+      criticalNeed = relevantStatValue < 20;
       break;
     case 'social':
+      // stats.loneliness ahora es "compañía" (0=solo, 100=acompañado)
       relevantStatValue = stats.loneliness;
-      criticalNeed = relevantStatValue > 80;
+      criticalNeed = relevantStatValue < 20;
       break;
     case 'comfort':
-      relevantStatValue = Math.max(stats.boredom, stats.loneliness, 100 - stats.happiness);
-      criticalNeed = stats.happiness < 20;
+      // Combinamos necesidades de felicidad, diversión y compañía
+      relevantStatValue = Math.min(stats.happiness, stats.boredom, stats.loneliness);
+      criticalNeed = relevantStatValue < 20;
+      break;
+    case 'energy':
+      // stats.energy sigue siendo energía (0=agotado, 100=energético)
+      relevantStatValue = stats.energy;
+      criticalNeed = relevantStatValue < 20;
       break;
     default:
       return { effectiveness: 1.0, criticalNeed: false };
   }
   
-  // Efectividad más agresiva con multiplicador de configuración
-  const baseEffectiveness = Math.min(5.0, 1.0 + (relevantStatValue / 25));
+  // Efectividad basada en necesidad (valores bajos necesitan más efectividad)
+  const needLevel = 100 - relevantStatValue; // Invertimos para que baja stat = alta necesidad
+  const baseEffectiveness = Math.min(5.0, 1.0 + (needLevel / 25));
   const configuredEffectiveness = baseEffectiveness * gameConfig.zoneEffectivenessMultiplier;
   
   return { 
@@ -98,14 +109,14 @@ const getContextualZoneMessage = (
     },
     play: {
       critical: [
-        `${symbol} "¡AL FIN diversión! El aburrimiento me mataba..."`,
+        `${symbol} "¡AL FIN diversión! El aburrimiento me consumía..."`,
         `${symbol} "Esta actividad era exactamente lo que necesitaba..."`,
         `${symbol} "Mi espíritu revive con esta diversión..."`
       ],
       high: [
         `${symbol} "¡Qué liberador poder jugar aquí!"`,
         `${symbol} "Este lugar despierta mi alegría..."`,
-        `${symbol} "El aburrimiento se disuelve rápidamente..."`
+        `${symbol} "La diversión fluye a través de mí..."`
       ],
       normal: [
         `${symbol} "Jugar siempre levanta el ánimo..."`,
@@ -115,7 +126,7 @@ const getContextualZoneMessage = (
     social: {
       critical: [
         `${symbol} "Por fin conexión... la soledad era agónica..."`,
-        `${symbol} "Esta plaza me recuerda que existo..."`,
+        `${symbol} "Esta plaza me recuerda que no estoy solo..."`,
         `${symbol} "La energía social me cura por completo..."`
       ],
       high: [
@@ -142,6 +153,22 @@ const getContextualZoneMessage = (
       normal: [
         `${symbol} "Un momento de meditación siempre ayuda..."`,
         `${symbol} "Este lugar tiene energía especial..."`
+      ]
+    },
+    energy: {
+      critical: [
+        `${symbol} "¡Esta estación me salva del agotamiento total!"`,
+        `${symbol} "La energía fluye através de mí... ¡renazco!"`,
+        `${symbol} "Siento como cada célula se revitaliza..."`
+      ],
+      high: [
+        `${symbol} "Esta estación energética es exactamente lo que necesitaba..."`,
+        `${symbol} "Mi vitalidad se restaura rápidamente aquí..."`,
+        `${symbol} "La corriente energética me recarga por completo..."`
+      ],
+      normal: [
+        `${symbol} "Un impulso de energía siempre viene bien..."`,
+        `${symbol} "Esta estación tiene una vibración especial..."`
       ]
     }
   };
@@ -200,35 +227,40 @@ export const useZoneEffects = () => {
               currentZone.type
             );
             
-            // Efectos de zona más fuertes con configuración
+            // Efectos de zona más fuertes con configuración - SISTEMA POSITIVO
             const timeMultiplier = (deltaTime / 1000) * gameConfig.gameSpeedMultiplier;
             const enhancedEffects: Record<string, Partial<EntityStats>> = {
               food: { 
-                hunger: -15 * effectiveness * timeMultiplier,
+                hunger: 15 * effectiveness * timeMultiplier,     // +saciedad
                 energy: 5 * effectiveness * timeMultiplier, 
                 happiness: 3 * effectiveness * timeMultiplier 
               },
               rest: { 
-                sleepiness: -18 * effectiveness * timeMultiplier,
+                sleepiness: -18 * effectiveness * timeMultiplier, // -sueño (único negativo)
                 energy: 12 * effectiveness * timeMultiplier, 
-                boredom: Math.min(5, 2 * effectiveness * timeMultiplier)
+                boredom: 2 * effectiveness * timeMultiplier       // +diversión
               },
               play: { 
-                boredom: -20 * effectiveness * timeMultiplier,
+                boredom: 20 * effectiveness * timeMultiplier,     // +diversión
                 happiness: 10 * effectiveness * timeMultiplier, 
-                energy: -3 * effectiveness * timeMultiplier,
-                loneliness: -5 * effectiveness * timeMultiplier
+                energy: -3 * effectiveness * timeMultiplier,      // -energía (gasta energía)
+                loneliness: 5 * effectiveness * timeMultiplier    // +compañía
               },
               social: { 
-                loneliness: -25 * effectiveness * timeMultiplier,
+                loneliness: 25 * effectiveness * timeMultiplier,  // +compañía
                 happiness: 8 * effectiveness * timeMultiplier, 
-                energy: -2 * effectiveness * timeMultiplier
+                energy: -2 * effectiveness * timeMultiplier       // -energía (gasta un poco)
               },
               comfort: { 
                 happiness: 8 * effectiveness * timeMultiplier, 
-                sleepiness: -5 * effectiveness * timeMultiplier, 
-                boredom: -8 * effectiveness * timeMultiplier, 
-                loneliness: -4 * effectiveness * timeMultiplier 
+                sleepiness: -5 * effectiveness * timeMultiplier,  // -sueño
+                boredom: 8 * effectiveness * timeMultiplier,      // +diversión
+                loneliness: 4 * effectiveness * timeMultiplier    // +compañía
+              },
+              energy: {
+                energy: 80 * effectiveness * timeMultiplier,      // +energía
+                sleepiness: -10 * effectiveness * timeMultiplier, // -sueño
+                happiness: 5 * effectiveness * timeMultiplier
               }
             };
 

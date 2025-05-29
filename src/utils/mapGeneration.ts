@@ -129,9 +129,9 @@ export const createDefaultZones = (): Zone[] => {
       name: 'Estación Energética',
       bounds: { x: 800, y: 200, width: 120, height: 100 },
       type: 'energy',
-      effects: { energy: 30, sleepiness: -10, happiness: 5 },
+      effects: { energy: 80, sleepiness: -10, happiness: 5 },
       color: 'rgba(245, 158, 11, 0.25)',
-      attractiveness: 0.7
+      attractiveness: 1
     }
   ];
 };

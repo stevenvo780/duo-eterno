@@ -77,41 +77,43 @@ const applyComplexActivityEffects = (
   });
 };
 
-// Cálculo de estado de ánimo optimizado para sistema normalizado
+// Cálculo de estado de ánimo optimizado para sistema positivo
 const calculateOptimizedMood = (stats: EntityStats, resonance: number): EntityMood => {
-  // En el sistema normalizado, 50 es óptimo, valores extremos (0-20 o 80-100) son problemáticos
+  // En el sistema positivo, valores altos (cerca de 100) son buenos, valores bajos (cerca de 0) son problemáticos
   const criticalFactors = [
-    stats.hunger > 80 || stats.hunger < 20,
-    stats.sleepiness > 80 || stats.sleepiness < 20,
-    stats.loneliness > 80 || stats.loneliness < 20,
-    stats.energy < 20 || stats.energy > 80,
-    stats.boredom > 80 || stats.boredom < 20
+    stats.hunger < 20,      // Poca saciedad = hambriento
+    stats.sleepiness > 80,  // Mucho sueño = necesita descanso  
+    stats.loneliness < 20,  // Poca compañía = solo
+    stats.energy < 20,      // Poca energía = cansado
+    stats.boredom < 20,     // Poca diversión = aburrido
+    stats.happiness < 20    // Poca felicidad = triste
   ].filter(Boolean).length;
 
   // Situaciones críticas
   if (criticalFactors >= 3) return 'ANXIOUS';
   if (stats.energy < 25) return 'TIRED';
-  if (stats.loneliness > 75 && resonance < 30) return 'SAD';
+  if (stats.loneliness < 25 && resonance < 30) return 'SAD';
   
-  // Calcular distancia del equilibrio homeostático (50 es óptimo)
-  const statKeys = ['hunger', 'sleepiness', 'loneliness', 'energy', 'boredom'] as const;
-  const balanceScore = statKeys.reduce((sum, key) => {
-    const value = stats[key] || 50;
-    const distanceFromOptimal = Math.abs(value - 50);
-    return sum + (50 - distanceFromOptimal); // Mejor puntuación si está cerca de 50
+  // Calcular puntuación general de bienestar (valores altos son buenos)
+  const statKeys = ['hunger', 'loneliness', 'energy', 'boredom', 'happiness'] as const;
+  const wellbeingScore = statKeys.reduce((sum, key) => {
+    return sum + (stats[key] || 0);
   }, 0) / statKeys.length;
   
-  // Bonus por happiness y dinero
-  const happinessBonus = (stats.happiness - 50) * 0.5;
-  const moneyBonus = Math.min((stats.money - 50) * 0.2, 10);
+  // Penalizar por exceso de sueño
+  const sleepPenalty = stats.sleepiness > 80 ? 20 : 0;
+  const finalScore = wellbeingScore - sleepPenalty;
+  
+  // Bonus por dinero y resonance
+  const moneyBonus = Math.min(stats.money * 0.1, 10);
   const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
   
-  const totalMoodScore = balanceScore + happinessBonus + moneyBonus + bondBonus;
+  const totalMoodScore = finalScore + moneyBonus + bondBonus;
   
-  if (totalMoodScore > 60 && stats.energy > 40 && stats.energy < 70) return 'EXCITED';
-  if (totalMoodScore > 45) return 'HAPPY';
-  if (totalMoodScore > 35) return 'CONTENT';
-  if (totalMoodScore > 25) return 'CALM';
+  if (totalMoodScore > 80 && stats.energy > 60) return 'EXCITED';
+  if (totalMoodScore > 65) return 'HAPPY';
+  if (totalMoodScore > 50) return 'CONTENT';
+  if (totalMoodScore > 35) return 'CALM';
   return 'SAD';
 };
 

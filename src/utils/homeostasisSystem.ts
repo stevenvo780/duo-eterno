@@ -106,40 +106,73 @@ const ACTIVITY_EFFICIENCY_CURVES = {
   RESTING: {
     vitality: (current: number) => current < 50 ? 0.5 : -0.1,
     alertness: (current: number) => current < 50 ? 0.8 : -0.2,
-    nourishment: (current: number) => -0.1,
+    nourishment: () => -0.1,
     stimulation: (current: number) => current > 30 ? -0.3 : 0
-  },
-  EATING: {
-    nourishment: (current: number) => current < 50 ? 0.8 : current > 80 ? -0.1 : 0.3,
-    vitality: (current: number) => current < 40 ? 0.2 : 0,
-    contentment: (current: number) => current < 60 ? 0.1 : 0
-  },
-  PLAYING: {
-    stimulation: (current: number) => current < 50 ? 0.6 : current > 80 ? -0.1 : 0.2,
-    contentment: (current: number) => current < 70 ? 0.4 : 0,
-    vitality: (current: number) => current > 20 ? -0.2 : 0,
-    connection: (current: number) => 0.1
   },
   SOCIALIZING: {
     connection: (current: number) => current < 50 ? 0.7 : current > 80 ? -0.1 : 0.3,
     contentment: (current: number) => current < 70 ? 0.3 : 0,
     stimulation: (current: number) => current < 70 ? 0.2 : 0,
-    vitality: (current: number) => -0.1
-  },
-  WORKING: {
-    resources: (_current: number) => 0.4,
-    vitality: (current: number) => -0.3,
-    stimulation: (current: number) => current < 30 ? 0.2 : current > 70 ? -0.3 : 0,
-    contentment: (current: number) => current > 30 && current < 70 ? 0.1 : -0.1
+    vitality: () => -0.1
   },
   EXPLORING: {
     stimulation: (current: number) => current < 60 ? 0.5 : 0,
     vitality: (current: number) => current > 30 ? -0.2 : 0,
     contentment: (current: number) => current < 80 ? 0.2 : 0
   },
-  NOTHING: {
-    stimulation: (current: number) => current > 20 ? -0.4 : 0,
-    vitality: (current: number) => current < 80 ? 0.1 : 0
+  WANDERING: {
+    stimulation: (current: number) => current < 50 ? 0.3 : 0,
+    vitality: (current: number) => current > 40 ? -0.1 : 0,
+    contentment: (current: number) => current < 60 ? 0.1 : 0
+  },
+  MEDITATING: {
+    contentment: (current: number) => current < 80 ? 0.4 : 0,
+    alertness: (current: number) => current < 70 ? 0.3 : 0,
+    stimulation: (current: number) => current > 60 ? -0.2 : 0.1
+  },
+  WRITING: {
+    stimulation: (current: number) => current < 70 ? 0.3 : 0,
+    contentment: (current: number) => current < 60 ? 0.2 : 0,
+    vitality: () => -0.1
+  },
+  CONTEMPLATING: {
+    contentment: (current: number) => current < 70 ? 0.2 : 0,
+    alertness: (current: number) => current < 60 ? 0.2 : 0,
+    stimulation: (current: number) => current > 50 ? -0.1 : 0.1
+  },
+  DANCING: {
+    contentment: (current: number) => current < 80 ? 0.5 : 0,
+    vitality: (current: number) => current > 20 ? -0.3 : 0,
+    stimulation: (current: number) => current < 70 ? 0.4 : 0,
+    connection: (current: number) => current < 60 ? 0.2 : 0
+  },
+  HIDING: {
+    alertness: (current: number) => current < 80 ? 0.3 : 0,
+    stimulation: (current: number) => current > 30 ? -0.4 : 0,
+    contentment: (current: number) => current > 40 ? -0.2 : 0
+  },
+  WORKING: {
+    resources: () => 0.4,
+    vitality: () => -0.3,
+    stimulation: (current: number) => current < 30 ? 0.2 : current > 70 ? -0.3 : 0,
+    contentment: (current: number) => current > 30 && current < 70 ? 0.1 : -0.1
+  },
+  SHOPPING: {
+    resources: (current: number) => current > 80 ? -0.5 : 0,
+    contentment: (current: number) => current < 60 ? 0.3 : 0,
+    stimulation: (current: number) => current < 50 ? 0.2 : 0
+  },
+  EXERCISING: {
+    vitality: (current: number) => current < 70 ? 0.6 : 0,
+    contentment: (current: number) => current < 80 ? 0.3 : 0,
+    stimulation: (current: number) => current < 60 ? 0.2 : 0,
+    alertness: (current: number) => current < 70 ? 0.4 : 0
+  },
+  COOKING: {
+    nourishment: (current: number) => current < 80 ? 0.7 : 0,
+    contentment: (current: number) => current < 60 ? 0.3 : 0,
+    stimulation: (current: number) => current < 50 ? 0.2 : 0,
+    vitality: () => -0.1
   }
 };
 
@@ -174,22 +207,28 @@ export const calculateStressLevel = (stats: NormalizedStats): number => {
 // Calcular urgencia de diferentes actividades basada en estado actual
 export const calculateActivityUrgency = (stats: NormalizedStats): Record<EntityActivity, number> => {
   const urgencies: Record<EntityActivity, number> = {
+    WANDERING: 0,
+    MEDITATING: 0,
+    WRITING: 0,
     RESTING: 0,
-    EATING: 0,
-    PLAYING: 0,
     SOCIALIZING: 0,
-    WORKING: 0,
     EXPLORING: 0,
-    NOTHING: 0
+    CONTEMPLATING: 0,
+    DANCING: 0,
+    HIDING: 0,
+    WORKING: 0,
+    SHOPPING: 0,
+    EXERCISING: 0,
+    COOKING: 0
   };
   
   // Urgencias basadas en déficits críticos
   if (stats.vitality < 30) urgencies.RESTING = (30 - stats.vitality) * 2;
   if (stats.alertness < 30) urgencies.RESTING = Math.max(urgencies.RESTING, (30 - stats.alertness) * 1.5);
-  if (stats.nourishment < 30) urgencies.EATING = (30 - stats.nourishment) * 2.5;
-  if (stats.stimulation < 30) urgencies.PLAYING = (30 - stats.stimulation) * 1.5;
+  if (stats.nourishment < 30) urgencies.CONTEMPLATING = (30 - stats.nourishment) * 1.5;
+  if (stats.stimulation < 30) urgencies.EXPLORING = (30 - stats.stimulation) * 1.5;
   if (stats.connection < 30) urgencies.SOCIALIZING = (30 - stats.connection) * 1.8;
-  if (stats.resources < 20) urgencies.WORKING = (20 - stats.resources) * 1.2;
+  if (stats.contentment < 30) urgencies.MEDITATING = (30 - stats.contentment) * 1.4;
   
   // Reducir urgencias si hay déficits más críticos
   const maxUrgency = Math.max(...Object.values(urgencies));

@@ -36,11 +36,11 @@ export interface ActivityEffect {
   resultingMood?: EntityMood;
 }
 
-// Definición de todas las dinámicas de actividades
+// Definición de todas las dinámicas de actividades - SISTEMA POSITIVO (0-100 donde 100 = bueno)
 export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   WORKING: {
-    immediate: { energy: -0.1, boredom: 0.05 },
-    perMinute: { energy: -8, boredom: 5, happiness: -2 },
+    immediate: { energy: -0.1, boredom: -0.05 }, // Trabajar reduce energía y diversión
+    perMinute: { energy: -8, boredom: -5, happiness: -2 }, // Trabajar cansa y aburre
     gain: { money: 50 }, // 50 unidades de dinero por trabajo completo
     minDuration: 30000, // 30 segundos mínimo
     optimalDuration: 120000, // 2 minutos óptimo
@@ -53,8 +53,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   RESTING: {
-    immediate: { sleepiness: -0.2, energy: 0.15 },
-    perMinute: { sleepiness: -15, energy: 12, hunger: 3 }, // Dormir da hambre
+    immediate: { sleepiness: -0.2, energy: 0.15 }, // Descansar reduce sueño y aumenta energía
+    perMinute: { sleepiness: -15, energy: 12, hunger: -3 }, // Dormir da hambre (reduce saciedad)
     minDuration: 45000, // 45 segundos mínimo
     optimalDuration: 180000, // 3 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -66,8 +66,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   SOCIALIZING: {
-    immediate: { loneliness: -0.2, happiness: 0.1 },
-    perMinute: { loneliness: -20, happiness: 8, energy: -3, hunger: 2 },
+    immediate: { loneliness: 0.2, happiness: 0.1 }, // Socializar aumenta compañía y felicidad
+    perMinute: { loneliness: 20, happiness: 8, energy: -3, hunger: -2 }, // Socializar gasta energía y saciedad
     minDuration: 20000, // 20 segundos mínimo
     optimalDuration: 90000, // 1.5 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -78,8 +78,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   DANCING: {
-    immediate: { boredom: -0.2, happiness: 0.15, energy: -0.05 },
-    perMinute: { boredom: -25, happiness: 15, energy: -5, hunger: 4 }, // Bailar da hambre
+    immediate: { boredom: 0.2, happiness: 0.15, energy: -0.05 }, // Bailar aumenta diversión y felicidad
+    perMinute: { boredom: 25, happiness: 15, energy: -5, hunger: -4 }, // Bailar da hambre (gasta saciedad)
     minDuration: 15000, // 15 segundos mínimo
     optimalDuration: 60000, // 1 minuto óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -90,8 +90,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   SHOPPING: {
-    immediate: { happiness: 0.2 },
-    perMinute: { happiness: 10, hunger: -8, boredom: -5 }, // Comprar comida/entretenimiento
+    immediate: { happiness: 0.2 }, // Comprar aumenta felicidad
+    perMinute: { happiness: 10, hunger: 8, boredom: 5 }, // Comprar comida/entretenimiento aumenta saciedad y diversión
     cost: { money: 30 }, // Cuesta dinero
     minDuration: 10000, // 10 segundos mínimo
     optimalDuration: 30000, // 30 segundos óptimo
@@ -103,8 +103,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   COOKING: {
-    immediate: { boredom: -0.05 },
-    perMinute: { hunger: -20, happiness: 5, energy: -3 },
+    immediate: { boredom: 0.05 }, // Cocinar da un poco de diversión
+    perMinute: { hunger: 20, happiness: 5, energy: -3 }, // Cocinar aumenta saciedad y felicidad
     cost: { money: 15 }, // Cuesta ingredientes
     minDuration: 25000, // 25 segundos mínimo
     optimalDuration: 45000, // 45 segundos óptimo
@@ -117,8 +117,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   EXERCISING: {
-    immediate: { energy: -0.2, boredom: -0.1 },
-    perMinute: { energy: -10, boredom: -8, happiness: 6, hunger: 6 }, // Ejercicio da hambre
+    immediate: { energy: -0.2, boredom: 0.1 }, // Ejercicio gasta energía pero da diversión
+    perMinute: { energy: -10, boredom: 8, happiness: 6, hunger: -6 }, // Ejercicio da hambre (gasta saciedad)
     minDuration: 30000, // 30 segundos mínimo
     optimalDuration: 90000, // 1.5 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -130,8 +130,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   MEDITATING: {
-    immediate: { happiness: 0.05, loneliness: 0.03 },
-    perMinute: { happiness: 8, loneliness: 3, sleepiness: -5, boredom: -3 },
+    immediate: { happiness: 0.05, loneliness: -0.03 }, // Meditar aumenta felicidad, puede reducir compañía
+    perMinute: { happiness: 8, loneliness: -3, sleepiness: -5, boredom: 3 }, // Meditar da tranquilidad
     minDuration: 60000, // 1 minuto mínimo
     optimalDuration: 180000, // 3 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -142,8 +142,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   WRITING: {
-    immediate: { boredom: -0.15, loneliness: 0.05 },
-    perMinute: { boredom: -15, happiness: 5, loneliness: 4, energy: -2 },
+    immediate: { boredom: 0.15, loneliness: -0.05 }, // Escribir da diversión pero reduce compañía
+    perMinute: { boredom: 15, happiness: 5, loneliness: -4, energy: -2 }, // Escribir es solitario
     minDuration: 45000, // 45 segundos mínimo
     optimalDuration: 150000, // 2.5 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -154,8 +154,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   WANDERING: {
-    immediate: { boredom: -0.04, loneliness: 0.02 },
-    perMinute: { boredom: -5, energy: -2, happiness: 2 },
+    immediate: { boredom: 0.04, loneliness: -0.02 }, // Vagar da un poco de diversión
+    perMinute: { boredom: 5, energy: -2, happiness: 2 }, // Actividad neutral
     minDuration: 15000, // 15 segundos mínimo
     optimalDuration: 60000, // 1 minuto óptimo
     efficiencyOverTime: () => 0.7, // Actividad neutral
@@ -163,8 +163,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   EXPLORING: {
-    immediate: { boredom: -0.2, energy: -0.1 },
-    perMinute: { boredom: -18, energy: -6, happiness: 8, hunger: 3 },
+    immediate: { boredom: 0.2, energy: -0.1 }, // Explorar da diversión pero gasta energía
+    perMinute: { boredom: 18, energy: -6, happiness: 8, hunger: -3 }, // Explorar gasta saciedad
     minDuration: 30000, // 30 segundos mínimo
     optimalDuration: 120000, // 2 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -174,8 +174,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   CONTEMPLATING: {
-    immediate: { boredom: -0.08, loneliness: 0.05 },
-    perMinute: { boredom: -8, happiness: 4, loneliness: 5, energy: 1 },
+    immediate: { boredom: 0.08, loneliness: -0.05 }, // Contemplar da diversión pero reduce compañía
+    perMinute: { boredom: 8, happiness: 4, loneliness: -5, energy: 1 }, // Contemplar es tranquilo
     minDuration: 90000, // 1.5 minutos mínimo
     optimalDuration: 240000, // 4 minutos óptimo
     efficiencyOverTime: (timeSpent) => {
@@ -186,8 +186,8 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   },
 
   HIDING: {
-    immediate: { loneliness: 0.2 }, // Eliminar 'anxiety' que no existe en EntityStats
-    perMinute: { loneliness: 15, happiness: -5, energy: 3 },
+    immediate: { loneliness: -0.2 }, // Esconderse reduce compañía
+    perMinute: { loneliness: -15, happiness: -5, energy: 3 }, // Esconderse es malo para la socialización
     minDuration: 30000,
     optimalDuration: 90000,
     efficiencyOverTime: () => 0.6,
@@ -195,7 +195,7 @@ export const ACTIVITY_DYNAMICS: Record<EntityActivity, ActivityEffect> = {
   }
 };
 
-// Cálculo de prioridad dinámico basado en necesidades y dinero
+// Cálculo de prioridad dinámico basado en necesidades y dinero - SISTEMA POSITIVO
 export const calculateActivityPriority = (
   activity: EntityActivity,
   currentStats: EntityStats,
@@ -204,19 +204,20 @@ export const calculateActivityPriority = (
   const dynamics = ACTIVITY_DYNAMICS[activity];
   let priority = 0;
 
-  // Prioridad base según urgencia de necesidades
+  // Prioridad base según urgencia de necesidades - SISTEMA POSITIVO
   if (activity === 'WORKING') {
     // Prioridad alta si poco dinero
     priority += Math.max(0, (50 - currentStats.money) / 50) * 100;
-    // Reduce prioridad si muy cansado
-    priority -= Math.max(0, (currentStats.energy - 80) / 20) * 30;
+    // Reduce prioridad si poca energía (sistema positivo)
+    priority -= Math.max(0, (40 - currentStats.energy) / 40) * 30;
   }
 
   if (activity === 'SHOPPING') {
     // Corregir verificación de dinero para evitar undefined
     const costMoney = dynamics.cost?.money ?? 0;
     if (currentStats.money > costMoney) {
-      const needLevel = (currentStats.hunger + currentStats.boredom) / 2;
+      // SISTEMA POSITIVO: prioridad alta cuando saciedad y diversión están bajas
+      const needLevel = (100 - currentStats.hunger + 100 - currentStats.boredom) / 2;
       priority += needLevel * 0.8;
     } else {
       priority = 0;
@@ -224,25 +225,29 @@ export const calculateActivityPriority = (
   }
 
   if (activity === 'RESTING') {
+    // SISTEMA POSITIVO: prioridad alta cuando sueño alto o energía baja
     priority += Math.max(0, currentStats.sleepiness - 30) * 1.5;
-    priority += Math.max(0, (100 - currentStats.energy) - 20) * 1.2;
+    priority += Math.max(0, (30 - currentStats.energy)) * 1.2;
   }
 
   if (activity === 'COOKING') {
     const costMoney = dynamics.cost?.money ?? 0;
     if (currentStats.money >= costMoney) {
-      priority += Math.max(0, currentStats.hunger - 40) * 1.3;
+      // SISTEMA POSITIVO: prioridad alta cuando saciedad está baja
+      priority += Math.max(0, (40 - currentStats.hunger)) * 1.3;
     }
   }
 
   if (activity === 'SOCIALIZING') {
-    priority += Math.max(0, currentStats.loneliness - 30) * 1.4;
+    // SISTEMA POSITIVO: prioridad alta cuando compañía está baja
+    priority += Math.max(0, (30 - currentStats.loneliness)) * 1.4;
   }
 
   if (activity === 'DANCING' || activity === 'EXERCISING') {
-    priority += Math.max(0, currentStats.boredom - 40) * 1.1;
-    // Reduce si muy cansado
-    priority -= Math.max(0, currentStats.energy - 70) * 0.8;
+    // SISTEMA POSITIVO: prioridad alta cuando diversión está baja
+    priority += Math.max(0, (40 - currentStats.boredom)) * 1.1;
+    // Reduce si poca energía (sistema positivo)
+    priority -= Math.max(0, (30 - currentStats.energy)) * 0.8;
   }
 
   // Ajustar por eficiencia temporal
@@ -276,21 +281,25 @@ export const getOptimalActivityDuration = (
   );
 };
 
-// Calcular urgencia de una actividad específica
+// Calcular urgencia de una actividad específica - SISTEMA POSITIVO
 const calculateActivityUrgency = (activity: EntityActivity, stats: EntityStats): number => {
   switch (activity) {
     case 'WORKING':
       return Math.max(0.3, (50 - stats.money) / 50 * 2);
     case 'RESTING':
+      // SISTEMA POSITIVO: urgente cuando sueño alto o energía baja
       return Math.max(0.5, (stats.sleepiness + (100 - stats.energy)) / 200 * 2);
     case 'SHOPPING':
     case 'COOKING':
-      return Math.max(0.3, stats.hunger / 100 * 1.5);
+      // SISTEMA POSITIVO: urgente cuando saciedad baja
+      return Math.max(0.3, (100 - stats.hunger) / 100 * 1.5);
     case 'SOCIALIZING':
-      return Math.max(0.3, stats.loneliness / 100 * 1.5);
+      // SISTEMA POSITIVO: urgente cuando compañía baja
+      return Math.max(0.3, (100 - stats.loneliness) / 100 * 1.5);
     case 'DANCING':
     case 'EXERCISING':
-      return Math.max(0.3, stats.boredom / 100 * 1.2);
+      // SISTEMA POSITIVO: urgente cuando diversión baja
+      return Math.max(0.3, (100 - stats.boredom) / 100 * 1.2);
     default:
       return 1.0;
   }
@@ -398,32 +407,32 @@ export const applyActivityEffects = (
   return { newStats, cost: totalCost, gain: totalGain };
 };
 
-// Sistema híbrido de decay rates para complementar las dinámicas de actividad
+// Sistema híbrido de decay rates para complementar las dinámicas de actividad - SISTEMA POSITIVO
 export const HYBRID_DECAY_RATES = {
-  // Decay base mucho más suave para cambios graduales
+  // Decay base para sistema positivo (valores altos decaen hacia valores medios)
   base: {
-    hunger: 0.8,        // Mucho más suave
-    sleepiness: 0.6,    
-    energy: -0.4,       // Pérdida de energía gradual
-    boredom: 0.5,       
-    loneliness: 0.3,    
-    happiness: -0.2     // Cambio muy gradual en felicidad
+    hunger: -0.8,       // Saciedad baja gradualmente (necesitas comer)
+    sleepiness: 0.6,    // Sueño aumenta gradualmente (necesitas descansar)
+    energy: -0.4,       // Energía baja gradualmente (necesitas recargar)
+    boredom: -0.5,      // Diversión baja gradualmente (necesitas entretenerte)
+    loneliness: -0.3,   // Compañía baja gradualmente (necesitas socializar)
+    happiness: -0.2     // Felicidad baja muy gradualmente
   },
-  // Multiplicadores por actividad (más moderados)
+  // Multiplicadores por actividad (más moderados) - SISTEMA POSITIVO
   activityModifiers: {
-    'WORKING': { hunger: 1.2, energy: 1.5, boredom: 1.3 },
-    'SHOPPING': { happiness: -1.5, hunger: -0.6 },
-    'COOKING': { hunger: -2.0, happiness: -0.3 },
-    'EXERCISING': { energy: 1.3, hunger: 1.5, happiness: -0.8 },
-    'RESTING': { sleepiness: -2.0, energy: -1.5 },
-    'SOCIALIZING': { loneliness: -2.0, happiness: -0.8 },
-    'DANCING': { boredom: -2.0, happiness: -1.2, energy: 1.2 },
-    'EXPLORING': { hunger: 1.1, boredom: -0.8 },
-    'MEDITATING': { happiness: -1.2, boredom: -1.0, loneliness: 0.6 },
-    'CONTEMPLATING': { happiness: -1.0, boredom: -0.8 },
-    'WRITING': { boredom: -1.2, loneliness: 0.3 },
-    'WANDERING': { boredom: -0.3 },
-    'HIDING': { loneliness: 1.2, happiness: 0.8 }
+    'WORKING': { hunger: -1.2, energy: -1.5, boredom: -1.3 }, // Trabajar reduce saciedad, energía y diversión
+    'SHOPPING': { happiness: 1.5, hunger: 0.6 },              // Comprar aumenta felicidad y saciedad
+    'COOKING': { hunger: 2.0, happiness: 0.3 },               // Cocinar aumenta mucho la saciedad
+    'EXERCISING': { energy: -1.3, hunger: -1.5, happiness: 0.8 }, // Ejercitar gasta energía pero da felicidad
+    'RESTING': { sleepiness: -2.0, energy: 1.5 },             // Descansar reduce sueño y aumenta energía
+    'SOCIALIZING': { loneliness: 2.0, happiness: 0.8 },       // Socializar aumenta compañía y felicidad
+    'DANCING': { boredom: 2.0, happiness: 1.2, energy: -1.2 }, // Bailar da diversión y felicidad pero gasta energía
+    'EXPLORING': { hunger: -1.1, boredom: 0.8 },              // Explorar da diversión pero gasta saciedad
+    'MEDITATING': { happiness: 1.2, boredom: 1.0, loneliness: -0.6 }, // Meditar da felicidad y diversión
+    'CONTEMPLATING': { happiness: 1.0, boredom: 0.8 },        // Contemplar da felicidad y diversión
+    'WRITING': { boredom: 1.2, loneliness: -0.3 },            // Escribir da diversión
+    'WANDERING': { boredom: 0.3 },                            // Vagar da un poco de diversión
+    'HIDING': { loneliness: -1.2, happiness: -0.8 }           // Esconderse reduce compañía y felicidad
   } as Record<EntityActivity, Record<string, number>>
 };
 
@@ -435,7 +444,7 @@ export const applyHybridDecay = (
   upgradeEffects?: UpgradeEffectsContext
 ): EntityStats => {
   const newStats = { ...currentStats };
-  const timeMultiplier = deltaTimeMs / 1000;
+  const timeMultiplier = (deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
   
   // Aplicar decay base con modificadores de actividad
   Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
@@ -490,7 +499,7 @@ export const applySurvivalCosts = (
   deltaTimeMs: number
 ): EntityStats => {
   const newStats = { ...currentStats };
-  const minutesElapsed = deltaTimeMs / 60000;
+  const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
 
   // Costo de vivir
   newStats.money = Math.max(0, newStats.money - SURVIVAL_COSTS.LIVING_COST * minutesElapsed);

@@ -12,6 +12,11 @@ export const usePerformanceMonitor = () => {
 
     const measurePerformance = () => {
       const now = performance.now();
+      
+      // Calculate frame time (time between this frame and last frame)
+      const deltaTime = now - lastTime.current;
+      setFrameTime(Math.round(deltaTime * 100) / 100);
+      
       lastTime.current = now;
       frameCount.current++;
 
@@ -19,7 +24,6 @@ export const usePerformanceMonitor = () => {
       if (now - fpsUpdateTime.current >= 1000) {
         const currentFps = Math.round((frameCount.current * 1000) / (now - fpsUpdateTime.current));
         setFps(currentFps);
-        setFrameTime(Math.round((now - fpsUpdateTime.current) / frameCount.current * 100) / 100);
         
         frameCount.current = 0;
         fpsUpdateTime.current = now;

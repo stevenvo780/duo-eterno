@@ -13,28 +13,38 @@ export const useEntityMovementOptimized = () => {
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
 
-  // Obtener estadísticas críticas (valores altos que necesitan atención)
+  // Obtener estadísticas críticas (valores bajos que necesitan atención) - SISTEMA POSITIVO
   const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
     const critical: (keyof typeof entity.stats)[] = [];
     
-    if (entity.stats.hunger > 60) critical.push('hunger');
-    if (entity.stats.sleepiness > 60) critical.push('sleepiness');
-    if (entity.stats.loneliness > 60) critical.push('loneliness');
-    if (entity.stats.boredom > 60) critical.push('boredom');
-    if (entity.stats.energy < 40) critical.push('energy');
-    if (entity.stats.money < 30) critical.push('money');
+    // En el sistema positivo, valores bajos (cerca de 0) indican necesidad
+    if (entity.stats.hunger < 40) critical.push('hunger');    // Necesita saciedad
+    if (entity.stats.sleepiness > 60) critical.push('sleepiness'); // Necesita descanso (esta sigue igual)
+    if (entity.stats.loneliness < 40) critical.push('loneliness'); // Necesita compañía
+    if (entity.stats.boredom < 40) critical.push('boredom');       // Necesita diversión
+    if (entity.stats.energy < 40) critical.push('energy');        // Necesita energía
+    if (entity.stats.happiness < 40) critical.push('happiness');  // Necesita felicidad
+    if (entity.stats.money < 30) critical.push('money');          // Necesita dinero
     
     return critical;
   }, []);
 
-  // Verificar si una zona es beneficiosa para la entidad
+  // Verificar si una zona es beneficiosa para la entidad - SISTEMA POSITIVO
   const isZoneBeneficialForEntity = useCallback((entity: Entity, zone: Zone): boolean => {
     // Verificar si la zona ayuda con las estadísticas críticas
     const criticalStats = getCriticalStats(entity);
     
     for (const stat of criticalStats) {
-      if (zone.effects[stat] && zone.effects[stat]! < 0) {
-        return true; // La zona reduce una estadística crítica
+      if (stat === 'sleepiness') {
+        // Para sleepiness, necesitamos que la zona la reduzca (valor negativo)
+        if (zone.effects[stat] && zone.effects[stat]! < 0) {
+          return true;
+        }
+      } else {
+        // Para el resto (hunger, loneliness, boredom, energy, happiness), necesitamos que la zona las aumente (valor positivo)
+        if (zone.effects[stat] && zone.effects[stat]! > 0) {
+          return true;
+        }
       }
     }
 

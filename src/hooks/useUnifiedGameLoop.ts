@@ -66,6 +66,9 @@ export const useUnifiedGameLoop = () => {
     const { gameClockInterval } = getGameIntervals();
     const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
     
+    // Capture initial stats value for cleanup function
+    const initialStats = statsRef.current;
+    
     logGeneral.info('Iniciando loop unificado del juego', { interval: gameClockInterval });
     
     intervalRef.current = window.setInterval(() => {
@@ -184,7 +187,7 @@ export const useUnifiedGameLoop = () => {
           });
         }
         
-        // Actualizar tiempo juntos (cada 2 ticks)
+        // Actualizar tiempo juntos y resonancia (cada 2 ticks)
         if (stats.totalTicks % 2 === 0 && livingEntities.length === 2) {
           const [entity1, entity2] = livingEntities;
           const distance = Math.sqrt(
@@ -192,11 +195,56 @@ export const useUnifiedGameLoop = () => {
             Math.pow(entity1.position.y - entity2.position.y, 2)
           );
           
-          if (distance < 80) {
+          // Distancia de vinculación ajustable
+          const BOND_DISTANCE = 80;
+          const CLOSE_DISTANCE = 50; // Distancia muy cercana para bonus extra
+          
+          if (distance < BOND_DISTANCE) {
+            // Actualizar tiempo juntos
             dispatch({ 
               type: 'UPDATE_TOGETHER_TIME', 
               payload: gameState.togetherTime + gameClockInterval 
             });
+            
+            // Calcular incremento de resonancia basado en la proximidad y deltaTime
+            const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
+            const resonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
+            
+            // Bonus si ambas entidades están contentas
+            const moodBonus = (entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
+                             (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED') ? 1.3 : 1.0;
+            
+            const finalResonanceIncrement = resonanceIncrement * moodBonus;
+            
+            // Aplicar incremento con límite máximo
+            const newResonance = Math.min(100, gameState.resonance + finalResonanceIncrement);
+            
+            if (finalResonanceIncrement > 0.01) { // Solo actualizar si hay cambio significativo
+              dispatch({ 
+                type: 'UPDATE_RESONANCE', 
+                payload: newResonance 
+              });
+              
+              if (gameConfig.debugMode && stats.totalTicks % 10 === 0) {
+                logGeneral.debug('Nutriendo vínculo', { 
+                  distance: distance.toFixed(1),
+                  resonance: gameState.resonance.toFixed(2),
+                  increment: finalResonanceIncrement.toFixed(4),
+                  newResonance: newResonance.toFixed(2)
+                });
+              }
+            }
+          } else if (distance > BOND_DISTANCE * 2) {
+            // Decay de resonancia cuando están muy lejos
+            const resonanceDecay = (deltaTime / 1000) * 0.5 * gameConfig.gameSpeedMultiplier;
+            const newResonance = Math.max(0, gameState.resonance - resonanceDecay);
+            
+            if (resonanceDecay > 0.01) {
+              dispatch({ 
+                type: 'UPDATE_RESONANCE', 
+                payload: newResonance 
+              });
+            }
           }
         }
         
@@ -229,11 +277,11 @@ export const useUnifiedGameLoop = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         logGeneral.info('Loop unificado del juego detenido', { 
-          totalTicks: statsRef.current.totalTicks 
+          totalTicks: initialStats.totalTicks 
         });
       }
     };
-  }, [gameState.entities, gameState.resonance, dispatch, getUpgradeEffect]);
+  }, [gameState, dispatch, getUpgradeEffect]);
 
   return {
     stats: statsRef.current
