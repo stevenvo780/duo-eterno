@@ -58,10 +58,17 @@ export const useSimpleGameLoop = () => {
 
     // Aplicar decisiones de movimiento
     result.decisions.forEach(decision => {
+      console.log(`[GameLoop] Aplicando decisión para ${decision.entityId}:`, {
+        targetZone: decision.targetZone?.type,
+        targetEntity: decision.targetEntity?.id
+      });
+
       if (decision.targetZone) {
         // Moverse hacia una zona específica (calcular centro de la zona)
         const zoneCenterX = decision.targetZone.bounds.x + decision.targetZone.bounds.width / 2;
         const zoneCenterY = decision.targetZone.bounds.y + decision.targetZone.bounds.height / 2;
+        
+        console.log(`[GameLoop] ${decision.entityId} objetivo zona -> posición:`, { x: zoneCenterX, y: zoneCenterY });
         
         dispatch({
           type: 'UPDATE_ENTITY_TARGET',
@@ -72,6 +79,8 @@ export const useSimpleGameLoop = () => {
         });
       } else if (decision.targetEntity) {
         // Buscar a otra entidad
+        console.log(`[GameLoop] ${decision.entityId} objetivo entidad -> posición:`, decision.targetEntity.position);
+        
         dispatch({
           type: 'UPDATE_ENTITY_TARGET',
           payload: { 
@@ -79,6 +88,8 @@ export const useSimpleGameLoop = () => {
             target: decision.targetEntity.position 
           }
         });
+      } else {
+        console.log(`[GameLoop] ${decision.entityId} sin objetivo específico`);
       }
     });
   }, [dispatch]);

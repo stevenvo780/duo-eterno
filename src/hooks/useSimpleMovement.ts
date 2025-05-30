@@ -56,12 +56,24 @@ export const useSimpleMovement = () => {
       lastUpdateRef.current = now;
 
       gameState.entities.forEach(entity => {
+        // Debug: Log del estado de cada entidad
+        if (entity.targetPosition) {
+          console.log(`[Movement] ${entity.id} moviendo hacia:`, {
+            from: entity.position,
+            to: entity.targetPosition,
+            distance: calculateDistance(entity.position, entity.targetPosition)
+          });
+        } else {
+          console.log(`[Movement] ${entity.id} SIN objetivo - posición actual:`, entity.position);
+        }
+
         if (entity.isDead || !entity.targetPosition) return;
 
         const distance = calculateDistance(entity.position, entity.targetPosition);
         
         // Si ya llegó al objetivo, no mover más
         if (distance <= MOVEMENT_CONFIG.ARRIVAL_THRESHOLD) {
+          console.log(`[Movement] ${entity.id} llegó al objetivo, removiendo target`);
           dispatch({
             type: 'UPDATE_ENTITY_TARGET',
             payload: { entityId: entity.id, target: undefined }
@@ -76,6 +88,8 @@ export const useSimpleMovement = () => {
           MOVEMENT_CONFIG.SPEED,
           deltaTime
         );
+
+        console.log(`[Movement] ${entity.id} nueva posición:`, newPosition);
 
         // Actualizar posición en el estado
         dispatch({
