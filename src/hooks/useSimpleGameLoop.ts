@@ -6,14 +6,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { SimpleGameSystem } from '../utils/simpleGameSystem';
-import { telemetryCollector } from '../utils/telemetry';
+import { unifiedTelemetry } from '../utils/unifiedTelemetry';
 
 export const useSimpleGameLoop = () => {
   const { gameState, dispatch } = useGame();
   const intervalRef = useRef<number | undefined>(undefined);
   const lastUpdateRef = useRef<number>(Date.now());
   const gameSystemRef = useRef(new SimpleGameSystem());
-  const telemetryIntervalRef = useRef<number | undefined>(undefined);
   const gameStateRef = useRef(gameState);
 
   // Mantener gameStateRef actualizado
@@ -58,17 +57,10 @@ export const useSimpleGameLoop = () => {
 
     // Aplicar decisiones de movimiento
     result.decisions.forEach(decision => {
-      console.log(`[GameLoop] Aplicando decisión para ${decision.entityId}:`, {
-        targetZone: decision.targetZone?.type,
-        targetEntity: decision.targetEntity?.id
-      });
-
       if (decision.targetZone) {
         // Moverse hacia una zona específica (calcular centro de la zona)
         const zoneCenterX = decision.targetZone.bounds.x + decision.targetZone.bounds.width / 2;
         const zoneCenterY = decision.targetZone.bounds.y + decision.targetZone.bounds.height / 2;
-        
-        console.log(`[GameLoop] ${decision.entityId} objetivo zona -> posición:`, { x: zoneCenterX, y: zoneCenterY });
         
         dispatch({
           type: 'UPDATE_ENTITY_TARGET',
@@ -79,8 +71,6 @@ export const useSimpleGameLoop = () => {
         });
       } else if (decision.targetEntity) {
         // Buscar a otra entidad
-        console.log(`[GameLoop] ${decision.entityId} objetivo entidad -> posición:`, decision.targetEntity.position);
-        
         dispatch({
           type: 'UPDATE_ENTITY_TARGET',
           payload: { 
@@ -88,22 +78,14 @@ export const useSimpleGameLoop = () => {
             target: decision.targetEntity.position 
           }
         });
-      } else {
-        console.log(`[GameLoop] ${decision.entityId} sin objetivo específico`);
       }
     });
   }, [dispatch]);
 
-  const captureTelemetry = useCallback(() => {
-    telemetryCollector.captureSnapshot(gameStateRef.current);
-  }, []);
-
   useEffect(() => {
-    // Iniciar telemetría
-    telemetryCollector.startRecording();
-
-    // Intervalo de telemetría - cada 1 segundo para capturar snapshots
-    telemetryIntervalRef.current = window.setInterval(captureTelemetry, 1000);
+    // Iniciar telemetría unificada (captura cada 4 segundos automáticamente)
+    unifiedTelemetry.startRecording({ enableConsoleOutput: true });
+    unifiedTelemetry.setupAutoCapture(() => gameStateRef.current);
 
     // Intervalo principal del juego - 100ms para respuesta fluida
     intervalRef.current = window.setInterval(updateGame, 100);
@@ -112,12 +94,9 @@ export const useSimpleGameLoop = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (telemetryIntervalRef.current) {
-        clearInterval(telemetryIntervalRef.current);
-      }
-      telemetryCollector.stopRecording();
+      unifiedTelemetry.stopRecording();
     };
-  }, [updateGame, captureTelemetry]);
+  }, [updateGame]);
 
   return {
     isRunning: !!intervalRef.current

@@ -2,7 +2,6 @@ import type { GameState, Entity, Zone, ZoneType, EntityStateType, ActivityType, 
 import { STAT_KEYS, ACTIVITY_TYPES, ENTITY_STATES, MOOD_TYPES, ZONE_TYPES } from '../constants/gameConstants';
 import { logStorage } from './logger';
 
-const STORAGE_KEY = 'duoEternoState';
 const CURRENT_VERSION = '1.0.0';
 
 // Esquema de validación para Entity
@@ -106,77 +105,40 @@ const sanitizeGameState = (state: GameState): GameState => {
   return sanitized;
 };
 
-export const saveGameState = (gameState: GameState): boolean => {
+export const saveGameState = async (gameState: GameState): Promise<boolean> => {
   try {
-    const stateToSave = {
-      ...gameState,
-      lastSave: Date.now(),
-      version: CURRENT_VERSION
-    };
-    
-    const serialized = JSON.stringify(stateToSave);
-    
-    // Verificar que el tamaño no exceda límites del localStorage
-    if (serialized.length > 5 * 1024 * 1024) { // 5MB límite
-      logStorage.warn('Estado del juego demasiado grande, comprimiendo...');
-      // Reducir datos no esenciales
-      const compressedState = {
-        ...stateToSave,
-        entities: stateToSave.entities.map(e => ({
-          ...e,
-          thoughts: e.thoughts.slice(-5) // Solo últimos 5 pensamientos
-        }))
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(compressedState));
-    } else {
-      localStorage.setItem(STORAGE_KEY, serialized);
-    }
-    
-    logStorage.debug('Estado guardado exitosamente', { size: serialized.length });
+    const payload = { ...gameState, lastSave: Date.now(), version: CURRENT_VERSION };
+    await fetch('http://localhost:3001/saveState', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    logStorage.debug('Estado enviado a API', { size: JSON.stringify(payload).length });
     return true;
   } catch (error) {
-    logStorage.error('Error al guardar estado del juego', error);
+    logStorage.error('Error guardando vía API', error);
     return false;
   }
 };
 
-export const loadGameState = (): GameState | null => {
+export const loadGameState = async (): Promise<GameState | null> => {
   try {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    if (!savedState) {
-      logStorage.debug('No se encontró estado guardado');
+    const res = await fetch('http://localhost:3001/loadState');
+    if (res.status === 204) return null;
+    const parsed = await res.json();
+    if (!isValidGameState(parsed)) {
+      logStorage.error('Estado API inválido');
       return null;
     }
-    
-    const parsedState = JSON.parse(savedState);
-    
-    // Verificar versión
-    if (parsedState.version && parsedState.version !== CURRENT_VERSION) {
-      logStorage.warn('Versión de estado incompatible', { 
-        saved: parsedState.version, 
-        current: CURRENT_VERSION 
-      });
-      // Aquí podrías agregar migración de datos si es necesario
-    }
-    
-    // Validar estructura completa
-    if (!isValidGameState(parsedState)) {
-      logStorage.error('Estado guardado tiene estructura inválida');
-      return null;
-    }
-    
-    // Sanitizar valores
-    const sanitizedState = sanitizeGameState(parsedState);
-    
-    logStorage.info('Estado cargado exitosamente', { 
-      entities: sanitizedState.entities.length,
-      resonance: sanitizedState.resonance,
-      cycles: sanitizedState.cycles
+    const sanitized = sanitizeGameState(parsed);
+    logStorage.info('Estado cargado desde API', {
+      entities: sanitized.entities.length,
+      resonance: sanitized.resonance,
+      cycles: sanitized.cycles
     });
-    
-    return sanitizedState;
+    return sanitized;
   } catch (error) {
-    logStorage.error('Error al cargar estado del juego', error);
+    logStorage.error('Error cargando vía API', error);
     return null;
   }
 };

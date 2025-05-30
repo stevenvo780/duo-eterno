@@ -4,7 +4,8 @@
 
 import type { Entity, EntityStats, Zone } from '../types';
 import { SIMPLE_CONFIG, ZONE_EFFECTS } from './simpleConfig';
-import { getCriticalStats, getHighStats, areEntitiesNearForBonding } from './decisionEngine';
+import { getCriticalStats, getHighStats } from './statsAnalysis';
+import { areEntitiesNearForBonding } from './decisionEngine';
 
 // ==================== SISTEMA DE ESTADÍSTICAS ====================
 

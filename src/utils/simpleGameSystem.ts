@@ -6,6 +6,7 @@
 import type { Entity, Zone } from '../types';
 import { ActivitySystem } from './activitySystem';
 import { applyStatDecay, applyZoneEffects, applyBondingEffects, updateHealthSystem, clampStats } from './statsSystem';
+import { findEntityZone } from './zoneUtils';
 
 // ==================== SISTEMA PRINCIPAL ====================
 
@@ -28,7 +29,7 @@ export class SimpleGameSystem {
 
     // 2. Aplicar efectos de zona si la entidad está en una
     updatedEntities = updatedEntities.map(entity => {
-      const currentZone = this.findEntityZone(entity, zones);
+      const currentZone = findEntityZone(entity, zones);
       return applyZoneEffects(entity, currentZone, deltaTime);
     });
 
@@ -54,24 +55,5 @@ export class SimpleGameSystem {
     });
 
     return { updatedEntities, decisions };
-  }
-
-  /**
-   * Encuentra en qué zona está una entidad
-   */
-  private findEntityZone(entity: Entity, zones: Zone[]): Zone | null {
-    return zones.find(zone => this.isEntityInZone(entity, zone)) || null;
-  }
-
-  /**
-   * Verifica si una entidad está dentro de una zona
-   */
-  private isEntityInZone(entity: Entity, zone: Zone): boolean {
-    return (
-      entity.position.x >= zone.bounds.x &&
-      entity.position.x <= zone.bounds.x + zone.bounds.width &&
-      entity.position.y >= zone.bounds.y &&
-      entity.position.y <= zone.bounds.y + zone.bounds.height
-    );
   }
 }

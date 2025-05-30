@@ -19,7 +19,6 @@ export interface GameConfig {
   criticalEventProbability: number;
   // Nuevas configuraciones de equilibrio
   baseDecayMultiplier: number;
-  zoneEffectivenessMultiplier: number;
   aiPersonalityInfluence: number;
   activityInertiaBonus: number;
   moodInfluenceStrength: number;
@@ -49,7 +48,6 @@ export const gameConfig: GameConfig = {
   criticalEventProbability: 0.02, // Fijo, se multiplica por gameSpeedMultiplier donde se usa
   // Nuevas configuraciones de equilibrio
   baseDecayMultiplier: getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 0.5), // Más suave
-  zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
   activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
   moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5)
@@ -89,15 +87,6 @@ const logConfig = () => {
     });
   }
 };
-
-// Cálculos derivados basados en gameSpeedMultiplier (intervalos más frecuentes)
-export const getGameIntervals = () => ({
-  // Intervalos más agresivos para ver cambios inmediatos
-  autopoiesisInterval: Math.max(200, 500 / gameConfig.gameSpeedMultiplier),     // Base: 0.5s, mínimo 200ms
-  gameClockInterval: Math.max(150, 300 / gameConfig.gameSpeedMultiplier),       // Base: 0.3s, mínimo 150ms  
-  zoneEffectsInterval: Math.max(100, 200 / gameConfig.gameSpeedMultiplier),     // Base: 0.2s, mínimo 100ms
-  entityMovementSpeed: 2.0 * gameConfig.gameSpeedMultiplier,                   // Movimiento más rápido
-});
 
 // Hacer funciones disponibles globalmente en desarrollo
 if (import.meta.env.DEV) {

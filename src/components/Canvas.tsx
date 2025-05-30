@@ -13,9 +13,8 @@ interface CanvasProps {
   panY?: number;
 }
 
-// Simplified particle system with reduced count and object pooling
-const PARTICLE_COUNT = 4; // Significantly reduced for better performance
-const PARTICLE_POOL: Array<{
+// Optimized particle system - initialized per quality level
+let PARTICLE_POOL: Array<{
   x: number;
   y: number;
   alpha: number;
@@ -25,26 +24,37 @@ const PARTICLE_POOL: Array<{
   lastUpdate: number;
 }> = [];
 
-// Initialize particle pool
-for (let i = 0; i < PARTICLE_COUNT; i++) {
-  PARTICLE_POOL.push({
-    x: Math.random(),
-    y: Math.random(),
-    alpha: Math.random() * 0.15 + 0.05,
-    size: Math.random() * 1 + 0.5,
-    speed: Math.random() * 0.0003 + 0.0001,
-    angle: Math.random() * Math.PI * 2,
-    lastUpdate: 0
-  });
-}
+const initializeParticles = (quality: 'low' | 'medium' | 'high') => {
+  const counts = { low: 0, medium: 2, high: 4 };
+  const count = counts[quality];
+  
+  PARTICLE_POOL = [];
+  for (let i = 0; i < count; i++) {
+    PARTICLE_POOL.push({
+      x: Math.random(),
+      y: Math.random(),
+      alpha: Math.random() * 0.15 + 0.05,
+      size: Math.random() * 1 + 0.5,
+      speed: Math.random() * 0.0003 + 0.0001,
+      angle: Math.random() * Math.PI * 2,
+      lastUpdate: 0
+    });
+  }
+};
 
 const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1, panX = 0, panY = 0 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const lastRenderTime = useRef<number>(0);
-  const frameCount = useRef<number>(0);
   const { gameState } = useGame();
   const { shouldRender, getQualityLevel } = useRenderer();
+
+  // Initialize particles based on quality level
+  useEffect(() => {
+    const quality = getQualityLevel();
+    initializeParticles(quality);
+  }, [getQualityLevel]);
+  const frameCount = useRef<number>(0);
 
   // Memoize background gradient to avoid recreating it every frame
   const backgroundGradient = useMemo(() => {
@@ -193,7 +203,8 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
   const updateParticles = useCallback((now: number, quality: 'low' | 'medium' | 'high') => {
     if (quality === 'low') return; // Skip particles in low quality mode
     
-    for (let i = 0; i < PARTICLE_POOL.length; i++) {
+    const particleCount = PARTICLE_POOL.length;
+    for (let i = 0; i < particleCount; i++) {
       const particle = PARTICLE_POOL[i];
       const deltaTime = now - particle.lastUpdate;
       
@@ -382,8 +393,8 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     if (quality !== 'low') {
       updateParticles(now, quality);
       
-      // Reduced particle count for medium quality
-      const particleCount = quality === 'high' ? PARTICLE_COUNT : Math.floor(PARTICLE_COUNT / 2);
+      // Use actual particle count based on current quality
+      const particleCount = PARTICLE_POOL.length;
       
       for (let i = 0; i < particleCount; i++) {
         const particle = PARTICLE_POOL[i];

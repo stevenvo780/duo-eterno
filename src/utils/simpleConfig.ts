@@ -7,28 +7,28 @@ import type { EntityStats } from '../types';
 // ==================== CONFIGURACIÓN SIMPLE ====================
 
 export const SIMPLE_CONFIG = {
-  // Velocidades de cambio (por segundo) - REBALANCEADO PARA MÁS DINAMISMO
-  STAT_DECAY_RATE: 1.5,         // Stats bajan 1.5 puntos por segundo (más dinámico)
-  ZONE_RECOVERY_RATE: 4,        // Stats suben 4 puntos por segundo en zona correcta
-  BOND_RECOVERY_RATE: 2.5,      // Vínculo sube 2.5 puntos por segundo juntos
-  BOND_DECAY_RATE: 0.8,         // Vínculo baja 0.8 punto por segundo separados
+  // Velocidades de cambio (por segundo) - DRÁSTICAMENTE REDUCIDO PARA SUPERVIVENCIA
+  STAT_DECAY_RATE: 0.15,        // Stats bajan 0.15 puntos por segundo (MUY lento)
+  ZONE_RECOVERY_RATE: 8,        // Stats suben 8 puntos por segundo en zona correcta (más rápido)
+  BOND_RECOVERY_RATE: 4,        // Vínculo sube 4 puntos por segundo juntos
+  BOND_DECAY_RATE: 0.1,         // Vínculo baja 0.1 punto por segundo separados (muy lento)
   
-  // Umbrales críticos - AJUSTADOS PARA MÁS MOVIMIENTO
-  CRITICAL_STAT: 25,            // Stat por debajo de esto es crítico (subido para más actividad)
+  // Umbrales críticos - AJUSTADOS PARA MÁS SUPERVIVENCIA
+  CRITICAL_STAT: 30,            // Stat por debajo de esto es crítico
   EMERGENCY_STAT: 10,           // Stat por debajo de esto es emergencia
-  HIGH_STAT: 70,                // Stat por encima de esto está bien (bajado)
+  HIGH_STAT: 70,                // Stat por encima de esto está bien
   
   // Distancias
   BOND_DISTANCE: 80,            // Distancia para generar vínculo
   SEEK_DISTANCE: 200,           // Distancia máxima para buscar compañero
   
   // Tiempos de actividad (en segundos) - REDUCIDOS PARA MÁS DINAMISMO
-  MIN_ACTIVITY_TIME: 2,         // Mínimo tiempo en una actividad (antes 3)
-  MAX_ACTIVITY_TIME: 8,         // Máximo tiempo en una actividad (antes 15)
+  MIN_ACTIVITY_TIME: 3,         // Mínimo tiempo en una actividad
+  MAX_ACTIVITY_TIME: 12,        // Máximo tiempo en una actividad
   
-  // Sistema de vida - EQUILIBRADO PARA SUPERVIVENCIA
-  HEALTH_DECAY_RATE: 1.2,       // Vida baja 1.2 puntos por segundo
-  HEALTH_RECOVERY_RATE: 1.8,    // Vida sube 1.8 puntos por segundo
+  // Sistema de vida - MUCHO MÁS CONSERVADOR
+  HEALTH_DECAY_RATE: 0.05,      // Vida baja 0.05 puntos por segundo (extremadamente lento)
+  HEALTH_RECOVERY_RATE: 3,      // Vida sube 3 puntos por segundo (muy rápido)
 };
 
 // ==================== MAPEO ZONA -> ESTADÍSTICA ====================

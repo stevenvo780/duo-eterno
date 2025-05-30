@@ -24,7 +24,6 @@ export interface Entity {
   state: EntityStateType;
   activity: ActivityType;
   stats: EntityStats;
-  health: number; // 0-100
   lastStateChange: number;
   lastActivityChange: number;
   lastInteraction: number;
@@ -70,8 +69,6 @@ export interface Zone {
     height: number;
   };
   type: ZoneType;
-  // Opcional: efectos predefinidos (no usado en el nuevo sistema de zonas)
-  effects?: Partial<Record<keyof EntityStats, number>>;
   color: string;
   attractiveness: number; // 0-1, qué tan atractiva es la zona para las entidades
 }

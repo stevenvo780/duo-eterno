@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import type { EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
 import { DEFAULT_UPGRADES, type UpgradeState } from '../types/upgrades';
-import { saveGameState, loadGameState } from '../utils/storage';
+import { loadGameState, saveGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
 
@@ -72,16 +72,15 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 70,       // Moderado, necesitará comida pronto (antes 85)
-        sleepiness: 30,   // Algo de sueño (antes 15)
-        loneliness: 40,   // Moderado, buscará compañía (antes 60)
-        happiness: 65,    // Moderado (antes 80)
-        energy: 75,       // Bueno pero no máximo (antes 90)
-        boredom: 25,      // Algo de aburrimiento para crear actividad (antes 10)
+        hunger: 80,       // Comienza bien alimentado (mejorado de 70)
+        sleepiness: 20,   // Comienza descansado (mejorado de 30)
+        loneliness: 50,   // Moderado, buscará compañía (mejorado de 40)
+        happiness: 75,    // Comienza feliz (mejorado de 65)
+        energy: 85,       // Comienza con energía (mejorado de 75)
+        boredom: 15,      // Poco aburrimiento (mejorado de 25)
         money: 50,        // Dinero inicial
-        health: 100       // Salud inicial
+        health: 100       // Salud inicial máxima
       },
-      health: 100,        // Salud principal
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
       lastInteraction: Date.now(),
@@ -98,16 +97,15 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 85,       // Comienza bien alimentado (antes 60)
-        sleepiness: 15,   // Comienza descansado (antes 30)
-        loneliness: 60,   // Moderado, necesita compañía (antes 40)
-        happiness: 80,    // Comienza feliz (antes 70)
-        energy: 90,       // Comienza con mucha energía (antes 80)
-        boredom: 10,      // Comienza poco aburrido (antes 20)
+        hunger: 85,       // Comienza bien alimentado (mejorado)
+        sleepiness: 15,   // Comienza descansado (mejorado)
+        loneliness: 60,   // Moderado, necesita compañía
+        happiness: 80,    // Comienza feliz (mejorado)
+        energy: 90,       // Comienza con mucha energía (mejorado)
+        boredom: 10,      // Comienza poco aburrido (mejorado)
         money: 50,        // Dinero inicial
-        health: 100       // Salud inicial
+        health: 100       // Salud inicial máxima
       },
-      health: 100,        // Salud principal
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
       lastInteraction: Date.now(),
@@ -466,15 +464,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load saved state on mount
   useEffect(() => {
-    const savedState = loadGameState();
-    if (savedState) {
-      dispatch({ type: 'LOAD_SAVED_STATE', payload: savedState });
-    }
+    (async () => {
+      const saved = await loadGameState();
+      if (saved) dispatch({ type: 'LOAD_SAVED_STATE', payload: saved });
+    })();
   }, []);
 
   // Save state on changes
   useEffect(() => {
-    saveGameState(gameState);
+    (async () => {
+      await saveGameState(gameState);
+    })();
   }, [gameState]);
 
   return (

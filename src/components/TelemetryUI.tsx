@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { telemetryCollector } from '../utils/telemetry';
+import { unifiedTelemetry, getCurrentTelemetryData, exportTelemetryData } from '../utils/unifiedTelemetry';
 
 interface TelemetryUIProps {
   className?: string;
+}
+
+interface QuickAnalysisData {
+  recordingTime: number;
+  totalSnapshots: number;
+  avgSurvivalTime: number;
+  currentResonance: number;
+  totalMovementDistance: number;
+  zoneUsageStats: Record<string, number>;
 }
 
 const formatDuration = (ms: number): string => {
@@ -22,10 +31,11 @@ const formatDuration = (ms: number): string => {
 export const TelemetryUI: React.FC<TelemetryUIProps> = ({ className = '' }) => {
   const [snapshotCount, setSnapshotCount] = useState(0);
   const [recordingStarted, setRecordingStarted] = useState(false);
+  const [quickAnalysis, setQuickAnalysis] = useState<QuickAnalysisData | null>(null);
 
   useEffect(() => {
     const updateStats = () => {
-      const snapshots = telemetryCollector.getSnapshots();
+      const snapshots = getCurrentTelemetryData();
       setSnapshotCount(snapshots.length);
       
       // Verificar si hay telemetría activa basándose en snapshots recientes
@@ -36,6 +46,10 @@ export const TelemetryUI: React.FC<TelemetryUIProps> = ({ className = '' }) => {
       } else {
         setRecordingStarted(false);
       }
+
+      // Obtener análisis rápido
+      const analysis = unifiedTelemetry.getQuickAnalysis();
+      setQuickAnalysis(analysis);
     };
 
     const interval = setInterval(updateStats, 1000);
@@ -44,22 +58,22 @@ export const TelemetryUI: React.FC<TelemetryUIProps> = ({ className = '' }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Verificar si hay reportes guardados en localStorage
-  const getLastReport = () => {
-    try {
-      const reports = localStorage.getItem('telemetry-reports');
-      if (reports) {
-        const parsed = JSON.parse(reports);
-        return parsed.length > 0 ? parsed[parsed.length - 1] : null;
-      }
-    } catch (e) {
-      return null;
-    }
-    return null;
-  };
-
-  const lastReport = getLastReport();
   const hasData = snapshotCount > 0;
+
+  const handleExportData = () => {
+    try {
+      const data = exportTelemetryData();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `telemetry-${new Date().toISOString().slice(0, 19)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exportando telemetría:', error);
+    }
+  };
 
   return (
     <div className={`telemetry-ui ${className}`} style={{
@@ -93,68 +107,85 @@ export const TelemetryUI: React.FC<TelemetryUIProps> = ({ className = '' }) => {
             animation: recordingStarted ? 'blink 1s infinite' : 'none'
           }}></div>
           <span style={{ fontWeight: 'bold' }}>
-            {recordingStarted ? '🔴 Grabando Telemetría' : '⭕ Telemetría Detenida'}
+            {recordingStarted ? '🔴 Telemetría Unificada' : '⭕ Telemetría Detenida'}
           </span>
         </div>
         
         {hasData && (
           <div style={{ fontSize: '11px', color: '#ccc' }}>
-            📊 {snapshotCount} snapshots capturados
+            📊 {snapshotCount} snapshots (cada 4s)
           </div>
         )}
       </div>
 
-      {/* Último reporte */}
-      {lastReport && (
+      {/* Análisis rápido en tiempo real */}
+      {quickAnalysis && (
         <div style={{ marginBottom: '12px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>
-            📈 Último Análisis Auto-guardado
+            📈 Análisis en Tiempo Real
           </div>
           
-          {/* Puntuación del sistema */}
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ color: '#ccc' }}>Estabilidad: </span>
-            <span style={{
-              fontWeight: 'bold',
-              color: lastReport.summary.systemScore >= 80 ? '#00ff00' : 
-                     lastReport.summary.systemScore >= 60 ? '#ffff00' : '#ff0000'
-            }}>
-              {lastReport.summary.systemScore}/100
-            </span>
+          {/* Métricas principales */}
+          <div style={{ fontSize: '11px', color: '#ccc' }}>
+            <div>⏱️ Tiempo: {formatDuration(quickAnalysis.recordingTime * 1000)}</div>
+            <div>💖 Resonancia: {quickAnalysis.currentResonance.toFixed(1)}</div>
+            <div>🏃 Movimiento total: {quickAnalysis.totalMovementDistance.toFixed(1)}px</div>
           </div>
 
-          {/* Alertas críticas */}
-          {lastReport.summary.criticalIssues && lastReport.summary.criticalIssues.length > 0 && (
-            <div style={{ marginBottom: '8px' }}>
-              <div style={{ color: '#ff0000', fontWeight: 'bold' }}>
-                🚨 Problemas Críticos:
+          {/* Uso de zonas */}
+          {Object.keys(quickAnalysis.zoneUsageStats).length > 0 && (
+            <div style={{ marginTop: '8px' }}>
+              <div style={{ fontSize: '10px', color: '#aaa', marginBottom: '4px' }}>
+                🌍 Uso de Zonas:
               </div>
-              {lastReport.summary.criticalIssues.slice(0, 2).map((issue, i) => (
-                <div key={i} style={{ fontSize: '10px', color: '#ffcccc', marginLeft: '10px' }}>
-                  • {issue}
+              {Object.entries(quickAnalysis.zoneUsageStats)
+                .sort(([,a], [,b]) => (b as number) - (a as number))
+                .slice(0, 3)
+                .map(([zone, count]) => (
+                <div key={zone} style={{ fontSize: '10px', color: '#ccc', marginLeft: '10px' }}>
+                  • {zone}: {count} visitas
                 </div>
               ))}
             </div>
           )}
-
-          {/* Métricas principales */}
-          <div style={{ fontSize: '11px', color: '#ccc' }}>
-            <div>🏃 Supervivencia: {lastReport.summary.avgLifespan?.toFixed(1) || 'N/A'}s</div>
-            <div>⚡ Entidades: {lastReport.summary.totalEntities || 0}</div>
-            <div>💾 Guardado: {formatDuration(Date.now() - lastReport.timestamp)} atrás</div>
-          </div>
         </div>
       )}
 
-      {/* Información de auto-guardado */}
+      {/* Controles */}
+      {hasData && (
+        <div style={{ 
+          borderTop: '1px solid #333',
+          paddingTop: '8px',
+          marginTop: '8px'
+        }}>
+          <button 
+            onClick={handleExportData}
+            style={{
+              background: '#2563eb',
+              color: 'white',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              cursor: 'pointer',
+              width: '100%'
+            }}
+          >
+            💾 Exportar Datos JSON
+          </button>
+        </div>
+      )}
+
+      {/* Información del sistema */}
       <div style={{ 
         fontSize: '10px', 
         color: '#888',
         borderTop: '1px solid #333',
         paddingTop: '8px',
-        textAlign: 'center'
+        textAlign: 'center',
+        marginTop: '8px'
       }}>
-        💾 Los datos se guardan automáticamente cada 30s en localStorage
+        🚀 Sistema unificado optimizado - Sin duplicación de logs
       </div>
 
       <style>{`

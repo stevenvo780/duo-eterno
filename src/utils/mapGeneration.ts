@@ -1,111 +1,70 @@
 import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
-  // Definición de zonas esenciales
+  // Definición de zonas esenciales - ZONAS MÁS GRANDES PARA MEJOR DETECCIÓN
   return [
     // Jardín de Alimentos
     {
       id: 'food_garden',
       name: 'Jardín de Alimentos',
-      bounds: { x: 50, y: 50, width: 140, height: 100 },
+      bounds: { x: 30, y: 30, width: 180, height: 120 },
       type: 'food',
       color: 'rgba(34, 197, 94, 0.25)',
-      attractiveness: 0.9,
-      effects: {
-        hunger: -25,     // Reduce hambre
-        happiness: 8,    // Aumenta felicidad
-        energy: -5       // Consume un poco de energía
-      }
+      attractiveness: 0.9
     },
     // Cocina Comunal
     {
       id: 'kitchen',
       name: 'Cocina Comunal',
-      bounds: { x: 220, y: 40, width: 120, height: 80 },
+      bounds: { x: 240, y: 20, width: 160, height: 100 },
       type: 'food',
       color: 'rgba(34, 197, 94, 0.3)',
-      attractiveness: 1.0,
-      effects: {
-        hunger: -35,     // Reduce hambre significativamente
-        happiness: 12,   // Aumenta felicidad
-        energy: -8       // Consume energía cocinando
-      }
+      attractiveness: 1.0
     },
     // Santuario de Descanso
     {
       id: 'rest_sanctuary',
       name: 'Santuario de Descanso',
-      bounds: { x: 400, y: 50, width: 140, height: 100 },
+      bounds: { x: 430, y: 30, width: 180, height: 120 },
       type: 'rest',
       color: 'rgba(168, 85, 247, 0.25)',
-      attractiveness: 0.8,
-      effects: {
-        sleepiness: -30, // Reduce sueño
-        energy: 25,      // Restaura energía
-        happiness: 10,   // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
-      }
+      attractiveness: 0.8
     },
     // Área de Juegos
     {
       id: 'play_area',
       name: 'Área de Juegos',
-      bounds: { x: 350, y: 220, width: 200, height: 140 },
+      bounds: { x: 320, y: 200, width: 220, height: 160 },
       type: 'play',
       color: 'rgba(251, 191, 36, 0.3)',
-      attractiveness: 1.0,
-      effects: {
-        boredom: -40,    // Reduce aburrimiento significativamente
-        happiness: 20,   // Aumenta felicidad mucho
-        loneliness: -15, // Reduce soledad (jugar es social)
-        energy: -12      // Consume energía jugando
-      }
+      attractiveness: 1.0
     },
     // Plaza Social
     {
       id: 'social_plaza',
       name: 'Plaza Social',
-      bounds: { x: 50, y: 400, width: 180, height: 120 },
+      bounds: { x: 30, y: 380, width: 200, height: 140 },
       type: 'social',
       color: 'rgba(236, 72, 153, 0.3)',
-      attractiveness: 0.9,
-      effects: {
-        loneliness: -35, // Reduce soledad significativamente
-        happiness: 18,   // Aumenta felicidad
-        boredom: -10,    // Reduce aburrimiento
-        energy: -5       // Consume poca energía
-      }
+      attractiveness: 0.9
     },
     // Bosque de Meditación
     {
       id: 'meditation_grove',
       name: 'Bosque de Meditación',
-      bounds: { x: 280, y: 420, width: 160, height: 130 },
+      bounds: { x: 260, y: 400, width: 180, height: 150 },
       type: 'comfort',
       color: 'rgba(139, 92, 246, 0.25)',
-      attractiveness: 0.7,
-      effects: {
-        happiness: 15,   // Aumenta felicidad
-        boredom: -15,    // Reduce aburrimiento
-        loneliness: -10, // Reduce soledad un poco
-        sleepiness: -10, // Ayuda con el sueño
-        energy: 8        // Restaura energía lentamente
-      }
+      attractiveness: 0.7
     },
     // Estación Energética
     {
       id: 'energy_station',
       name: 'Estación Energética',
-      bounds: { x: 800, y: 200, width: 120, height: 100 },
+      bounds: { x: 480, y: 180, width: 140, height: 120 },
       type: 'energy',
       color: 'rgba(245, 158, 11, 0.25)',
-      attractiveness: 1.0,
-      effects: {
-        energy: 40,      // Restaura energía significativamente
-        sleepiness: -15, // Reduce sueño
-        happiness: 8,    // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
-      }
+      attractiveness: 1.0
     }
   ];
 };
@@ -199,11 +158,27 @@ export const getAttractionTarget = (
   for (const zone of zones) {
     let score = zone.attractiveness;
     
-    // Calcular score basado en las necesidades de la entidad
-    if (zone.effects?.hunger && entityStats.hunger > 70) score += 0.5;
-    if (zone.effects?.sleepiness && entityStats.sleepiness > 70) score += 0.5;
-    if (zone.effects?.loneliness && entityStats.loneliness > 70) score += 0.5;
-    if (zone.effects?.boredom && entityStats.boredom > 70) score += 0.5;
+    // Calcular score basado en las necesidades de la entidad y tipo de zona
+    switch (zone.type) {
+      case 'food':
+        if (entityStats.hunger > 70) score += 0.5;
+        break;
+      case 'rest':
+        if (entityStats.sleepiness > 70) score += 0.5;
+        break;
+      case 'social':
+        if (entityStats.loneliness > 70) score += 0.5;
+        break;
+      case 'play':
+        if (entityStats.boredom > 70) score += 0.5;
+        break;
+      case 'comfort':
+        if (entityStats.happiness < 30) score += 0.5;
+        break;
+      case 'energy':
+        if (entityStats.energy < 30) score += 0.5;
+        break;
+    }
     
     // Penalizar por distancia
     const distance = Math.sqrt(

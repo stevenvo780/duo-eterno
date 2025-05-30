@@ -5,6 +5,7 @@
 import type { Entity, Zone } from '../types';
 import { SIMPLE_CONFIG } from './simpleConfig';
 import { getMostUrgentStat, getZoneForStat, findNearestCompanion } from './decisionEngine';
+import { getCriticalStats, getEmergencyStats } from './statsAnalysis';
 
 // ==================== SISTEMA DE ACTIVIDADES ====================
 
@@ -15,32 +16,20 @@ export class ActivitySystem {
    * Decide la actividad objetivo para una entidad
    */
   public decideActivity(entity: Entity, entities: Entity[], zones: Zone[]): { targetZone: Zone | null; targetEntity: Entity | null } {
-    // Debug: Log del estado inicial
-    console.log(`[ActivitySystem] Decidiendo actividad para ${entity.id}:`, {
-      stats: entity.stats,
-      shouldChangeActivity: this.shouldChangeActivity(entity),
-      activityTimer: this.activityTimers.get(entity.id)
-    });
-
     // Verificar si debe cambiar de actividad
     if (!this.shouldChangeActivity(entity)) {
-      console.log(`[ActivitySystem] ${entity.id} no debe cambiar actividad aún`);
       return { targetZone: null, targetEntity: null };
     }
 
     // Reiniciar timer de actividad
     this.resetActivityTimer(entity.id);
-    console.log(`[ActivitySystem] ${entity.id} reiniciando timer de actividad`);
 
     // 1. Prioridad máxima: estadística más urgente
     const urgentStat = getMostUrgentStat(entity);
-    console.log(`[ActivitySystem] ${entity.id} estadística urgente:`, urgentStat);
     
     if (urgentStat && urgentStat !== 'loneliness') {
       const targetZone = getZoneForStat(urgentStat, zones);
-      console.log(`[ActivitySystem] ${entity.id} zona objetivo para ${urgentStat}:`, targetZone?.type);
       if (targetZone) {
-        console.log(`[ActivitySystem] ${entity.id} dirigiéndose a zona ${targetZone.type}`);
         return { targetZone, targetEntity: null };
       }
     }
@@ -48,15 +37,12 @@ export class ActivitySystem {
     // 2. Prioridad de vínculo: buscar compañero si loneliness es crítica
     if (urgentStat === 'loneliness' || entity.stats.loneliness < SIMPLE_CONFIG.CRITICAL_STAT) {
       const companion = findNearestCompanion(entity, entities);
-      console.log(`[ActivitySystem] ${entity.id} compañero encontrado:`, companion?.id);
       if (companion) {
-        console.log(`[ActivitySystem] ${entity.id} dirigiéndose al compañero ${companion.id}`);
         return { targetZone: null, targetEntity: companion };
       }
     }
 
     // 3. Sin actividad específica
-    console.log(`[ActivitySystem] ${entity.id} sin actividad específica`);
     return { targetZone: null, targetEntity: null };
   }
 
@@ -65,6 +51,19 @@ export class ActivitySystem {
    */
   private shouldChangeActivity(entity: Entity): boolean {
     const currentTime = this.activityTimers.get(entity.id) || 0;
+    
+    // Prioridad: si tiene alguna stat crítica, cambiar inmediatamente
+    const critical = getCriticalStats(entity.stats);
+    if (critical.length > 0) {
+      return true;
+    }
+    
+    // Prioridad: si tiene alguna stat de emergencia, cambiar inmediatamente
+    const emergency = getEmergencyStats(entity.stats);
+    if (emergency.length > 0) {
+      return true;
+    }
+    
     return currentTime <= 0;
   }
 
