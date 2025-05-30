@@ -7,10 +7,8 @@ import DialogOverlay from './components/DialogOverlay';
 import PerformanceOverlay from './components/PerformanceOverlay';
 import TimeControls from './components/TimeControls';
 import MapControls from './components/MapControls';
-import { useUnifiedGameLoop } from './hooks/useUnifiedGameLoop';
-import { useDialogueSystem } from './hooks/useDialogueSystem';
-// import { useZoneEffects } from './hooks/useZoneEffects'; // TEMPORALMENTE DESHABILITADO
-import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
+import { useSimpleGameLoop } from './hooks/useSimpleGameLoop';
+import { useSimpleMovement } from './hooks/useSimpleMovement';
 import { gameConfig } from './config/gameConfig';
 import { logGeneral } from './utils/logger';
 
@@ -31,15 +29,9 @@ const GameContent: React.FC = React.memo(() => {
   const [gameSpeed, setGameSpeed] = useState<number>(gameConfig.gameSpeedMultiplier);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   
-  // Hook unificado que maneja autopoiesis, game clock y movement
-  useUnifiedGameLoop();
-  
-  // Hooks específicos que no están incluidos en el loop unificado
-  useDialogueSystem();
-  // useZoneEffects(); // TEMPORALMENTE DESHABILITADO - ahora integrado en useUnifiedGameLoop
-  
-  // TEMPORAL: Añadir movimiento hasta integrarlo en el loop unificado
-  useEntityMovementOptimized();
+  // Hooks del nuevo sistema simplificado
+  useSimpleGameLoop();
+  useSimpleMovement();
 
   React.useEffect(() => {
     logGeneral.info('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });

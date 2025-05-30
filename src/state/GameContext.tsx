@@ -42,6 +42,8 @@ interface GameContextType {
 type GameAction = 
   | { type: 'UPDATE_RESONANCE'; payload: number }
   | { type: 'UPDATE_ENTITY_POSITION'; payload: { entityId: string; position: { x: number; y: number } } }
+  | { type: 'UPDATE_ENTITY_TARGET'; payload: { entityId: string; target: { x: number; y: number } | undefined } }
+  | { type: 'UPDATE_ENTITY_HEALTH'; payload: { entityId: string; health: number } }
   | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityState } }
   | { type: 'UPDATE_ENTITY_ACTIVITY'; payload: { entityId: string; activity: EntityActivity } }
   | { type: 'UPDATE_ENTITY_STATS'; payload: { entityId: string; stats: Partial<EntityStats> } }
@@ -66,17 +68,20 @@ const initialGameState: GameState = {
     {
       id: 'circle',
       position: { x: 150, y: 200 },
+      targetPosition: undefined,
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
-        energy: 80,
-        boredom: 20,
-        money: 50 // Dinero inicial
+        hunger: 70,       // Moderado, necesitará comida pronto (antes 85)
+        sleepiness: 30,   // Algo de sueño (antes 15)
+        loneliness: 40,   // Moderado, buscará compañía (antes 60)
+        happiness: 65,    // Moderado (antes 80)
+        energy: 75,       // Bueno pero no máximo (antes 90)
+        boredom: 25,      // Algo de aburrimiento para crear actividad (antes 10)
+        money: 50,        // Dinero inicial
+        health: 100       // Salud inicial
       },
+      health: 100,        // Salud principal
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
       lastInteraction: Date.now(),
@@ -89,17 +94,20 @@ const initialGameState: GameState = {
     {
       id: 'square',
       position: { x: 250, y: 200 },
+      targetPosition: undefined,
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
-        energy: 80,
-        boredom: 20,
-        money: 50 // Dinero inicial
+        hunger: 85,       // Comienza bien alimentado (antes 60)
+        sleepiness: 15,   // Comienza descansado (antes 30)
+        loneliness: 60,   // Moderado, necesita compañía (antes 40)
+        happiness: 80,    // Comienza feliz (antes 70)
+        energy: 90,       // Comienza con mucha energía (antes 80)
+        boredom: 10,      // Comienza poco aburrido (antes 20)
+        money: 50,        // Dinero inicial
+        health: 100       // Salud inicial
       },
+      health: 100,        // Salud principal
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
       lastInteraction: Date.now(),
@@ -147,6 +155,28 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
             ? { ...entity, position: action.payload.position }
+            : entity
+        )
+      };
+    }
+
+    case 'UPDATE_ENTITY_TARGET': {
+      return {
+        ...state,
+        entities: state.entities.map(entity =>
+          entity.id === action.payload.entityId
+            ? { ...entity, targetPosition: action.payload.target }
+            : entity
+        )
+      };
+    }
+
+    case 'UPDATE_ENTITY_HEALTH': {
+      return {
+        ...state,
+        entities: state.entities.map(entity =>
+          entity.id === action.payload.entityId
+            ? { ...entity, health: Math.max(0, Math.min(100, action.payload.health)) }
             : entity
         )
       };
@@ -251,7 +281,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                   happiness: 40,
                   energy: 60,
                   boredom: 30,
-                  money: 25 // Dinero reducido al revivir
+                  money: 25, // Dinero reducido al revivir
+                  health: 75 // Salud parcial al revivir
                 }
               }
             : entity

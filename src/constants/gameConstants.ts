@@ -1,5 +1,5 @@
 // Tipos derivados de las interfaces principales
-export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money'] as const;
+export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money', 'health'] as const;
 export type StatKey = typeof STAT_KEYS[number];
 
 export const ZONE_TYPES = [
@@ -81,7 +81,8 @@ export const TRANSLATIONS = {
     'happiness': 'Felicidad',
     'energy': 'Energía',
     'boredom': 'Diversión',
-    'money': 'Dinero'
+    'money': 'Dinero',
+    'health': 'Salud'
   } as Record<StatKey, string>,
   
   ENTITIES: {

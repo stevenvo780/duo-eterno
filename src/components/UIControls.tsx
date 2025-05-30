@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { useUpgrades } from '../hooks/useUpgrades';
-import { applyInteractionEffect, getStatColor } from '../utils/interactions';
+import { applyInteractionEffect, getStatColor, getHealthColor } from '../utils/interactions';
 import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
-import { getRandomDialogue } from '../utils/dialogues';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
 import UpgradePanel from './UpgradePanel';
@@ -50,7 +49,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
-            message: getRandomDialogue(dialogueMap[dialogueType] as keyof typeof import('../utils/dialogues').dialogues),
+            message: `¡Se siente mejor ahora!`,
             speaker: entityId as 'circle' | 'square',
             duration: 3000
           }
@@ -76,7 +75,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
-            message: getRandomDialogue('post-nutrition'),
+            message: `¡Nutritivo y delicioso!`,
             duration: 3000 
           }
         });
@@ -167,6 +166,63 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             </button>
           </div>
 
+          {/* Barra de Salud prominente */}
+          {!selectedEntity.isDead && (
+            <div style={{
+              marginBottom: '16px',
+              padding: '12px',
+              background: 'rgba(20, 20, 30, 0.5)',
+              borderRadius: '8px',
+              border: '1px solid #475569'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '6px'
+              }}>
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600',
+                  color: '#f1f5f9'
+                }}>
+                  ❤️ Salud
+                </span>
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '700',
+                  color: getHealthColor(selectedEntity.stats.health)
+                }}>
+                  {Math.round(selectedEntity.stats.health)}%
+                </span>
+              </div>
+              <div style={{
+                height: '8px',
+                background: '#374151',
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${selectedEntity.stats.health}%`,
+                  height: '100%',
+                  background: `linear-gradient(90deg, ${getHealthColor(selectedEntity.stats.health)}, ${getHealthColor(Math.min(100, selectedEntity.stats.health + 15))})`,
+                  transition: 'width 0.5s ease',
+                  boxShadow: selectedEntity.stats.health < 30 ? '0 0 8px rgba(220, 38, 38, 0.6)' : 'none'
+                }} />
+              </div>
+              {selectedEntity.stats.health < 30 && (
+                <div style={{
+                  fontSize: '11px',
+                  color: '#ef4444',
+                  marginTop: '4px',
+                  fontWeight: '500'
+                }}>
+                  ⚠️ Salud crítica - ¡Necesita atención!
+                </div>
+              )}
+            </div>
+          )}
+
           {selectedEntity.isDead ? (
             <div style={{
               padding: '12px',
@@ -189,7 +245,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
                   dispatch({
                     type: 'SHOW_DIALOGUE',
                     payload: { 
-                      message: getRandomDialogue('revival'),
+                      message: `¡De vuelta a la vida!`,
                       duration: 4000 
                     }
                   });

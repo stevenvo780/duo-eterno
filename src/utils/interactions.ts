@@ -71,3 +71,11 @@ export const getStatColor = (value: number): string => {
   if (value > 25) return '#f97316'; // orange
   return '#ef4444'; // red
 };
+
+export const getHealthColor = (value: number): string => {
+  if (value > 80) return '#10b981'; // emerald (muy sano)
+  if (value > 60) return '#22c55e'; // green (sano)
+  if (value > 40) return '#eab308'; // yellow (precaución)
+  if (value > 20) return '#f97316'; // orange (peligro)
+  return '#dc2626'; // red (crítico)
+};
