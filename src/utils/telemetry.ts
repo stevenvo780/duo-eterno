@@ -1,10 +1,11 @@
 /**
- * SISTEMA DE TELEMETRÍA UNIFICADO - Dúo Eterno
- * Captura snapshots JSON cada 4 segundos para análisis optimizado
+ * SISTEMA DE TELEMETRÍA SIMPLIFICADO - Dúo Eterno
+ * Captura snapshots y los envía al backend para almacenamiento
  */
 
-import type { Entity, GameState, Zone } from '../types';
+import type { GameState } from '../types';
 import { findEntityZone } from './zoneUtils';
+import * as apiService from '../services/apiService';
 
 // ==================== TIPOS DE DATOS ====================
 
@@ -46,24 +47,24 @@ export interface GameSnapshot {
 }
 
 export interface TelemetryConfig {
-  captureIntervalMs: number; // 4000ms por defecto
-  maxSnapshots: number; // límite para evitar memory leaks
+  captureIntervalMs: number;
   enableConsoleOutput: boolean;
+  sendToBackend: boolean;
 }
 
-// ==================== COLECTOR PRINCIPAL ====================
+// ==================== COLECTOR SIMPLIFICADO ====================
 
-class UnifiedTelemetryCollector {
-  private snapshots: GameSnapshot[] = [];
+class SimplifiedTelemetryCollector {
   private isRecording = false;
   private lastSnapshot: GameSnapshot | null = null;
   private captureInterval: number | null = null;
   private recordingStartTime = 0;
+  private snapshotCount = 0;
   
   private config: TelemetryConfig = {
     captureIntervalMs: 4000, // 4 segundos
-    maxSnapshots: 450, // ~30 minutos de datos
-    enableConsoleOutput: true
+    enableConsoleOutput: false, // Reducir spam de logs
+    sendToBackend: true
   };
 
   // ==================== CONTROL DE GRABACIÓN ====================
@@ -76,11 +77,9 @@ class UnifiedTelemetryCollector {
     this.config = { ...this.config, ...customConfig };
     this.isRecording = true;
     this.recordingStartTime = Date.now();
-    this.snapshots = [];
+    this.snapshotCount = 0;
     
-    if (this.config.enableConsoleOutput) {
-      console.log(`🔍 Telemetría unificada iniciada - Capturas cada ${this.config.captureIntervalMs/1000}s`);
-    }
+    console.log(`📊 Telemetría iniciada - Enviando al backend cada ${this.config.captureIntervalMs/1000}s`);
   }
 
   stopRecording(): void {
@@ -92,13 +91,9 @@ class UnifiedTelemetryCollector {
       this.captureInterval = null;
     }
     
-    if (this.config.enableConsoleOutput) {
-      const duration = (Date.now() - this.recordingStartTime) / 1000;
-      console.log(`🛑 Telemetría detenida. Duración: ${duration.toFixed(1)}s, Snapshots: ${this.snapshots.length}`);
-    }
+    const duration = (Date.now() - this.recordingStartTime) / 1000;
+    console.log(`📊 Telemetría detenida. Duración: ${duration.toFixed(1)}s, Snapshots enviados: ${this.snapshotCount}`);
   }
-
-  // ==================== CAPTURA DE DATOS ====================
 
   setupAutoCapture(gameStateProvider: () => GameState): void {
     if (this.captureInterval) {
@@ -112,7 +107,9 @@ class UnifiedTelemetryCollector {
     }, this.config.captureIntervalMs);
   }
 
-  captureSnapshot(gameState: GameState): void {
+  // ==================== CAPTURA DE DATOS ====================
+
+  async captureSnapshot(gameState: GameState): Promise<void> {
     if (!this.isRecording) return;
 
     const now = Date.now();
@@ -130,24 +127,19 @@ class UnifiedTelemetryCollector {
       });
     }
 
-    this.snapshots.push(currentSnapshot);
-    this.lastSnapshot = currentSnapshot;
-
-    // Mantener límite de snapshots
-    if (this.snapshots.length > this.config.maxSnapshots) {
-      this.snapshots.shift(); // Eliminar el más antiguo
+    // Enviar al backend si está habilitado
+    if (this.config.sendToBackend) {
+      const success = await apiService.sendTelemetrySnapshot(currentSnapshot);
+      if (success) {
+        this.snapshotCount++;
+      }
     }
 
-    // NUEVO: enviar al servidor remoto
-    fetch('http://localhost:3001/telemetry', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(currentSnapshot)
-    }).catch(() => {/* Silenciar errores */});
+    this.lastSnapshot = currentSnapshot;
 
     // Log periódico opcional
-    if (this.config.enableConsoleOutput && this.snapshots.length % 15 === 0) { // Cada minuto aprox
-      this.logProgressSummary();
+    if (this.config.enableConsoleOutput && this.snapshotCount % 15 === 0) {
+      console.log(`📊 Snapshots enviados: ${this.snapshotCount}`);
     }
   }
 
@@ -156,7 +148,7 @@ class UnifiedTelemetryCollector {
     
     // Detectar zonas para cada entidad
     const entitiesWithZones = gameState.entities.map(entity => {
-      const currentZone = this.findEntityZone(entity, gameState.zones || []);
+      const currentZone = findEntityZone(entity, gameState.zones || []);
       return {
         id: entity.id,
         position: { ...entity.position },
@@ -177,13 +169,22 @@ class UnifiedTelemetryCollector {
     });
 
     // Calcular métricas del sistema
-    const totalHealth = aliveEntities.reduce((sum, e) => sum + e.stats.health, 0);
-    const totalHunger = aliveEntities.reduce((sum, e) => sum + (e.stats?.hunger || 0), 0);
-    const totalEnergy = aliveEntities.reduce((sum, e) => sum + (e.stats?.energy || 0), 0);
-    const totalSleepiness = aliveEntities.reduce((sum, e) => sum + (e.stats?.sleepiness || 0), 0);
-    const totalLoneliness = aliveEntities.reduce((sum, e) => sum + (e.stats?.loneliness || 0), 0);
-    const totalHappiness = aliveEntities.reduce((sum, e) => sum + (e.stats?.happiness || 0), 0);
-    const totalBoredom = aliveEntities.reduce((sum, e) => sum + (e.stats?.boredom || 0), 0);
+    const aliveCount = aliveEntities.length;
+    const avgHealth = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + e.stats.health, 0) / aliveCount : 0;
+    const avgHunger = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.hunger || 0), 0) / aliveCount : 0;
+    const avgEnergy = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.energy || 0), 0) / aliveCount : 0;
+    const avgSleepiness = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.sleepiness || 0), 0) / aliveCount : 0;
+    const avgLoneliness = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.loneliness || 0), 0) / aliveCount : 0;
+    const avgHappiness = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.happiness || 0), 0) / aliveCount : 0;
+    const avgBoredom = aliveCount > 0 ? aliveEntities.reduce((sum, e) => sum + (e.stats?.boredom || 0), 0) / aliveCount : 0;
+
+    // Distancia entre entidades
+    let distanceBetweenEntities = 0;
+    if (aliveEntities.length >= 2) {
+      const dx = aliveEntities[0].position.x - aliveEntities[1].position.x;
+      const dy = aliveEntities[0].position.y - aliveEntities[1].position.y;
+      distanceBetweenEntities = Math.sqrt(dx * dx + dy * dy);
+    }
 
     // Contar entidades por zona
     const entitiesInZones: Record<string, number> = {};
@@ -201,153 +202,82 @@ class UnifiedTelemetryCollector {
       }
     });
 
-    // Calcular distancia entre entidades
-    let distanceBetweenEntities = 0;
-    if (aliveEntities.length === 2) {
-      const [entity1, entity2] = aliveEntities;
-      const dx = entity1.position.x - entity2.position.x;
-      const dy = entity1.position.y - entity2.position.y;
-      distanceBetweenEntities = Math.sqrt(dx * dx + dy * dy);
-    }
-
     return {
       timestamp,
       gameTime: gameState.cycles || 0,
-      resonance: gameState.resonance,
+      resonance: gameState.resonance || 0,
       entities: entitiesWithZones,
       systemMetrics: {
-        totalEntitiesAlive: aliveEntities.length,
-        averageHealth: aliveEntities.length > 0 ? totalHealth / aliveEntities.length : 0,
-        averageHunger: aliveEntities.length > 0 ? totalHunger / aliveEntities.length : 0,
-        averageEnergy: aliveEntities.length > 0 ? totalEnergy / aliveEntities.length : 0,
-        averageSleepiness: aliveEntities.length > 0 ? totalSleepiness / aliveEntities.length : 0,
-        averageLoneliness: aliveEntities.length > 0 ? totalLoneliness / aliveEntities.length : 0,
-        averageHappiness: aliveEntities.length > 0 ? totalHappiness / aliveEntities.length : 0,
-        averageBoredom: aliveEntities.length > 0 ? totalBoredom / aliveEntities.length : 0,
-        distanceBetweenEntities,
+        totalEntitiesAlive: aliveCount,
+        averageHealth: Math.round(avgHealth * 100) / 100,
+        averageHunger: Math.round(avgHunger * 100) / 100,
+        averageEnergy: Math.round(avgEnergy * 100) / 100,
+        averageSleepiness: Math.round(avgSleepiness * 100) / 100,
+        averageLoneliness: Math.round(avgLoneliness * 100) / 100,
+        averageHappiness: Math.round(avgHappiness * 100) / 100,
+        averageBoredom: Math.round(avgBoredom * 100) / 100,
+        distanceBetweenEntities: Math.round(distanceBetweenEntities * 100) / 100,
         entitiesInZones,
         activitiesCount
       }
     };
   }
 
-  private findEntityZone(entity: Entity, zones: Zone[]): Zone | null {
-    return findEntityZone(entity, zones);
-  }
+  // ==================== INFORMACIÓN PÚBLICA ====================
 
-  // ==================== ANÁLISIS Y ACCESO ====================
-
-  getSnapshots(): GameSnapshot[] {
-    return [...this.snapshots];
-  }
-
-  getLatestSnapshot(): GameSnapshot | null {
-    return this.snapshots[this.snapshots.length - 1] || null;
+  isCurrentlyRecording(): boolean {
+    return this.isRecording;
   }
 
   getSnapshotCount(): number {
-    return this.snapshots.length;
+    return this.snapshotCount;
   }
 
-  exportToJSON(): string {
-    const exportData = {
-      recordingPeriod: {
-        start: this.recordingStartTime,
-        end: Date.now(),
-        durationMs: Date.now() - this.recordingStartTime
-      },
-      config: this.config,
-      totalSnapshots: this.snapshots.length,
-      snapshots: this.snapshots
-    };
-    
-    return JSON.stringify(exportData, null, 2);
-  }
-
-  private logProgressSummary(): void {
-    const latest = this.getLatestSnapshot();
-    if (!latest) return;
-
-    const aliveCount = latest.systemMetrics.totalEntitiesAlive;
-    const avgHealth = latest.systemMetrics.averageHealth.toFixed(1);
-    const resonance = latest.resonance.toFixed(1);
-    const movementData = latest.entities
-      .filter(e => !e.isDead && e.movementDistance)
-      .map(e => e.movementDistance!.toFixed(1))
-      .join(', ');
-
-    console.log(`📊 Telemetría [${this.snapshots.length} snapshots]: ` +
-                `${aliveCount} vivos, salud avg: ${avgHealth}, resonancia: ${resonance}` +
-                (movementData ? `, movimiento: [${movementData}]` : ''));
-  }
-
-  // ==================== ANÁLISIS RÁPIDO ====================
-
-  getQuickAnalysis(): {
-    recordingTime: number;
-    totalSnapshots: number;
-    avgSurvivalTime: number;
-    currentResonance: number;
-    totalMovementDistance: number;
-    zoneUsageStats: Record<string, number>;
-  } | null {
-    if (this.snapshots.length === 0) return null;
-
-    const latest = this.getLatestSnapshot()!;
-    const recordingTime = (Date.now() - this.recordingStartTime) / 1000;
-    
-    // Calcular distancia total de movimiento
-    const totalMovement = this.snapshots.reduce((sum, snapshot) => {
-      return sum + snapshot.entities.reduce((entitySum, entity) => {
-        return entitySum + (entity.movementDistance || 0);
-      }, 0);
-    }, 0);
-
-    // Estadísticas de uso de zonas
-    const zoneStats: Record<string, number> = {};
-    this.snapshots.forEach(snapshot => {
-      Object.entries(snapshot.systemMetrics.entitiesInZones).forEach(([zone, count]) => {
-        zoneStats[zone] = (zoneStats[zone] || 0) + count;
-      });
-    });
-
-    return {
-      recordingTime,
-      totalSnapshots: this.snapshots.length,
-      avgSurvivalTime: recordingTime, // Simplificado
-      currentResonance: latest.resonance,
-      totalMovementDistance: totalMovement,
-      zoneUsageStats: zoneStats
-    };
-  }
-
-  clearData(): void {
-    this.snapshots = [];
-    this.lastSnapshot = null;
-    if (this.config.enableConsoleOutput) {
-      console.log('🗑️ Datos de telemetría eliminados');
-    }
+  getRecordingDuration(): number {
+    if (!this.isRecording) return 0;
+    return (Date.now() - this.recordingStartTime) / 1000;
   }
 }
 
 // ==================== INSTANCIA GLOBAL ====================
 
-export const unifiedTelemetry = new UnifiedTelemetryCollector();
+export const telemetry = new SimplifiedTelemetryCollector();
 
-// ==================== UTILIDADES ====================
+// ==================== FUNCIONES DE CONVENIENCIA ====================
 
 export function startTelemetryRecording(options?: Partial<TelemetryConfig>) {
-  unifiedTelemetry.startRecording(options);
+  telemetry.startRecording(options);
 }
 
 export function stopTelemetryRecording() {
-  unifiedTelemetry.stopRecording();
+  telemetry.stopRecording();
 }
 
+// ==================== FUNCIONES PARA ANALYTICS ====================
+
+export async function generateAnalyticsReport(analysisType: 'summary' | 'detailed' = 'summary') {
+  return await apiService.generateAnalyticsReport(undefined, analysisType);
+}
+
+export async function getAvailableReports() {
+  return await apiService.getAnalyticsReports();
+}
+
+export async function getTelemetrySessions() {
+  return await apiService.getTelemetrySessions();
+}
+
+// ==================== FUNCIONES DE DATOS LOCALES (COMPATIBILIDAD) ====================
+
+// Estas funciones están aquí para mantener compatibilidad con el código existente
+// Pero ahora los datos reales se almacenan en el backend
+
 export function getCurrentTelemetryData(): GameSnapshot[] {
-  return unifiedTelemetry.getSnapshots();
+  console.warn('getCurrentTelemetryData(): Los datos ahora se almacenan en el backend. Use getTelemetrySessions() en su lugar.');
+  return [];
 }
 
 export function exportTelemetryData(): string {
-  return unifiedTelemetry.exportToJSON();
+  console.warn('exportTelemetryData(): Use las funciones de analytics del backend en su lugar.');
+  return JSON.stringify({ message: 'Los datos ahora se almacenan en el backend' }, null, 2);
 }

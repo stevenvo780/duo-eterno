@@ -6,7 +6,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { SimpleGameSystem } from '../utils/simpleGameSystem';
-import { unifiedTelemetry } from '../utils/unifiedTelemetry';
+import { telemetry } from '../utils/telemetry';
 
 export const useSimpleGameLoop = () => {
   const { gameState, dispatch } = useGame();
@@ -84,8 +84,8 @@ export const useSimpleGameLoop = () => {
 
   useEffect(() => {
     // Iniciar telemetría unificada (captura cada 4 segundos automáticamente)
-    unifiedTelemetry.startRecording({ enableConsoleOutput: true });
-    unifiedTelemetry.setupAutoCapture(() => gameStateRef.current);
+    telemetry.startRecording({ enableConsoleOutput: true });
+    telemetry.setupAutoCapture(() => gameStateRef.current);
 
     // Intervalo principal del juego - 100ms para respuesta fluida
     intervalRef.current = window.setInterval(updateGame, 100);
@@ -94,7 +94,7 @@ export const useSimpleGameLoop = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      unifiedTelemetry.stopRecording();
+      telemetry.stopRecording();
     };
   }, [updateGame]);
 
