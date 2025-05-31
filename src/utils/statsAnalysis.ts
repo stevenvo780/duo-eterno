@@ -3,7 +3,7 @@
  */
 
 import type { EntityStats } from '../types';
-import { SIMPLE_CONFIG } from './simpleConfig';
+import { SIMPLE_CONFIG } from './gameConfig';
 
 /**
  * Obtiene las estadísticas más críticas de una entidad

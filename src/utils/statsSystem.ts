@@ -3,7 +3,7 @@
  */
 
 import type { Entity, EntityStats, Zone } from '../types';
-import { SIMPLE_CONFIG, ZONE_EFFECTS } from './simpleConfig';
+import { SIMPLE_CONFIG, ZONE_EFFECTS } from './gameConfig';
 import { getCriticalStats, getHighStats } from './statsAnalysis';
 import { areEntitiesNearForBonding } from './decisionEngine';
 

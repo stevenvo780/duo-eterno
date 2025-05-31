@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
-import { SimpleGameSystem } from '../utils/simpleGameSystem';
+import { SimpleGameSystem } from '../utils/gameSystem';
 import { telemetry } from '../utils/telemetry';
 
 export const useSimpleGameLoop = () => {

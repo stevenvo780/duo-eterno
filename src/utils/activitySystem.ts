@@ -3,7 +3,7 @@
  */
 
 import type { Entity, Zone } from '../types';
-import { SIMPLE_CONFIG } from './simpleConfig';
+import { SIMPLE_CONFIG } from './gameConfig';
 import { getMostUrgentStat, getZoneForStat, findNearestCompanion } from './decisionEngine';
 import { getCriticalStats, getEmergencyStats } from './statsAnalysis';
 

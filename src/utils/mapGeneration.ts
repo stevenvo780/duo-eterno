@@ -100,9 +100,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 25, height: 60 },
       color: '#059669'
     },
-
-    // Elementos interactivos básicos mapeados a zonas principales
-    // ...ninguno por defecto...
   ];
 };
 

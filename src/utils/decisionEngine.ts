@@ -3,7 +3,7 @@
  */
 
 import type { Entity, EntityStats, Zone } from '../types';
-import { SIMPLE_CONFIG, ZONE_EFFECTS, PERSONALITIES } from './simpleConfig';
+import { SIMPLE_CONFIG, ZONE_EFFECTS, PERSONALITIES } from './gameConfig';
 import { getCriticalStats, getEmergencyStats } from './statsAnalysis';
 
 // ==================== UTILIDADES DE ANÁLISIS ====================
