@@ -7,8 +7,8 @@ import DialogOverlay from './components/DialogOverlay';
 import PerformanceOverlay from './components/PerformanceOverlay';
 import TimeControls from './components/TimeControls';
 import MapControls from './components/MapControls';
-// import { useUnifiedGameEngine } from './hooks/useUnifiedGameEngine'; // Temporalmente comentado
-import { useUltraSimpleMovement } from './hooks/useUltraSimpleMovement';
+import { useUnifiedGameEngine } from './hooks/useUnifiedGameEngine';
+// import { useUltraSimpleMovement } from './hooks/useUltraSimpleMovement'; // Para debug únicamente
 import { gameConfig } from './config/gameConfig';
 import { logGeneral } from './utils/logger';
 
@@ -29,9 +29,9 @@ const GameContent: React.FC = React.memo(() => {
   const [gameSpeed, setGameSpeed] = useState<number>(gameConfig.gameSpeedMultiplier);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   
-  // Hooks del sistema unificado (temporalmente usando ultra-simple para debug)
-  // const gameEngine = useUnifiedGameEngine();
-  const gameEngine = useUltraSimpleMovement();
+  // Hooks del sistema unificado (optimizado después del debug)
+  const gameEngine = useUnifiedGameEngine();
+  // const gameEngine = useUltraSimpleMovement(); // Para debug únicamente
 
   React.useEffect(() => {
     logGeneral.info('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });

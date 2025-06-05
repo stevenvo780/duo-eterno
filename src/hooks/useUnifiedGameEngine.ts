@@ -7,9 +7,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { SimpleGameSystem } from '../utils/gameSystem';
-// import { makeIntelligentDecision } from '../utils/simpleAI'; // Temporalmente comentado
+import { makeIntelligentDecision } from '../utils/simpleAI';
 import { getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
-// import { telemetry } from '../utils/telemetry'; // Temporalmente comentado
+import { telemetry } from '../utils/telemetry';
 import { logGeneral, logMovement } from '../utils/logger';
 import type { Entity, Zone, Position } from '../types';
 
@@ -40,8 +40,38 @@ export const useUnifiedGameEngine = () => {
     return Math.sqrt(dx * dx + dy * dy);
   }, []);
 
-  const findTargetForEntity = useCallback((_entity: Entity, zones: Zone[]): Position => {
-    // Simplificado: siempre ir a una zona aleatoria
+  const findTargetForEntity = useCallback((entity: Entity, zones: Zone[]): Position => {
+    // Priorizar zona basada en necesidades críticas (optimizado)
+    const criticalStats = Object.entries(entity.stats).filter(([key, value]) => {
+      if (key === 'money' || key === 'health') return false;
+      return value < 30 || (key === 'energy' && value < 40);
+    });
+
+    if (criticalStats.length > 0) {
+      const needyStat = criticalStats[0][0];
+      let targetZoneType: string | null = null;
+
+      switch (needyStat) {
+        case 'hunger': targetZoneType = 'food'; break;
+        case 'sleepiness': targetZoneType = 'rest'; break;
+        case 'boredom': targetZoneType = 'play'; break;
+        case 'loneliness': targetZoneType = 'social'; break;
+        case 'energy': targetZoneType = 'energy'; break;
+        case 'happiness': targetZoneType = 'comfort'; break;
+      }
+
+      if (targetZoneType) {
+        const targetZone = zones.find(z => z.type === targetZoneType);
+        if (targetZone) {
+          return {
+            x: targetZone.bounds.x + targetZone.bounds.width / 2,
+            y: targetZone.bounds.y + targetZone.bounds.height / 2
+          };
+        }
+      }
+    }
+
+    // Si no hay necesidades críticas, ir a zona aleatoria
     if (zones.length > 0) {
       const randomZone = zones[Math.floor(Math.random() * zones.length)];
       return {
@@ -158,16 +188,14 @@ export const useUnifiedGameEngine = () => {
       });
     }
 
-    // ============ INTELIGENCIA ARTIFICIAL (temporalmente simplificada) ============
+    // ============ INTELIGENCIA ARTIFICIAL (cada AI_UPDATE_FREQUENCY ticks) ============
     if (tickCounterRef.current % UNIFIED_CONFIG.AI_UPDATE_FREQUENCY === 0) {
       livingEntities.forEach(entity => {
-        // Simplificado: solo cambiar actividad aleatoriamente
-        const activities: Array<'WANDERING' | 'RESTING' | 'WORKING' | 'DANCING' | 'SOCIALIZING' | 'MEDITATING' | 'CONTEMPLATING'> = 
-          ['WANDERING', 'RESTING', 'WORKING', 'DANCING', 'SOCIALIZING', 'MEDITATING', 'CONTEMPLATING'];
-        if (Math.random() < 0.5) { // 50% chance de cambiar actividad (más frecuente)
-          const newActivity = activities[Math.floor(Math.random() * activities.length)];
+        const companion = livingEntities.find(e => e.id !== entity.id) || null;
+        const newActivity = makeIntelligentDecision(entity, companion, now);
+
+        if (newActivity !== entity.activity) {
           console.log(`🧠 ${entity.id} cambia actividad de ${entity.activity} a ${newActivity}`);
-          
           dispatch({
             type: 'UPDATE_ENTITY_ACTIVITY',
             payload: { entityId: entity.id, activity: newActivity }
@@ -175,6 +203,11 @@ export const useUnifiedGameEngine = () => {
           
           // Limpiar objetivo cuando cambia actividad
           entityTargetsRef.current.delete(entity.id);
+          
+          logGeneral.debug(`IA: ${entity.id} cambia actividad`, { 
+            from: entity.activity, 
+            to: newActivity 
+          });
         }
       });
     }
@@ -223,12 +256,10 @@ export const useUnifiedGameEngine = () => {
       }
     });
 
-    // ============ TELEMETRÍA (desactivada temporalmente para debug) ============
-    /*
+    // ============ TELEMETRÍA (cada 20 ticks) ============
     if (tickCounterRef.current % 20 === 0) {
       telemetry.captureSnapshot(gameState);
     }
-    */
 
   }, [gameState, dispatch, findTargetForEntity, calculateMovementStep, calculateDistance]);
 
