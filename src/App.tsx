@@ -7,7 +7,8 @@ import DialogOverlay from './components/DialogOverlay';
 import PerformanceOverlay from './components/PerformanceOverlay';
 import TimeControls from './components/TimeControls';
 import MapControls from './components/MapControls';
-import { useUnifiedGameEngine } from './hooks/useUnifiedGameEngine';
+// import { useUnifiedGameEngine } from './hooks/useUnifiedGameEngine'; // Temporalmente comentado
+import { useUltraSimpleMovement } from './hooks/useUltraSimpleMovement';
 import { gameConfig } from './config/gameConfig';
 import { logGeneral } from './utils/logger';
 
@@ -28,8 +29,9 @@ const GameContent: React.FC = React.memo(() => {
   const [gameSpeed, setGameSpeed] = useState<number>(gameConfig.gameSpeedMultiplier);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   
-  // Hooks del sistema unificado
-  const gameEngine = useUnifiedGameEngine();
+  // Hooks del sistema unificado (temporalmente usando ultra-simple para debug)
+  // const gameEngine = useUnifiedGameEngine();
+  const gameEngine = useUltraSimpleMovement();
 
   React.useEffect(() => {
     logGeneral.info('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
@@ -99,9 +101,10 @@ const GameContent: React.FC = React.memo(() => {
           Dúo Eterno
           {gameConfig.debugMode && (
             <span style={{ fontSize: '12px', marginLeft: '10px', opacity: 0.7 }}>
-              🎮 {gameEngine.isActive ? 'Activo' : 'Inactivo'} | 
-              👥 {gameEngine.livingEntities} | 
-              🎯 {gameEngine.activeTargets}
+              🎮 {gameEngine.isActive ? '✅ Activo' : '❌ Inactivo'} | 
+              👥 {gameEngine.livingEntities} entidades | 
+              🎯 {gameEngine.activeTargets} objetivos |
+              ⏱️ Tick #{gameEngine.tickCount}
             </span>
           )}
         </h1>
@@ -113,6 +116,52 @@ const GameContent: React.FC = React.memo(() => {
         }}>
           Un Tamagotchi del Vínculo
         </p>
+        {gameConfig.debugMode && (
+          <div style={{ marginTop: '8px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <button 
+              onClick={() => {
+                console.log('🔧 Estado del motor:', gameEngine);
+                console.log(`🎮 Tick: ${gameEngine.tickCount}, Activo: ${gameEngine.isActive}, Entidades: ${gameEngine.livingEntities}, Objetivos: ${gameEngine.activeTargets}`);
+              }}
+              style={{
+                padding: '4px 8px',
+                backgroundColor: '#059669',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Debug Info
+            </button>
+            <button 
+              onClick={() => {
+                // Mover entidades manualmente para probar
+                const entities = ['circle', 'square'];
+                entities.forEach(id => {
+                  const randomX = 100 + Math.random() * 700;
+                  const randomY = 100 + Math.random() * 400;
+                  console.log(`🎯 Moviendo ${id} a (${randomX.toFixed(0)}, ${randomY.toFixed(0)})`);
+                  window.dispatchEvent(new CustomEvent('forceEntityMove', { 
+                    detail: { entityId: id, position: { x: randomX, y: randomY } }
+                  }));
+                });
+              }}
+              style={{
+                padding: '4px 8px',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Forzar Movimiento
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main game area */}

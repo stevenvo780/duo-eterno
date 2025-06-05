@@ -7,19 +7,19 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { SimpleGameSystem } from '../utils/gameSystem';
-import { makeIntelligentDecision } from '../utils/simpleAI';
+// import { makeIntelligentDecision } from '../utils/simpleAI'; // Temporalmente comentado
 import { getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
-import { telemetry } from '../utils/telemetry';
+// import { telemetry } from '../utils/telemetry'; // Temporalmente comentado
 import { logGeneral, logMovement } from '../utils/logger';
 import type { Entity, Zone, Position } from '../types';
 
 // Configuración unificada simplificada
 const UNIFIED_CONFIG = {
-  UPDATE_INTERVAL: 100,       // ms entre actualizaciones (más lento para debug)
-  MOVEMENT_SPEED: 120,        // píxeles por segundo (más rápido)
-  ARRIVAL_THRESHOLD: 30,      // distancia para considerar "llegado"
-  AI_UPDATE_FREQUENCY: 10,    // cada cuántos ticks actualizar IA (menos frecuente)
-  STATS_UPDATE_FREQUENCY: 5,  // cada cuántos ticks actualizar stats (menos frecuente)
+  UPDATE_INTERVAL: 50,        // ms entre actualizaciones (más rápido para más actividad)
+  MOVEMENT_SPEED: 200,        // píxeles por segundo (mucho más rápido)
+  ARRIVAL_THRESHOLD: 40,      // distancia para considerar "llegado"
+  AI_UPDATE_FREQUENCY: 5,     // cada cuántos ticks actualizar IA (más frecuente)
+  STATS_UPDATE_FREQUENCY: 10, // cada cuántos ticks actualizar stats
   MIN_DISTANCE_BETWEEN: 50,   // distancia mínima entre entidades
   REPULSION_FORCE: 10,        // fuerza de repulsión
 };
@@ -119,6 +119,7 @@ export const useUnifiedGameEngine = () => {
     
     // Debug logging cada 50 ticks
     if (tickCounterRef.current % 50 === 0) {
+      console.log(`🎮 Tick ${tickCounterRef.current}: ${livingEntities.length} entidades, ${gameState.zones.length} zonas, ${entityTargetsRef.current.size} objetivos`);
       logGeneral.debug('Sistema activo', { 
         tick: tickCounterRef.current,
         entities: livingEntities.length,
@@ -157,13 +158,16 @@ export const useUnifiedGameEngine = () => {
       });
     }
 
-    // ============ INTELIGENCIA ARTIFICIAL (cada AI_UPDATE_FREQUENCY ticks) ============
+    // ============ INTELIGENCIA ARTIFICIAL (temporalmente simplificada) ============
     if (tickCounterRef.current % UNIFIED_CONFIG.AI_UPDATE_FREQUENCY === 0) {
       livingEntities.forEach(entity => {
-        const companion = livingEntities.find(e => e.id !== entity.id) || null;
-        const newActivity = makeIntelligentDecision(entity, companion, now);
-
-        if (newActivity !== entity.activity) {
+        // Simplificado: solo cambiar actividad aleatoriamente
+        const activities: Array<'WANDERING' | 'RESTING' | 'WORKING' | 'DANCING' | 'SOCIALIZING' | 'MEDITATING' | 'CONTEMPLATING'> = 
+          ['WANDERING', 'RESTING', 'WORKING', 'DANCING', 'SOCIALIZING', 'MEDITATING', 'CONTEMPLATING'];
+        if (Math.random() < 0.5) { // 50% chance de cambiar actividad (más frecuente)
+          const newActivity = activities[Math.floor(Math.random() * activities.length)];
+          console.log(`🧠 ${entity.id} cambia actividad de ${entity.activity} a ${newActivity}`);
+          
           dispatch({
             type: 'UPDATE_ENTITY_ACTIVITY',
             payload: { entityId: entity.id, activity: newActivity }
@@ -171,11 +175,6 @@ export const useUnifiedGameEngine = () => {
           
           // Limpiar objetivo cuando cambia actividad
           entityTargetsRef.current.delete(entity.id);
-          
-          logGeneral.debug(`IA: ${entity.id} cambia actividad`, { 
-            from: entity.activity, 
-            to: newActivity 
-          });
         }
       });
     }
@@ -186,9 +185,10 @@ export const useUnifiedGameEngine = () => {
 
       // Obtener o calcular objetivo (más frecuente para más dinamismo)
       let target = entityTargetsRef.current.get(entity.id);
-      if (!target || Math.random() < 0.05) { // 5% chance de recalcular cada tick
+      if (!target || Math.random() < 0.1) { // 10% chance de recalcular cada tick (muy frecuente)
         target = findTargetForEntity(entity, gameState.zones);
         entityTargetsRef.current.set(entity.id, target);
+        console.log(`🎯 ${entity.id} nuevo objetivo: (${target.x.toFixed(0)}, ${target.y.toFixed(0)})`);
         logMovement.debug(`${entity.id} nuevo objetivo`, { target });
       }
 
@@ -196,8 +196,9 @@ export const useUnifiedGameEngine = () => {
       const newPosition = calculateMovementStep(entity, target, companion, deltaTime);
       
       // Actualizar posición si se movió
-      const moved = calculateDistance(entity.position, newPosition) > 0.5;
+      const moved = calculateDistance(entity.position, newPosition) > 0.1; // Umbral muy bajo
       if (moved) {
+        console.log(`🏃 ${entity.id} se mueve de (${entity.position.x.toFixed(0)}, ${entity.position.y.toFixed(0)}) a (${newPosition.x.toFixed(0)}, ${newPosition.y.toFixed(0)})`);
         dispatch({
           type: 'UPDATE_ENTITY_POSITION',
           payload: { entityId: entity.id, position: newPosition }
@@ -206,6 +207,7 @@ export const useUnifiedGameEngine = () => {
         // Verificar si llegó al objetivo
         if (calculateDistance(newPosition, target) <= UNIFIED_CONFIG.ARRIVAL_THRESHOLD) {
           entityTargetsRef.current.delete(entity.id);
+          console.log(`🎯 ${entity.id} llegó a objetivo`, target);
           logMovement.debug(`${entity.id} llegó a objetivo`, { target });
         }
       }
@@ -221,27 +223,44 @@ export const useUnifiedGameEngine = () => {
       }
     });
 
-    // ============ TELEMETRÍA (cada 20 ticks) ============
+    // ============ TELEMETRÍA (desactivada temporalmente para debug) ============
+    /*
     if (tickCounterRef.current % 20 === 0) {
       telemetry.captureSnapshot(gameState);
     }
+    */
 
   }, [gameState, dispatch, findTargetForEntity, calculateMovementStep, calculateDistance]);
 
   // ==================== INICIALIZACIÓN ====================
 
   useEffect(() => {
+    console.log('🚀 Sistema Unificado del Juego iniciado');
     logGeneral.info('Sistema Unificado del Juego iniciado');
     
     intervalRef.current = window.setInterval(updateGame, UNIFIED_CONFIG.UPDATE_INTERVAL);
 
+    // Listener para forzar movimiento (debug)
+    const handleForceMove = (event: CustomEvent) => {
+      const { entityId, position } = event.detail;
+      dispatch({
+        type: 'UPDATE_ENTITY_POSITION',
+        payload: { entityId, position }
+      });
+      console.log(`🎯 Movimiento forzado: ${entityId} -> (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`);
+    };
+
+    window.addEventListener('forceEntityMove', handleForceMove as EventListener);
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        console.log('🛑 Sistema Unificado del Juego detenido');
         logGeneral.info('Sistema Unificado del Juego detenido');
       }
+      window.removeEventListener('forceEntityMove', handleForceMove as EventListener);
     };
-  }, [updateGame]);
+  }, [updateGame, dispatch]);
 
   // ==================== API PÚBLICA ====================
 
