@@ -11,7 +11,7 @@ import {
 } from '../utils/upgradeEffects';
 import { logStorage } from '../utils/logger';
 import { ACTIVITY_DYNAMICS } from '../utils/activityDynamics';
-import type { EntityActivity } from '../types';
+import type { EntityActivity, GameState } from '../types';
 
 export const useGameClock = () => {
   const { gameState, dispatch } = useGame();
@@ -19,6 +19,10 @@ export const useGameClock = () => {
   const intervalRef = useRef<number | undefined>(undefined);
   const lastTickTime = useRef<number>(Date.now());
   const tickCounter = useRef<number>(0);
+  const gameStateRef = useRef<GameState>(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
@@ -44,7 +48,7 @@ export const useGameClock = () => {
         
         if (passiveIncome > 0) {
           // Aplicar ingresos pasivos a todas las entidades vivas
-          gameState.entities.forEach(entity => {
+          gameStateRef.current.entities.forEach(entity => {
             if (!entity.isDead) {
               dispatch({
                 type: 'UPDATE_ENTITY_STATS',
@@ -60,7 +64,7 @@ export const useGameClock = () => {
 
       // === AUTOMATIZACIÓN DE ACTIVIDADES ===
       if (tickCounter.current % 10 === 0) { // Cada ~10 segundos
-        gameState.entities.forEach(entity => {
+        gameStateRef.current.entities.forEach(entity => {
           if (!entity.isDead) {
             // Lista de actividades que pueden automatizarse
             const autoActivities: EntityActivity[] = ['WORKING', 'COOKING', 'SHOPPING', 'EXERCISING'];
@@ -137,7 +141,7 @@ export const useGameClock = () => {
 
       // Verificar muerte de entidades (cada 4 ticks) - CON MEJORAS DE SUPERVIVENCIA
       if (tickCounter.current % 4 === 0) {
-        for (const entity of gameState.entities) {
+        for (const entity of gameStateRef.current.entities) {
           if (!entity.isDead) {
             // Criterios de muerte más estrictos
             const criticalStats = [
@@ -148,7 +152,7 @@ export const useGameClock = () => {
             ];
             
             const criticalCount = criticalStats.filter(Boolean).length;
-            const resonanceIsCritical = gameState.resonance < 10;
+            const resonanceIsCritical = gameStateRef.current.resonance < 10;
             
             let deathProbability = 0;
             if (criticalCount >= 2) {
@@ -195,7 +199,7 @@ export const useGameClock = () => {
 
       // Verificar ruptura de relación con criterios más específicos
       if (tickCounter.current % 6 === 0) {
-        const livingEntities = gameState.entities.filter(e => !e.isDead);
+        const livingEntities = gameStateRef.current.entities.filter(e => !e.isDead);
         
         if (livingEntities.length === 2) {
           const [entity1, entity2] = livingEntities;
@@ -205,13 +209,13 @@ export const useGameClock = () => {
           const avgHappiness = (entity1.stats.happiness + entity2.stats.happiness) / 2;
           const bothCritical = entity1.stats.loneliness > 90 && entity2.stats.loneliness > 90;
           const veryUnhappy = avgHappiness < 15;
-          const resonanceDestroyed = gameState.resonance < 5;
+          const resonanceDestroyed = gameStateRef.current.resonance < 5;
           
           // Probabilidad de ruptura
           let breakProbability = 0;
           if (bothCritical && resonanceDestroyed) {
             breakProbability = 0.25; // 25% si ambos están solos y sin vínculo
-          } else if (veryUnhappy && avgLoneliness > 85 && gameState.resonance < 15) {
+          } else if (veryUnhappy && avgLoneliness > 85 && gameStateRef.current.resonance < 15) {
             breakProbability = 0.12; // 12% si están muy infelices, solos y con poco vínculo
           }
           
@@ -233,14 +237,14 @@ export const useGameClock = () => {
 
       // Check entity states based on resonance (reduced frequency and optimized)
       if (tickCounter.current % 4 === 0) { // Check every 4th tick
-        for (const entity of gameState.entities) {
+        for (const entity of gameStateRef.current.entities) {
           if (!entity.isDead) {
             let newState = entity.state;
             
             // Simplified state logic
-            if (gameState.resonance < 20) {
+            if (gameStateRef.current.resonance < 20) {
               newState = 'FADING';
-            } else if (gameState.resonance < 50) {
+            } else if (gameStateRef.current.resonance < 50) {
               newState = 'LOW_RESONANCE';
             } else if (entity.stats.loneliness > 70) {
               newState = 'SEEKING';
@@ -261,8 +265,8 @@ export const useGameClock = () => {
 
       // Oportunidades de revival más específicas
       if (tickCounter.current % 12 === 0) {
-        const deadEntities = gameState.entities.filter(e => e.isDead);
-        const livingEntities = gameState.entities.filter(e => !e.isDead);
+        const deadEntities = gameStateRef.current.entities.filter(e => e.isDead);
+        const livingEntities = gameStateRef.current.entities.filter(e => !e.isDead);
         
         if (deadEntities.length > 0 && livingEntities.length > 0) {
           const livingEntity = livingEntities[0];
@@ -271,7 +275,7 @@ export const useGameClock = () => {
           const livingIsHealthy = Object.values(livingEntity.stats).every(stat => 
             stat < 70 || (stat > 30 && (stat === livingEntity.stats.happiness || stat === livingEntity.stats.energy))
           );
-          const strongBond = gameState.resonance > 85;
+          const strongBond = gameStateRef.current.resonance > 85;
           const revivalProbability = livingIsHealthy && strongBond ? 0.05 : 0.01;
           
           if (Math.random() < revivalProbability) {
@@ -290,8 +294,8 @@ export const useGameClock = () => {
       }
 
       // Actualizar tiempo juntos cuando están cerca - CON BONUS DE RESONANCIA MEJORADO
-      if (gameState.entities.length === 2 && tickCounter.current % 2 === 0) {
-        const [entity1, entity2] = gameState.entities;
+      if (gameStateRef.current.entities.length === 2 && tickCounter.current % 2 === 0) {
+        const [entity1, entity2] = gameStateRef.current.entities;
         if (!entity1.isDead && !entity2.isDead) {
           const distance = Math.sqrt(
             Math.pow(entity1.position.x - entity2.position.x, 2) +
@@ -299,9 +303,9 @@ export const useGameClock = () => {
           );
           
           if (distance < 80) {
-            dispatch({ 
-              type: 'UPDATE_TOGETHER_TIME', 
-              payload: gameState.togetherTime + gameClockInterval 
+            dispatch({
+              type: 'UPDATE_TOGETHER_TIME',
+              payload: gameStateRef.current.togetherTime + gameClockInterval
             });
             
             // Bonus de vínculo cuando están juntos - CON MEJORAS DE UPGRADES
@@ -313,7 +317,7 @@ export const useGameClock = () => {
               
               dispatch({ 
                 type: 'UPDATE_RESONANCE', 
-                payload: Math.min(100, gameState.resonance + bondBonus) 
+                payload: Math.min(100, gameStateRef.current.resonance + bondBonus)
               });
             }
           }
@@ -327,7 +331,7 @@ export const useGameClock = () => {
       if (tickCounter.current % 20 === 0) { // Save every 20th tick
         try {
           localStorage.setItem('duoEternoState', JSON.stringify({
-            ...gameState,
+            ...gameStateRef.current,
             lastSave: now
           }));
         } catch (error) {
@@ -342,5 +346,5 @@ export const useGameClock = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [gameState, dispatch, getUpgradeEffect]);
+  }, [dispatch, getUpgradeEffect]);
 };
