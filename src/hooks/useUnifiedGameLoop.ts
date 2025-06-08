@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
+import type { GameState } from '../types';
 import { useUpgrades } from './useUpgrades';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
@@ -25,6 +26,11 @@ interface GameLoopStats {
 export const useUnifiedGameLoop = () => {
   const { gameState, dispatch } = useGame();
   const { getUpgradeEffect } = useUpgrades();
+
+  const gameStateRef = useRef<GameState>(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
   
   const intervalRef = useRef<number | undefined>(undefined);
   const statsRef = useRef<GameLoopStats>({
@@ -86,7 +92,7 @@ export const useUnifiedGameLoop = () => {
         // Ejecutar tick base
         dispatch({ type: 'TICK' });
         
-        const livingEntities = gameState.entities.filter(entity => !entity.isDead);
+        const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
         
         // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
@@ -128,7 +134,7 @@ export const useUnifiedGameLoop = () => {
               }
               
               // Actualizar mood
-              const newMood = calculateOptimizedMood(finalStats, gameState.resonance);
+              const newMood = calculateOptimizedMood(finalStats, gameStateRef.current.resonance);
               if (newMood !== entity.mood) {
                 dispatch({
                   type: 'UPDATE_ENTITY_MOOD',
@@ -201,9 +207,9 @@ export const useUnifiedGameLoop = () => {
           
           if (distance < BOND_DISTANCE) {
             // Actualizar tiempo juntos
-            dispatch({ 
-              type: 'UPDATE_TOGETHER_TIME', 
-              payload: gameState.togetherTime + gameClockInterval 
+            dispatch({
+              type: 'UPDATE_TOGETHER_TIME',
+              payload: gameStateRef.current.togetherTime + gameClockInterval
             });
             
             // Calcular incremento de resonancia basado en la proximidad y deltaTime
@@ -217,7 +223,7 @@ export const useUnifiedGameLoop = () => {
             const finalResonanceIncrement = resonanceIncrement * moodBonus;
             
             // Aplicar incremento con límite máximo
-            const newResonance = Math.min(100, gameState.resonance + finalResonanceIncrement);
+            const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
             if (finalResonanceIncrement > 0.01) { // Solo actualizar si hay cambio significativo
               dispatch({ 
@@ -228,7 +234,7 @@ export const useUnifiedGameLoop = () => {
               if (gameConfig.debugMode && stats.totalTicks % 10 === 0) {
                 logGeneral.debug('Nutriendo vínculo', { 
                   distance: distance.toFixed(1),
-                  resonance: gameState.resonance.toFixed(2),
+                  resonance: gameStateRef.current.resonance.toFixed(2),
                   increment: finalResonanceIncrement.toFixed(4),
                   newResonance: newResonance.toFixed(2)
                 });
@@ -237,7 +243,7 @@ export const useUnifiedGameLoop = () => {
           } else if (distance > BOND_DISTANCE * 2) {
             // Decay de resonancia cuando están muy lejos
             const resonanceDecay = (deltaTime / 1000) * 0.5 * gameConfig.gameSpeedMultiplier;
-            const newResonance = Math.max(0, gameState.resonance - resonanceDecay);
+            const newResonance = Math.max(0, gameStateRef.current.resonance - resonanceDecay);
             
             if (resonanceDecay > 0.01) {
               dispatch({ 
@@ -252,7 +258,7 @@ export const useUnifiedGameLoop = () => {
         if (stats.totalTicks % 20 === 0) {
           try {
             localStorage.setItem('duoEternoState', JSON.stringify({
-              ...gameState,
+              ...gameStateRef.current,
               lastSave: now
             }));
             logGeneral.debug('Auto-guardado realizado');
@@ -281,7 +287,7 @@ export const useUnifiedGameLoop = () => {
         });
       }
     };
-  }, [gameState, dispatch, getUpgradeEffect]);
+  }, [dispatch, getUpgradeEffect]);
 
   return {
     stats: statsRef.current
