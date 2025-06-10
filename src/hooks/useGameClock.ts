@@ -40,7 +40,7 @@ export const useGameClock = () => {
       lastTickTime.current = now;
       tickCounter.current++;
 
-      dispatch({ type: 'TICK' });
+      dispatch({ type: 'TICK', payload: deltaTime });
 
       // === INGRESOS PASIVOS DE UPGRADES ===
       if (tickCounter.current % 6 === 0) { // Cada ~6 segundos (1/10 de minuto)

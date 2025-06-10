@@ -90,7 +90,7 @@ export const useUnifiedGameLoop = () => {
 
       measureExecutionTime('unified-game-loop', () => {
         // Ejecutar tick base
-        dispatch({ type: 'TICK' });
+        dispatch({ type: 'TICK', payload: deltaTime });
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
         

@@ -21,7 +21,7 @@ export type GameAction =
   | { type: 'KILL_ENTITY'; payload: { entityId: string } }
   | { type: 'REVIVE_ENTITY'; payload: { entityId: string } }
   | { type: 'BREAK_RELATIONSHIP' }
-  | { type: 'TICK' }
+  | { type: 'TICK'; payload: number }
   | { type: 'INTERACT'; payload: { type: InteractionType; entityId?: string } }
   | { type: 'SHOW_DIALOGUE'; payload: { message: string; duration?: number; speaker?: 'circle' | 'square' | 'system' } }
   | { type: 'HIDE_DIALOGUE' }
@@ -200,11 +200,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'REVIVE_ENTITY': {
       return {
         ...state,
+        resonance: Math.max(state.resonance, 50),
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
-            ? { 
-                ...entity, 
-                isDead: false, 
+            ? {
+                ...entity,
+                isDead: false,
                 state: 'IDLE',
                 timeOfDeath: undefined,
                 stats: {
@@ -236,7 +237,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     
     case 'TICK': {
-      const newResonance = Math.max(0, state.resonance - 0.3);
+      const deltaMs = action.payload;
+      const decayPerSecond = 0.5;
+      const decay = (deltaMs / 1000) * decayPerSecond;
+      const newResonance = Math.max(0, state.resonance - decay);
       return {
         ...state,
         resonance: newResonance,
