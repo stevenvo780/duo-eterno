@@ -4,13 +4,13 @@ import { gameConfig, getGameIntervals } from '../config/gameConfig';
 import { useUpgrades } from './useUpgrades';
 import { 
   createUpgradeEffectsContext,
-  applyUpgradeToSurvivalRate,
   applyUpgradeToResonanceGain,
   applyUpgradeToMoneyGeneration,
   getAutoActivityChance
 } from '../utils/upgradeEffects';
 import { logStorage } from '../utils/logger';
 import { ACTIVITY_DYNAMICS } from '../utils/activityDynamics';
+import { HEALTH_CONFIG } from '../constants/gameConstants';
 import type { EntityActivity, GameState } from '../types';
 
 export const useGameClock = () => {
@@ -152,44 +152,31 @@ export const useGameClock = () => {
             ];
             
             const criticalCount = criticalStats.filter(Boolean).length;
-            const resonanceIsCritical = gameStateRef.current.resonance < 10;
-            
-            let deathProbability = 0;
-            if (criticalCount >= 2) {
-              deathProbability = 0.12; // Reducido de 0.15 para mejor balance
-            } else if (criticalCount === 1 && resonanceIsCritical) {
-              deathProbability = 0.06; // Reducido de 0.08
-            } else if (criticalCount === 1) {
-              deathProbability = 0.02; // Reducido de 0.03
+
+            let healthChange = (deltaTime / 1000) * HEALTH_CONFIG.RECOVERY_RATE;
+            if (criticalCount > 0) {
+              const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
+              healthChange = -decay;
             }
-            
-            // Aplicar multiplicador de velocidad
-            deathProbability *= gameConfig.criticalEventProbability * gameConfig.gameSpeedMultiplier;
-            
-            // APLICAR MEJORAS DE SUPERVIVENCIA DE UPGRADES
-            deathProbability = applyUpgradeToSurvivalRate(deathProbability, upgradeEffects);
-            
-            if (deathProbability > 0 && Math.random() < deathProbability) {
+
+            const newHealth = Math.max(0, Math.min(100, entity.stats.health + healthChange));
+
+            if (Math.abs(newHealth - entity.stats.health) > 0.01) {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATS',
+                payload: { entityId: entity.id, stats: { health: newHealth } }
+              });
+            }
+
+            if (newHealth <= 0) {
               dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
-              
-              // Mensaje específico según la causa
-              let deathMessage = "No pude resistir más...";
-              if (entity.stats.hunger > 95) {
-                deathMessage = "El hambre ha consumido mi esencia... me desvanezco...";
-              } else if (entity.stats.sleepiness > 95) {
-                deathMessage = "El cansancio eterno me lleva... no puedo más...";
-              } else if (entity.stats.loneliness > 95) {
-                deathMessage = "La soledad ha roto mi corazón... me pierdo en la nada...";
-              } else if (entity.stats.energy < 5) {
-                deathMessage = "Mis fuerzas se agotan... mi luz se extingue...";
-              }
-              
+
               dispatch({
                 type: 'SHOW_DIALOGUE',
-                payload: { 
-                  message: deathMessage, 
+                payload: {
+                  message: 'Mi salud se agotó... adiós...',
                   speaker: entity.id as 'circle' | 'square',
-                  duration: 5000 
+                  duration: 5000
                 }
               });
             }

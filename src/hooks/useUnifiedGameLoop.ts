@@ -12,6 +12,7 @@ import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performa
 import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
+import { HEALTH_CONFIG } from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
 import type { Entity, EntityMood } from '../types';
 
@@ -170,24 +171,35 @@ export const useUnifiedGameLoop = () => {
         // ============ GAME CLOCK EVENTS (cada ciertos ticks) ============
         stats.clockTicks++;
         
-        // Verificar muerte (cada 4 ticks)
+        // Verificar salud (cada 4 ticks)
         if (stats.totalTicks % 4 === 0) {
           measureExecutionTime('death-check', () => {
-            // ... lógica de verificación de muerte ...
             for (const entity of livingEntities) {
-              const criticalStats = [
+              const criticalCount = [
                 entity.stats.hunger > 95,
                 entity.stats.sleepiness > 95,
                 entity.stats.loneliness > 95,
                 entity.stats.energy < 5
               ].filter(Boolean).length;
-              
-              if (criticalStats >= 2) {
-                const deathProbability = 0.08 * gameConfig.criticalEventProbability;
-                if (Math.random() < deathProbability) {
-                  dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
-                  logGeneral.warn(`Entidad murió: ${entity.id}`, { stats: entity.stats });
-                }
+
+              let healthChange = (deltaTime / 1000) * HEALTH_CONFIG.RECOVERY_RATE;
+              if (criticalCount > 0) {
+                const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
+                healthChange = -decay;
+              }
+
+              const newHealth = Math.max(0, Math.min(100, entity.stats.health + healthChange));
+
+              if (Math.abs(newHealth - entity.stats.health) > 0.01) {
+                dispatch({
+                  type: 'UPDATE_ENTITY_STATS',
+                  payload: { entityId: entity.id, stats: { health: newHealth } }
+                });
+              }
+
+              if (newHealth <= 0) {
+                dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
+                logGeneral.warn(`Entidad murió: ${entity.id}`, { stats: entity.stats });
               }
             }
           });

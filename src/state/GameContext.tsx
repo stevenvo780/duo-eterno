@@ -46,7 +46,8 @@ const initialGameState: GameState = {
         happiness: 70,
         energy: 80,
         boredom: 20,
-        money: 50 // Dinero inicial
+        money: 50, // Dinero inicial
+        health: 100
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -69,7 +70,8 @@ const initialGameState: GameState = {
         happiness: 70,
         energy: 80,
         boredom: 20,
-        money: 50 // Dinero inicial
+        money: 50, // Dinero inicial
+        health: 100
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -215,7 +217,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                   happiness: 40,
                   energy: 60,
                   boredom: 30,
-                  money: 25 // Dinero reducido al revivir
+                  money: 25, // Dinero reducido al revivir
+                  health: 50
                 }
               }
             : entity

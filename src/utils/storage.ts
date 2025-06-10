@@ -91,7 +91,8 @@ const sanitizeGameState = (state: GameState): GameState => {
       happiness: Math.max(0, Math.min(100, entity.stats.happiness)),
       energy: Math.max(0, Math.min(100, entity.stats.energy)),
       boredom: Math.max(0, Math.min(100, entity.stats.boredom)),
-      money: Math.max(0, entity.stats.money)
+      money: Math.max(0, entity.stats.money),
+      health: Math.max(0, Math.min(100, entity.stats.health))
     },
     position: {
       x: Math.max(0, Math.min(800, entity.position.x)),
