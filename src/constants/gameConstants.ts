@@ -1,5 +1,5 @@
 // Tipos derivados de las interfaces principales
-export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money'] as const;
+export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money', 'health'] as const;
 export type StatKey = typeof STAT_KEYS[number];
 
 export const ZONE_TYPES = [
@@ -35,6 +35,11 @@ export const RESONANCE_THRESHOLDS = {
   LOW: 50,
   GOOD: 70,
   EXCELLENT: 90
+} as const;
+
+export const HEALTH_CONFIG = {
+  DECAY_PER_CRITICAL: 0.1, // salud perdida por segundo por cada estadística crítica
+  RECOVERY_RATE: 0.05 // salud recuperada por segundo cuando todo está en orden
 } as const;
 
 // Configuración de movimiento y colisiones
@@ -102,7 +107,8 @@ export const TRANSLATIONS = {
     'happiness': 'Felicidad',
     'energy': 'Energía',
     'boredom': 'Diversión',
-    'money': 'Dinero'
+    'money': 'Dinero',
+    'health': 'Salud'
   } as Record<StatKey, string>,
   
   ENTITIES: {

@@ -72,31 +72,3 @@ export const getStatColor = (value: number): string => {
   return '#ef4444'; // red
 };
 
-export const getMoodColor = (mood: EntityMood): string => {
-  switch (mood) {
-    case 'HAPPY': return '#22c55e';
-    case 'EXCITED': return '#f59e0b';
-    case 'CALM': return '#3b82f6';
-    case 'CONTENT': return '#8b5cf6';
-    case 'SAD': return '#6b7280';
-    case 'TIRED': return '#94a3b8';
-    case 'ANXIOUS': return '#ef4444';
-    default: return '#6b7280';
-  }
-};
-
-export const getRandomThought = (): string => {
-  const thoughts = [
-    "¿Qué significa existir en pixels?",
-    "El tiempo fluye diferente aquí...",
-    "Cada click resuena en mi alma digital",
-    "Los colores cantan melodías silenciosas",
-    "¿Sueñan los algoritmos con ovejas eléctricas?",
-    "Mi compañero y yo somos uno en la dualidad",
-    "La geometría de mis emociones es infinita",
-    "Escribo poemas en código binario",
-    "El canvas es mi universo conocido",
-    "¿Hay vida más allá de estos 400 píxeles?"
-  ];
-  return thoughts[Math.floor(Math.random() * thoughts.length)];
-};

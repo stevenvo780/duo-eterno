@@ -21,7 +21,7 @@ export type GameAction =
   | { type: 'KILL_ENTITY'; payload: { entityId: string } }
   | { type: 'REVIVE_ENTITY'; payload: { entityId: string } }
   | { type: 'BREAK_RELATIONSHIP' }
-  | { type: 'TICK' }
+  | { type: 'TICK'; payload: number }
   | { type: 'INTERACT'; payload: { type: InteractionType; entityId?: string } }
   | { type: 'SHOW_DIALOGUE'; payload: { message: string; duration?: number; speaker?: 'circle' | 'square' | 'system' } }
   | { type: 'HIDE_DIALOGUE' }
@@ -46,7 +46,8 @@ const initialGameState: GameState = {
         happiness: 70,
         energy: 80,
         boredom: 20,
-        money: 50 // Dinero inicial
+        money: 50, // Dinero inicial
+        health: 100
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -69,7 +70,8 @@ const initialGameState: GameState = {
         happiness: 70,
         energy: 80,
         boredom: 20,
-        money: 50 // Dinero inicial
+        money: 50, // Dinero inicial
+        health: 100
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -200,11 +202,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'REVIVE_ENTITY': {
       return {
         ...state,
+        resonance: Math.max(state.resonance, 50),
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
-            ? { 
-                ...entity, 
-                isDead: false, 
+            ? {
+                ...entity,
+                isDead: false,
                 state: 'IDLE',
                 timeOfDeath: undefined,
                 stats: {
@@ -214,7 +217,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                   happiness: 40,
                   energy: 60,
                   boredom: 30,
-                  money: 25 // Dinero reducido al revivir
+                  money: 25, // Dinero reducido al revivir
+                  health: 50
                 }
               }
             : entity
@@ -236,7 +240,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     
     case 'TICK': {
-      const newResonance = Math.max(0, state.resonance - 0.3);
+      const deltaMs = action.payload;
+      const decayPerSecond = 0.5;
+      const decay = (deltaMs / 1000) * decayPerSecond;
+      const newResonance = Math.max(0, state.resonance - decay);
       return {
         ...state,
         resonance: newResonance,
