@@ -232,47 +232,6 @@ export const releasePooledStatsUpdate = (stats: Record<string, number>): void =>
 };
 
 /**
- * Optimiza la ejecución de una función costosa usando debouncing
- */
-export const debounce = <T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number
-): ((...args: Parameters<T>) => void) => {
-  let timeout: number | undefined;
-  
-  return (...args: Parameters<T>) => {
-    const later = () => {
-      timeout = undefined;
-      func(...args);
-    };
-    
-    if (timeout !== undefined) {
-      clearTimeout(timeout);
-    }
-    
-    timeout = window.setTimeout(later, wait);
-  };
-};
-
-/**
- * Optimiza la ejecución de una función usando throttling
- */
-export const throttle = <T extends (...args: unknown[]) => unknown>(
-  func: T,
-  limit: number
-): ((...args: Parameters<T>) => void) => {
-  let inThrottle: boolean;
-  
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
-};
-
-/**
  * Mide el tiempo de ejecución de una función
  */
 export const measureExecutionTime = <T>(
@@ -293,16 +252,6 @@ export const measureExecutionTime = <T>(
   return result;
 };
 
-/**
- * Ejecuta una función de forma asíncrona para no bloquear el hilo principal
- */
-export const runAsync = <T>(func: () => T): Promise<T> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(func());
-    }, 0);
-  });
-};
 
 /**
  * Optimiza arrays eliminando elementos nulos/undefined sin crear nuevo array
@@ -333,39 +282,6 @@ const countActiveTimers = (): number => {
   return 5; // Estimación para autopoiesis, movement, clock, etc.
 };
 
-/**
- * Libera recursos no utilizados
- */
-export const garbageCollect = (): void => {
-  // Forzar garbage collection si es posible (solo en desarrollo)
-  if (gameConfig.debugMode && 'gc' in window) {
-    (window as unknown as { gc: () => void }).gc();
-  }
-};
-
-/**
- * Obtiene información de rendimiento para debug
- */
-export const getPerformanceInfo = (): string => {
-  const metrics = updatePerformanceMetrics();
-  
-  let info = '=== RENDIMIENTO ===\n';
-  info += `FPS: ${metrics.fps.toFixed(1)}\n`;
-  info += `Frame Time: ${metrics.frameTime.toFixed(2)}ms\n`;
-  info += `Memoria: ${metrics.memoryUsage.toFixed(1)}MB\n`;
-  info += `Timers Activos: ${metrics.activeTimers}\n\n`;
-  
-  info += '=== THROTTLING ===\n';
-  info += `Autopoiesis: ${autopoiesisThrottler.getInterval()}ms\n`;
-  info += `Movement: ${movementThrottler.getInterval()}ms\n`;
-  info += `Render: ${renderThrottler.getInterval()}ms\n\n`;
-  
-  info += '=== POOLS ===\n';
-  info += `Position Pool: ${positionPool.getPoolSize()} objetos\n`;
-  info += `Stats Pool: ${statsUpdatePool.getPoolSize()} objetos\n`;
-  
-  return info;
-};
 
 /**
  * Configura alertas de rendimiento
