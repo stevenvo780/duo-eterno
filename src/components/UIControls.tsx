@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
-import { useUpgrades } from '../hooks/useUpgrades';
 import { applyInteractionEffect, getStatColor } from '../utils/interactions';
-import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
 import { getRandomDialogue } from '../utils/dialogues';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
-import UpgradePanel from './UpgradePanel';
 
 interface UIControlsProps {
   selectedEntityId?: string | null;
@@ -15,22 +12,18 @@ interface UIControlsProps {
 
 const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect }) => {
   const { gameState, dispatch } = useGame();
-  const { totalMoney, unlockedUpgrades, checkUnlockRequirements, getUpgradeEffect } = useUpgrades();
   const [showStats, setShowStats] = useState(false);
-  const [showUpgrades, setShowUpgrades] = useState(false);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
+  const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
-    // Crear contexto de efectos de upgrades
-    const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
-    
     if (entityId) {
       // Apply to specific entity
       const entity = gameState.entities.find(e => e.id === entityId);
       if (!entity || entity.isDead) return;
 
-      const result = applyInteractionEffect(entity.stats, type, upgradeEffects);
+      const result = applyInteractionEffect(entity.stats, type);
       
       dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId, stats: result.stats } });
       if (result.mood) {
@@ -61,18 +54,17 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       gameState.entities.forEach(entity => {
         if (entity.isDead) return;
         
-        const result = applyInteractionEffect(entity.stats, type, upgradeEffects);
+        const result = applyInteractionEffect(entity.stats, type);
         dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: result.stats } });
         if (result.mood) {
           dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: result.mood } });
         }
       });
 
-      // Global resonance boost for NOURISH with upgrade effects
+      // Global resonance boost for NOURISH
       if (type === 'NOURISH') {
         const baseResonanceGain = 30;
-        const enhancedGain = Math.round(baseResonanceGain * (1 + getUpgradeEffect('RESONANCE_BONUS') / 100));
-        dispatch({ type: 'UPDATE_RESONANCE', payload: Math.min(100, gameState.resonance + enhancedGain) });
+        dispatch({ type: 'UPDATE_RESONANCE', payload: Math.min(100, gameState.resonance + baseResonanceGain) });
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
@@ -523,43 +515,6 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             <span>Stats</span>
           </button>
 
-          <button
-            onClick={() => {
-              checkUnlockRequirements();
-              setShowUpgrades(!showUpgrades);
-            }}
-            style={{
-              background: showUpgrades
-                ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                : 'rgba(51, 65, 85, 0.5)',
-              border: '2px solid #f59e0b',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              color: '#f1f5f9',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <span>🛠️</span>
-            <span>Mejoras</span>
-            {unlockedUpgrades.length > 0 && (
-              <span style={{
-                background: '#ef4444',
-                color: 'white',
-                borderRadius: '10px',
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold'
-              }}>
-                {unlockedUpgrades.length}
-              </span>
-            )}
-          </button>
 
           <div style={{
             background: 'rgba(34, 197, 94, 0.2)',
@@ -600,10 +555,6 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         </div>
       </div>
       
-      <UpgradePanel 
-        visible={showUpgrades} 
-        onClose={() => setShowUpgrades(false)} 
-      />
     </div>
   );
 };

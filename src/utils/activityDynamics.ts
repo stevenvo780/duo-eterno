@@ -3,7 +3,6 @@ import type { EntityStats, EntityActivity } from '../types';
 import type { ActivityType } from '../constants/gameConstants';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
-import { applyUpgradeToStatDecay, type UpgradeEffectsContext } from './upgradeEffects';
 
 // Duración óptima de cada actividad en milisegundos
 export const ACTIVITY_DYNAMICS: Record<ActivityType, { optimalDuration: number }> = {
@@ -277,8 +276,7 @@ const HYBRID_DECAY_RATES = {
 export const applyHybridDecay = (
   currentStats: EntityStats,
   activity: EntityActivity,
-  deltaTimeMs: number,
-  upgradeEffects?: UpgradeEffectsContext
+  deltaTimeMs: number
 ): EntityStats => {
   const newStats = { ...currentStats };
   const timeMultiplier = (deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
@@ -290,10 +288,6 @@ export const applyHybridDecay = (
       const activityMod = HYBRID_DECAY_RATES.activityModifiers[activity];
       if (activityMod && statName in activityMod) {
         finalRate += activityMod[statName];
-      }
-      
-      if (upgradeEffects && applyUpgradeToStatDecay) {
-        finalRate = applyUpgradeToStatDecay(finalRate, upgradeEffects);
       }
       
       const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;

@@ -1,5 +1,4 @@
 import type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
-import type { UpgradeState } from './upgrades';
 
 export interface Position {
   x: number;
@@ -100,5 +99,4 @@ export interface GameState {
   };
   zones: Zone[];
   mapElements: MapElement[];
-  upgrades: UpgradeState; // Using proper UpgradeState type
 }

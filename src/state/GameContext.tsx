@@ -1,6 +1,5 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import type { EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
-import { DEFAULT_UPGRADES, type UpgradeState } from '../types/upgrades';
 import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
@@ -19,7 +18,6 @@ interface GameState {
   };
   zones: Zone[];
   mapElements: MapElement[];
-  upgrades: UpgradeState;
 }
 
 interface DialogueState {
@@ -58,8 +56,7 @@ type GameAction =
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
   | { type: 'RESET_GAME' }
   | { type: 'LOAD_SAVED_STATE'; payload: GameState }
-  | { type: 'PURCHASE_UPGRADE'; payload: { upgradeId: string } }
-  | { type: 'CHECK_UNLOCK_REQUIREMENTS' };
+;
 
 const initialGameState: GameState = {
   entities: [
@@ -122,12 +119,7 @@ const initialGameState: GameState = {
     type: 'NOURISH'
   },
   zones: createDefaultZones(),
-  mapElements: createDefaultMapElements(),
-  upgrades: {
-    availableUpgrades: DEFAULT_UPGRADES.map(upgrade => ({ ...upgrade })),
-    purchasedUpgrades: {},
-    totalMoneySpent: 0
-  }
+  mapElements: createDefaultMapElements()
 };
 
 const initialDialogueState: DialogueState = {
@@ -322,84 +314,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return action.payload;
     }
 
-    case 'PURCHASE_UPGRADE': {
-      const { upgradeId } = action.payload;
-      const upgrade = state.upgrades.availableUpgrades.find(u => u.id === upgradeId);
-      
-      if (!upgrade || !upgrade.isUnlocked) return state;
-      
-      const currentLevel = state.upgrades.purchasedUpgrades[upgradeId] || 0;
-      if (currentLevel >= upgrade.maxLevel) return state;
-      
-      const upgradeCost = upgrade.cost * (currentLevel + 1);
-      const totalMoney = state.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
-      
-      if (totalMoney < upgradeCost) return state;
-      
-      // Deducir dinero proporcionalmente de las entidades
-      let remainingCost = upgradeCost;
-      const updatedEntities = state.entities.map(entity => {
-        if (remainingCost <= 0) return entity;
-        
-        const entityContribution = Math.min(entity.stats.money, remainingCost);
-        remainingCost -= entityContribution;
-        
-        return {
-          ...entity,
-          stats: {
-            ...entity.stats,
-            money: entity.stats.money - entityContribution
-          }
-        };
-      });
-      
-      return {
-        ...state,
-        entities: updatedEntities,
-        upgrades: {
-          ...state.upgrades,
-          purchasedUpgrades: {
-            ...state.upgrades.purchasedUpgrades,
-            [upgradeId]: currentLevel + 1
-          },
-          totalMoneySpent: state.upgrades.totalMoneySpent + upgradeCost
-        }
-      };
-    }
-
-    case 'CHECK_UNLOCK_REQUIREMENTS': {
-      const updatedUpgrades = state.upgrades.availableUpgrades.map(upgrade => {
-        if (upgrade.isUnlocked || !upgrade.unlockRequirement) return upgrade;
-        
-        const req = upgrade.unlockRequirement;
-        let shouldUnlock = false;
-        
-        switch (req.type) {
-          case 'MONEY':
-            shouldUnlock = state.upgrades.totalMoneySpent >= req.value;
-            break;
-          case 'RESONANCE':
-            shouldUnlock = state.resonance >= req.value;
-            break;
-          case 'CYCLES':
-            shouldUnlock = state.cycles >= req.value;
-            break;
-          case 'TOGETHER_TIME':
-            shouldUnlock = state.togetherTime >= req.value;
-            break;
-        }
-        
-        return { ...upgrade, isUnlocked: shouldUnlock };
-      });
-      
-      return {
-        ...state,
-        upgrades: {
-          ...state.upgrades,
-          availableUpgrades: updatedUpgrades
-        }
-      };
-    }
     
     default:
       return state;

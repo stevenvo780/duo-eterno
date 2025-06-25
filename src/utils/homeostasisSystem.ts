@@ -5,7 +5,6 @@
  */
 
 import type { EntityStats, Entity, Position } from '../types';
-import type { UpgradeEffectsContext } from './upgradeEffects';
 
 const BASE_DECAY_RATE = 0.5;
 
@@ -72,12 +71,9 @@ const calculateProximityEffects = (
 
 export const applyHomeostasis = (
   stats: EntityStats,
-  deltaTime: number = 1,
-  upgradeEffects?: UpgradeEffectsContext
+  deltaTime: number = 1
 ): EntityStats => {
-  const decay = upgradeEffects 
-    ? BASE_DECAY_RATE * (1 - upgradeEffects.getUpgradeEffect('STAT_DECAY_REDUCTION') / 100)
-    : BASE_DECAY_RATE;
+  const decay = BASE_DECAY_RATE;
 
   // Aplicar cambios graduales y pequeños para evitar saltos bruscos
   const decayRate = decay * deltaTime * 0.1; // Reducir la velocidad de cambio
@@ -100,15 +96,12 @@ export const applyUnifiedHomeostasis = (
   companion: Entity | null,
   resonance: number,
   currentZone: { effects?: Record<string, number> } | null,
-  deltaTime: number = 1,
-  upgradeEffects?: UpgradeEffectsContext
+  deltaTime: number = 1
 ): EntityStats => {
   const newStats = { ...entity.stats };
   
   // 1. Aplicar decay natural muy gradual (reducido para dar más protagonismo a otros efectos)
-  const decay = upgradeEffects 
-    ? BASE_DECAY_RATE * (1 - upgradeEffects.getUpgradeEffect('STAT_DECAY_REDUCTION') / 100)
-    : BASE_DECAY_RATE;
+  const decay = BASE_DECAY_RATE;
   
   const decayRate = decay * deltaTime * 0.15; // Reducido de 0.2 a 0.15 para menos decay natural
   

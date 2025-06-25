@@ -6,10 +6,8 @@
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
 import type { GameState } from '../types';
-import { useUpgrades } from './useUpgrades';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
-import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
 import { HEALTH_CONFIG } from '../constants/gameConstants';
@@ -26,7 +24,6 @@ interface GameLoopStats {
 
 export const useUnifiedGameLoop = () => {
   const { gameState, dispatch } = useGame();
-  const { getUpgradeEffect } = useUpgrades();
 
   const gameStateRef = useRef<GameState>(gameState);
   useEffect(() => {
@@ -81,7 +78,6 @@ export const useUnifiedGameLoop = () => {
         dispatch({ type: 'TICK', payload: deltaTime });
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
-        const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
         
         // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
@@ -93,8 +89,7 @@ export const useUnifiedGameLoop = () => {
               const newStats = applyHybridDecay(
                 entity.stats, 
                 entity.activity, 
-                deltaTime, 
-                upgradeEffects
+                deltaTime
               );
               
               // Aplicar costos de supervivencia
@@ -256,7 +251,7 @@ export const useUnifiedGameLoop = () => {
       });
     }, gameClockInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [dispatch, getUpgradeEffect]);
+  }, [dispatch]);
 
   return {
     stats: statsRef.current
