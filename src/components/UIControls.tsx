@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
+import { dynamicsLogger } from '../utils/dynamicsLogger';
+import DynamicsDebugPanel from './DynamicsDebugPanel';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
 
@@ -13,6 +15,7 @@ interface UIControlsProps {
 const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect }) => {
   const { gameState, dispatch } = useGame();
   const [showStats, setShowStats] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
   const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
@@ -24,6 +27,9 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       if (!entity || entity.isDead) return;
 
       const result = applyInteractionEffect(entity.stats, type);
+      
+      // Log de la interacción del usuario
+      dynamicsLogger.logUserInteraction(type, entityId, result);
       
       dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId, stats: result.stats } });
       if (result.mood) {
@@ -40,10 +46,15 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       };
       
       if (dialogueMap[dialogueType]) {
+        const message = getRandomDialogue(dialogueMap[dialogueType] as keyof typeof import('../utils/dialogues').dialogues);
+        
+        // Log del diálogo
+        dynamicsLogger.logDialogue(entityId as 'circle' | 'square', message, dialogueType);
+        
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
-            message: getRandomDialogue(dialogueMap[dialogueType] as keyof typeof import('../utils/dialogues').dialogues),
+            message,
             speaker: entityId as 'circle' | 'square',
             duration: 3000
           }
@@ -64,11 +75,21 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       // Global resonance boost for NOURISH
       if (type === 'NOURISH') {
         const baseResonanceGain = 30;
-        dispatch({ type: 'UPDATE_RESONANCE', payload: Math.min(100, gameState.resonance + baseResonanceGain) });
+        const newResonance = Math.min(100, gameState.resonance + baseResonanceGain);
+        
+        // Log del boost de resonancia global
+        dynamicsLogger.logResonanceChange(gameState.resonance, newResonance, 'interacción NOURISH del usuario', gameState.entities);
+        dynamicsLogger.logUserInteraction(type, undefined, { resonanceGain: baseResonanceGain });
+        
+        dispatch({ type: 'UPDATE_RESONANCE', payload: newResonance });
+        
+        const message = getRandomDialogue('post-nutrition');
+        dynamicsLogger.logDialogue(undefined, message, 'post-nutrition');
+        
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
-            message: getRandomDialogue('post-nutrition'),
+            message,
             duration: 3000 
           }
         });
@@ -177,11 +198,21 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
               </p>
               <button
                 onClick={() => {
+                  // Log del revival
+                  dynamicsLogger.logEntityRevival(selectedEntity.id, {
+                    hunger: 50, sleepiness: 50, loneliness: 60, happiness: 40,
+                    energy: 60, boredom: 30, money: 25, health: 50
+                  });
+                  
                   dispatch({ type: 'REVIVE_ENTITY', payload: { entityId: selectedEntity.id } });
+                  
+                  const message = getRandomDialogue('revival');
+                  dynamicsLogger.logDialogue(undefined, message, 'revival');
+                  
                   dispatch({
                     type: 'SHOW_DIALOGUE',
                     payload: { 
-                      message: getRandomDialogue('revival'),
+                      message,
                       duration: 4000 
                     }
                   });
@@ -515,6 +546,29 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             <span>Stats</span>
           </button>
 
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            style={{
+              background: showDebug
+                ? 'linear-gradient(135deg, #10b981, #059669)'
+                : 'rgba(51, 65, 85, 0.5)',
+              border: '1px solid #10b981',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              color: '#f1f5f9',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🔍</span>
+            <span>Debug</span>
+          </button>
+
 
           <div style={{
             background: 'rgba(34, 197, 94, 0.2)',
@@ -555,6 +609,10 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         </div>
       </div>
       
+      <DynamicsDebugPanel 
+        visible={showDebug} 
+        onClose={() => setShowDebug(false)} 
+      />
     </div>
   );
 };

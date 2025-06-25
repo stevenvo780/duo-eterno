@@ -12,6 +12,7 @@ import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
 import { HEALTH_CONFIG } from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
+import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, EntityMood } from '../types';
 
 interface GameLoopStats {
@@ -95,6 +96,18 @@ export const useUnifiedGameLoop = () => {
               // Aplicar costos de supervivencia
               const finalStats = applySurvivalCosts(newStats, deltaTime);
               
+              // Detectar estadísticas críticas
+              const criticalStats = Object.entries(finalStats)
+                .filter(([key, value]) => {
+                  if (key === 'money') return false;
+                  return value > 90 || (key === 'energy' && value < 10) || (key === 'health' && value < 10);
+                })
+                .map(([key]) => key);
+              
+              if (criticalStats.length > 0) {
+                dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
+              }
+              
               // Actualizar stats si hay cambios significativos
               const hasSignificantChanges = Object.keys(finalStats).some(key => {
                 const statKey = key as keyof Entity['stats'];
@@ -120,6 +133,7 @@ export const useUnifiedGameLoop = () => {
               // Actualizar mood
               const newMood = calculateOptimizedMood(finalStats, gameStateRef.current.resonance);
               if (newMood !== entity.mood) {
+                dynamicsLogger.logMoodChange(entity.id, entity.mood, newMood, finalStats);
                 dispatch({
                   type: 'UPDATE_ENTITY_MOOD',
                   payload: { entityId: entity.id, mood: newMood }
@@ -159,8 +173,15 @@ export const useUnifiedGameLoop = () => {
               }
 
               if (newHealth <= 0) {
+                dynamicsLogger.logEntityDeath(entity.id, 'estadísticas críticas', entity.stats);
                 dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
                 logGeneral.warn(`Entidad murió: ${entity.id}`, { stats: entity.stats });
+              } else if (Math.abs(newHealth - entity.stats.health) > 1) {
+                // Log cambios significativos de salud
+                const factors = [];
+                if (criticalCount > 0) factors.push(`${criticalCount} stats críticas`);
+                else factors.push('recuperación natural');
+                dynamicsLogger.logHealthChange(entity.id, entity.stats.health, newHealth, factors);
               }
             }
           });
@@ -199,10 +220,20 @@ export const useUnifiedGameLoop = () => {
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
             if (finalResonanceIncrement > 0.01) { // Solo actualizar si hay cambio significativo
+              dynamicsLogger.logResonanceChange(
+                gameStateRef.current.resonance, 
+                newResonance, 
+                'proximidad y mood bonus', 
+                [entity1, entity2]
+              );
+              
               dispatch({ 
                 type: 'UPDATE_RESONANCE', 
                 payload: newResonance 
               });
+              
+              // Log efecto de proximidad
+              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'BONDING');
               
               if (gameConfig.debugMode && stats.totalTicks % 10 === 0) {
                 logGeneral.debug('Nutriendo vínculo', { 
@@ -219,6 +250,15 @@ export const useUnifiedGameLoop = () => {
             const newResonance = Math.max(0, gameStateRef.current.resonance - resonanceDecay);
             
             if (resonanceDecay > 0.01) {
+              dynamicsLogger.logResonanceChange(
+                gameStateRef.current.resonance,
+                newResonance,
+                'separación excesiva',
+                [entity1, entity2]
+              );
+              
+              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'SEPARATION');
+              
               dispatch({ 
                 type: 'UPDATE_RESONANCE', 
                 payload: newResonance 
@@ -240,6 +280,20 @@ export const useUnifiedGameLoop = () => {
           }
         }
         
+        // Tomar snapshots regulares (cada 50 ticks)
+        if (stats.totalTicks % 50 === 0) {
+          livingEntities.forEach(entity => {
+            dynamicsLogger.takeEntitySnapshot(entity);
+          });
+          
+          dynamicsLogger.takeSystemSnapshot(
+            gameStateRef.current.resonance,
+            gameStateRef.current.togetherTime,
+            gameStateRef.current.cycles,
+            gameStateRef.current.entities
+          );
+        }
+        
         // Log de estadísticas de performance (cada 100 ticks)
         if (gameConfig.debugMode && stats.totalTicks % 100 === 0) {
           logGeneral.info('Estadísticas del loop unificado', {
@@ -247,6 +301,9 @@ export const useUnifiedGameLoop = () => {
             autopoiesisTicks: stats.autopoiesisTicks,
             efficiency: (stats.autopoiesisTicks / stats.totalTicks * 100).toFixed(1) + '%'
           });
+          
+          // Mostrar reporte de dinámicas
+          console.log(dynamicsLogger.generateReport());
         }
       });
     }, gameClockInterval);

@@ -15,6 +15,7 @@ import {
 import { ACTIVITY_DYNAMICS, calculateActivityPriority } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
 import { logAI } from './logger';
+import { dynamicsLogger } from './dynamicsLogger';
 
 // Perfiles de personalidad para cada entidad
 interface PersonalityProfile {
@@ -242,11 +243,22 @@ export const makeIntelligentDecision = (
   
   const topActivity = activityScores[0];
   
+  // Log de decisión tomada
+  dynamicsLogger.logDecisionMaking(entity.id, activityScores, topActivity.activity);
+  
   // Decidir si cambiar de actividad usando lógica mejorada
   if (topActivity.activity !== entity.activity) {
     const urgencyScore = topActivity.score;
     
     if (shouldChangeActivity(entity, currentTime, urgencyScore)) {
+      // Log del cambio de actividad
+      dynamicsLogger.logActivityChange(
+        entity.id, 
+        entity.activity, 
+        topActivity.activity, 
+        `urgencia: ${urgencyScore.toFixed(1)}`
+      );
+      
       // Interrumpir sesión anterior si existe
       const oldSession = activitySessions.get(entity.id);
       if (oldSession) {
