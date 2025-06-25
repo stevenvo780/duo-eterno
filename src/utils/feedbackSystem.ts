@@ -228,9 +228,9 @@ export const updateEntityFeedback = (
 /**
  * Obtiene el feedback actual de una entidad
  */
-
-
-
+export const getEntityFeedback = (entityId: string): EntityFeedback | null => {
+  return entityFeedbacks.get(entityId) || null;
+};
 
 /**
  * Calcula la posición óptima para mostrar indicadores de intención

@@ -5,10 +5,16 @@
 
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
-import { getGameIntervals } from '../config/gameConfig';
-import { applyUnifiedHomeostasis } from '../utils/homeostasisSystem';
-import { getEntityZone } from '../utils/mapGeneration';
-import type { Entity, EntityMood, EntityStats } from '../types';
+import type { GameState } from '../types';
+import { useUpgrades } from './useUpgrades';
+import { getGameIntervals, gameConfig } from '../config/gameConfig';
+import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
+import { createUpgradeEffectsContext } from '../utils/upgradeEffects';
+import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
+import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
+import { HEALTH_CONFIG } from '../constants/gameConstants';
+import { logGeneral } from '../utils/logger';
+import type { Entity, EntityMood } from '../types';
 
 interface GameLoopStats {
   totalTicks: number;
@@ -20,6 +26,12 @@ interface GameLoopStats {
 
 export const useUnifiedGameLoop = () => {
   const { gameState, dispatch } = useGame();
+  const { getUpgradeEffect } = useUpgrades();
+
+  const gameStateRef = useRef<GameState>(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
   
   const intervalRef = useRef<number | undefined>(undefined);
   const statsRef = useRef<GameLoopStats>({
@@ -54,91 +66,197 @@ export const useUnifiedGameLoop = () => {
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
     intervalRef.current = window.setInterval(() => {
-      // Actualizar estado y mood de cada entidad usando homeostasis unificada
-      gameState.entities.forEach(entity => {
-        const companion = gameState.entities.find(e => e.id !== entity.id);
-        const currentZone = getEntityZone(entity.position, gameState.zones);
+      const now = Date.now();
+      const deltaTime = now - statsRef.current.lastTickTime;
+      const stats = statsRef.current;
+      
+      // Throttling de performance
+      if (deltaTime < gameClockInterval * 0.8) return;
+      
+      stats.lastTickTime = now;
+      stats.totalTicks++;
+
+      measureExecutionTime('unified-game-loop', () => {
+        // Ejecutar tick base
+        dispatch({ type: 'TICK', payload: deltaTime });
         
-        // Aplicar homeostasis unificada que incluye todos los efectos
-        const newStats = applyUnifiedHomeostasis(
-          entity,
-          companion || null,
-          gameState.resonance,
-          currentZone,
-          1.0 // deltaTime incrementado de 0.5 a 1.0 para más cambio por tick
-        );
+        const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
+        const upgradeEffects = createUpgradeEffectsContext(getUpgradeEffect);
         
-        // Mood
-        const newMood = calculateOptimizedMood(newStats, gameState.resonance);
-        if (newMood !== entity.mood) {
-          dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: newMood } });
+        // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
+        if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
+          stats.autopoiesisTicks++;
+          
+          measureExecutionTime('autopoiesis-system', () => {
+            for (const entity of livingEntities) {
+              // Aplicar decay híbrido
+              const newStats = applyHybridDecay(
+                entity.stats, 
+                entity.activity, 
+                deltaTime, 
+                upgradeEffects
+              );
+              
+              // Aplicar costos de supervivencia
+              const finalStats = applySurvivalCosts(newStats, deltaTime);
+              
+              // Actualizar stats si hay cambios significativos
+              const hasSignificantChanges = Object.keys(finalStats).some(key => {
+                const statKey = key as keyof Entity['stats'];
+                return Math.abs(finalStats[statKey] - entity.stats[statKey]) > 0.1;
+              });
+              
+              if (hasSignificantChanges) {
+                const statChanges: Partial<Entity['stats']> = {};
+                Object.keys(finalStats).forEach(key => {
+                  const statKey = key as keyof Entity['stats'];
+                  const change = finalStats[statKey] - entity.stats[statKey];
+                  if (Math.abs(change) > 0.1) {
+                    statChanges[statKey] = entity.stats[statKey] + change;
+                  }
+                });
+                
+                dispatch({
+                  type: 'UPDATE_ENTITY_STATS',
+                  payload: { entityId: entity.id, stats: statChanges }
+                });
+              }
+              
+              // Actualizar mood
+              const newMood = calculateOptimizedMood(finalStats, gameStateRef.current.resonance);
+              if (newMood !== entity.mood) {
+                dispatch({
+                  type: 'UPDATE_ENTITY_MOOD',
+                  payload: { entityId: entity.id, mood: newMood }
+                });
+              }
+            }
+          });
         }
         
-        // Actualizar stats solo si han cambiado significativamente
-        const hasSignificantChange = Object.keys(newStats).some(key => {
-          const statKey = key as keyof EntityStats;
-          return Math.abs(newStats[statKey] - entity.stats[statKey]) > 0.2; // Umbral reducido para detectar más cambios
-        });
+        // ============ GAME CLOCK EVENTS (cada ciertos ticks) ============
+        stats.clockTicks++;
         
-        if (hasSignificantChange) {
-          dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: newStats } });
+        // Verificar salud (cada 4 ticks)
+        if (stats.totalTicks % 4 === 0) {
+          measureExecutionTime('death-check', () => {
+            for (const entity of livingEntities) {
+              const criticalCount = [
+                entity.stats.hunger > 95,
+                entity.stats.sleepiness > 95,
+                entity.stats.loneliness > 95,
+                entity.stats.energy < 5
+              ].filter(Boolean).length;
+
+              let healthChange = (deltaTime / 1000) * HEALTH_CONFIG.RECOVERY_RATE;
+              if (criticalCount > 0) {
+                const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
+                healthChange = -decay;
+              }
+
+              const newHealth = Math.max(0, Math.min(100, entity.stats.health + healthChange));
+
+              if (Math.abs(newHealth - entity.stats.health) > 0.01) {
+                dispatch({
+                  type: 'UPDATE_ENTITY_STATS',
+                  payload: { entityId: entity.id, stats: { health: newHealth } }
+                });
+              }
+
+              if (newHealth <= 0) {
+                dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
+                logGeneral.warn(`Entidad murió: ${entity.id}`, { stats: entity.stats });
+              }
+            }
+          });
         }
-      });
-
-      // Sistema Together-Time: Incrementar resonancia cuando los agentes están cerca
-      const livingEntities = gameState.entities.filter(e => !e.isDead);
-      if (livingEntities.length === 2) {
-        const [entity1, entity2] = livingEntities;
-        const distance = Math.sqrt(
-          Math.pow(entity1.position.x - entity2.position.x, 2) + 
-          Math.pow(entity1.position.y - entity2.position.y, 2)
-        );
-
-        const CLOSE_DISTANCE = 60; // Aumentar distancia de "cerca" para ser más permisivo
         
-        if (distance < CLOSE_DISTANCE) {
-          // Cerca uno del otro - acumular tiempo juntos
-          const newTogetherTime = gameState.togetherTime + gameClockInterval;
-          dispatch({ type: 'UPDATE_TOGETHER_TIME', payload: newTogetherTime });
-
-          // Auto-sustain: +1 resonancia cada 2 segundos cuando están cerca
-          if (newTogetherTime > 0 && newTogetherTime % 2000 < gameClockInterval && gameState.resonance < 100) {
-            const resonanceBonus = Math.min(1, 100 - gameState.resonance);
-            dispatch({ type: 'UPDATE_RESONANCE', payload: gameState.resonance + resonanceBonus });
+        // Actualizar tiempo juntos y resonancia (cada 2 ticks)
+        if (stats.totalTicks % 2 === 0 && livingEntities.length === 2) {
+          const [entity1, entity2] = livingEntities;
+          const distance = Math.sqrt(
+            Math.pow(entity1.position.x - entity2.position.x, 2) +
+            Math.pow(entity1.position.y - entity2.position.y, 2)
+          );
+          
+          // Distancia de vinculación ajustable
+          const BOND_DISTANCE = 80;
+          const CLOSE_DISTANCE = 50; // Distancia muy cercana para bonus extra
+          
+          if (distance < BOND_DISTANCE) {
+            // Actualizar tiempo juntos
+            dispatch({
+              type: 'UPDATE_TOGETHER_TIME',
+              payload: gameStateRef.current.togetherTime + gameClockInterval
+            });
             
-            // Mostrar diálogo ocasional (solo cada 10 segundos para no spamear)
-            if (newTogetherTime % 10000 < gameClockInterval && Math.random() < 0.5) {
-              const messages = [
-                "Siento la calidez de tu presencia...",
-                "Juntos somos más fuertes...", 
-                "Nuestro vínculo se fortalece...",
-                "Esta cercanía me tranquiliza..."
-              ];
-              const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-              dispatch({
-                type: 'SHOW_DIALOGUE',
-                payload: { 
-                  message: randomMessage,
-                  speaker: Math.random() < 0.5 ? 'circle' : 'square',
-                  duration: 3000
-                }
+            // Calcular incremento de resonancia basado en la proximidad y deltaTime
+            const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
+            const resonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
+            
+            // Bonus si ambas entidades están contentas
+            const moodBonus = (entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
+                             (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED') ? 1.3 : 1.0;
+            
+            const finalResonanceIncrement = resonanceIncrement * moodBonus;
+            
+            // Aplicar incremento con límite máximo
+            const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
+            
+            if (finalResonanceIncrement > 0.01) { // Solo actualizar si hay cambio significativo
+              dispatch({ 
+                type: 'UPDATE_RESONANCE', 
+                payload: newResonance 
+              });
+              
+              if (gameConfig.debugMode && stats.totalTicks % 10 === 0) {
+                logGeneral.debug('Nutriendo vínculo', { 
+                  distance: distance.toFixed(1),
+                  resonance: gameStateRef.current.resonance.toFixed(2),
+                  increment: finalResonanceIncrement.toFixed(4),
+                  newResonance: newResonance.toFixed(2)
+                });
+              }
+            }
+          } else if (distance > BOND_DISTANCE * 2) {
+            // Decay de resonancia cuando están muy lejos
+            const resonanceDecay = (deltaTime / 1000) * 0.5 * gameConfig.gameSpeedMultiplier;
+            const newResonance = Math.max(0, gameStateRef.current.resonance - resonanceDecay);
+            
+            if (resonanceDecay > 0.01) {
+              dispatch({ 
+                type: 'UPDATE_RESONANCE', 
+                payload: newResonance 
               });
             }
           }
-        } else {
-          // Están lejos - perder tiempo juntos gradualmente
-          if (gameState.togetherTime > 0) {
-            const decay = Math.min(gameState.togetherTime, gameClockInterval * 2); // Decay 2x más rápido de lo que acumula
-            dispatch({ type: 'UPDATE_TOGETHER_TIME', payload: gameState.togetherTime - decay });
+        }
+        
+        // Auto-save (cada 20 ticks)
+        if (stats.totalTicks % 20 === 0) {
+          try {
+            localStorage.setItem('duoEternoState', JSON.stringify({
+              ...gameStateRef.current,
+              lastSave: now
+            }));
+            logGeneral.debug('Auto-guardado realizado');
+          } catch (error) {
+            logGeneral.error('Error en auto-guardado', error);
           }
         }
-      }
-
-      dispatch({ type: 'TICK' });
-      statsRef.current.totalTicks++;
+        
+        // Log de estadísticas de performance (cada 100 ticks)
+        if (gameConfig.debugMode && stats.totalTicks % 100 === 0) {
+          logGeneral.info('Estadísticas del loop unificado', {
+            totalTicks: stats.totalTicks,
+            autopoiesisTicks: stats.autopoiesisTicks,
+            efficiency: (stats.autopoiesisTicks / stats.totalTicks * 100).toFixed(1) + '%'
+          });
+        }
+      });
     }, gameClockInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [gameState.entities, gameState.resonance, gameState.zones, gameState.togetherTime, dispatch]);
+  }, [dispatch, getUpgradeEffect]);
 
   return {
     stats: statsRef.current

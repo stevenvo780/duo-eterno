@@ -89,7 +89,8 @@ export const applyHomeostasis = (
     boredom: Math.max(0, Math.min(100, stats.boredom + decayRate)),
     energy: Math.max(0, Math.min(100, stats.energy - decayRate)),
     happiness: Math.max(0, Math.min(100, stats.happiness - decayRate * 0.3)),
-    money: stats.money
+    money: stats.money,
+    health: stats.health
   };
 };
 
@@ -145,5 +146,3 @@ export const applyUnifiedHomeostasis = (
   
   return newStats;
 };
-
-

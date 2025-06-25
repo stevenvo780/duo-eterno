@@ -139,7 +139,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     }
 
     // Indicador de humor (emoji)
-    if (feedback.moodIndicator && quality === 'medium' || quality === 'high') {
+    if (feedback.moodIndicator && (quality === 'medium' || quality === 'high')) {
       ctx.font = '16px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(feedback.moodIndicator, entity.position.x + 20, entity.position.y - 20);

@@ -14,6 +14,7 @@ export interface EntityStats {
   energy: number; // 0-100
   boredom: number; // 0-100
   money: number; // Sistema de dinero para necesidades
+  health: number; // 0-100
 }
 
 export interface Entity {
