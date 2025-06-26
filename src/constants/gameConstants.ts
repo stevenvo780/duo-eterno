@@ -112,4 +112,8 @@ export const TRANSLATIONS = {
   } as const
 } as const;
 
+// Duración y umbral de recuperación para el estado FADING
+export const FADING_TIMEOUT_MS = 10000;
+export const FADING_RECOVERY_THRESHOLD = 10;
+
 

@@ -254,22 +254,24 @@ const HYBRID_DECAY_RATES = {
     boredom: -0.03,  // ULTRA-SUAVE: Reducido de -0.2 a -0.03
     loneliness: -0.02,  // ULTRA-SUAVE: Reducido de -0.1 a -0.02
     happiness: -0.01  // ULTRA-SUAVE: Reducido de -0.05 a -0.01
-  },
-  activityModifiers: {
-    'WORKING': { hunger: -2.0, energy: -2.0, boredom: -3.0, money: 5.0 }, // POTENCIADO: +money más fuerte
-    'SHOPPING': { happiness: 3.0, hunger: 2.0, boredom: 2.0, money: -2.0 }, // POTENCIADO: efectos positivos
-    'COOKING': { hunger: 5.0, happiness: 2.0, energy: 1.0 }, // POTENCIADO: gran recuperación hunger
-    'EXERCISING': { energy: 3.0, hunger: -2.0, happiness: 2.0, boredom: 2.0 }, // POTENCIADO: gran boost energy
-    'RESTING': { sleepiness: -5.0, energy: 4.0, happiness: 1.0 }, // POTENCIADO: gran recuperación
-    'SOCIALIZING': { loneliness: 4.0, happiness: 3.0, boredom: 2.0 }, // POTENCIADO: gran conexión social
-    'DANCING': { boredom: 4.0, happiness: 3.0, energy: 2.0 }, // POTENCIADO: gran diversión
-    'EXPLORING': { hunger: -1.0, boredom: 3.0, happiness: 1.5 }, // POTENCIADO
-    'MEDITATING': { happiness: 3.0, boredom: 2.0, loneliness: 1.0, energy: 1.0 }, // POTENCIADO
-    'CONTEMPLATING': { happiness: 2.0, boredom: 2.0, loneliness: 1.0 }, // POTENCIADO
-    'WRITING': { boredom: 3.0, happiness: 1.0, loneliness: 1.0 }, // POTENCIADO
-    'WANDERING': { boredom: 2.0, happiness: 1.0 }, // POTENCIADO
-    'HIDING': { loneliness: -2.0, happiness: -1.0, energy: 1.0 } // BALANCEADO
-  } as Record<EntityActivity, Record<string, number>>
+  }
+} as const;
+
+// Peso relativo del decay por tipo de actividad (1 = sin cambios)
+const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
+  WORKING: 1.3,
+  SHOPPING: 1.1,
+  COOKING: 1.0,
+  EXERCISING: 1.4,
+  RESTING: 0.5,
+  SOCIALIZING: 0.9,
+  DANCING: 1.2,
+  EXPLORING: 1.2,
+  MEDITATING: 0.7,
+  CONTEMPLATING: 0.8,
+  WRITING: 1.0,
+  WANDERING: 1.0,
+  HIDING: 0.9
 };
 
 // Aplicar decay híbrido a las estadísticas de una entidad
@@ -281,15 +283,12 @@ export const applyHybridDecay = (
   const newStats = { ...currentStats };
   const timeMultiplier = (deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
   
+  const decayMultiplier = ACTIVITY_DECAY_MULTIPLIERS[activity] ?? 1.0;
+
   Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
     if (statName in newStats) {
-      let finalRate = baseRate;
-      
-      const activityMod = HYBRID_DECAY_RATES.activityModifiers[activity];
-      if (activityMod && statName in activityMod) {
-        finalRate += activityMod[statName];
-      }
-      
+      const finalRate = baseRate * decayMultiplier;
+
       const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;
       const statKey = statName as keyof EntityStats;
       

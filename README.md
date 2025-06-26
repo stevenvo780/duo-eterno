@@ -144,8 +144,9 @@ src/
 3. **Búsqueda autónoma**: Cuando baja de 50%, se buscan mutuamente
 4. **Crisis**: Con <25%, entran en estado de baja resonancia
 5. **Desvanecimiento**: Al llegar a 0%, se desvanecen gradualmente
-6. **Intervención**: El jugador puede nutrir el vínculo en cualquier momento
-7. **Renacimiento**: Los entes desvanecidos pueden ser revividos
+6. **Recuperación**: Si la resonancia sube de nuevo en menos de 10 segundos, vuelven a la normalidad
+7. **Intervención**: El jugador puede nutrir el vínculo en cualquier momento
+8. **Renacimiento**: Los entes desvanecidos pueden ser revividos
 
 ## 💾 Persistencia
 
