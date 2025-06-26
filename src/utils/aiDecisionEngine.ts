@@ -12,7 +12,7 @@ import type { Entity, EntityActivity, EntityMood } from '../types';
 import { 
   ACTIVITY_TYPES 
 } from '../constants/gameConstants';
-import { ACTIVITY_DYNAMICS, calculateActivityPriority } from './activityDynamics';
+import { ACTIVITY_DYNAMICS, ACTIVITY_EFFECTS, calculateActivityPriority } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
 import { logAI } from './logger';
 import { dynamicsLogger } from './dynamicsLogger';
@@ -123,15 +123,14 @@ const shouldChangeActivity = (
   // Siempre cambiar si es una emergencia crítica
   if (urgencyScore > 90) return true;
   
-  // REPARACIÓN EMERGENCIA: Forzar cambio cada 10 segundos para recovery activo
   const session = activitySessions.get(entity.id);
-  if (session && (currentTime - session.startTime) > 10000) {
-    return true; // Cambiar después de 10 segundos máximo
-  }
-  
-  // No cambiar si recién comenzó una actividad (menos de 3 segundos)
-  if (session && (currentTime - session.startTime) < 3000) {
-    return false;
+
+  // Respetar un tiempo mínimo de actividad basado en configuración
+  if (session) {
+    const minDuration = ACTIVITY_EFFECTS[session.activity]?.minDuration || 5000;
+    if (currentTime - session.startTime < minDuration) {
+      return false;
+    }
   }
   
   const personality = getPersonalityProfile(entity.id);
