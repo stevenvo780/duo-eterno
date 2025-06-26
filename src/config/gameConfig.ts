@@ -43,7 +43,11 @@ export const gameConfig: GameConfig = {
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
   dialogueDuration: 2500,
   criticalEventProbability: 0.02,
-  baseDecayMultiplier: getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 0.5),
+  // Permitir ajustar la velocidad de desgaste vía variable de entorno
+  baseDecayMultiplier: getEnvNumber(
+    'VITE_STAT_DECAY_SPEED',
+    getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 2.0)
+  ),
   zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
   activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
