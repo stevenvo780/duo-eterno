@@ -99,12 +99,39 @@ export const useUnifiedGameLoop = () => {
               const criticalStats = Object.entries(finalStats)
                 .filter(([key, value]) => {
                   if (key === 'money') return false;
-                  return value > 90 || (key === 'energy' && value < 10) || (key === 'health' && value < 10);
+                  // REPARACIÓN: Lógica correcta para detectar stats críticas
+                  if (key === 'health') return value < 20; // Health crítica bajo 20
+                  if (key === 'energy') return value < 30; // Energy crítica bajo 30
+                  if (key === 'happiness') return value < 35; // Happiness crítica bajo 35
+                  // Para hunger, sleepiness, boredom, loneliness: crítico sobre 75
+                  return value > 75;
                 })
                 .map(([key]) => key);
               
               if (criticalStats.length > 0) {
                 dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
+                
+                // REPARACIÓN EMERGENCIA: Reset a valores seguros si hay demasiadas críticas
+                if (criticalStats.length >= 3) {
+                  console.log(`🚨 EMERGENCY RESET para ${entity.id}: ${criticalStats.length} stats críticas`);
+                  dispatch({
+                    type: 'UPDATE_ENTITY_STATS',
+                    payload: { 
+                      entityId: entity.id, 
+                      stats: {
+                        hunger: 40,
+                        sleepiness: 40, 
+                        energy: 60,
+                        happiness: 60,
+                        boredom: 30,
+                        loneliness: 35,
+                        money: Math.max(20, finalStats.money),
+                        health: Math.max(50, finalStats.health)
+                      }
+                    }
+                  });
+                  continue; // Skip normal stat updates for this entity
+                }
               }
               
               // Actualizar stats si hay cambios significativos
@@ -227,6 +254,11 @@ export const useUnifiedGameLoop = () => {
             
             // Aplicar incremento con límite máximo
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
+            
+            // DEBUG: Log todos los incrementos para diagnosticar
+            if (stats.totalTicks % 20 === 0) { // Log cada 20 ticks para debug
+              console.log(`🔍 DEBUG Resonancia: base=${baseResonanceIncrement.toFixed(4)}, mood=${moodBonus.toFixed(2)}, final=${finalResonanceIncrement.toFixed(4)}, current=${gameStateRef.current.resonance.toFixed(2)}, distance=${distance.toFixed(1)}`);
+            }
             
             if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
               dynamicsLogger.logResonanceChange(

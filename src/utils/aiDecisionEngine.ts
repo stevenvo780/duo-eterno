@@ -123,10 +123,10 @@ const shouldChangeActivity = (
   // Siempre cambiar si es una emergencia crítica
   if (urgencyScore > 90) return true;
   
-  // FIX EMERGENCIA: Forzar cambio cada 15 segundos para evitar estancamiento
+  // REPARACIÓN EMERGENCIA: Forzar cambio cada 10 segundos para recovery activo
   const session = activitySessions.get(entity.id);
-  if (session && (currentTime - session.startTime) > 15000) {
-    return true; // Cambiar después de 15 segundos máximo
+  if (session && (currentTime - session.startTime) > 10000) {
+    return true; // Cambiar después de 10 segundos máximo
   }
   
   // No cambiar si recién comenzó una actividad (menos de 3 segundos)

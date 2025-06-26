@@ -248,27 +248,27 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    hunger: -0.3,  // Reducido de -0.8 a -0.3
-    sleepiness: 0.2,  // Reducido de 0.6 a 0.2
-    energy: -0.15,  // Reducido de -0.4 a -0.15
-    boredom: -0.2,  // Reducido de -0.5 a -0.2
-    loneliness: -0.1,  // Reducido de -0.3 a -0.1
-    happiness: -0.05  // Reducido de -0.2 a -0.05
+    hunger: -0.05,  // ULTRA-SUAVE: Reducido de -0.3 a -0.05
+    sleepiness: 0.03,  // ULTRA-SUAVE: Reducido de 0.2 a 0.03
+    energy: -0.02,  // ULTRA-SUAVE: Reducido de -0.15 a -0.02
+    boredom: -0.03,  // ULTRA-SUAVE: Reducido de -0.2 a -0.03
+    loneliness: -0.02,  // ULTRA-SUAVE: Reducido de -0.1 a -0.02
+    happiness: -0.01  // ULTRA-SUAVE: Reducido de -0.05 a -0.01
   },
   activityModifiers: {
-    'WORKING': { hunger: -1.2, energy: -1.5, boredom: -1.3 },
-    'SHOPPING': { happiness: 1.5, hunger: 0.6 },
-    'COOKING': { hunger: 2.0, happiness: 0.3 },
-    'EXERCISING': { energy: -1.3, hunger: -1.5, happiness: 0.8 },
-    'RESTING': { sleepiness: -2.0, energy: 1.5 },
-    'SOCIALIZING': { loneliness: 2.0, happiness: 0.8 },
-    'DANCING': { boredom: 2.0, happiness: 1.2, energy: -1.2 },
-    'EXPLORING': { hunger: -1.1, boredom: 0.8 },
-    'MEDITATING': { happiness: 1.2, boredom: 1.0, loneliness: -0.6 },
-    'CONTEMPLATING': { happiness: 1.0, boredom: 0.8 },
-    'WRITING': { boredom: 1.2, loneliness: -0.3 },
-    'WANDERING': { boredom: 0.3 },
-    'HIDING': { loneliness: -1.2, happiness: -0.8 }
+    'WORKING': { hunger: -2.0, energy: -2.0, boredom: -3.0, money: 5.0 }, // POTENCIADO: +money más fuerte
+    'SHOPPING': { happiness: 3.0, hunger: 2.0, boredom: 2.0, money: -2.0 }, // POTENCIADO: efectos positivos
+    'COOKING': { hunger: 5.0, happiness: 2.0, energy: 1.0 }, // POTENCIADO: gran recuperación hunger
+    'EXERCISING': { energy: 3.0, hunger: -2.0, happiness: 2.0, boredom: 2.0 }, // POTENCIADO: gran boost energy
+    'RESTING': { sleepiness: -5.0, energy: 4.0, happiness: 1.0 }, // POTENCIADO: gran recuperación
+    'SOCIALIZING': { loneliness: 4.0, happiness: 3.0, boredom: 2.0 }, // POTENCIADO: gran conexión social
+    'DANCING': { boredom: 4.0, happiness: 3.0, energy: 2.0 }, // POTENCIADO: gran diversión
+    'EXPLORING': { hunger: -1.0, boredom: 3.0, happiness: 1.5 }, // POTENCIADO
+    'MEDITATING': { happiness: 3.0, boredom: 2.0, loneliness: 1.0, energy: 1.0 }, // POTENCIADO
+    'CONTEMPLATING': { happiness: 2.0, boredom: 2.0, loneliness: 1.0 }, // POTENCIADO
+    'WRITING': { boredom: 3.0, happiness: 1.0, loneliness: 1.0 }, // POTENCIADO
+    'WANDERING': { boredom: 2.0, happiness: 1.0 }, // POTENCIADO
+    'HIDING': { loneliness: -2.0, happiness: -1.0, energy: 1.0 } // BALANCEADO
   } as Record<EntityActivity, Record<string, number>>
 };
 
@@ -293,20 +293,28 @@ export const applyHybridDecay = (
       const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;
       const statKey = statName as keyof EntityStats;
       
-      if (statKey !== 'money') {
-        let newValue = newStats[statKey] + configuredRate;
-        
-        // Clampeo especial para evitar extremos que rompen la lógica
-        if (statKey === 'hunger' || statKey === 'sleepiness' || statKey === 'happiness') {
-          newValue = Math.max(5, Math.min(95, newValue)); // Rango 5-95 para stats críticas
-        } else if (statKey === 'energy') {
-          newValue = Math.max(10, Math.min(90, newValue)); // Rango 10-90 para energía
-        } else {
-          newValue = Math.max(0, Math.min(100, newValue)); // Rango normal para el resto
-        }
-        
-        newStats[statKey] = newValue as EntityStats[keyof EntityStats];
+      let newValue = newStats[statKey] + configuredRate;
+      
+      // REPARACIÓN EMERGENCIA: Rangos seguros que permiten recovery
+      if (statKey === 'hunger' || statKey === 'sleepiness') {
+        newValue = Math.max(20, Math.min(80, newValue)); // Rango 20-80 SEGURO
+      } else if (statKey === 'happiness') {
+        newValue = Math.max(30, Math.min(90, newValue)); // Rango 30-90 para felicidad
+      } else if (statKey === 'energy') {
+        newValue = Math.max(25, Math.min(85, newValue)); // Rango 25-85 para energía
+      } else if (statKey === 'boredom') {
+        newValue = Math.max(10, Math.min(70, newValue)); // Rango 10-70 para aburrimiento
+      } else if (statKey === 'health') {
+        // Health NO se debe clampar aquí - se maneja en el sistema de salud
+        newValue = Math.max(0, Math.min(100, newValue));
+      } else if (statKey === 'money') {
+        // Money puede ser negativo temporalmente, pero se clampea a 0 mínimo
+        newValue = Math.max(0, newValue); // Sin límite superior para money
+      } else {
+        newValue = Math.max(15, Math.min(85, newValue)); // Rango conservador para el resto
       }
+      
+      newStats[statKey] = newValue as EntityStats[keyof EntityStats];
     }
   });
 
