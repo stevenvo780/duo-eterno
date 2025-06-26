@@ -13,15 +13,14 @@ export const useEntityMovementOptimized = () => {
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
 
-  // Obtener estadísticas críticas basadas en valores altos (necesidades acumuladas)
+  // Obtener estadísticas críticas basadas en valores bajos (recursos agotados)
   const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
     const critical: (keyof typeof entity.stats)[] = [];
 
-    // Valores altos indican que la necesidad está creciendo
-    if (entity.stats.hunger > 60) critical.push('hunger');        // Mucha hambre
-    if (entity.stats.sleepiness > 60) critical.push('sleepiness'); // Necesita descanso
-    if (entity.stats.loneliness > 60) critical.push('loneliness'); // Necesita compañía
-    if (entity.stats.boredom > 60) critical.push('boredom');       // Necesita diversión
+    if (entity.stats.hunger < 40) critical.push('hunger');        // Falta comida
+    if (entity.stats.sleepiness < 40) critical.push('sleepiness'); // Falta descanso
+    if (entity.stats.loneliness < 40) critical.push('loneliness'); // Falta compañía
+    if (entity.stats.boredom < 40) critical.push('boredom');       // Falta diversión
     if (entity.stats.energy < 40) critical.push('energy');        // Necesita energía
     if (entity.stats.happiness < 40) critical.push('happiness');  // Necesita felicidad
     if (entity.stats.money < 30) critical.push('money');          // Necesita dinero
@@ -35,16 +34,9 @@ export const useEntityMovementOptimized = () => {
     const criticalStats = getCriticalStats(entity);
     
     for (const stat of criticalStats) {
-      if (stat === 'sleepiness') {
-        // Para sleepiness, necesitamos que la zona la reduzca (valor negativo)
-        if (zone.effects?.[stat] && zone.effects[stat]! < 0) {
-          return true;
-        }
-      } else {
-        // Para el resto (hunger, loneliness, boredom, energy, happiness), necesitamos que la zona las aumente (valor positivo)
-        if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
-          return true;
-        }
+      // Las zonas son útiles si incrementan la estadística deficiente
+      if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
+        return true;
       }
     }
 

@@ -28,8 +28,8 @@ const calculateZoneEffectiveness = (
   if (!config) return { effectiveness: 1, criticalNeed: false };
 
   const avgStat = config.stats.reduce((sum, key) => sum + stats[key], 0) / config.stats.length;
-  const criticalNeed = avgStat > config.criticalThreshold; // Mayor valor = más necesidad
-  const needLevel = avgStat; // Usar valor directo
+  const criticalNeed = avgStat < config.criticalThreshold; // Valor bajo = necesidad
+  const needLevel = 100 - avgStat;
   const baseEffectiveness = 1 + needLevel / 50;
   const effectiveness = baseEffectiveness * gameConfig.zoneEffectivenessMultiplier;
 

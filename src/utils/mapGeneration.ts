@@ -12,7 +12,7 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(34, 197, 94, 0.25)',
       attractiveness: 0.9,
       effects: {
-        hunger: -25,     // Reduce hambre
+        hunger: 25,      // Recupera saciedad
         happiness: 8     // Aumenta felicidad
       }
     },
@@ -25,7 +25,7 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(34, 197, 94, 0.3)',
       attractiveness: 1.0,
       effects: {
-        hunger: -35,     // Reduce hambre significativamente
+        hunger: 35,      // Recupera mucha saciedad
         happiness: 12    // Aumenta felicidad
       }
     },
@@ -38,7 +38,7 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(168, 85, 247, 0.25)',
       attractiveness: 0.8,
       effects: {
-        sleepiness: -30, // Reduce sueño
+        sleepiness: 30,  // Recupera descanso
         energy: 25,      // Restaura energía
         happiness: 10    // Aumenta felicidad
       }
@@ -52,9 +52,9 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(251, 191, 36, 0.3)',
       attractiveness: 1.0,
       effects: {
-        boredom: -40,    // Reduce aburrimiento significativamente
+        boredom: 40,     // Aumenta diversión
         happiness: 20,   // Aumenta felicidad mucho
-        loneliness: -15  // Reduce soledad (jugar es social)
+        loneliness: 15   // Aumenta compañía
       }
     },
     // Plaza Social
@@ -66,9 +66,9 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(236, 72, 153, 0.3)',
       attractiveness: 0.9,
       effects: {
-        loneliness: -35, // Reduce soledad significativamente
+        loneliness: 35,  // Mejora la compañía
         happiness: 18,   // Aumenta felicidad
-        boredom: -10     // Reduce aburrimiento
+        boredom: 10      // Aumenta diversión
       }
     },
     // Bosque de Meditación
@@ -81,9 +81,9 @@ export const createDefaultZones = (): Zone[] => {
       attractiveness: 0.7,
       effects: {
         happiness: 15,   // Aumenta felicidad
-        boredom: -15,    // Reduce aburrimiento
-        loneliness: -10, // Reduce soledad un poco
-        sleepiness: -10, // Ayuda con el sueño
+        boredom: 15,     // Aumenta diversión
+        loneliness: 10,  // Aumenta compañía
+        sleepiness: 10,  // Recupera descanso
         energy: 8        // Restaura energía lentamente
       }
     },
@@ -97,7 +97,7 @@ export const createDefaultZones = (): Zone[] => {
       attractiveness: 1.0,
       effects: {
         energy: 40,      // Restaura energía significativamente
-        sleepiness: -15, // Reduce sueño
+        sleepiness: 15,  // Recupera descanso
         happiness: 8     // Aumenta felicidad
       }
     }
@@ -194,10 +194,10 @@ export const getAttractionTarget = (
     let score = zone.attractiveness;
     
     // Calcular score basado en las necesidades de la entidad
-    if (zone.effects?.hunger && entityStats.hunger > 70) score += 0.5;
-    if (zone.effects?.sleepiness && entityStats.sleepiness > 70) score += 0.5;
-    if (zone.effects?.loneliness && entityStats.loneliness > 70) score += 0.5;
-    if (zone.effects?.boredom && entityStats.boredom > 70) score += 0.5;
+    if (zone.effects?.hunger && entityStats.hunger < 30) score += 0.5;
+    if (zone.effects?.sleepiness && entityStats.sleepiness < 30) score += 0.5;
+    if (zone.effects?.loneliness && entityStats.loneliness < 30) score += 0.5;
+    if (zone.effects?.boredom && entityStats.boredom < 30) score += 0.5;
     
     // Penalizar por distancia
     const distance = Math.sqrt(

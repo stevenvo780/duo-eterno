@@ -76,6 +76,8 @@ gameConfig           // Acceso directo al objeto de configuración
 
 ## 🎯 Mecánicas del Juego
 
+Las estadísticas de las entidades siguen una escala de 0 a 100. Los valores altos indican un estado saludable (por ejemplo, `hunger` alto significa que están saciados). Cuando las estadísticas bajan demasiado, las entidades entran en estado crítico e incluso pueden morir.
+
 ### Estados de los Entes
 
 Cada entidad puede estar en uno de estos estados:

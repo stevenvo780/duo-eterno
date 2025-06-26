@@ -47,15 +47,15 @@ export const useUnifiedGameLoop = () => {
   // Calcula el mood en base a stats y resonancia
   const calculateOptimizedMood = (stats: Entity['stats'], resonance: number): EntityMood => {
     const criticalFactors = [
-      stats.hunger > 85,
-      stats.sleepiness > 85,
-      stats.loneliness > 85,
+      stats.hunger < 15,
+      stats.sleepiness < 15,
+      stats.loneliness < 15,
       stats.energy < 15,
       stats.money < 10
     ].filter(Boolean).length;
     if (criticalFactors >= 2) return 'ANXIOUS';
     const positiveScore = (stats.happiness + stats.energy + Math.min(100, stats.money)) / 3;
-    const negativeScore = (stats.hunger + stats.sleepiness + stats.boredom + stats.loneliness) / 4;
+    const negativeScore = (100 - stats.hunger + 100 - stats.sleepiness + 100 - stats.boredom + 100 - stats.loneliness) / 4;
     const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
     const moodScore = positiveScore - negativeScore + bondBonus;
     if (moodScore > 50 && stats.energy > 60) return 'EXCITED';
@@ -150,7 +150,7 @@ export const useUnifiedGameLoop = () => {
                   if (key === 'health') return value < 20;
                   if (key === 'energy') return value < 30;
                   if (key === 'happiness') return value < 35;
-                  return value > 75;
+                  return value < 25;
                 })
                 .map(([key]) => key);
               
@@ -163,12 +163,12 @@ export const useUnifiedGameLoop = () => {
                     payload: { 
                       entityId: entity.id, 
                       stats: {
-                        hunger: 40,
-                        sleepiness: 40, 
+                        hunger: 60,
+                        sleepiness: 60,
                         energy: 60,
                         happiness: 60,
-                        boredom: 30,
-                        loneliness: 35,
+                        boredom: 60,
+                        loneliness: 60,
                         money: Math.max(20, finalStats.money),
                         health: Math.max(50, finalStats.health)
                       }
@@ -221,9 +221,9 @@ export const useUnifiedGameLoop = () => {
           measureExecutionTime('death-check', () => {
             for (const entity of livingEntities) {
               const criticalCount = [
-                entity.stats.hunger > 95,
-                entity.stats.sleepiness > 95,
-                entity.stats.loneliness > 95,
+                entity.stats.hunger < 5,
+                entity.stats.sleepiness < 5,
+                entity.stats.loneliness < 5,
                 entity.stats.energy < 5
               ].filter(Boolean).length;
 

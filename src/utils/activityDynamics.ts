@@ -246,12 +246,11 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    // Valores positivos incrementan la necesidad con el tiempo
-    hunger: 0.05,
-    sleepiness: 0.03,
-    boredom: 0.03,
-    loneliness: 0.02,
-    // Valores negativos representan agotamiento
+    // Todas las estadísticas ahora decaen con el tiempo (0 = crítico)
+    hunger: -0.05,
+    sleepiness: -0.03,
+    boredom: -0.03,
+    loneliness: -0.02,
     energy: -0.02,
     happiness: -0.01
   }
@@ -317,9 +316,9 @@ export const applyHybridDecay = (
 const SURVIVAL_COSTS = {
   LIVING_COST: 2,
   CRITICAL_MONEY: 20,
-  CRITICAL_HUNGER: 80,
+  CRITICAL_HUNGER: 20,
   CRITICAL_ENERGY: 15,
-  CRITICAL_SLEEPINESS: 85
+  CRITICAL_SLEEPINESS: 20
 };
 
 export const applySurvivalCosts = (
@@ -333,7 +332,7 @@ export const applySurvivalCosts = (
 
   if (newStats.money < SURVIVAL_COSTS.CRITICAL_MONEY) {
     const desperation = (SURVIVAL_COSTS.CRITICAL_MONEY - newStats.money) / SURVIVAL_COSTS.CRITICAL_MONEY;
-    newStats.hunger = Math.min(100, newStats.hunger + desperation * 5 * minutesElapsed);
+    newStats.hunger = Math.max(0, newStats.hunger - desperation * 5 * minutesElapsed);
     newStats.happiness = Math.max(0, newStats.happiness - desperation * 3 * minutesElapsed);
   }
 

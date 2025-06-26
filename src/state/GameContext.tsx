@@ -66,12 +66,12 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
+        hunger: 80,
+        sleepiness: 80,
+        loneliness: 80,
+        happiness: 80,
         energy: 80,
-        boredom: 20,
+        boredom: 80,
         money: 50, // Dinero inicial
         health: 100
       },
@@ -90,12 +90,12 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
+        hunger: 80,
+        sleepiness: 80,
+        loneliness: 80,
+        happiness: 80,
         energy: 80,
-        boredom: 20,
+        boredom: 80,
         money: 50, // Dinero inicial
         health: 100
       },
