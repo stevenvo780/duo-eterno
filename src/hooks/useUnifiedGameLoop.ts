@@ -14,7 +14,7 @@ import { logGeneral } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, EntityMood } from '../types';
 
-interface GameLoopStats {
+interface LoopStats {
   totalTicks: number;
   autopoiesisTicks: number;
   movementTicks: number;
@@ -31,7 +31,7 @@ export const useUnifiedGameLoop = () => {
   }, [gameState]);
   
   const intervalRef = useRef<number | undefined>(undefined);
-  const statsRef = useRef<GameLoopStats>({
+  const loopStatsRef = useRef<LoopStats>({
     totalTicks: 0,
     autopoiesisTicks: 0,
     movementTicks: 0,
@@ -64,14 +64,14 @@ export const useUnifiedGameLoop = () => {
     const { gameClockInterval } = getGameIntervals();
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
-      const deltaTime = now - statsRef.current.lastTickTime;
-      const stats = statsRef.current;
+      const deltaTime = now - loopStatsRef.current.lastTickTime;
+      const loopStats = loopStatsRef.current;
       
       // Throttling de performance
       if (deltaTime < gameClockInterval * 0.8) return;
       
-      stats.lastTickTime = now;
-      stats.totalTicks++;
+      loopStats.lastTickTime = now;
+      loopStats.totalTicks++;
 
       measureExecutionTime('unified-game-loop', () => {
         // Ejecutar tick base
@@ -81,7 +81,7 @@ export const useUnifiedGameLoop = () => {
         
         // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
-          stats.autopoiesisTicks++;
+          loopStats.autopoiesisTicks++;
           
           measureExecutionTime('autopoiesis-system', () => {
             for (const entity of livingEntities) {
@@ -169,10 +169,10 @@ export const useUnifiedGameLoop = () => {
         }
         
         // ============ GAME CLOCK EVENTS (cada ciertos ticks) ============
-        stats.clockTicks++;
+        loopStats.clockTicks++;
         
         // Verificar salud (cada 4 ticks)
-        if (stats.totalTicks % 4 === 0) {
+        if (loopStats.totalTicks % 4 === 0) {
           measureExecutionTime('death-check', () => {
             for (const entity of livingEntities) {
               const criticalCount = [
@@ -213,7 +213,7 @@ export const useUnifiedGameLoop = () => {
         }
         
         // Actualizar tiempo juntos y resonancia (cada 2 ticks)
-        if (stats.totalTicks % 2 === 0 && livingEntities.length === 2) {
+        if (loopStats.totalTicks % 2 === 0 && livingEntities.length === 2) {
           const [entity1, entity2] = livingEntities;
           const distance = Math.sqrt(
             Math.pow(entity1.position.x - entity2.position.x, 2) +
@@ -255,7 +255,7 @@ export const useUnifiedGameLoop = () => {
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
             // DEBUG: Log todos los incrementos para diagnosticar
-            if (stats.totalTicks % 20 === 0) {
+            if (loopStats.totalTicks % 20 === 0) {
               // Detalle de resonancia para diagnóstico
             }
             
@@ -275,7 +275,7 @@ export const useUnifiedGameLoop = () => {
               // Log efecto de proximidad
               dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'BONDING');
               
-              if (gameConfig.debugMode && stats.totalTicks % 10 === 0) {
+              if (gameConfig.debugMode && loopStats.totalTicks % 10 === 0) {
                 logGeneral.debug('Nutriendo vínculo', { 
                   distance: distance.toFixed(1),
                   resonance: gameStateRef.current.resonance.toFixed(2),
@@ -308,7 +308,7 @@ export const useUnifiedGameLoop = () => {
         }
         
         // Auto-save (cada 20 ticks)
-        if (stats.totalTicks % 20 === 0) {
+        if (loopStats.totalTicks % 20 === 0) {
           try {
             localStorage.setItem('duoEternoState', JSON.stringify({
               ...gameStateRef.current,
@@ -321,7 +321,7 @@ export const useUnifiedGameLoop = () => {
         }
         
         // Tomar snapshots regulares (cada 50 ticks)
-        if (stats.totalTicks % 50 === 0) {
+        if (loopStats.totalTicks % 50 === 0) {
           livingEntities.forEach(entity => {
             dynamicsLogger.takeEntitySnapshot(entity);
           });
@@ -335,11 +335,11 @@ export const useUnifiedGameLoop = () => {
         }
         
         // Log de estadísticas de performance (cada 100 ticks)
-        if (gameConfig.debugMode && stats.totalTicks % 100 === 0) {
+        if (gameConfig.debugMode && loopStats.totalTicks % 100 === 0) {
           logGeneral.info('Estadísticas del loop unificado', {
-            totalTicks: stats.totalTicks,
-            autopoiesisTicks: stats.autopoiesisTicks,
-            efficiency: (stats.autopoiesisTicks / stats.totalTicks * 100).toFixed(1) + '%'
+            totalTicks: loopStats.totalTicks,
+            autopoiesisTicks: loopStats.autopoiesisTicks,
+            efficiency: (loopStats.autopoiesisTicks / loopStats.totalTicks * 100).toFixed(1) + '%'
           });
           
           // Mostrar reporte de dinámicas en consola si es necesario
@@ -350,6 +350,6 @@ export const useUnifiedGameLoop = () => {
   }, [dispatch]);
 
   return {
-    stats: statsRef.current
+    stats: loopStatsRef.current
   };
 };
