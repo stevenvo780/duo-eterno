@@ -8,7 +8,6 @@ import { useGame } from './useGame';
 import type { GameState } from '../types';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
-import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
 import { HEALTH_CONFIG } from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
@@ -208,18 +207,28 @@ export const useUnifiedGameLoop = () => {
             
             // Calcular incremento de resonancia basado en la proximidad y deltaTime
             const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
-            const resonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
+            const baseResonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
             
-            // Bonus si ambas entidades están contentas
-            const moodBonus = (entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
-                             (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED') ? 1.3 : 1.0;
+            // Sistema de mood bonus más permisivo
+            let moodBonus = 1.0;
+            if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
+                (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
+              moodBonus = 1.5; // Bonus alto para ambos felices
+            } else if ((entity1.mood === 'CONTENT' || entity1.mood === 'CALM') ||
+                      (entity2.mood === 'CONTENT' || entity2.mood === 'CALM')) {
+              moodBonus = 1.2; // Bonus moderado si al menos uno está bien
+            } else if (entity1.mood !== 'SAD' && entity2.mood !== 'SAD') {
+              moodBonus = 1.0; // Incremento normal si no están tristes
+            } else {
+              moodBonus = 0.5; // Reducción si están tristes, pero aún hay incremento
+            }
             
-            const finalResonanceIncrement = resonanceIncrement * moodBonus;
+            const finalResonanceIncrement = baseResonanceIncrement * moodBonus;
             
             // Aplicar incremento con límite máximo
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
-            if (finalResonanceIncrement > 0.01) { // Solo actualizar si hay cambio significativo
+            if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
               dynamicsLogger.logResonanceChange(
                 gameStateRef.current.resonance, 
                 newResonance, 
@@ -245,11 +254,11 @@ export const useUnifiedGameLoop = () => {
               }
             }
           } else if (distance > BOND_DISTANCE * 2) {
-            // Decay de resonancia cuando están muy lejos
-            const resonanceDecay = (deltaTime / 1000) * 0.5 * gameConfig.gameSpeedMultiplier;
+            // Decay de resonancia cuando están muy lejos (más suave)
+            const resonanceDecay = (deltaTime / 1000) * 0.2 * gameConfig.gameSpeedMultiplier;
             const newResonance = Math.max(0, gameStateRef.current.resonance - resonanceDecay);
             
-            if (resonanceDecay > 0.01) {
+            if (resonanceDecay > 0.001) {
               dynamicsLogger.logResonanceChange(
                 gameStateRef.current.resonance,
                 newResonance,

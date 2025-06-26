@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { shouldUpdateMovement, measureExecutionTime } from '../utils/performanceOptimizer';
-import { makeSimpleIntelligentDecision } from '../utils/aiDecisionEngineSimple';
+import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
 import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING } from '../constants/gameConstants';
 import type { Entity, Zone, Position } from '../types';
@@ -191,7 +191,7 @@ export const useEntityMovementOptimized = () => {
           
           // Decisión de IA para actividad (menos frecuente)
           if (now % 1000 < 50) { // Cada segundo aproximadamente
-            const newActivity = makeSimpleIntelligentDecision(
+            const newActivity = makeIntelligentDecision(
               entity,
               companion,
               now
@@ -215,6 +215,15 @@ export const useEntityMovementOptimized = () => {
             if (target) {
               entityTargets.current.set(entity.id, target);
             }
+          }
+          
+          // FIX EMERGENCIA: Movimiento aleatorio si no hay objetivo
+          if (!target || Math.random() < 0.005) { // 0.5% chance de movimiento aleatorio
+            target = {
+              x: Math.random() * 800 + 100, // Área central del canvas
+              y: Math.random() * 400 + 100
+            };
+            entityTargets.current.set(entity.id, target);
           }
 
           // Mover hacia el objetivo si existe

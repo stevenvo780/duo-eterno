@@ -39,6 +39,9 @@ class DynamicsLogger {
   private systemSnapshots: SystemSnapshot[] = [];
   private maxLogSize = 1000;
   private isEnabled = true;
+  private sessionId = `session_${Date.now()}`;
+  private exportInterval: number | null = null;
+  private apiBaseUrl = 'http://localhost:3002';
 
   // Configuración de qué logs mostrar
   private config = {
@@ -53,6 +56,9 @@ class DynamicsLogger {
   constructor() {
     // Auto-limpiar logs antiguos cada 30 segundos
     setInterval(() => this.cleanup(), 30000);
+    
+    // Iniciar auto-exportación por defecto cada 10 segundos
+    this.startAutoExport(10000);
   }
 
   private cleanup() {
@@ -418,6 +424,112 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
 
 📊 Total de logs: ${this.logs.length}
     `.trim();
+  }
+
+  // === EXPORTACIÓN AUTOMÁTICA ===
+  
+  private async exportLogsToBackend(): Promise<void> {
+    try {
+      const gameState = this.getGameStateFromSnapshots();
+      const metadata = {
+        sessionId: this.sessionId,
+        timestamp: Date.now(),
+        gameState,
+        totalSnapshots: this.entitySnapshots.length + this.systemSnapshots.length,
+        sessionDuration: this.getSessionDuration(),
+        analysis: this.getQuickAnalysis()
+      };
+      
+      const response = await fetch(`${this.apiBaseUrl}/api/logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          logs: this.logs,
+          metadata
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`✅ Logs exportados: ${result.totalLogs} entradas`);
+      } else {
+        console.warn(`⚠️ Error exportando logs: ${response.status}`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Backend no disponible para exportar logs:', error);
+    }
+  }
+  
+  private getGameStateFromSnapshots() {
+    const latestSystem = this.systemSnapshots[this.systemSnapshots.length - 1];
+    const latestEntities = this.entitySnapshots
+      .filter(s => s.timestamp === Math.max(...this.entitySnapshots.map(es => es.timestamp)));
+    
+    return {
+      resonance: latestSystem?.resonance || 0,
+      togetherTime: latestSystem?.togetherTime || 0,
+      cycles: latestSystem?.cycles || 0,
+      entities: latestEntities,
+      entitiesAlive: latestSystem?.entitiesAlive || 0
+    };
+  }
+  
+  private getSessionDuration(): number {
+    if (this.logs.length === 0) return 0;
+    const firstLog = this.logs[0];
+    const lastLog = this.logs[this.logs.length - 1];
+    return lastLog.timestamp - firstLog.timestamp;
+  }
+  
+  private getQuickAnalysis() {
+    const loveStats = this.getLoveStats();
+    const circleStats = this.getEntityStats('circle');
+    const squareStats = this.getEntityStats('square');
+    const errors = this.logs.filter(log => log.level === 'ERROR');
+    const deaths = this.logs.filter(log => log.message.includes('murió') || log.message.includes('muerte'));
+    
+    return {
+      loveStats,
+      circleStats,
+      squareStats,
+      errorsCount: errors.length,
+      deathsCount: deaths.length,
+      criticalEventsCount: this.logs.filter(log => 
+        log.level === 'WARNING' || 
+        log.message.includes('críticas') ||
+        log.message.includes('salud')
+      ).length
+    };
+  }
+  
+  startAutoExport(intervalMs: number = 10000): void {
+    this.stopAutoExport();
+    this.exportInterval = window.setInterval(() => {
+      if (this.logs.length > 0) {
+        this.exportLogsToBackend();
+      }
+    }, intervalMs);
+    console.log(`🔄 Auto-exportación iniciada cada ${intervalMs/1000}s`);
+  }
+  
+  stopAutoExport(): void {
+    if (this.exportInterval) {
+      clearInterval(this.exportInterval);
+      this.exportInterval = null;
+    }
+    console.log('⏹️ Auto-exportación detenida');
+  }
+  
+  async manualExport(): Promise<void> {
+    console.log('📤 Exportación manual iniciada...');
+    await this.exportLogsToBackend();
+  }
+  
+  setApiUrl(url: string): void {
+    this.apiBaseUrl = url;
+    console.log(`🔗 API URL actualizada: ${url}`);
   }
 }
 

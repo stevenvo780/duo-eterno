@@ -149,20 +149,22 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
           </div>
         ) : (
           logs.slice().reverse().map((log, index) => {
-            const icon = {
+            const iconMap: Record<string, string> = {
               AUTONOMY: '🤖',
               LOVE: '💖',
               SURVIVAL: '🏠',
               INTERACTION: '🎮',
               SYSTEM: '⚙️'
-            }[log.category] || '📝';
+            };
+            const icon = iconMap[log.category] || '📝';
 
-            const levelColor = {
+            const levelColorMap: Record<string, string> = {
               DEBUG: '#6b7280',
               INFO: '#3b82f6',
               WARNING: '#f59e0b',
               ERROR: '#ef4444'
-            }[log.level];
+            };
+            const levelColor = levelColorMap[log.level];
 
             const time = new Date(log.timestamp).toLocaleTimeString();
 

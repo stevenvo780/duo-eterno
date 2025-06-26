@@ -68,9 +68,7 @@ const isValidGameState = (state: unknown): state is GameState => {
     typeof s.connectionAnimation?.active === 'boolean' &&
     typeof s.connectionAnimation?.startTime === 'number' &&
     Array.isArray(s.zones) &&
-    s.zones.every(isValidZone) &&
-    typeof s.upgrades === 'object' &&
-    s.upgrades !== null
+    s.zones.every(isValidZone)
   );
 };
 

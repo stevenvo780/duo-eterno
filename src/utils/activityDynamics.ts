@@ -248,12 +248,12 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    hunger: -0.8,
-    sleepiness: 0.6,
-    energy: -0.4,
-    boredom: -0.5,
-    loneliness: -0.3,
-    happiness: -0.2
+    hunger: -0.3,  // Reducido de -0.8 a -0.3
+    sleepiness: 0.2,  // Reducido de 0.6 a 0.2
+    energy: -0.15,  // Reducido de -0.4 a -0.15
+    boredom: -0.2,  // Reducido de -0.5 a -0.2
+    loneliness: -0.1,  // Reducido de -0.3 a -0.1
+    happiness: -0.05  // Reducido de -0.2 a -0.05
   },
   activityModifiers: {
     'WORKING': { hunger: -1.2, energy: -1.5, boredom: -1.3 },
@@ -294,7 +294,18 @@ export const applyHybridDecay = (
       const statKey = statName as keyof EntityStats;
       
       if (statKey !== 'money') {
-        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + configuredRate)) as EntityStats[keyof EntityStats];
+        let newValue = newStats[statKey] + configuredRate;
+        
+        // Clampeo especial para evitar extremos que rompen la lógica
+        if (statKey === 'hunger' || statKey === 'sleepiness' || statKey === 'happiness') {
+          newValue = Math.max(5, Math.min(95, newValue)); // Rango 5-95 para stats críticas
+        } else if (statKey === 'energy') {
+          newValue = Math.max(10, Math.min(90, newValue)); // Rango 10-90 para energía
+        } else {
+          newValue = Math.max(0, Math.min(100, newValue)); // Rango normal para el resto
+        }
+        
+        newStats[statKey] = newValue as EntityStats[keyof EntityStats];
       }
     }
   });

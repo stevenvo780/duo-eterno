@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "find-unused": "ts-prune --project tsconfig.app.json"
+    "find-unused": "ts-prune --project tsconfig.app.json",
+    "server": "node server.js",
+    "dev-full": "concurrently \"npm run server\" \"npm run dev\""
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -19,9 +21,12 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.0",
+    "cors": "^2.8.5",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "express": "^4.21.2",
     "globals": "^16.0.0",
     "ts-prune": "^0.10.3",
     "typescript": "~5.8.3",
