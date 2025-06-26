@@ -96,20 +96,20 @@ export const useZoneEffects = () => {
               const statKey = stat as keyof EntityStats;
               if (statKey !== 'money' && typeof baseValue === 'number') {
                 const currentStat = entity.stats[statKey];
-                
-                // Aplicar efectividad y multiplicadores de tiempo de manera MUY gradual
-                const effectValue = baseValue * effectiveness * timeMultiplier * 0.05; // Reducir significativamente
+
+                // Aplicar efectividad de manera gradual
+                const effectValue = baseValue * effectiveness * timeMultiplier * 0.1;
                 const newValue = Math.max(0, Math.min(100, currentStat + effectValue));
-                
-                // Solo aplicar si hay cambio significativo (mayor umbral)
-                if (Math.abs(newValue - currentStat) > 0.5) {
+
+                // Aplicar cambios pequeños
+                if (Math.abs(newValue - currentStat) > 0.1) {
                   finalEffects[statKey] = newValue;
                 }
               } else if (statKey === 'money' && typeof baseValue === 'number') {
                 // El dinero no tiene límite de 100 pero también debe ser gradual
                 const currentMoney = entity.stats.money;
-                const moneyGain = baseValue * effectiveness * timeMultiplier * 0.05;
-                if (moneyGain > 0.5) {
+                const moneyGain = baseValue * effectiveness * timeMultiplier * 0.1;
+                if (moneyGain > 0.1) {
                   finalEffects.money = currentMoney + moneyGain;
                 }
               }

@@ -6,6 +6,7 @@ import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import { useUnifiedGameLoop } from './hooks/useUnifiedGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
+import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
 import { logGeneral } from './utils/logger';
@@ -15,10 +16,11 @@ const GameContent: React.FC = React.memo(() => {
   
   // Hook unificado que maneja autopoiesis, game clock y movement
   useUnifiedGameLoop();
-  
+
   // Hooks específicos que no están incluidos en el loop unificado
   useDialogueSystem();
-  
+  useZoneEffects();
+
   // TEMPORAL: Añadir movimiento hasta integrarlo en el loop unificado
   useEntityMovementOptimized();
 
