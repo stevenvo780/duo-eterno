@@ -66,11 +66,8 @@ class Logger {
   debug(system: LogSystem, message: string, data?: unknown): void {
     this.addLog('debug', system, message, data);
     if (this.shouldLog('debug')) {
-      if (this.groupedSystems.has(system)) {
-        console.log(this.formatMessage(system, message, data));
-      } else {
+      if (!this.groupedSystems.has(system)) {
         console.groupCollapsed(`${this.getSystemEmoji(system)} ${system.toUpperCase()}`);
-        console.log(this.formatMessage(system, message, data));
         this.groupedSystems.add(system);
       }
     }

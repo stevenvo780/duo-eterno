@@ -113,7 +113,6 @@ export const useUnifiedGameLoop = () => {
                 
                 // REPARACIÓN EMERGENCIA: Reset a valores seguros si hay demasiadas críticas
                 if (criticalStats.length >= 3) {
-                  console.log(`🚨 EMERGENCY RESET para ${entity.id}: ${criticalStats.length} stats críticas`);
                   dispatch({
                     type: 'UPDATE_ENTITY_STATS',
                     payload: { 
@@ -256,8 +255,8 @@ export const useUnifiedGameLoop = () => {
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
             // DEBUG: Log todos los incrementos para diagnosticar
-            if (stats.totalTicks % 20 === 0) { // Log cada 20 ticks para debug
-              console.log(`🔍 DEBUG Resonancia: base=${baseResonanceIncrement.toFixed(4)}, mood=${moodBonus.toFixed(2)}, final=${finalResonanceIncrement.toFixed(4)}, current=${gameStateRef.current.resonance.toFixed(2)}, distance=${distance.toFixed(1)}`);
+            if (stats.totalTicks % 20 === 0) {
+              // Detalle de resonancia para diagnóstico
             }
             
             if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
@@ -343,8 +342,7 @@ export const useUnifiedGameLoop = () => {
             efficiency: (stats.autopoiesisTicks / stats.totalTicks * 100).toFixed(1) + '%'
           });
           
-          // Mostrar reporte de dinámicas
-          console.log(dynamicsLogger.generateReport());
+          // Mostrar reporte de dinámicas en consola si es necesario
         }
       });
     }, gameClockInterval);
