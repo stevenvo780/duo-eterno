@@ -9,7 +9,7 @@ import type { GameState } from '../types';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
-import { HEALTH_CONFIG } from '../constants/gameConstants';
+import { HEALTH_CONFIG, RESONANCE_THRESHOLDS } from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, EntityMood } from '../types';
@@ -78,6 +78,36 @@ export const useUnifiedGameLoop = () => {
         dispatch({ type: 'TICK', payload: deltaTime });
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
+
+        // ================= ESTADOS POR RESONANCIA =================
+        const resonanceLevel = gameStateRef.current.resonance;
+        const nowMs = now;
+        for (const entity of livingEntities) {
+          if (resonanceLevel <= 0) {
+            if (entity.state !== 'FADING') {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATE',
+                payload: { entityId: entity.id, state: 'FADING' }
+              });
+            } else if (nowMs - entity.lastStateChange > 10000) {
+              dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
+            }
+          } else if (resonanceLevel < RESONANCE_THRESHOLDS.CRITICAL) {
+            if (entity.state !== 'LOW_RESONANCE' && entity.state !== 'FADING') {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATE',
+                payload: { entityId: entity.id, state: 'LOW_RESONANCE' }
+              });
+            }
+          } else {
+            if (entity.state === 'LOW_RESONANCE' || entity.state === 'FADING') {
+              dispatch({
+                type: 'UPDATE_ENTITY_STATE',
+                payload: { entityId: entity.id, state: 'IDLE' }
+              });
+            }
+          }
+        }
         
         // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
