@@ -1,10 +1,8 @@
-// Sistema de dinámicas complejas para actividades
 import type { EntityStats, EntityActivity } from '../types';
 import type { ActivityType } from '../constants/gameConstants';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
 
-// Duración óptima de cada actividad en milisegundos
 export const ACTIVITY_DYNAMICS: Record<ActivityType, { optimalDuration: number }> = {
   WANDERING: { optimalDuration: 15000 },
   MEDITATING: { optimalDuration: 30000 },
@@ -248,12 +246,12 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    hunger: -0.05,  // ULTRA-SUAVE: Reducido de -0.3 a -0.05
-    sleepiness: 0.03,  // ULTRA-SUAVE: Reducido de 0.2 a 0.03
-    energy: -0.02,  // ULTRA-SUAVE: Reducido de -0.15 a -0.02
-    boredom: -0.03,  // ULTRA-SUAVE: Reducido de -0.2 a -0.03
-    loneliness: -0.02,  // ULTRA-SUAVE: Reducido de -0.1 a -0.02
-    happiness: -0.01  // ULTRA-SUAVE: Reducido de -0.05 a -0.01
+    hunger: -0.05,
+    sleepiness: 0.03,
+    energy: -0.02,
+    boredom: -0.03,
+    loneliness: -0.02,
+    happiness: -0.01
   }
 } as const;
 
@@ -294,23 +292,20 @@ export const applyHybridDecay = (
       
       let newValue = newStats[statKey] + configuredRate;
       
-      // REPARACIÓN EMERGENCIA: Rangos seguros que permiten recovery
       if (statKey === 'hunger' || statKey === 'sleepiness') {
-        newValue = Math.max(20, Math.min(80, newValue)); // Rango 20-80 SEGURO
+        newValue = Math.max(20, Math.min(80, newValue));
       } else if (statKey === 'happiness') {
-        newValue = Math.max(30, Math.min(90, newValue)); // Rango 30-90 para felicidad
+        newValue = Math.max(30, Math.min(90, newValue));
       } else if (statKey === 'energy') {
-        newValue = Math.max(25, Math.min(85, newValue)); // Rango 25-85 para energía
+        newValue = Math.max(25, Math.min(85, newValue));
       } else if (statKey === 'boredom') {
-        newValue = Math.max(10, Math.min(70, newValue)); // Rango 10-70 para aburrimiento
+        newValue = Math.max(10, Math.min(70, newValue));
       } else if (statKey === 'health') {
-        // Health NO se debe clampar aquí - se maneja en el sistema de salud
         newValue = Math.max(0, Math.min(100, newValue));
       } else if (statKey === 'money') {
-        // Money puede ser negativo temporalmente, pero se clampea a 0 mínimo
-        newValue = Math.max(0, newValue); // Sin límite superior para money
+        newValue = Math.max(0, newValue);
       } else {
-        newValue = Math.max(15, Math.min(85, newValue)); // Rango conservador para el resto
+        newValue = Math.max(15, Math.min(85, newValue));
       }
       
       newStats[statKey] = newValue as EntityStats[keyof EntityStats];
@@ -327,7 +322,6 @@ export const applyHybridDecay = (
   return newStats;
 };
 
-// Costos pasivos de supervivencia
 const SURVIVAL_COSTS = {
   LIVING_COST: 2,
   CRITICAL_MONEY: 20,
@@ -336,7 +330,6 @@ const SURVIVAL_COSTS = {
   CRITICAL_SLEEPINESS: 85
 };
 
-// Aplicar costos pasivos de supervivencia
 export const applySurvivalCosts = (
   currentStats: EntityStats,
   deltaTimeMs: number

@@ -44,7 +44,7 @@ export const useUnifiedGameLoop = () => {
     lastTickTime: Date.now()
   });
 
-  // Función para calcular el mood optimizado
+  // Calcula el mood en base a stats y resonancia
   const calculateOptimizedMood = (stats: Entity['stats'], resonance: number): EntityMood => {
     const criticalFactors = [
       stats.hunger > 85,
@@ -120,14 +120,14 @@ export const useUnifiedGameLoop = () => {
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
 
-        // ================= ESTADOS POR RESONANCIA =================
+        // Estados por resonancia
         updateResonanceStates(
           livingEntities,
           gameStateRef.current.resonance,
           now
         );
         
-        // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
+        // Actualizar stats de autopoiesis
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
           loopStats.autopoiesisTicks++;
           
@@ -147,11 +147,9 @@ export const useUnifiedGameLoop = () => {
               const criticalStats = Object.entries(finalStats)
                 .filter(([key, value]) => {
                   if (key === 'money') return false;
-                  // REPARACIÓN: Lógica correcta para detectar stats críticas
-                  if (key === 'health') return value < 20; // Health crítica bajo 20
-                  if (key === 'energy') return value < 30; // Energy crítica bajo 30
-                  if (key === 'happiness') return value < 35; // Happiness crítica bajo 35
-                  // Para hunger, sleepiness, boredom, loneliness: crítico sobre 75
+                  if (key === 'health') return value < 20;
+                  if (key === 'energy') return value < 30;
+                  if (key === 'happiness') return value < 35;
                   return value > 75;
                 })
                 .map(([key]) => key);
@@ -159,7 +157,6 @@ export const useUnifiedGameLoop = () => {
               if (criticalStats.length > 0) {
                 dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
                 
-                // REPARACIÓN EMERGENCIA: Reset a valores seguros si hay demasiadas críticas
                 if (criticalStats.length >= 3) {
                   dispatch({
                     type: 'UPDATE_ENTITY_STATS',
@@ -177,7 +174,7 @@ export const useUnifiedGameLoop = () => {
                       }
                     }
                   });
-                  continue; // Skip normal stat updates for this entity
+                  continue;
                 }
               }
               
@@ -216,7 +213,7 @@ export const useUnifiedGameLoop = () => {
           });
         }
         
-        // ============ GAME CLOCK EVENTS (cada ciertos ticks) ============
+        // Eventos del reloj de juego
         loopStats.clockTicks++;
         
         // Verificar salud (cada 4 ticks)
@@ -268,7 +265,7 @@ export const useUnifiedGameLoop = () => {
             Math.pow(entity1.position.y - entity2.position.y, 2)
           );
           
-          // Distancia de vinculación ajustable
+            // Distancias de vínculo
           const BOND_DISTANCE = 80;
           const CLOSE_DISTANCE = 50; // Distancia muy cercana para bonus extra
           
@@ -283,7 +280,7 @@ export const useUnifiedGameLoop = () => {
             const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
             const baseResonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
             
-            // Sistema de mood bonus más permisivo
+            // Ajuste por estado emocional
             let moodBonus = 1.0;
             if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
                 (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
@@ -302,10 +299,6 @@ export const useUnifiedGameLoop = () => {
             // Aplicar incremento con límite máximo
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
-            // DEBUG: Log todos los incrementos para diagnosticar
-            if (loopStats.totalTicks % 20 === 0) {
-              // Detalle de resonancia para diagnóstico
-            }
             
             if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
               dynamicsLogger.logResonanceChange(

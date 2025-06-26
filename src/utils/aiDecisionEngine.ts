@@ -1,11 +1,5 @@
 /**
- * Motor de decisiones de IA mejorado para entidades del juego Dúo Eterno
- * 
- * Características implementadas:
- * - Inercia de actividad (no cambiar constantemente)
- * - Influencia del estado de ánimo en decisiones
- * - Rasgos de personalidad básicos
- * - Decisiones más inteligentes basadas en contexto
+ * Motor de decisiones de IA para las entidades del juego
  */
 
 import type { Entity, EntityActivity, EntityMood } from '../types';
@@ -57,7 +51,7 @@ const MOOD_MODIFIERS: Record<EntityMood, {
   'ANXIOUS': { activityChange: 0.7, socialSeek: 0.6, riskTaking: 0.1, energyConservation: 0.8 }
 };
 
-// Sistema de persistencia de actividad mejorado
+// Sesiones de actividad
 interface ActivitySession {
   activity: EntityActivity;
   startTime: number;
@@ -207,7 +201,7 @@ const startActivitySession = (
 };
 
 /**
- * Motor principal de decisiones de IA mejorado
+ * Motor principal de decisiones de IA
  */
 export const makeIntelligentDecision = (
   entity: Entity,
@@ -247,10 +241,10 @@ export const makeIntelligentDecision = (
   
   const topActivity = activityScores[0];
   
-  // Log de decisión tomada
+  // Registrar la decisión tomada
   dynamicsLogger.logDecisionMaking(entity.id, activityScores, topActivity.activity);
   
-  // Decidir si cambiar de actividad usando lógica mejorada
+  // Cambiar de actividad si conviene
   if (topActivity.activity !== entity.activity) {
     const urgencyScore = topActivity.score;
     
