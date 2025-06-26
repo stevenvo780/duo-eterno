@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
+import type { LogEntry as DynamicsLogEntry } from '../utils/dynamicsLogger';
 
 interface DynamicsDebugPanelProps {
   visible: boolean;
@@ -11,17 +12,17 @@ interface DynamicsDebugPanelProps {
 }
 
 const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClose }) => {
-  const [logs, setLogs] = useState<any[]>([]);
-  const [category, setCategory] = useState<string>('ALL');
+  const [logs, setLogs] = useState<DynamicsLogEntry[]>([]);
+  const [category, setCategory] = useState<'ALL' | DynamicsLogEntry['category']>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
     if (!visible || !autoRefresh) return;
 
     const interval = setInterval(() => {
-      const recentLogs = category === 'ALL' 
+      const recentLogs = category === 'ALL'
         ? dynamicsLogger.getRecentLogs(undefined, 100)
-        : dynamicsLogger.getRecentLogs(category as any, 100);
+        : dynamicsLogger.getRecentLogs(category, 100);
       setLogs(recentLogs);
     }, 1000);
 
@@ -30,9 +31,8 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
 
   const generateReport = () => {
     const report = dynamicsLogger.generateReport();
-    console.log(report);
     navigator.clipboard?.writeText(report);
-    alert('Reporte copiado al portapapeles y mostrado en consola');
+    alert('Reporte copiado al portapapeles');
   };
 
   if (!visible) return null;
@@ -89,7 +89,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
       }}>
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => setCategory(e.target.value as 'ALL' | DynamicsLogEntry['category'])}
           style={{
             background: '#374151',
             border: '1px solid #475569',
@@ -208,7 +208,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
                 <div style={{ color: '#e5e7eb', lineHeight: '1.3' }}>
                   {log.message}
                 </div>
-                {log.data && (
+                {log.data ? (
                   <details style={{ marginTop: '4px' }}>
                     <summary style={{
                       cursor: 'pointer',
@@ -227,10 +227,10 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
                       overflow: 'auto',
                       maxHeight: '100px'
                     }}>
-                      {JSON.stringify(log.data, null, 2)}
+                      {JSON.stringify(log.data as object, null, 2)}
                     </pre>
                   </details>
-                )}
+                ) : null}
               </div>
             );
           })

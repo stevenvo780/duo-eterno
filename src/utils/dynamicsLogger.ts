@@ -6,13 +6,13 @@
 
 import type { Entity, EntityActivity, EntityMood } from '../types';
 
-interface LogEntry {
+export interface LogEntry {
   timestamp: number;
   category: 'AUTONOMY' | 'LOVE' | 'SURVIVAL' | 'INTERACTION' | 'SYSTEM';
   level: 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG';
   entityId?: string;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 interface EntitySnapshot {
@@ -33,7 +33,7 @@ interface SystemSnapshot {
   entitiesAlive: number;
 }
 
-class DynamicsLogger {
+export class DynamicsLogger {
   private logs: LogEntry[] = [];
   private entitySnapshots: EntitySnapshot[] = [];
   private systemSnapshots: SystemSnapshot[] = [];
@@ -100,27 +100,7 @@ class DynamicsLogger {
     
     this.logs.push(logEntry);
     
-    // También mostrar en consola para debugging
-    const icon = {
-      AUTONOMY: '🤖',
-      LOVE: '💖',
-      SURVIVAL: '🏠',
-      INTERACTION: '🎮',
-      SYSTEM: '⚙️'
-    }[entry.category];
-    
-    const levelColor = {
-      DEBUG: '#6b7280',
-      INFO: '#3b82f6',
-      WARNING: '#f59e0b',
-      ERROR: '#ef4444'
-    }[entry.level];
-    
-    console.log(
-      `%c${icon} [${entry.category}] ${entry.message}`,
-      `color: ${levelColor}; font-weight: ${entry.level === 'ERROR' ? 'bold' : 'normal'}`,
-      entry.data || ''
-    );
+    // Solo almacenar el registro, evitando spam en consola
   }
 
   // === LOGS DE AUTONOMÍA ===
@@ -247,7 +227,7 @@ class DynamicsLogger {
 
   // === LOGS DE INTERACCIONES ===
   
-  logUserInteraction(interactionType: string, entityId: string | undefined, effect: any) {
+  logUserInteraction(interactionType: string, entityId: string | undefined, effect: unknown) {
     this.log({
       category: 'INTERACTION',
       level: 'INFO',
@@ -386,12 +366,10 @@ class DynamicsLogger {
 
   enable() {
     this.isEnabled = true;
-    console.log('🔊 Sistema de logs de dinámicas ACTIVADO');
   }
 
   disable() {
     this.isEnabled = false;
-    console.log('🔇 Sistema de logs de dinámicas DESACTIVADO');
   }
 
   // === REPORTE COMPLETO ===
@@ -452,8 +430,7 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
       });
       
       if (response.ok) {
-        const result = await response.json();
-        console.log(`✅ Logs exportados: ${result.totalLogs} entradas`);
+        await response.json();
       } else {
         console.warn(`⚠️ Error exportando logs: ${response.status}`);
       }
@@ -511,7 +488,6 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
         this.exportLogsToBackend();
       }
     }, intervalMs);
-    console.log(`🔄 Auto-exportación iniciada cada ${intervalMs/1000}s`);
   }
   
   stopAutoExport(): void {
@@ -519,17 +495,14 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
       clearInterval(this.exportInterval);
       this.exportInterval = null;
     }
-    console.log('⏹️ Auto-exportación detenida');
   }
   
   async manualExport(): Promise<void> {
-    console.log('📤 Exportación manual iniciada...');
     await this.exportLogsToBackend();
   }
   
   setApiUrl(url: string): void {
     this.apiBaseUrl = url;
-    console.log(`🔗 API URL actualizada: ${url}`);
   }
 }
 
@@ -538,5 +511,5 @@ export const dynamicsLogger = new DynamicsLogger();
 
 // Hacer disponible globalmente para debugging
 if (typeof window !== 'undefined') {
-  (window as any).dynamicsLogger = dynamicsLogger;
+  (window as unknown as { dynamicsLogger: DynamicsLogger }).dynamicsLogger = dynamicsLogger;
 }
