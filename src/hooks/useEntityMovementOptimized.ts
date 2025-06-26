@@ -13,15 +13,15 @@ export const useEntityMovementOptimized = () => {
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
 
-  // Obtener estadísticas críticas (valores bajos que necesitan atención) - SISTEMA POSITIVO
+  // Obtener estadísticas críticas basadas en valores altos (necesidades acumuladas)
   const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
     const critical: (keyof typeof entity.stats)[] = [];
-    
-    // En el sistema positivo, valores bajos (cerca de 0) indican necesidad
-    if (entity.stats.hunger < 40) critical.push('hunger');    // Necesita saciedad
-    if (entity.stats.sleepiness > 60) critical.push('sleepiness'); // Necesita descanso (esta sigue igual)
-    if (entity.stats.loneliness < 40) critical.push('loneliness'); // Necesita compañía
-    if (entity.stats.boredom < 40) critical.push('boredom');       // Necesita diversión
+
+    // Valores altos indican que la necesidad está creciendo
+    if (entity.stats.hunger > 60) critical.push('hunger');        // Mucha hambre
+    if (entity.stats.sleepiness > 60) critical.push('sleepiness'); // Necesita descanso
+    if (entity.stats.loneliness > 60) critical.push('loneliness'); // Necesita compañía
+    if (entity.stats.boredom > 60) critical.push('boredom');       // Necesita diversión
     if (entity.stats.energy < 40) critical.push('energy');        // Necesita energía
     if (entity.stats.happiness < 40) critical.push('happiness');  // Necesita felicidad
     if (entity.stats.money < 30) critical.push('money');          // Necesita dinero
@@ -29,7 +29,7 @@ export const useEntityMovementOptimized = () => {
     return critical;
   }, []);
 
-  // Verificar si una zona es beneficiosa para la entidad - SISTEMA POSITIVO
+  // Verificar si una zona es beneficiosa para la entidad
   const isZoneBeneficialForEntity = useCallback((entity: Entity, zone: Zone): boolean => {
     // Verificar si la zona ayuda con las estadísticas críticas
     const criticalStats = getCriticalStats(entity);

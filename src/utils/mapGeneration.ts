@@ -13,8 +13,7 @@ export const createDefaultZones = (): Zone[] => {
       attractiveness: 0.9,
       effects: {
         hunger: -25,     // Reduce hambre
-        happiness: 8,    // Aumenta felicidad
-        energy: -5       // Consume un poco de energía
+        happiness: 8     // Aumenta felicidad
       }
     },
     // Cocina Comunal
@@ -27,8 +26,7 @@ export const createDefaultZones = (): Zone[] => {
       attractiveness: 1.0,
       effects: {
         hunger: -35,     // Reduce hambre significativamente
-        happiness: 12,   // Aumenta felicidad
-        energy: -8       // Consume energía cocinando
+        happiness: 12    // Aumenta felicidad
       }
     },
     // Santuario de Descanso
@@ -42,8 +40,7 @@ export const createDefaultZones = (): Zone[] => {
       effects: {
         sleepiness: -30, // Reduce sueño
         energy: 25,      // Restaura energía
-        happiness: 10,   // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
+        happiness: 10    // Aumenta felicidad
       }
     },
     // Área de Juegos
@@ -57,8 +54,7 @@ export const createDefaultZones = (): Zone[] => {
       effects: {
         boredom: -40,    // Reduce aburrimiento significativamente
         happiness: 20,   // Aumenta felicidad mucho
-        loneliness: -15, // Reduce soledad (jugar es social)
-        energy: -12      // Consume energía jugando
+        loneliness: -15  // Reduce soledad (jugar es social)
       }
     },
     // Plaza Social
@@ -72,8 +68,7 @@ export const createDefaultZones = (): Zone[] => {
       effects: {
         loneliness: -35, // Reduce soledad significativamente
         happiness: 18,   // Aumenta felicidad
-        boredom: -10,    // Reduce aburrimiento
-        energy: -5       // Consume poca energía
+        boredom: -10     // Reduce aburrimiento
       }
     },
     // Bosque de Meditación
@@ -103,8 +98,7 @@ export const createDefaultZones = (): Zone[] => {
       effects: {
         energy: 40,      // Restaura energía significativamente
         sleepiness: -15, // Reduce sueño
-        happiness: 8,    // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
+        happiness: 8     // Aumenta felicidad
       }
     }
   ];

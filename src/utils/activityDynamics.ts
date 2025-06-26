@@ -246,11 +246,13 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    hunger: -0.05,
+    // Valores positivos incrementan la necesidad con el tiempo
+    hunger: 0.05,
     sleepiness: 0.03,
+    boredom: 0.03,
+    loneliness: 0.02,
+    // Valores negativos representan agotamiento
     energy: -0.02,
-    boredom: -0.03,
-    loneliness: -0.02,
     happiness: -0.01
   }
 } as const;
@@ -291,21 +293,11 @@ export const applyHybridDecay = (
       const statKey = statName as keyof EntityStats;
       
       let newValue = newStats[statKey] + configuredRate;
-      
-      if (statKey === 'hunger' || statKey === 'sleepiness') {
-        newValue = Math.max(20, Math.min(80, newValue));
-      } else if (statKey === 'happiness') {
-        newValue = Math.max(30, Math.min(90, newValue));
-      } else if (statKey === 'energy') {
-        newValue = Math.max(25, Math.min(85, newValue));
-      } else if (statKey === 'boredom') {
-        newValue = Math.max(10, Math.min(70, newValue));
-      } else if (statKey === 'health') {
-        newValue = Math.max(0, Math.min(100, newValue));
-      } else if (statKey === 'money') {
+
+      if (statKey === 'money') {
         newValue = Math.max(0, newValue);
       } else {
-        newValue = Math.max(15, Math.min(85, newValue));
+        newValue = Math.max(0, Math.min(100, newValue));
       }
       
       newStats[statKey] = newValue as EntityStats[keyof EntityStats];
