@@ -246,13 +246,13 @@ export const calculateActivityPriority = (
 // Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    // Todas las estadísticas ahora decaen con el tiempo (0 = crítico)
-    hunger: -0.05,
-    sleepiness: -0.03,
-    boredom: -0.03,
-    loneliness: -0.02,
-    energy: -0.02,
-    happiness: -0.01
+    // Todas las estadísticas decaen de forma más notoria (0 = crítico)
+    hunger: -0.3,
+    sleepiness: -0.2,
+    boredom: -0.2,
+    loneliness: -0.15,
+    energy: -0.15,
+    happiness: -0.1
   }
 } as const;
 

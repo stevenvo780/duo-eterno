@@ -9,6 +9,9 @@ import {
 import { logZones } from '../utils/logger';
 import type { ZoneType } from '../constants/gameConstants';
 
+// Factor global que suaviza los efectos de las zonas sobre las estadísticas
+const ZONE_EFFECT_SCALE = 0.02;
+
 // Nuevo mapeo de configuración para zonas
 const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>> = {
   food:    { stats: ['hunger'],                 criticalThreshold: 20, label: 'Alimento' },
@@ -75,8 +78,8 @@ export const useZoneEffects = () => {
       lastUpdateTime.current = now;
       messageCounter.current++;
 
-      const livingEntities = gameState.entities.filter(entity => 
-        !entity.isDead && entity.state !== 'DEAD'
+      const livingEntities = gameState.entities.filter(
+        entity => !entity.isDead && entity.state !== 'DEAD' && entity.state !== 'FADING'
       );
 
         for (const entity of livingEntities) {
@@ -99,7 +102,7 @@ export const useZoneEffects = () => {
                 const currentStat = entity.stats[statKey];
 
                 // Aplicar efectividad de manera gradual
-                const effectValue = baseValue * effectiveness * timeMultiplier * 0.1;
+                const effectValue = baseValue * effectiveness * timeMultiplier * ZONE_EFFECT_SCALE;
                 const newValue = Math.max(0, Math.min(100, currentStat + effectValue));
 
                 // Aplicar cambios pequeños
@@ -109,8 +112,8 @@ export const useZoneEffects = () => {
               } else if (statKey === 'money' && typeof baseValue === 'number') {
                 // El dinero no tiene límite de 100 pero también debe ser gradual
                 const currentMoney = entity.stats.money;
-                const moneyGain = baseValue * effectiveness * timeMultiplier * 0.1;
-                if (moneyGain > 0.1) {
+                const moneyGain = baseValue * effectiveness * timeMultiplier * ZONE_EFFECT_SCALE;
+                if (moneyGain > 0.05) {
                   finalEffects.money = currentMoney + moneyGain;
                 }
               }

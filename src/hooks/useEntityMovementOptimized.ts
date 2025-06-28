@@ -193,7 +193,9 @@ export const useEntityMovementOptimized = () => {
       lastUpdateTime.current = now;
 
       measureExecutionTime('entity-movement-optimized', () => {
-        const livingEntities = gameState.entities.filter(e => !e.isDead && e.state !== 'DEAD');
+        const livingEntities = gameState.entities.filter(
+          e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
+        );
         
         for (const entity of livingEntities) {
           const companion = livingEntities.find(e2 => e2.id !== entity.id) || null;
