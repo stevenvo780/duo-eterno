@@ -3,7 +3,7 @@ import { useGame } from './useGame';
 import { shouldUpdateMovement, measureExecutionTime } from '../utils/performanceOptimizer';
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
-import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING } from '../constants/gameConstants';
+import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from '../constants/gameConstants';
 import type { Entity, Zone, Position } from '../types';
 
 // Sistema de movimiento optimizado con búsqueda de zonas
@@ -78,7 +78,24 @@ export const useEntityMovementOptimized = () => {
   }, [getCriticalStats]);
 
   // Función para calcular el objetivo de una entidad basado en sus necesidades
-  const getEntityTarget = useCallback((entity: Entity, zones: Zone[]): Position | undefined => {
+  const getEntityTarget = useCallback(
+    (
+      entity: Entity,
+      zones: Zone[],
+      companion: Entity | null
+    ): Position | undefined => {
+      if (companion && !companion.isDead) {
+        const distance = Math.hypot(
+          entity.position.x - companion.position.x,
+          entity.position.y - companion.position.y
+        );
+        if (
+          gameState.resonance < RESONANCE_THRESHOLDS.LOW ||
+          distance > MOVEMENT_CONFIG.COMPANION_SEEK_DISTANCE
+        ) {
+          return companion.position;
+        }
+      }
     // Priorizar zona actual si está en una zona beneficiosa
     const currentZone = getEntityZone(entity.position, zones);
     if (currentZone && isZoneBeneficialForEntity(entity, currentZone)) {
@@ -102,7 +119,7 @@ export const useEntityMovementOptimized = () => {
     // Si no hay zona específica, usar el sistema de atracción general
     const attractionTarget = getAttractionTarget(entity.stats, zones, entity.position);
     return attractionTarget || undefined;
-  }, [findMostNeededZone, isZoneBeneficialForEntity]);
+  }, [findMostNeededZone, isZoneBeneficialForEntity, gameState.resonance]);
 
   // Calcular el siguiente paso en el movimiento hacia un objetivo
   const calculateMovementStep = useCallback((
@@ -203,7 +220,7 @@ export const useEntityMovementOptimized = () => {
           // Calcular objetivo de movimiento
           let target = entityTargets.current.get(entity.id);
           if (!target || Math.random() < 0.01) { // Recalcular objetivo ocasionalmente
-            target = getEntityTarget(entity, gameState.zones);
+            target = getEntityTarget(entity, gameState.zones, companion);
             if (target) {
               entityTargets.current.set(entity.id, target);
             }

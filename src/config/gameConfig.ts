@@ -46,7 +46,7 @@ export const gameConfig: GameConfig = {
   // Permitir ajustar la velocidad de desgaste vía variable de entorno
   baseDecayMultiplier: getEnvNumber(
     'VITE_STAT_DECAY_SPEED',
-    getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 2.0)
+    getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 4.0)
   ),
   zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),

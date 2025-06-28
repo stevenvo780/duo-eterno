@@ -59,7 +59,7 @@ El juego incluye un sistema de configuración avanzado para facilitar el desarro
 ### Variables Principales
 
 - `VITE_GAME_SPEED_MULTIPLIER` - Multiplicador de velocidad general (1.0 = normal, 5.0 = muy rápido)
-- `VITE_STAT_DECAY_SPEED` - Velocidad de degradación de estadísticas (2.0 por defecto)
+- `VITE_STAT_DECAY_SPEED` - Velocidad de degradación de estadísticas (4.0 por defecto)
 - `VITE_DEBUG_MODE` - Habilita métricas de rendimiento y logs detallados
 - `VITE_TARGET_FPS` - FPS objetivo para optimizar rendimiento
 
