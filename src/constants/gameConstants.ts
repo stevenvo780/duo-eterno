@@ -8,7 +8,8 @@ export const ZONE_TYPES = [
   'play',
   'social',
   'comfort',
-  'energy'
+  'energy',
+  'work'
 ] as const;
 export type ZoneType = typeof ZONE_TYPES[number];
 
@@ -64,7 +65,8 @@ export const NEED_TO_ZONE_MAPPING: Partial<Record<StatKey, ZoneType>> = {
   boredom: 'play',
   loneliness: 'social',
   happiness: 'comfort',
-  energy: 'energy'
+  energy: 'energy',
+  money: 'work'
 } as const;
 
 // Traducciones para la UI

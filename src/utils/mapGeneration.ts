@@ -100,6 +100,18 @@ export const createDefaultZones = (): Zone[] => {
         sleepiness: 15,  // Recupera descanso
         happiness: 8     // Aumenta felicidad
       }
+    },
+    // Estación de Trabajo
+    {
+      id: 'work_station',
+      name: 'Estación de Trabajo',
+      bounds: { x: 650, y: 50, width: 140, height: 100 },
+      type: 'work',
+      color: 'rgba(55, 65, 81, 0.25)',
+      attractiveness: 0.8,
+      effects: {
+        money: 60
+      }
     }
   ];
 };
@@ -198,6 +210,7 @@ export const getAttractionTarget = (
     if (zone.effects?.sleepiness && entityStats.sleepiness < 30) score += 0.5;
     if (zone.effects?.loneliness && entityStats.loneliness < 30) score += 0.5;
     if (zone.effects?.boredom && entityStats.boredom < 30) score += 0.5;
+    if (zone.effects?.money && entityStats.money < 40) score += 0.5;
     
     // Penalizar por distancia
     const distance = Math.sqrt(

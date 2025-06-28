@@ -16,7 +16,8 @@ const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; crit
   play:    { stats: ['boredom', 'happiness'],   criticalThreshold: 30, label: 'Diversión' },
   social:  { stats: ['loneliness', 'happiness'],criticalThreshold: 30, label: 'Social' },
   comfort: { stats: ['happiness', 'boredom', 'loneliness'],criticalThreshold: 40, label: 'Confort' },
-  energy:  { stats: ['energy'],                 criticalThreshold: 20, label: 'Energía' }
+  energy:  { stats: ['energy'],                 criticalThreshold: 20, label: 'Energía' },
+  work:    { stats: ['money', 'energy'],        criticalThreshold: 50, label: 'Trabajo' }
 };
 
 // Cálculo refactorizado de efectividad de zona

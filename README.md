@@ -99,6 +99,11 @@ Cada entidad puede estar en uno de estos estados:
 - **Revivir**: Si los entes se han desvanecido, puedes revivirlos con 50% de resonancia
 - **Diálogos**: Mensajes poéticos aparecen según el contexto de la interacción
 
+### Zonas Clave y Economía
+
+- **Estación de Trabajo**: Permite a las entidades ganar dinero de forma lenta mientras consumen más energía y hambre.
+- Los trabajos y la socialización aceleran la pérdida de estadísticas, mientras que actividades de descanso como meditar o dormir la reducen.
+
 ## 🎨 Arquitectura Técnica
 
 ### Estructura del Proyecto

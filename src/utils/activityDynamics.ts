@@ -258,19 +258,19 @@ const HYBRID_DECAY_RATES = {
 
 // Peso relativo del decay por tipo de actividad (1 = sin cambios)
 const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
-  WORKING: 1.3,
-  SHOPPING: 1.1,
-  COOKING: 1.0,
-  EXERCISING: 1.4,
-  RESTING: 0.5,
-  SOCIALIZING: 0.9,
+  WORKING: 1.6,
+  SHOPPING: 1.2,
+  COOKING: 1.1,
+  EXERCISING: 1.5,
+  RESTING: 0.4,
+  SOCIALIZING: 1.3,
   DANCING: 1.2,
-  EXPLORING: 1.2,
-  MEDITATING: 0.7,
-  CONTEMPLATING: 0.8,
-  WRITING: 1.0,
+  EXPLORING: 1.3,
+  MEDITATING: 0.6,
+  CONTEMPLATING: 0.7,
+  WRITING: 0.9,
   WANDERING: 1.0,
-  HIDING: 0.9
+  HIDING: 0.8
 };
 
 // Aplicar decay híbrido a las estadísticas de una entidad
