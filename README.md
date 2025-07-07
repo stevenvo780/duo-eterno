@@ -1,228 +1,171 @@
-# Dúo Eterno: Un Tamagotchi del Vínculo
+# Dúo Eterno ‑ Manual Técnico y de Diseño ✨
 
-Una simulación interactiva minimalista donde dos entes pixelados representan la esencia de un vínculo que requiere cuidado y atención para mantenerse vivo.
+> **Dedicatoria**  
+> Esta obra interactiva es un regalo de **Steven Vallejo Ortiz** —informático y filósofo— para su amada esposa **Isabella Loaiza Gómez**.  
+> Cada línea de código, cada latido de estas pequeñas entidades, es una metáfora de cómo el amor nutre la homeostasis de nuestros cuerpos y almas.  
+> Recorre el repositorio como quien lee una carta infinita: encontrarás mensajes dispersos, zonas de refugio y ecuaciones que cantan al cuidado mutuo.
 
-## 🎮 Descripción del Juego
-
-**Dúo Eterno** es un Tamagotchi conceptual que explora la naturaleza de las conexiones humanas a través de dos entidades abstractas:
-- Un **círculo** y un **cuadrado** que existen en un lienzo optimizado
-- Su **resonancia** (energía del vínculo) disminuye con el tiempo
-- Solo tu intervención puede nutrir y mantener viva su conexión
-
-## 🚀 Instalación y Ejecución
-
-### Requisitos previos
-- Node.js 18+ 
-- npm o yarn
-
-### Instrucciones de instalación
-
-```bash
-# Clona el repositorio (si aplica) o navega al directorio
-cd duo-eterno
-
-# Instala las dependencias
-npm install
-
-# Configura el entorno de desarrollo (opcional)
-cp .env.example .env
-
-# Inicia el servidor de desarrollo
-npm run dev
-
-# Abre tu navegador en http://localhost:5173
-```
-
-### Comandos disponibles
-
-```bash
-npm run dev      # Servidor de desarrollo
-npm run build    # Construir para producción
-npm run preview  # Vista previa de la construcción
-npm run lint     # Ejecutar ESLint
-```
-
-## ⚙️ Configuración de Desarrollo
-
-### Variables de Entorno
-
-El juego incluye un sistema de configuración avanzado para facilitar el desarrollo y debugging:
-
-```bash
-# Configuración rápida con script
-./dev-config.sh debug        # Modo debug (eventos acelerados)
-./dev-config.sh normal       # Modo normal de desarrollo
-./dev-config.sh performance  # Modo de alto rendimiento
-./dev-config.sh production   # Configuración de producción
-```
-
-### Variables Principales
-
-- `VITE_GAME_SPEED_MULTIPLIER` - Multiplicador de velocidad general (1.0 = normal, 5.0 = muy rápido)
-- `VITE_STAT_DECAY_SPEED` - Velocidad de degradación de estadísticas (4.0 por defecto)
-- `VITE_DEBUG_MODE` - Habilita métricas de rendimiento y logs detallados
-- `VITE_TARGET_FPS` - FPS objetivo para optimizar rendimiento
-
-### Funciones de Debug en Consola
-
-Durante el desarrollo, puedes usar estas funciones en la consola del navegador:
-
-```javascript
-setTurboMode(true)   // Acelera temporalmente todos los eventos
-setDebugMode(true)   // Muestra métricas de rendimiento
-logConfig()          // Muestra la configuración actual
-gameConfig           // Acceso directo al objeto de configuración
-```
-
-## 🎯 Mecánicas del Juego
-
-Las estadísticas de las entidades siguen una escala de 0 a 100. Los valores altos indican un estado saludable (por ejemplo, `hunger` alto significa que están saciados). Cuando las estadísticas bajan demasiado, las entidades entran en estado crítico e incluso pueden morir.
-
-### Estados de los Entes
-
-Cada entidad puede estar en uno de estos estados:
-
-1. **IDLE** - En reposo, movimiento aleatorio ocasional cuando la resonancia > 75%
-2. **SEEKING** - Buscan activamente al otro cuando la resonancia < 50%
-3. **LOW_RESONANCE** - Movimiento errático y colores atenuados cuando < 25%
-4. **FADING** - Se desvanecen gradualmente cuando la resonancia llega a 0
-
-### Ciclo de Vida Autónomo
-
-- **Decaimiento**: La resonancia disminuye 0.5% cada segundo
-- **Auto-sustento**: Si ambos entes están juntos >5 segundos, +5% de resonancia
-- **Movimiento**: Los entes se mueven según su estado emocional actual
-
-### Interacción del Jugador
-
-- **Botón "Nutrir Vínculo"**: Restaura +30% de resonancia (máximo 100%)
-- **Revivir**: Si los entes se han desvanecido, puedes revivirlos con 50% de resonancia
-- **Diálogos**: Mensajes poéticos aparecen según el contexto de la interacción
-
-### Zonas Clave y Economía
-
-- **Estación de Trabajo**: Permite a las entidades ganar dinero de forma lenta mientras consumen más energía y hambre.
-- Los trabajos y la socialización aceleran la pérdida de estadísticas, mientras que actividades de descanso como meditar o dormir la reducen.
-
-## 🎨 Arquitectura Técnica
-
-### Estructura del Proyecto
-
-```
-src/
-├── components/          # Componentes de UI
-│   ├── Canvas.tsx      # Lienzo principal con renderizado 2D
-│   ├── DialogOverlay.tsx # Sistema de diálogos
-│   └── UIControls.tsx  # Controles e indicadores
-├── hooks/              # Lógica de juego
-│   ├── useGameClock.ts # Reloj del juego y estados
-│   ├── useEntityMovement.ts # Movimiento de entidades
-│   └── useDialogueSystem.ts # Sistema de mensajes
-├── state/              # Gestión de estado global
-│   └── GameContext.tsx # Context API + useReducer
-├── types/              # Definiciones TypeScript
-│   └── index.ts        # Interfaces y tipos
-└── utils/              # Utilidades
-    ├── dialogues.ts    # Frases y mensajes
-    └── storage.ts      # Persistencia en localStorage
-```
-
-### Tecnologías Utilizadas
-
-- **React 19** + **TypeScript** - Framework principal
-- **Vite** - Build tool y desarrollo
-- **Canvas API** - Renderizado gráfico nativo
-- **Context API + useReducer** - Estado global sin librerías externas
-- **localStorage** - Persistencia del estado del juego
-
-### Características Técnicas
-
-- ✅ **Máquina de estados** implementada en TypeScript puro
-- ✅ **Animaciones fluidas** con requestAnimationFrame
-- ✅ **Persistencia automática** del progreso
-- ✅ **Sistema de diálogos** contextual
-- ✅ **Renderizado optimizado** en Canvas 2D
-- ✅ **Responsive design** minimalista
-
-## 🔄 Flujo de la Simulación
-
-1. **Inicialización**: Los entes aparecen con 75% de resonancia
-2. **Decaimiento natural**: La energía disminuye gradualmente
-3. **Búsqueda autónoma**: Cuando baja de 50%, se buscan mutuamente
-4. **Crisis**: Con <25%, entran en estado de baja resonancia
-5. **Desvanecimiento**: Al llegar a 0%, se desvanecen gradualmente
-6. **Recuperación**: Si la resonancia sube de nuevo en menos de 10 segundos, vuelven a la normalidad
-7. **Intervención**: El jugador puede nutrir el vínculo en cualquier momento
-8. **Renacimiento**: Los entes desvanecidos pueden ser revividos
-
-## 💾 Persistencia
-
-El juego guarda automáticamente:
-- Estado actual de las entidades
-- Nivel de resonancia
-- Número de ciclos transcurridos
-- Posición de los entes
-- Estado de desvanecimiento
-
-Los datos se preservan entre sesiones usando `localStorage` con la clave `duoEternoState`.
-
-## 🚀 Optimizaciones de Rendimiento
-
-### Versiones Disponibles
-
-El juego incluye dos versiones optimizadas para diferentes necesidades:
-
-- **Versión Estándar** (`App.tsx`) - Funcionalidad completa con todos los efectos
-- **Versión Optimizada** (`App.tsx`) - Rendimiento mejorado con efectos adaptativos
-
-La versión se selecciona automáticamente según:
-- Entorno de producción → Versión optimizada
-- `VITE_TARGET_FPS < 60` → Versión optimizada  
-- `VITE_USE_OPTIMIZED=true` → Forzar versión optimizada
-
-### Técnicas de Optimización Implementadas
-
-#### 🎨 Renderizado Optimizado
-- **Frame rate limiting** - Control de FPS objetivo configurable
-- **Quality scaling** - Reducción automática de calidad en bajo rendimiento
-- **Object pooling** - Reutilización de partículas y objetos
-- **Gradient caching** - Cacheo de gradientes CSS para evitar recreación
-
-#### 🔄 Lógica de Juego Optimizada
-- **Throttled updates** - Actualizaciones menos frecuentes en componentes costosos
-- **Delta time calculations** - Actualizaciones basadas en tiempo transcurrido
-- **Collision optimization** - Verificaciones de colisión más eficientes
-- **State batching** - Agrupación de updates de estado
-
-#### 📊 Sistema de Monitoreo
-- **FPS monitoring** - Medición de rendimiento en tiempo real
-- **Performance overlay** - Visualización de métricas (modo debug)
-- **Adaptive quality** - Ajuste automático según rendimiento
-
-### Configuraciones de Rendimiento
-
-```bash
-# Alto rendimiento (máximo FPS)
-VITE_TARGET_FPS=30
-VITE_MOVEMENT_UPDATE_FPS=15
-VITE_USE_OPTIMIZED=true
-
-# Calidad visual (máxima calidad)
-VITE_TARGET_FPS=60
-VITE_MOVEMENT_UPDATE_FPS=60
-VITE_DEBUG_MODE=true
-```
-
-## 🎭 Filosofía del Diseño
-
-*Dúo Eterno* explora temas de:
-- **Interdependencia emocional**
-- **El cuidado como acto consciente**
-- **La fragilidad y resistencia de los vínculos**
-- **La belleza en la simplicidad**
-
-Es una meditación interactiva sobre cómo las relaciones requieren atención constante para florecer.
+> *“Dos pequeñas luces orbitan en un mundo minimalista; su brillo depende del cuidado que les prestes.”*
 
 ---
 
-*Desarrollado con React + TypeScript + Vite*
+## Tabla de Contenidos
+1. Visión General
+2. Instalación y Comandos
+3. Arquitectura de Carpetas
+4. Matemáticas del Juego
+   1. Estadísticas & Decaimiento
+   2. Zonas & Efectividad
+   3. Resonancia (Vínculo)
+   4. Costes de Supervivencia
+5. Interacción del Jugador
+6. Configuración & Variables de Entorno
+7. Logs & Debug
+8. Flujo de Persistencia
+9. Road-map Sugerido
+
+---
+
+## 1. Visión General
+Dúo Eterno es una *experiencia-tamagotchi* con dos entidades (“●” y “■”). El objetivo es mantener viva la **resonancia** (0-100) entre ellas equilibrando **necesidades** (hunger, sleepiness, etc.) a través de movimiento autónomo, zonas de mapa y acciones del jugador.
+
+- **Framework**   React 19 + TypeScript
+- **Motor**       Canvas 2D + hooks optimizados
+- **Persistencia** localStorage (`duoEternoState`)
+- **Servidor**     Express opcional para exportar logs
+
+---
+
+## 2. Instalación y Comandos
+```bash
+# 1) Dependencias
+npm i
+# 2) Desarrollo
+npm run dev           # Abre http://localhost:5173
+# 3) Producción
+npm run build && npm run preview
+# 4) Calidad de código
+npm run lint          # ESLint
+npm run format        # Prettier
+npm run clean-comments
+```
+
+Comando extra (`npm run server`) levanta un servidor Express en `3002` para recibir logs.
+
+---
+
+## 3. Arquitectura de Carpetas (resumida)
+```
+src/
+ ├─ components/          UI (Canvas, Panels)
+ ├─ hooks/               Lógica de juego (render loop, IA, zonas…)
+ ├─ utils/               Algoritmos reutilizables (AI, logger…)
+ ├─ constants/           Datos inmutables (umbrales, traducciones)
+ ├─ state/               GameContext (React Context + Reducer)
+ └─ types/               Tipos globales
+```
+
+---
+
+## 4. Matemáticas del Juego
+### 4.1 Estadísticas & Decaimiento
+Cada entidad posee un vector `stats` con rango `[0,100]` (excepto `money ≥ 0`).
+
+```
+∆stat = baseRate × activityMultiplier × decayMultiplier × dt
+```
+- **baseRate** ver `HYBRID_DECAY_RATES` (ej: hunger = −0.3/s)  
+- **activityMultiplier** tabla `ACTIVITY_DECAY_MULTIPLIERS` (RESTING 0.4 – WORKING 1.6)  
+- **decayMultiplier** `gameConfig.baseDecayMultiplier` (env var)  
+- **dt** segundos reales × `gameSpeedMultiplier`
+
+Clampeo final `max(0, min(100, newValue))`.
+
+### 4.2 Zonas & Efectividad
+Cada zona `Z` tiene `effects` (Δ por segundo) y un **attractiveness** `α ∈ [0,1]`.
+
+Efectividad real:
+```
+needLevel   = 100 - avg(stat_i, …)
+baseEff     = 1 + needLevel / 50
+EFF(Z)      = baseEff × gameConfig.zoneEffectivenessMultiplier
+finalChange = effectBase * EFF(Z) * 0.02 * dt
+```
+Cuando `avgStat < criticalThreshold` se marca **criticalNeed** y se muestra diálogo.
+
+### 4.3 Resonancia (Vínculo)
+- **Distancia menor a 80 px** ⇒ incremento:
+```
+∆R = 2  * dt * proximityBonus * moodBonus * gameSpeed
+```
+- **Distancia mayor a 160 px** ⇒ decaimiento `0.2*dt`.
+- Umbrales: 30 (crítico) / 0 (fading) recuperable si `>10` antes de 10 s.
+
+### 4.4 Costes de Supervivencia
+Dinero cae a razón de `LIVING_COST = 2` por minuto.
+Si `money < 20` se activan penalizaciones:
+```
+∆hunger   = −5 * desperation * minutes
+∆happiness= −3 * desperation * minutes
+```
+con `desperation = (20-money)/20`.
+
+---
+
+## 5. Interacción del Jugador
+| Acción      | Resultado                                                                             |
+|-------------|----------------------------------------------------------------------------------------|
+| **NOURISH** | +30 resonancia, +happiness, +energy                                                    |
+| **FEED**    | +hunger, +happiness, levemente −sleepiness                                             |
+| **PLAY**    | −boredom, +happiness, −energy                                                         |
+| **COMFORT** | −loneliness, +happiness                                                               |
+| **WAKE_UP** | −sleepiness, +energy                                                                  |
+| **LET_SLEEP**| +sleepiness, +energy (si están en zona de descanso)                                   |
+
+Acciones invocan `applyInteractionEffect` (ver `utils/interactions.ts`).
+
+---
+
+## 6. Configuración & Variables de Entorno
+| Clave                          | Descripción                                       | Defecto |
+|--------------------------------|---------------------------------------------------|---------|
+| `VITE_GAME_SPEED_MULTIPLIER`   | Acelera todo el juego                             | `1.0`   |
+| `VITE_BASE_DECAY_MULTIPLIER`   | Escala global de decaimiento de stats             | `4.0`   |
+| `VITE_ZONE_EFFECTIVENESS_MULTIPLIER` | Escala global de zonas                    | `1.0`   |
+| `VITE_AI_PERSONALITY_INFLUENCE`| Peso de la personalidad en IA                     | `0.3`   |
+| `VITE_ACTIVITY_INERTIA_BONUS`  | Aumenta persistencia en actividad                 | `15.0`  |
+| `VITE_MOOD_INFLUENCE_STRENGTH` | Cuánto afecta el humor a decisiones               | `0.5`   |
+
+`window.setGameSpeed(n)` modifica `gameConfig.gameSpeedMultiplier` en caliente.
+
+---
+
+## 7. Logs & Debug
+Sistema central `utils/logger.ts` con **sistemas**:
+`autopoiesis, movement, zones, ai, render, storage, general`.
+
+- Solo `warn/error` se registran en producción.  
+- En modo debug (`VITE_DEBUG_MODE=true`) se muestran grupos colapsables en la consola.
+
+### Ejemplo
+```ts
+logZones.debug('Zone effects', { entity: id, effects, eff });
+```
+
+---
+
+## 8. Flujo de Persistencia
+1. Cada `20 ticks` ⇒ `saveGameState` → localStorage (`~4 KB`).
+2. Al montar la app ⇒ `loadGameState` y validación estricta (`utils/storage.ts`).
+3. Migración pendiente si cambia `CURRENT_VERSION`.
+
+---
+
+## 9. Road-map Sugerido
+- ✏️ Modo *sandbox* configurable (crear zonas desde UI).  
+- 📊 Exportar CSV de métricas para análisis.  
+- 🎧 Audio reactivo a la resonancia.
+
+---
+
+**Licencia** MIT — creado con cariño.
