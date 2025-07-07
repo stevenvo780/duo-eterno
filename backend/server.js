@@ -12,7 +12,8 @@ const PORT = 3002;
 const LOGS_DIR = './logs';
 const CURRENT_LOG = path.join(LOGS_DIR, 'current_session.json');
 
-// Middleware
+import { loadLogs, summarizeLogs } from './logSummarizer.js';
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -92,6 +93,18 @@ app.get('/api/logs/history', async (req, res) => {
     
     history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     res.json(history);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/logs/summary?window=10  -> resumen estadístico
+app.get('/api/logs/summary', async (req, res) => {
+  try {
+    const minutes = parseInt(req.query.window, 10) || 10;
+    const allLogs = await loadLogs();
+    const summary = summarizeLogs(allLogs, minutes);
+    res.json(summary);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
