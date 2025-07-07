@@ -1,4 +1,3 @@
-// Tipos derivados de las interfaces principales
 export const STAT_KEYS = ['hunger', 'sleepiness', 'loneliness', 'happiness', 'energy', 'boredom', 'money', 'health'] as const;
 export type StatKey = typeof STAT_KEYS[number];
 
@@ -26,7 +25,6 @@ export type EntityStateType = typeof ENTITY_STATES[number];
 export const MOOD_TYPES = ['HAPPY', 'SAD', 'TIRED', 'EXCITED', 'CALM', 'ANXIOUS', 'CONTENT'] as const;
 export type MoodType = typeof MOOD_TYPES[number];
 
-// Umbrales del sistema de supervivencia
 export const SURVIVAL_THRESHOLDS = {
   CRITICAL: 85,
   URGENT: 70,
@@ -34,7 +32,6 @@ export const SURVIVAL_THRESHOLDS = {
   COMFORTABLE: 30
 } as const;
 
-// Umbrales de resonancia
 export const RESONANCE_THRESHOLDS = {
   CRITICAL: 30,
   LOW: 50,
@@ -43,11 +40,10 @@ export const RESONANCE_THRESHOLDS = {
 } as const;
 
 export const HEALTH_CONFIG = {
-  DECAY_PER_CRITICAL: 0.1, // salud perdida por segundo por cada estadística crítica
-  RECOVERY_RATE: 0.05 // salud recuperada por segundo cuando todo está en orden
+  DECAY_PER_CRITICAL: 0.1,
+  RECOVERY_RATE: 0.05
 } as const;
 
-// Configuración de movimiento y colisiones
 export const MOVEMENT_CONFIG = {
   ENTITY_SIZE: 16,
   MIN_DISTANCE_BETWEEN_ENTITIES: 25,
@@ -56,9 +52,6 @@ export const MOVEMENT_CONFIG = {
   BASE_MOVEMENT_SPEED: 2.0
 } as const;
 
-
-
-// Mapeo de necesidades a tipos de zona (actualizado)
 export const NEED_TO_ZONE_MAPPING: Partial<Record<StatKey, ZoneType>> = {
   hunger: 'food',
   sleepiness: 'rest',
@@ -69,7 +62,6 @@ export const NEED_TO_ZONE_MAPPING: Partial<Record<StatKey, ZoneType>> = {
   money: 'work'
 } as const;
 
-// Traducciones para la UI
 export const TRANSLATIONS = {
   ACTIVITIES: {
     'WANDERING': 'Vagando',
@@ -114,7 +106,6 @@ export const TRANSLATIONS = {
   } as const
 } as const;
 
-// Duración y umbral de recuperación para el estado FADING
 export const FADING_TIMEOUT_MS = 10000;
 export const FADING_RECOVERY_THRESHOLD = 10;
 

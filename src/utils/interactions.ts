@@ -40,7 +40,6 @@ export const applyInteractionEffect = (
   
   const newStats = { ...currentStats };
 
-  // Apply stat changes
   Object.entries(effectiveStats).forEach(([stat, change]) => {
     const statKey = stat as keyof EntityStats;
     if (typeof change === 'number') {
@@ -55,8 +54,8 @@ export const applyInteractionEffect = (
 };
 
 export const getStatColor = (value: number): string => {
-  if (value > 75) return '#22c55e'; // green
-  if (value > 50) return '#eab308'; // yellow  
-  if (value > 25) return '#f97316'; // orange
-  return '#ef4444'; // red
+  if (value > 75) return '#22c55e';
+  if (value > 50) return '#eab308';
+  if (value > 25) return '#f97316';
+  return '#ef4444';
 };

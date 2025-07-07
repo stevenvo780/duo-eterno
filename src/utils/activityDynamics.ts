@@ -19,7 +19,6 @@ export const ACTIVITY_DYNAMICS: Record<ActivityType, { optimalDuration: number }
   COOKING: { optimalDuration: 50000 }
 };
 
-// Dinámicas completas de actividades con efectos inmediatos y por tiempo
 export const ACTIVITY_EFFECTS: Record<ActivityType, {
   immediate: Record<string, number>;
   perMinute: Record<string, number>;
@@ -185,7 +184,6 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
   }
 };
 
-// Cálculo de prioridad dinámico basado en necesidades y dinero
 export const calculateActivityPriority = (
   activity: EntityActivity,
   currentStats: EntityStats,
@@ -194,7 +192,6 @@ export const calculateActivityPriority = (
   const effects = ACTIVITY_EFFECTS[activity];
   let priority = 0;
 
-  // Prioridad base según urgencia de necesidades
   if (activity === 'WORKING') {
     priority += Math.max(0, (50 - currentStats.money) / 50) * 100;
     priority -= Math.max(0, (40 - currentStats.energy) / 40) * 30;
@@ -231,11 +228,9 @@ export const calculateActivityPriority = (
     priority -= Math.max(0, (30 - currentStats.energy)) * 0.8;
   }
 
-  // Ajustar por eficiencia temporal
   const efficiency = effects.efficiencyOverTime(timeSpentInActivity);
   priority *= efficiency;
 
-  // Penalizar actividades muy largas
   if (timeSpentInActivity > effects.optimalDuration * 1.5) {
     priority *= 0.5;
   }
@@ -243,10 +238,8 @@ export const calculateActivityPriority = (
   return Math.max(0, priority);
 };
 
-// Sistema híbrido de decay rates
 const HYBRID_DECAY_RATES = {
   base: {
-    // Todas las estadísticas decaen de forma más notoria (0 = crítico)
     hunger: -0.3,
     sleepiness: -0.2,
     boredom: -0.2,
@@ -256,7 +249,6 @@ const HYBRID_DECAY_RATES = {
   }
 } as const;
 
-// Peso relativo del decay por tipo de actividad (1 = sin cambios)
 const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   WORKING: 1.6,
   SHOPPING: 1.2,
@@ -273,7 +265,6 @@ const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   HIDING: 0.8
 };
 
-// Aplicar decay híbrido a las estadísticas de una entidad
 export const applyHybridDecay = (
   currentStats: EntityStats,
   activity: EntityActivity,
@@ -287,7 +278,6 @@ export const applyHybridDecay = (
   Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
     if (statName in newStats) {
       const finalRate = baseRate * decayMultiplier;
-
       const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;
       const statKey = statName as keyof EntityStats;
       
@@ -303,7 +293,7 @@ export const applyHybridDecay = (
     }
   });
 
-  logAutopoiesis.debug(`Decay aplicado a entidad`, { 
+  logAutopoiesis.debug('Decay aplicado', { 
     activity, 
     changes: Object.fromEntries(
       Object.entries(newStats).map(([k, v]) => [k, v - currentStats[k as keyof EntityStats]])

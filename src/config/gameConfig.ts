@@ -35,7 +35,6 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
   return value.toLowerCase() === 'true';
 };
 
-// Configuración principal del juego - Basado en gameSpeedMultiplier
 export const gameConfig: GameConfig = {
   gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 1.0),
   debugMode: getEnvBoolean('VITE_DEBUG_MODE', true),
@@ -43,7 +42,6 @@ export const gameConfig: GameConfig = {
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
   dialogueDuration: 2500,
   criticalEventProbability: 0.02,
-  // Permitir ajustar la velocidad de desgaste vía variable de entorno
   baseDecayMultiplier: getEnvNumber(
     'VITE_STAT_DECAY_SPEED',
     getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 4.0)
@@ -54,7 +52,6 @@ export const gameConfig: GameConfig = {
   moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5)
 };
 
-// Configuraciones predefinidas
 export const speedPresets = {
   'Súper Lento (0.2x)': 0.2,
   'Lento (0.5x)': 0.5,
@@ -65,7 +62,6 @@ export const speedPresets = {
   'Hiper (10x)': 10.0
 } as const;
 
-// Función para cambiar velocidad en tiempo real
 export const setGameSpeed = (multiplier: number) => {
   gameConfig.gameSpeedMultiplier = Math.max(0.1, Math.min(20, multiplier));
   import('../utils/logger').then(({ logGeneral }) => {
@@ -73,7 +69,6 @@ export const setGameSpeed = (multiplier: number) => {
   });
 };
 
-// Helper para logging de configuración en modo debug
 const logConfig = () => {
   if (gameConfig.debugMode) {
     import('../utils/logger').then(({ logGeneral }) => {
@@ -87,7 +82,6 @@ const logConfig = () => {
   }
 };
 
-// Cálculos derivados basados en gameSpeedMultiplier (intervalos más frecuentes)
 export const getGameIntervals = () => ({
   autopoiesisInterval: Math.max(200, 500 / gameConfig.gameSpeedMultiplier),
   gameClockInterval: Math.max(150, 300 / gameConfig.gameSpeedMultiplier),
