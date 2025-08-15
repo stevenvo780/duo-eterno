@@ -201,7 +201,7 @@ export const useEntityMovementOptimized = () => {
           const companion = livingEntities.find(e2 => e2.id !== entity.id) || null;
           
           // Decisión de IA para actividad (menos frecuente)
-          if (now % 1000 < 50) { // Cada segundo aproximadamente
+          if (now % 5000 < 100) { // Cada 5 segundos aproximadamente
             const newActivity = makeIntelligentDecision(
               entity,
               companion,

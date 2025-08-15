@@ -10,10 +10,14 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "preview": "vite preview",
     "find-unused": "ts-prune --project tsconfig.app.json",
-    "server": "node server.js",
-    "dev-full": "concurrently \"npm run server\" \"npm run dev\""
+    "server": "node backend/server.js",
+    "dev-full": "concurrently \"npm run server\" \"npm run dev\"",
+    "show-stats": "node scripts/show-stats.js",
+    "analyze-session": "node scripts/analyzeSession.js",
+    "analyze-now": "node scripts/analyze-now.js"
   },
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

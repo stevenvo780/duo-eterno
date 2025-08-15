@@ -8,7 +8,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const LOG_DIR = path.resolve('logs');
+const LOG_DIR = path.resolve(path.dirname(import.meta.url.replace('file://', '')), 'logs');
 const DEFAULT_WINDOW_MIN = 10;
 
 const isArray = Array.isArray;
@@ -71,12 +71,21 @@ export const summarizeLogs = (logs, windowMinutes = DEFAULT_WINDOW_MIN) => {
 
     const msg = log.message || '';
 
-    // category detections
+    // Direct system-based counting (more reliable)
+    if (log.system === 'activity' && log.data?.type === 'CHANGE') summary.activityChanges++;
+    if (log.system === 'zone') summary.zoneEffects++;
+    if (log.system === 'love' && log.data?.subtype === 'RESONANCE') summary.resonanceEvents++;
+    
+    // Fallback to message-based detection
     if (msg.includes('murió') || msg.includes('Entidad murió')) summary.deaths++;
     if (msg.toLowerCase().includes('crítica')) summary.criticalEvents++;
-    if (msg.includes('resonancia')) summary.resonanceEvents++;
-    if (msg.includes('cambia actividad')) summary.activityChanges++;
-    if (msg.includes('Zone effects')) summary.zoneEffects++;
+    
+    // Additional message-based detection for backwards compatibility
+    if (!log.system) {
+      if (msg.includes('resonancia')) summary.resonanceEvents++;
+      if (msg.includes('cambia actividad')) summary.activityChanges++;
+      if (msg.includes('Zone effects')) summary.zoneEffects++;
+    }
 
     // resonance stats
     if (log.data?.resonance !== undefined) {

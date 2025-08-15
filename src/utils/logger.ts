@@ -1,7 +1,7 @@
 import { gameConfig } from '../config/gameConfig';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogSystem = 'autopoiesis' | 'movement' | 'zones' | 'ai' | 'upgrades' | 'render' | 'storage' | 'general';
+export type LogSystem = 'autopoiesis' | 'movement' | 'zones' | 'ai' | 'upgrades' | 'render' | 'storage' | 'general' | 'love' | 'activity' | 'zone' | 'survival' | 'debug';
 
 interface LogEntry {
   timestamp: number;
@@ -37,6 +37,11 @@ class Logger {
       case 'render': return '🎨';
       case 'storage': return '💾';
       case 'general': return '📋';
+      case 'love': return '💖';
+      case 'activity': return '🎯';
+      case 'zone': return '🗺️';
+      case 'survival': return '🏥';
+      case 'debug': return '🔍';
       default: return '📝';
     }
   }

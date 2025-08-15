@@ -5,6 +5,7 @@ import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import type { EntityStats } from '../types';
 import { shouldUpdateAutopoiesis } from '../utils/performanceOptimizer';
 import { logZones } from '../utils/logger';
+import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { ZoneType } from '../constants/gameConstants';
 
 // Ajusta cuán intensamente actúan los efectos de las zonas sobre las estadísticas
@@ -96,6 +97,10 @@ export const useZoneEffects = () => {
 
         if (Object.keys(finalEffects).length) {
           dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: finalEffects } });
+          
+          // Log para análisis
+          dynamicsLogger.logZoneEffect(entity.id, currentZone.name, finalEffects as Record<string, number>);
+          
           if (gameConfig.debugMode && messageCounter.current % 10 === 0) {
             logZones.debug('Zone effects', { entity: entity.id, effects: finalEffects, effectiveness });
           }
