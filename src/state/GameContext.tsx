@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import type { GameState, EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
+import type { GameState, EntityMood, EntityStats, InteractionType } from '../types';
 import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
@@ -161,11 +161,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             ? (() => {
                 const updatedStats = { ...entity.stats };
                 Object.entries(action.payload.stats).forEach(([stat, value]) => {
-                  const num = typeof value === 'number' ? value : (updatedStats as any)[stat];
-                  if (stat === 'money') {
+                  const key = stat as keyof EntityStats;
+                  const num = typeof value === 'number' ? value : updatedStats[key];
+                  if (key === 'money') {
                     updatedStats.money = Math.max(0, Number(num));
                   } else {
-                    (updatedStats as any)[stat] = Math.max(0, Math.min(100, Number(num)));
+                    updatedStats[key] = Math.max(0, Math.min(100, Number(num)));
                   }
                 });
                 return { ...entity, stats: updatedStats };

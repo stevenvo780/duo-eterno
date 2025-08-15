@@ -42,8 +42,8 @@ export class DynamicsLogger {
   private isEnabled = true;
   private sessionId = `session_${Date.now()}`;
   private exportInterval: number | null = null;
-  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
-  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
+  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
+  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
   private lastProximityLog = 0;
 
   // Configuración de qué logs mostrar
@@ -249,7 +249,7 @@ export class DynamicsLogger {
   // === LOGS DE ZONA ===
   
   logZoneEffect(entityId: string, zoneName: string, effects: Record<string, number>) {
-    const significantEffects = Object.entries(effects).filter(([_, value]) => Math.abs(value) > 1);
+    const significantEffects = Object.entries(effects).filter(([, value]) => Math.abs(value) > 1);
     if (significantEffects.length === 0) return;
     
     this.log({

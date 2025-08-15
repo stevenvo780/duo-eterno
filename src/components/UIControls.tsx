@@ -75,9 +75,10 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       // Global resonance boost for NOURISH con atenuación por uso repetido
       if (type === 'NOURISH') {
         const now = Date.now();
-        const last = (window as any).__lastNourishTime || 0;
+        const w = window as unknown as { __lastNourishTime?: number };
+        const last = w.__lastNourishTime || 0;
         const deltaSec = (now - last) / 1000;
-        (window as any).__lastNourishTime = now;
+        w.__lastNourishTime = now;
 
         const baseResonanceGain = 30;
         // Atenúa si se usa varias veces en <15s: factor 1.0 → 0.5

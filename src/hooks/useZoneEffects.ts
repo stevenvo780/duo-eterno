@@ -57,7 +57,7 @@ const getContextualZoneMessage = (
 
 export const useZoneEffects = () => {
   const { gameState, dispatch } = useGame();
-  const intervalRef = useRef<number>();
+  const intervalRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);
   const messageCounter = useRef<number>(0);
 

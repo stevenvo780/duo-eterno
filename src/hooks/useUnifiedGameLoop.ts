@@ -143,7 +143,7 @@ export const useUnifiedGameLoop = () => {
               );
               
               // Aplicar efectos de actividad (perMinute + costos + immediate)
-              let statsAfterActivity = { ...newStats };
+              const statsAfterActivity = { ...newStats };
               const session = getActivitySession(entity.id);
               if (session) {
                 const effects = ACTIVITY_EFFECTS[session.activity];
@@ -165,7 +165,7 @@ export const useUnifiedGameLoop = () => {
                   const next = (statsAfterActivity[key] as number) + delta;
                   statsAfterActivity[key] = (key === 'money'
                     ? Math.max(0, next)
-                    : Math.max(0, Math.min(100, next))) as any;
+                    : Math.max(0, Math.min(100, next))) as number;
                 });
 
                 if (effects.cost) {
@@ -173,7 +173,7 @@ export const useUnifiedGameLoop = () => {
                     const key = k as keyof Entity['stats'];
                     if (key === 'money') {
                       const next = (statsAfterActivity[key] as number) - cost * dtMin;
-                      statsAfterActivity[key] = Math.max(0, next) as any;
+                      statsAfterActivity[key] = Math.max(0, next) as number;
                     }
                   });
                 }
@@ -184,7 +184,7 @@ export const useUnifiedGameLoop = () => {
                     const next = (statsAfterActivity[key] as number) + imm;
                     statsAfterActivity[key] = (key === 'money'
                       ? Math.max(0, next)
-                      : Math.max(0, Math.min(100, next))) as any;
+                      : Math.max(0, Math.min(100, next))) as number;
                   });
                   session.immediateApplied = true;
                 }
@@ -345,12 +345,12 @@ export const useUnifiedGameLoop = () => {
           const synergy = 1 + JOINT_BONUS_UNIT * ((sameActivity ? 1 : 0) + (sameSocialZone ? 1 : 0));
 
           // Estrés por stats críticas
-          const critical1 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity1.stats as any)[k] < 15);
-          const critical2 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity2.stats as any)[k] < 15);
+          const critical1 = (entity1.stats.hunger < 15 || entity1.stats.sleepiness < 15 || entity1.stats.loneliness < 15 || entity1.stats.energy < 15);
+          const critical2 = (entity2.stats.hunger < 15 || entity2.stats.sleepiness < 15 || entity2.stats.loneliness < 15 || entity2.stats.energy < 15);
           const stressCount = (critical1 ? 1 : 0) + (critical2 ? 1 : 0);
 
           // Ecuación unificada: crecimiento saturante por cercanía y humor, y decaimientos por separación y estrés
-          let R = gameStateRef.current.resonance;
+          const R = gameStateRef.current.resonance;
           const gain = BOND_GAIN_PER_SEC * closeness * moodBonus * synergy * (1 - R / 100);
           const sep = SEPARATION_DECAY_PER_SEC * (1 - closeness) * (R / 100);
           const stress = STRESS_DECAY_PER_SEC * stressCount * (R / 100);

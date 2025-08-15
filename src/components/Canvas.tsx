@@ -181,12 +181,16 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     // Si ya es rgba/hsla, intenta reemplazar alpha
     const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
     if (rgbaMatch) {
-      const [_, r, g, b] = rgbaMatch;
+      const r = rgbaMatch[1];
+      const g = rgbaMatch[2];
+      const b = rgbaMatch[3];
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
     const hslaMatch = color.match(/hsla?\((\d+),\s*(\d+)%?,\s*(\d+)%?(?:,\s*([\d.]+))?\)/);
     if (hslaMatch) {
-      const [_, h, s, l] = hslaMatch;
+      const h = hslaMatch[1];
+      const s = hslaMatch[2];
+      const l = hslaMatch[3];
       return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
     }
     // Fallback: envolver como rgba con alpha
@@ -416,10 +420,10 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     if (backgroundGradient) {
       ctx.fillStyle = backgroundGradient;
     } else {
-      const gradient = ctx.createLinearGradient(0, 0, width / zoom, height / zoom);
-      gradient.addColorStop(0, '#1e293b');
-      gradient.addColorStop(1, '#0f172a');
-      ctx.fillStyle = gradient;
+      const g = ctx.createLinearGradient(0, 0, width / zoom, height / zoom);
+      g.addColorStop(0, '#1e293b');
+      g.addColorStop(1, '#0f172a');
+      ctx.fillStyle = g;
     }
     ctx.fillRect(-panX / zoom, -panY / zoom, width / zoom, height / zoom);
 
