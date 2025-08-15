@@ -87,18 +87,27 @@ Efectividad real:
 ```
 needLevel   = 100 - avg(stat_i, …)
 baseEff     = 1 + needLevel / 50
-EFF(Z)      = baseEff × gameConfig.zoneEffectivenessMultiplier
-finalChange = effectBase * EFF(Z) * 0.02 * dt
+crowd       = 1 / (1 + λ * max(0, occupancy - 1))   (λ ≈ 0.4)
+EFF(Z)      = baseEff × gameConfig.zoneEffectivenessMultiplier × crowd
+finalChange = effectBase * EFF(Z) * 0.03 * dt
 ```
 Cuando `avgStat < criticalThreshold` se marca **criticalNeed** y se muestra diálogo.
 
 ### 4.3 Resonancia (Vínculo)
-- **Distancia menor a 80 px** ⇒ incremento:
+Modelo unificado y saturante con cercanía, humor, sinergia y estrés:
 ```
-∆R = 2  * dt * proximityBonus * moodBonus * gameSpeed
+closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))   // ∈ [0,1]
+
+gain   = BOND_GAIN_PER_SEC * closeness * moodBonus * synergy * (1 - R/100)
+sep    = SEPARATION_DECAY_PER_SEC * (1 - closeness) * (R/100)
+stress = STRESS_DECAY_PER_SEC * stressCount * (R/100)
+
+dR/dt  = gain - sep - stress
+R(t+dt)= clamp01(R + dR*dt)
 ```
-- **Distancia mayor a 160 px** ⇒ decaimiento `0.2*dt`.
-- Umbrales: 30 (crítico) / 0 (fading) recuperable si `>10` antes de 10 s.
+- homeostasis implícita por saturación (1 - R/100).
+- sinergia: misma actividad social/descanso y misma zona social/confort.
+- estrés: cuenta de stats críticas (hambre/sueño/soledad/energía < 15).
 
 ### 4.4 Costes de Supervivencia
 Dinero cae a razón de `LIVING_COST = 2` por minuto.
@@ -114,7 +123,7 @@ con `desperation = (20-money)/20`.
 ## 5. Interacción del Jugador
 | Acción      | Resultado                                                                             |
 |-------------|----------------------------------------------------------------------------------------|
-| **NOURISH** | +30 resonancia, +happiness, +energy                                                    |
+| **NOURISH** | +happiness, +energy, resonancia con atenuación por repetición y nivel actual           |
 | **FEED**    | +hunger, +happiness, levemente −sleepiness                                             |
 | **PLAY**    | −boredom, +happiness, −energy                                                         |
 | **COMFORT** | −loneliness, +happiness                                                               |
@@ -129,9 +138,10 @@ Acciones invocan `applyInteractionEffect` (ver `utils/interactions.ts`).
 | Clave                          | Descripción                                       | Defecto |
 |--------------------------------|---------------------------------------------------|---------|
 | `VITE_GAME_SPEED_MULTIPLIER`   | Acelera todo el juego                             | `1.0`   |
-| `VITE_BASE_DECAY_MULTIPLIER`   | Escala global de decaimiento de stats             | `4.0`   |
-| `VITE_ZONE_EFFECTIVENESS_MULTIPLIER` | Escala global de zonas                    | `1.0`   |
+| `VITE_BASE_DECAY_MULTIPLIER`   | Escala global de decaimiento de stats             | `2.5`   |
+| `VITE_ZONE_EFFECTIVENESS_MULTIPLIER` | Escala global de zonas                    | `1.2`   |
 | `VITE_AI_PERSONALITY_INFLUENCE`| Peso de la personalidad en IA                     | `0.3`   |
+| `VITE_AI_SOFTMAX_TAU`          | Temperatura del softmax en selección de actividad | `0.9`   |
 | `VITE_ACTIVITY_INERTIA_BONUS`  | Aumenta persistencia en actividad                 | `15.0`  |
 | `VITE_MOOD_INFLUENCE_STRENGTH` | Cuánto afecta el humor a decisiones               | `0.5`   |
 

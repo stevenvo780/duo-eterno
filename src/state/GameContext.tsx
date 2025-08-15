@@ -161,8 +161,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             ? (() => {
                 const updatedStats = { ...entity.stats };
                 Object.entries(action.payload.stats).forEach(([stat, value]) => {
-                  const num = typeof value === 'number' ? value : updatedStats[stat as keyof typeof updatedStats];
-                  updatedStats[stat as keyof typeof updatedStats] = Math.max(0, Math.min(100, num));
+                  const num = typeof value === 'number' ? value : (updatedStats as any)[stat];
+                  if (stat === 'money') {
+                    updatedStats.money = Math.max(0, Number(num));
+                  } else {
+                    (updatedStats as any)[stat] = Math.max(0, Math.min(100, Number(num)));
+                  }
                 });
                 return { ...entity, stats: updatedStats };
               })()
@@ -253,13 +257,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     
     case 'TICK': {
-      const deltaMs = action.payload;
-      const decayPerSecond = 0.5;
-      const decay = (deltaMs / 1000) * decayPerSecond;
-      const newResonance = Math.max(0, state.resonance - decay);
       return {
         ...state,
-        resonance: newResonance,
         cycles: state.cycles + 1
       };
     }

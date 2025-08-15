@@ -9,4 +9,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+yect  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest.setup.ts']
+  }
 })

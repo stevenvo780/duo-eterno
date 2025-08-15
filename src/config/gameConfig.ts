@@ -21,6 +21,7 @@ export interface GameConfig {
   activityInertiaBonus: number;
   moodInfluenceStrength: number;
   entityMovementBaseSpeed: number;
+  aiSoftmaxTau: number;
 }
 
 const getEnvNumber = (key: string, defaultValue: number): number => {
@@ -38,7 +39,7 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
 
 export const gameConfig: GameConfig = {
   gameSpeedMultiplier: getEnvNumber('VITE_GAME_SPEED_MULTIPLIER', 1.0),
-  debugMode: getEnvBoolean('VITE_DEBUG_MODE', true),
+  debugMode: getEnvBoolean('VITE_DEBUG_MODE', false),
   targetFPS: getEnvNumber('VITE_TARGET_FPS', 60),
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
   dialogueDuration: getEnvNumber('VITE_DIALOGUE_DURATION', 2500),
@@ -51,7 +52,8 @@ export const gameConfig: GameConfig = {
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
   activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
   moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5),
-  entityMovementBaseSpeed: getEnvNumber('VITE_ENTITY_MOVEMENT_SPEED', 2.0)
+  entityMovementBaseSpeed: getEnvNumber('VITE_ENTITY_MOVEMENT_SPEED', 0.8),
+  aiSoftmaxTau: getEnvNumber('VITE_AI_SOFTMAX_TAU', 0.9)
 };
 
 export const speedPresets = {

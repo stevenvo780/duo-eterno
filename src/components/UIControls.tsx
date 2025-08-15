@@ -72,14 +72,22 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         }
       });
 
-      // Global resonance boost for NOURISH
+      // Global resonance boost for NOURISH con atenuación por uso repetido
       if (type === 'NOURISH') {
+        const now = Date.now();
+        const last = (window as any).__lastNourishTime || 0;
+        const deltaSec = (now - last) / 1000;
+        (window as any).__lastNourishTime = now;
+
         const baseResonanceGain = 30;
-        const newResonance = Math.min(100, gameState.resonance + baseResonanceGain);
+        // Atenúa si se usa varias veces en <15s: factor 1.0 → 0.5
+        const attenuation = Math.max(0.5, Math.min(1.0, deltaSec / 15));
+        const gain = baseResonanceGain * attenuation * (1 - gameState.resonance / 120); // reducir a medida que R sube
+
+        const newResonance = Math.min(100, gameState.resonance + gain);
         
-        // Log del boost de resonancia global
-        dynamicsLogger.logResonanceChange(gameState.resonance, newResonance, 'interacción NOURISH del usuario', gameState.entities);
-        dynamicsLogger.logUserInteraction(type, undefined, { resonanceGain: baseResonanceGain });
+        dynamicsLogger.logResonanceChange(gameState.resonance, newResonance, 'interacción NOURISH atenuada', gameState.entities);
+        dynamicsLogger.logUserInteraction(type, undefined, { baseResonanceGain, attenuation, appliedGain: gain });
         
         dispatch({ type: 'UPDATE_RESONANCE', payload: newResonance });
         

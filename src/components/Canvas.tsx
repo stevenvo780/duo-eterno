@@ -176,48 +176,62 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     }
   }, [entityFeedbacks, width, height]);
 
-  // Función para aplicar animaciones contextuales
+  // Utilidad para ajustar alpha de un color rgba/hsla o fallback
+  const setAlpha = (color: string, alpha: number): string => {
+    // Si ya es rgba/hsla, intenta reemplazar alpha
+    const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (rgbaMatch) {
+      const [_, r, g, b] = rgbaMatch;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    const hslaMatch = color.match(/hsla?\((\d+),\s*(\d+)%?,\s*(\d+)%?(?:,\s*([\d.]+))?\)/);
+    if (hslaMatch) {
+      const [_, h, s, l] = hslaMatch;
+      return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+    }
+    // Fallback: envolver como rgba con alpha
+    return color.includes('#') ? color : `rgba(255,255,255,${alpha})`;
+  };
+
+  // Función para aplicar animaciones contextuales (devuelve un restore flag)
   const applyContextualAnimations = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number) => {
+    let transformed = false;
     for (const animation of contextualAnimations) {
-      ctx.save();
-      
       switch (animation.type) {
         case 'PULSE': {
           const pulseScale = 1 + Math.sin(now * 0.01) * 0.2 * animation.intensity;
           ctx.translate(entity.position.x, entity.position.y);
           ctx.scale(pulseScale, pulseScale);
           ctx.translate(-entity.position.x, -entity.position.y);
+          transformed = true;
           break;
         }
-          
         case 'GLOW': {
           ctx.shadowColor = animation.color;
           ctx.shadowBlur = 20 * animation.intensity;
           break;
         }
-          
         case 'SHAKE': {
           const shakeX = (Math.random() - 0.5) * 4 * animation.intensity;
           const shakeY = (Math.random() - 0.5) * 4 * animation.intensity;
           ctx.translate(shakeX, shakeY);
+          transformed = true;
           break;
         }
-          
         case 'BOUNCE': {
           const bounceOffset = Math.abs(Math.sin(now * 0.015)) * 10 * animation.intensity;
           ctx.translate(0, -bounceOffset);
+          transformed = true;
           break;
         }
-          
         case 'TRAIL': {
           ctx.globalAlpha *= 0.7;
           ctx.fillStyle = animation.color;
           break;
         }
       }
-      
-      ctx.restore();
     }
+    return transformed;
   }, [contextualAnimations]);
 
   //  entity click handler
@@ -418,7 +432,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
         
         // Draw zone border only for high quality
         if (quality === 'high') {
-          ctx.strokeStyle = zone.color.replace('0.2', '0.6');
+          ctx.strokeStyle = setAlpha(zone.color, 0.6);
           ctx.lineWidth = 2;
           ctx.strokeRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
           
@@ -481,10 +495,15 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
 
     // Draw entities
     for (const entity of gameState.entities) {
-      // Aplicar animaciones contextuales antes de dibujar
-      applyContextualAnimations(ctx, entity, now);
-      
+      // Aplicar animaciones contextuales envolviendo el dibujado de la entidad
+      ctx.save();
+      const transformed = applyContextualAnimations(ctx, entity, now);
       drawEntity(ctx, entity, now, quality);
+      if (transformed) {
+        ctx.restore();
+      } else {
+        ctx.restore();
+      }
       
       // Dibujar feedback de entidad después de la entidad
       drawEntityFeedback(ctx, entity, now, quality);
@@ -502,7 +521,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
           // Draw zone effect indicator above entity
           const pulse = Math.sin(now * 0.003) * 0.3 + 0.7;
           ctx.globalAlpha = pulse * 0.6;
-          ctx.fillStyle = currentZone.color.replace('0.2', '0.8');
+          ctx.fillStyle = setAlpha(currentZone.color, 0.8);
           ctx.font = '14px sans-serif';
           ctx.textAlign = 'center';
           

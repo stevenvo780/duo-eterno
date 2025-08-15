@@ -304,105 +304,82 @@ export const useUnifiedGameLoop = () => {
             Math.pow(entity1.position.x - entity2.position.x, 2) +
             Math.pow(entity1.position.y - entity2.position.y, 2)
           );
-          
-            // Distancias de vínculo
-          const BOND_DISTANCE = 80;
-          const CLOSE_DISTANCE = 50; // Distancia muy cercana para bonus extra
-          
-          if (distance < BOND_DISTANCE) {
-            // Actualizar tiempo juntos
+
+          // Constantes del modelo unificado (pueden parametrizarse en config/env más adelante)
+          const BOND_DISTANCE = 80; // distancia de referencia
+          const dtSec = deltaTime / 1000;
+          const BOND_GAIN_PER_SEC = 1.8;       // ganancia base por cercanía
+          const SEPARATION_DECAY_PER_SEC = 0.2; // pérdida base por separación
+          const STRESS_DECAY_PER_SEC = 0.3;     // pérdida por cada agente con stat crítica
+          const DISTANCE_SCALE = 30;            // suaviza la transición de cercanía
+          const JOINT_BONUS_UNIT = 0.3;         // bonus por actividad/zona conjunta
+
+          // Factor de cercanía en [0,1] usando sigmoide centrada en BOND_DISTANCE
+          const closeness = 1 / (1 + Math.exp((distance - BOND_DISTANCE) / Math.max(1, DISTANCE_SCALE)));
+
+          // Tiempo juntos si hay suficiente cercanía
+          if (closeness > 0.6) {
             dispatch({
               type: 'UPDATE_TOGETHER_TIME',
               payload: gameStateRef.current.togetherTime + gameClockInterval
             });
-            
-            // Calcular incremento de resonancia basado en la proximidad y deltaTime
-            const dt = deltaTime / 1000;
-            const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
-            const baseResonanceIncrement = dt * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
-            
-            // Ajuste por estado emocional
-            let moodBonus = 1.0;
-            if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
-                (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
-              moodBonus = 1.5; // Bonus alto para ambos felices
-            } else if ((entity1.mood === 'CONTENT' || entity1.mood === 'CALM') ||
-                      (entity2.mood === 'CONTENT' || entity2.mood === 'CALM')) {
-              moodBonus = 1.2; // Bonus moderado si al menos uno está bien
-            } else if (entity1.mood !== 'SAD' && entity2.mood !== 'SAD') {
-              moodBonus = 1.0; // Incremento normal si no están tristes
-            } else {
-              moodBonus = 0.5; // Reducción si están tristes, pero aún hay incremento
-            }
-            
-            // Bonus por sinergia de actividad y zona compartida
-            const sameActivity = entity1.activity === entity2.activity && ['SOCIALIZING','DANCING','CONTEMPLATING','MEDITATING','RESTING'].includes(entity1.activity);
-            const zone1 = getEntityZone(entity1.position, gameStateRef.current.zones);
-            const zone2 = getEntityZone(entity2.position, gameStateRef.current.zones);
-            const sameSocialZone = zone1 && zone2 && zone1.id === zone2.id && (zone1.type === 'social' || zone1.type === 'comfort');
-            const jointBonus = (sameActivity ? 0.6 : 0) + (sameSocialZone ? 0.6 : 0);
-            const finalResonanceIncrement = baseResonanceIncrement * moodBonus * (1 + jointBonus);
-
-            // Aplicar incremento con límite máximo
-            const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
-
-            if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
-              dynamicsLogger.logResonanceChange(
-                gameStateRef.current.resonance, 
-                newResonance, 
-                'proximidad y mood bonus', 
-                [entity1, entity2]
-              );
-              
-              dispatch({ 
-                type: 'UPDATE_RESONANCE', 
-                payload: newResonance 
-              });
-              
-              // Log efecto de proximidad
-              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'BONDING');
-              
-              if (gameConfig.debugMode && loopStats.totalTicks % 10 === 0) {
-                logGeneral.debug('Nutriendo vínculo', { 
-                  distance: distance.toFixed(1),
-                  resonance: gameStateRef.current.resonance.toFixed(2),
-                  increment: finalResonanceIncrement.toFixed(4),
-                  newResonance: newResonance.toFixed(2)
-                });
-              }
-            }
-          } else if (distance > BOND_DISTANCE * 2) {
-            // Decay de resonancia cuando están muy lejos (más suave)
-            const resonanceDecay = (deltaTime / 1000) * 0.2 * gameConfig.gameSpeedMultiplier;
-            const newResonance = Math.max(0, gameStateRef.current.resonance - resonanceDecay);
-            
-            if (resonanceDecay > 0.001) {
-              dynamicsLogger.logResonanceChange(
-                gameStateRef.current.resonance,
-                newResonance,
-                'separación excesiva',
-                [entity1, entity2]
-              );
-              
-              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'SEPARATION');
-              
-              dispatch({ 
-                type: 'UPDATE_RESONANCE', 
-                payload: newResonance 
-              });
-            }
           }
-          // Homeostasis hacia equilibrio + penalización por estrés/críticos
+
+          // Factor de humor (idéntica lógica previa, consolidada)
+          let moodBonus = 1.0;
+          if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
+              (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
+            moodBonus = 1.5;
+          } else if ((entity1.mood === 'CONTENT' || entity1.mood === 'CALM') ||
+                     (entity2.mood === 'CONTENT' || entity2.mood === 'CALM')) {
+            moodBonus = 1.2;
+          } else if (entity1.mood === 'SAD' || entity2.mood === 'SAD') {
+            moodBonus = 0.7;
+          }
+
+          // Sinergia por actividad y zona compartida
+          const sameActivity = entity1.activity === entity2.activity && ['SOCIALIZING','DANCING','CONTEMPLATING','MEDITATING','RESTING'].includes(entity1.activity);
+          const zone1 = getEntityZone(entity1.position, gameStateRef.current.zones);
+          const zone2 = getEntityZone(entity2.position, gameStateRef.current.zones);
+          const sameSocialZone = zone1 && zone2 && zone1.id === zone2.id && (zone1.type === 'social' || zone1.type === 'comfort');
+          const synergy = 1 + JOINT_BONUS_UNIT * ((sameActivity ? 1 : 0) + (sameSocialZone ? 1 : 0));
+
+          // Estrés por stats críticas
           const critical1 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity1.stats as any)[k] < 15);
           const critical2 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity2.stats as any)[k] < 15);
-          const stressPenalty = ((critical1 ? 0.3 : 0) + (critical2 ? 0.3 : 0)) * (deltaTime / 1000);
-          const gamma = 0.05;
-          const target = 70;
+          const stressCount = (critical1 ? 1 : 0) + (critical2 ? 1 : 0);
+
+          // Ecuación unificada: crecimiento saturante por cercanía y humor, y decaimientos por separación y estrés
           let R = gameStateRef.current.resonance;
-          R -= gamma * (R - target) * (deltaTime / 1000);
-          R = Math.max(0, Math.min(100, R - stressPenalty));
-          if (Math.abs(R - gameStateRef.current.resonance) > 0.001) {
-            dispatch({ type: 'UPDATE_RESONANCE', payload: R });
+          const gain = BOND_GAIN_PER_SEC * closeness * moodBonus * synergy * (1 - R / 100);
+          const sep = SEPARATION_DECAY_PER_SEC * (1 - closeness) * (R / 100);
+          const stress = STRESS_DECAY_PER_SEC * stressCount * (R / 100);
+          const dR = dtSec * (gain - sep - stress);
+          const newResonance = Math.max(0, Math.min(100, R + dR));
+
+          if (Math.abs(newResonance - R) > 0.001) {
+            dynamicsLogger.logResonanceChange(
+              R,
+              newResonance,
+              'modelo unificado de resonancia',
+              [entity1, entity2]
+            );
+            dispatch({ type: 'UPDATE_RESONANCE', payload: newResonance });
+
+            if (closeness > 0.6) {
+              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'BONDING');
+            } else if (closeness < 0.2) {
+              dynamicsLogger.logProximityEffect([entity1, entity2], distance, 'SEPARATION');
+            }
+
+            if (gameConfig.debugMode && loopStats.totalTicks % 10 === 0) {
+              logGeneral.debug('Resonancia (unificada)', {
+                distance: distance.toFixed(1),
+                closeness: closeness.toFixed(2),
+                dR: dR.toFixed(4),
+                newResonance: newResonance.toFixed(2)
+              });
+            }
           }
         }
         

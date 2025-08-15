@@ -83,7 +83,8 @@ const calculateActivityInertia = (
     inertia *= 0.5;
   }
   
-  return Math.max(0, Math.min(1, inertia * gameConfig.activityInertiaBonus));
+  const bonusNorm = Math.max(0, Math.min(1.5, gameConfig.activityInertiaBonus / 15));
+  return Math.max(0, Math.min(1, inertia * bonusNorm));
 };
 
 const shouldChangeActivity = (
@@ -114,7 +115,9 @@ const shouldChangeActivity = (
   }
   
   if (personality.activityPersistence > 0.7) {
-    changeChance *= 0.6;
+    const influence = Math.max(0, Math.min(1, gameConfig.aiPersonalityInfluence));
+    const damp = 1 - (1 - 0.6) * influence; // interpola entre 1 y 0.6
+    changeChance *= damp;
   }
   
   return Math.random() < changeChance;
@@ -177,7 +180,9 @@ const getHabitBias = (entityId: string, activity: EntityActivity): number => {
 };
 
 const softmaxPick = (scores: Array<{ activity: EntityActivity; score: number }>, temperature = 0.7) => {
-  const exps = scores.map(s => Math.exp(s.score / Math.max(0.1, temperature)));
+  const tau = Math.max(0.1, temperature);
+  const maxScore = Math.max(...scores.map(s => s.score));
+  const exps = scores.map(s => Math.exp((s.score - maxScore) / tau));
   const sum = exps.reduce((a, b) => a + b, 0);
   let r = Math.random() * sum;
   for (let i = 0; i < scores.length; i++) {
@@ -203,11 +208,11 @@ export const makeIntelligentDecision = (
     let personalityModifiedScore = moodModifiedScore;
     
     if ((activity === 'SOCIALIZING' || activity === 'DANCING') && companion && !companion.isDead) {
-      personalityModifiedScore += personality.socialPreference * 15;
+      personalityModifiedScore += personality.socialPreference * 15 * Math.max(0, Math.min(1, gameConfig.aiPersonalityInfluence));
     }
     
     if (activity === 'MEDITATING' || activity === 'RESTING') {
-      personalityModifiedScore += personality.energyEfficiency * 10;
+      personalityModifiedScore += personality.energyEfficiency * 10 * Math.max(0, Math.min(1, gameConfig.aiPersonalityInfluence));
     }
     
     activityScores.push({ activity, score: personalityModifiedScore });
@@ -219,7 +224,7 @@ export const makeIntelligentDecision = (
     score: s.score + getHabitBias(entity.id, s.activity)
   }));
   biasedScores.sort((a, b) => b.score - a.score);
-  const chosen = softmaxPick(biasedScores, 0.9);
+  const chosen = softmaxPick(biasedScores, gameConfig.aiSoftmaxTau);
   const chosenScore = biasedScores.find(a => a.activity === chosen)?.score ?? biasedScores[0].score;
 
   dynamicsLogger.logDecisionMaking(entity.id, biasedScores, chosen);
