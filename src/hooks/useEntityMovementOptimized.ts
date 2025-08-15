@@ -3,7 +3,7 @@ import { useGame } from './useGame';
 import { shouldUpdateMovement, measureExecutionTime } from '../utils/performanceOptimizer';
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
-import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING } from '../constants/gameConstants';
+import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from '../constants/gameConstants';
 import type { Entity, Zone, Position } from '../types';
 
 // Sistema de movimiento optimizado con búsqueda de zonas
@@ -13,15 +13,14 @@ export const useEntityMovementOptimized = () => {
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
 
-  // Obtener estadísticas críticas (valores bajos que necesitan atención) - SISTEMA POSITIVO
+  // Obtener estadísticas críticas basadas en valores bajos (recursos agotados)
   const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
     const critical: (keyof typeof entity.stats)[] = [];
-    
-    // En el sistema positivo, valores bajos (cerca de 0) indican necesidad
-    if (entity.stats.hunger < 40) critical.push('hunger');    // Necesita saciedad
-    if (entity.stats.sleepiness > 60) critical.push('sleepiness'); // Necesita descanso (esta sigue igual)
-    if (entity.stats.loneliness < 40) critical.push('loneliness'); // Necesita compañía
-    if (entity.stats.boredom < 40) critical.push('boredom');       // Necesita diversión
+
+    if (entity.stats.hunger < 40) critical.push('hunger');        // Falta comida
+    if (entity.stats.sleepiness < 40) critical.push('sleepiness'); // Falta descanso
+    if (entity.stats.loneliness < 40) critical.push('loneliness'); // Falta compañía
+    if (entity.stats.boredom < 40) critical.push('boredom');       // Falta diversión
     if (entity.stats.energy < 40) critical.push('energy');        // Necesita energía
     if (entity.stats.happiness < 40) critical.push('happiness');  // Necesita felicidad
     if (entity.stats.money < 30) critical.push('money');          // Necesita dinero
@@ -29,22 +28,15 @@ export const useEntityMovementOptimized = () => {
     return critical;
   }, []);
 
-  // Verificar si una zona es beneficiosa para la entidad - SISTEMA POSITIVO
+  // Verificar si una zona es beneficiosa para la entidad
   const isZoneBeneficialForEntity = useCallback((entity: Entity, zone: Zone): boolean => {
     // Verificar si la zona ayuda con las estadísticas críticas
     const criticalStats = getCriticalStats(entity);
     
     for (const stat of criticalStats) {
-      if (stat === 'sleepiness') {
-        // Para sleepiness, necesitamos que la zona la reduzca (valor negativo)
-        if (zone.effects?.[stat] && zone.effects[stat]! < 0) {
-          return true;
-        }
-      } else {
-        // Para el resto (hunger, loneliness, boredom, energy, happiness), necesitamos que la zona las aumente (valor positivo)
-        if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
-          return true;
-        }
+      // Las zonas son útiles si incrementan la estadística deficiente
+      if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
+        return true;
       }
     }
 
@@ -86,7 +78,24 @@ export const useEntityMovementOptimized = () => {
   }, [getCriticalStats]);
 
   // Función para calcular el objetivo de una entidad basado en sus necesidades
-  const getEntityTarget = useCallback((entity: Entity, zones: Zone[]): Position | undefined => {
+  const getEntityTarget = useCallback(
+    (
+      entity: Entity,
+      zones: Zone[],
+      companion: Entity | null
+    ): Position | undefined => {
+      if (companion && !companion.isDead) {
+        const distance = Math.hypot(
+          entity.position.x - companion.position.x,
+          entity.position.y - companion.position.y
+        );
+        if (
+          gameState.resonance < RESONANCE_THRESHOLDS.LOW ||
+          distance > MOVEMENT_CONFIG.COMPANION_SEEK_DISTANCE
+        ) {
+          return companion.position;
+        }
+      }
     // Priorizar zona actual si está en una zona beneficiosa
     const currentZone = getEntityZone(entity.position, zones);
     if (currentZone && isZoneBeneficialForEntity(entity, currentZone)) {
@@ -110,7 +119,7 @@ export const useEntityMovementOptimized = () => {
     // Si no hay zona específica, usar el sistema de atracción general
     const attractionTarget = getAttractionTarget(entity.stats, zones, entity.position);
     return attractionTarget || undefined;
-  }, [findMostNeededZone, isZoneBeneficialForEntity]);
+  }, [findMostNeededZone, isZoneBeneficialForEntity, gameState.resonance]);
 
   // Calcular el siguiente paso en el movimiento hacia un objetivo
   const calculateMovementStep = useCallback((
@@ -184,13 +193,15 @@ export const useEntityMovementOptimized = () => {
       lastUpdateTime.current = now;
 
       measureExecutionTime('entity-movement-optimized', () => {
-        const livingEntities = gameState.entities.filter(e => !e.isDead && e.state !== 'DEAD');
+        const livingEntities = gameState.entities.filter(
+          e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
+        );
         
         for (const entity of livingEntities) {
           const companion = livingEntities.find(e2 => e2.id !== entity.id) || null;
           
           // Decisión de IA para actividad (menos frecuente)
-          if (now % 1000 < 50) { // Cada segundo aproximadamente
+          if (now % 5000 < 100) { // Cada 5 segundos aproximadamente
             const newActivity = makeIntelligentDecision(
               entity,
               companion,
@@ -211,7 +222,7 @@ export const useEntityMovementOptimized = () => {
           // Calcular objetivo de movimiento
           let target = entityTargets.current.get(entity.id);
           if (!target || Math.random() < 0.01) { // Recalcular objetivo ocasionalmente
-            target = getEntityTarget(entity, gameState.zones);
+            target = getEntityTarget(entity, gameState.zones, companion);
             if (target) {
               entityTargets.current.set(entity.id, target);
             }

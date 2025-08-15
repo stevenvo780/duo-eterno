@@ -4,7 +4,6 @@ import App from './App';
 import './index.css';
 import { logGeneral } from './utils/logger';
 
-// Configuración de desarrollo
 if (import.meta.env.DEV) {
   logGeneral.info('Duo Eterno - Modo Desarrollo');
   logGeneral.info('Comandos de consola disponibles', {

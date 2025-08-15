@@ -1,12 +1,7 @@
-/**
- * Sistema de logging centralizado para Dúo Eterno
- * Permite activar/desactivar logs según configuración y agrupa logs por sistema
- */
-
 import { gameConfig } from '../config/gameConfig';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogSystem = 'autopoiesis' | 'movement' | 'zones' | 'ai' | 'upgrades' | 'render' | 'storage' | 'general';
+export type LogSystem = 'autopoiesis' | 'movement' | 'zones' | 'ai' | 'upgrades' | 'render' | 'storage' | 'general' | 'love' | 'activity' | 'zone' | 'survival' | 'debug';
 
 interface LogEntry {
   timestamp: number;
@@ -42,6 +37,11 @@ class Logger {
       case 'render': return '🎨';
       case 'storage': return '💾';
       case 'general': return '📋';
+      case 'love': return '💖';
+      case 'activity': return '🎯';
+      case 'zone': return '🗺️';
+      case 'survival': return '🏥';
+      case 'debug': return '🔍';
       default: return '📝';
     }
   }
@@ -130,10 +130,8 @@ class Logger {
   }
 }
 
-// Instancia singleton del logger
 export const logger = new Logger();
 
-// Funciones de conveniencia para cada sistema
 export const logAutopoiesis = {
   debug: (msg: string, data?: unknown) => logger.debug('autopoiesis', msg, data),
   info: (msg: string, data?: unknown) => logger.info('autopoiesis', msg, data),

@@ -12,7 +12,8 @@ const PORT = 3002;
 const LOGS_DIR = './logs';
 const CURRENT_LOG = path.join(LOGS_DIR, 'current_session.json');
 
-// Middleware
+import { loadLogs, summarizeLogs } from './logSummarizer.js';
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -92,6 +93,18 @@ app.get('/api/logs/history', async (req, res) => {
     
     history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     res.json(history);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/logs/summary?window=10  -> resumen estadístico
+app.get('/api/logs/summary', async (req, res) => {
+  try {
+    const minutes = parseInt(req.query.window, 10) || 10;
+    const allLogs = await loadLogs();
+    const summary = summarizeLogs(allLogs, minutes);
+    res.json(summary);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -185,12 +198,41 @@ app.get('/api/logs/analyze', async (req, res) => {
   }
 });
 
+// Auto-summary generator (cada 1 minuto)
+let summaryInterval;
+function startAutoSummary() {
+  summaryInterval = setInterval(async () => {
+    try {
+      const allLogs = await loadLogs();
+      const summary = summarizeLogs(allLogs, 10);
+      const filename = `summary_${Date.now()}.json`;
+      await fs.writeFile(path.join(LOGS_DIR, filename), JSON.stringify(summary, null, 2));
+      
+      // Detección de anomalías
+      const alerts = [];
+      if (summary.deaths > 0) alerts.push('DEATH_DETECTED');
+      if (summary.averageResonance !== null && summary.averageResonance < 30) alerts.push('LOW_RESONANCE');
+      if (summary.totalEvents > 0 && summary.criticalEvents / summary.totalEvents > 0.2) alerts.push('CRITICAL_SPAM');
+      
+      if (alerts.length > 0) {
+        console.log(`🚨 ALERTAS: ${alerts.join(', ')} | Resonancia: ${summary.averageResonance}`);
+      } else {
+        console.log(`📊 Summary: ${summary.totalEvents} eventos, resonancia: ${summary.averageResonance}`);
+      }
+    } catch (error) {
+      console.error('Error generando auto-summary:', error);
+    }
+  }, 60000); // cada 1 minuto
+}
+
 // Start server
 async function startServer() {
   await ensureLogsDir();
   app.listen(PORT, () => {
     console.log(`🚀 Servidor de logs ejecutándose en http://localhost:${PORT}`);
     console.log(`📁 Logs guardados en: ${path.resolve(LOGS_DIR)}`);
+    console.log(`📊 Auto-summary cada 1 minuto iniciado`);
+    startAutoSummary();
   });
 }
 

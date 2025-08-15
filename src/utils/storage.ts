@@ -5,7 +5,6 @@ import { logStorage } from './logger';
 const STORAGE_KEY = 'duoEternoState';
 const CURRENT_VERSION = '1.0.0';
 
-// Esquema de validación para Entity
 const isValidEntity = (entity: unknown): entity is Entity => {
   if (!entity || typeof entity !== 'object') return false;
   
@@ -31,7 +30,6 @@ const isValidEntity = (entity: unknown): entity is Entity => {
   );
 };
 
-// Esquema de validación para Zone
 const isValidZone = (zone: unknown): zone is Zone => {
   if (!zone || typeof zone !== 'object') return false;
   
@@ -50,7 +48,6 @@ const isValidZone = (zone: unknown): zone is Zone => {
   );
 };
 
-// Validación completa del GameState
 const isValidGameState = (state: unknown): state is GameState => {
   if (!state || typeof state !== 'object') return false;
   
@@ -72,11 +69,9 @@ const isValidGameState = (state: unknown): state is GameState => {
   );
 };
 
-// Función para sanitizar y corregir valores fuera de rango
 const sanitizeGameState = (state: GameState): GameState => {
   const sanitized = { ...state };
   
-  // Sanitizar stats de entidades
   sanitized.entities = state.entities.map(entity => ({
     ...entity,
     stats: {
@@ -96,10 +91,7 @@ const sanitizeGameState = (state: GameState): GameState => {
     }
   }));
   
-  // Sanitizar resonancia
   sanitized.resonance = Math.max(0, Math.min(100, state.resonance));
-  
-  // Sanitizar tiempo juntos
   sanitized.togetherTime = Math.max(0, state.togetherTime);
   
   return sanitized;
@@ -115,15 +107,13 @@ export const saveGameState = (gameState: GameState): boolean => {
     
     const serialized = JSON.stringify(stateToSave);
     
-    // Verificar que el tamaño no exceda límites del localStorage
-    if (serialized.length > 5 * 1024 * 1024) { // 5MB límite
+    if (serialized.length > 5 * 1024 * 1024) {
       logStorage.warn('Estado del juego demasiado grande, comprimiendo...');
-      // Reducir datos no esenciales
       const compressedState = {
         ...stateToSave,
         entities: stateToSave.entities.map(e => ({
           ...e,
-          thoughts: e.thoughts.slice(-5) // Solo últimos 5 pensamientos
+          thoughts: e.thoughts.slice(-5)
         }))
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(compressedState));
@@ -149,22 +139,18 @@ export const loadGameState = (): GameState | null => {
     
     const parsedState = JSON.parse(savedState);
     
-    // Verificar versión
     if (parsedState.version && parsedState.version !== CURRENT_VERSION) {
       logStorage.warn('Versión de estado incompatible', { 
         saved: parsedState.version, 
         current: CURRENT_VERSION 
       });
-      // Aquí podrías agregar migración de datos si es necesario
     }
     
-    // Validar estructura completa
     if (!isValidGameState(parsedState)) {
       logStorage.error('Estado guardado tiene estructura inválida');
       return null;
     }
     
-    // Sanitizar valores
     const sanitizedState = sanitizeGameState(parsedState);
     
     logStorage.info('Estado cargado exitosamente', { 
@@ -179,5 +165,3 @@ export const loadGameState = (): GameState | null => {
     return null;
   }
 };
-
-

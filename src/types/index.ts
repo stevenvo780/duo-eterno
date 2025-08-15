@@ -6,14 +6,14 @@ export interface Position {
 }
 
 export interface EntityStats {
-  hunger: number; // 0-100
-  sleepiness: number; // 0-100
-  loneliness: number; // 0-100
-  happiness: number; // 0-100
-  energy: number; // 0-100
-  boredom: number; // 0-100
-  money: number; // Sistema de dinero para necesidades
-  health: number; // 0-100
+  hunger: number;
+  sleepiness: number;
+  loneliness: number;
+  happiness: number;
+  energy: number;
+  boredom: number;
+  money: number;
+  health: number;
 }
 
 export interface Entity {
@@ -44,7 +44,6 @@ export type InteractionType =
   | 'WAKE_UP'
   | 'LET_SLEEP';
 
-// Tipos para elementos del mapa y zonas especiales
 export interface MapElement {
   id: string;
   type: 'obstacle' | 'food_zone' | 'rest_zone' | 'play_zone' | 'social_zone';
@@ -53,7 +52,7 @@ export interface MapElement {
   color: string;
   effect?: {
     statType: keyof EntityStats;
-    modifier: number; // positivo o negativo
+    modifier: number;
   };
 }
 
@@ -67,16 +66,13 @@ export interface Zone {
     height: number;
   };
   type: ZoneType;
-  // Opcional: efectos predefinidos (no usado en el nuevo sistema de zonas)
   effects?: Partial<Record<keyof EntityStats, number>>;
   color: string;
-  attractiveness: number; // 0-1, qué tan atractiva es la zona para las entidades
+  attractiveness: number;
 }
 
-// Re-exportar tipos de constantes para conveniencia
 export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
 
-// Local types that were removed but are still needed
 export interface InteractionEffect {
   stats: Partial<EntityStats>;
   resonance?: number;

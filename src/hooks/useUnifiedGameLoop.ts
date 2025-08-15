@@ -3,13 +3,18 @@
  * Combina todos los sistemas en un único intervalo optimizado
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import type { GameState } from '../types';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
 import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
-import { HEALTH_CONFIG, RESONANCE_THRESHOLDS } from '../constants/gameConstants';
+import {
+  HEALTH_CONFIG,
+  RESONANCE_THRESHOLDS,
+  FADING_TIMEOUT_MS,
+  FADING_RECOVERY_THRESHOLD
+} from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, EntityMood } from '../types';
@@ -39,18 +44,18 @@ export const useUnifiedGameLoop = () => {
     lastTickTime: Date.now()
   });
 
-  // Función para calcular el mood optimizado
+  // Calcula el mood en base a stats y resonancia
   const calculateOptimizedMood = (stats: Entity['stats'], resonance: number): EntityMood => {
     const criticalFactors = [
-      stats.hunger > 85,
-      stats.sleepiness > 85,
-      stats.loneliness > 85,
+      stats.hunger < 15,
+      stats.sleepiness < 15,
+      stats.loneliness < 15,
       stats.energy < 15,
       stats.money < 10
     ].filter(Boolean).length;
     if (criticalFactors >= 2) return 'ANXIOUS';
     const positiveScore = (stats.happiness + stats.energy + Math.min(100, stats.money)) / 3;
-    const negativeScore = (stats.hunger + stats.sleepiness + stats.boredom + stats.loneliness) / 4;
+    const negativeScore = (100 - stats.hunger + 100 - stats.sleepiness + 100 - stats.boredom + 100 - stats.loneliness) / 4;
     const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
     const moodScore = positiveScore - negativeScore + bondBonus;
     if (moodScore > 50 && stats.energy > 60) return 'EXCITED';
@@ -59,6 +64,42 @@ export const useUnifiedGameLoop = () => {
     if (moodScore > -15) return 'TIRED';
     return 'SAD';
   };
+
+  // Maneja transiciones de estado basadas en la resonancia del vínculo
+  const updateResonanceStates = useCallback(
+    (entities: Entity[], resonanceLevel: number, nowMs: number) => {
+      for (const entity of entities) {
+      if (resonanceLevel <= 0) {
+        if (entity.state !== 'FADING') {
+          dispatch({
+            type: 'UPDATE_ENTITY_STATE',
+            payload: { entityId: entity.id, state: 'FADING' }
+          });
+        } else if (nowMs - entity.lastStateChange > FADING_TIMEOUT_MS) {
+          dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
+        }
+      } else if (entity.state === 'FADING') {
+        if (resonanceLevel > FADING_RECOVERY_THRESHOLD) {
+          dispatch({
+            type: 'UPDATE_ENTITY_STATE',
+            payload: { entityId: entity.id, state: 'IDLE' }
+          });
+        }
+      } else if (resonanceLevel < RESONANCE_THRESHOLDS.CRITICAL) {
+        if (entity.state !== 'LOW_RESONANCE') {
+          dispatch({
+            type: 'UPDATE_ENTITY_STATE',
+            payload: { entityId: entity.id, state: 'LOW_RESONANCE' }
+          });
+        }
+      } else if (entity.state === 'LOW_RESONANCE') {
+        dispatch({
+          type: 'UPDATE_ENTITY_STATE',
+          payload: { entityId: entity.id, state: 'IDLE' }
+        });
+      }
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
@@ -79,37 +120,14 @@ export const useUnifiedGameLoop = () => {
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
 
-        // ================= ESTADOS POR RESONANCIA =================
-        const resonanceLevel = gameStateRef.current.resonance;
-        const nowMs = now;
-        for (const entity of livingEntities) {
-          if (resonanceLevel <= 0) {
-            if (entity.state !== 'FADING') {
-              dispatch({
-                type: 'UPDATE_ENTITY_STATE',
-                payload: { entityId: entity.id, state: 'FADING' }
-              });
-            } else if (nowMs - entity.lastStateChange > 10000) {
-              dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
-            }
-          } else if (resonanceLevel < RESONANCE_THRESHOLDS.CRITICAL) {
-            if (entity.state !== 'LOW_RESONANCE' && entity.state !== 'FADING') {
-              dispatch({
-                type: 'UPDATE_ENTITY_STATE',
-                payload: { entityId: entity.id, state: 'LOW_RESONANCE' }
-              });
-            }
-          } else {
-            if (entity.state === 'LOW_RESONANCE' || entity.state === 'FADING') {
-              dispatch({
-                type: 'UPDATE_ENTITY_STATE',
-                payload: { entityId: entity.id, state: 'IDLE' }
-              });
-            }
-          }
-        }
+        // Estados por resonancia
+        updateResonanceStates(
+          livingEntities,
+          gameStateRef.current.resonance,
+          now
+        );
         
-        // ============ AUTOPOIESIS (cada tick si las condiciones lo permiten) ============
+        // Actualizar stats de autopoiesis
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
           loopStats.autopoiesisTicks++;
           
@@ -129,37 +147,34 @@ export const useUnifiedGameLoop = () => {
               const criticalStats = Object.entries(finalStats)
                 .filter(([key, value]) => {
                   if (key === 'money') return false;
-                  // REPARACIÓN: Lógica correcta para detectar stats críticas
-                  if (key === 'health') return value < 20; // Health crítica bajo 20
-                  if (key === 'energy') return value < 30; // Energy crítica bajo 30
-                  if (key === 'happiness') return value < 35; // Happiness crítica bajo 35
-                  // Para hunger, sleepiness, boredom, loneliness: crítico sobre 75
-                  return value > 75;
+                  if (key === 'health') return value < 20;
+                  if (key === 'energy') return value < 30;
+                  if (key === 'happiness') return value < 35;
+                  return value < 25;
                 })
                 .map(([key]) => key);
               
               if (criticalStats.length > 0) {
                 dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
                 
-                // REPARACIÓN EMERGENCIA: Reset a valores seguros si hay demasiadas críticas
                 if (criticalStats.length >= 3) {
                   dispatch({
                     type: 'UPDATE_ENTITY_STATS',
                     payload: { 
                       entityId: entity.id, 
                       stats: {
-                        hunger: 40,
-                        sleepiness: 40, 
+                        hunger: 60,
+                        sleepiness: 60,
                         energy: 60,
                         happiness: 60,
-                        boredom: 30,
-                        loneliness: 35,
+                        boredom: 60,
+                        loneliness: 60,
                         money: Math.max(20, finalStats.money),
                         health: Math.max(50, finalStats.health)
                       }
                     }
                   });
-                  continue; // Skip normal stat updates for this entity
+                  continue;
                 }
               }
               
@@ -198,7 +213,7 @@ export const useUnifiedGameLoop = () => {
           });
         }
         
-        // ============ GAME CLOCK EVENTS (cada ciertos ticks) ============
+        // Eventos del reloj de juego
         loopStats.clockTicks++;
         
         // Verificar salud (cada 4 ticks)
@@ -206,9 +221,9 @@ export const useUnifiedGameLoop = () => {
           measureExecutionTime('death-check', () => {
             for (const entity of livingEntities) {
               const criticalCount = [
-                entity.stats.hunger > 95,
-                entity.stats.sleepiness > 95,
-                entity.stats.loneliness > 95,
+                entity.stats.hunger < 5,
+                entity.stats.sleepiness < 5,
+                entity.stats.loneliness < 5,
                 entity.stats.energy < 5
               ].filter(Boolean).length;
 
@@ -250,7 +265,7 @@ export const useUnifiedGameLoop = () => {
             Math.pow(entity1.position.y - entity2.position.y, 2)
           );
           
-          // Distancia de vinculación ajustable
+            // Distancias de vínculo
           const BOND_DISTANCE = 80;
           const CLOSE_DISTANCE = 50; // Distancia muy cercana para bonus extra
           
@@ -265,7 +280,7 @@ export const useUnifiedGameLoop = () => {
             const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
             const baseResonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
             
-            // Sistema de mood bonus más permisivo
+            // Ajuste por estado emocional
             let moodBonus = 1.0;
             if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
                 (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
@@ -284,10 +299,6 @@ export const useUnifiedGameLoop = () => {
             // Aplicar incremento con límite máximo
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
             
-            // DEBUG: Log todos los incrementos para diagnosticar
-            if (loopStats.totalTicks % 20 === 0) {
-              // Detalle de resonancia para diagnóstico
-            }
             
             if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
               dynamicsLogger.logResonanceChange(
@@ -377,7 +388,7 @@ export const useUnifiedGameLoop = () => {
       });
     }, gameClockInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [dispatch]);
+  }, [dispatch, updateResonanceStates]);
 
   return {
     stats: loopStatsRef.current

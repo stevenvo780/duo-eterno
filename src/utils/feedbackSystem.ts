@@ -48,7 +48,7 @@ const generateIntentionIndicator = (
   // Verificar necesidades críticas
   const criticalStats = Object.entries(stats).filter(([key, value]) => {
     if (key === 'money') return false; // El dinero no es crítico para supervivencia
-    return value > 85 || (key === 'energy' && value < 15);
+    return value < 15 || (key === 'energy' && value < 15);
   });
   
   if (criticalStats.length > 0) {
@@ -63,7 +63,7 @@ const generateIntentionIndicator = (
   }
   
   // Verificar búsqueda de compañero
-  if (companion && !companion.isDead && stats.loneliness > 70) {
+  if (companion && !companion.isDead && stats.loneliness < 30) {
     const distance = Math.sqrt(
       Math.pow(entity.position.x - companion.position.x, 2) +
       Math.pow(entity.position.y - companion.position.y, 2)
@@ -84,7 +84,7 @@ const generateIntentionIndicator = (
   // Verificar búsqueda de zona
   const urgentStats = Object.entries(stats).filter(([key, value]) => {
     if (key === 'money') return false;
-    return value > 60 || (key === 'energy' && value < 40);
+    return value < 40 || (key === 'energy' && value < 40);
   });
   
   if (urgentStats.length > 0) {
@@ -177,9 +177,9 @@ const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): string => 
   let indicator = moodEmojis[mood];
   
   // Añadir indicadores de estado crítico
-  if (stats.hunger > 90) indicator += '🍽️';
-  if (stats.sleepiness > 90) indicator += '💤';
-  if (stats.loneliness > 90) indicator += '💔';
+  if (stats.hunger < 10) indicator += '🍽️';
+  if (stats.sleepiness < 10) indicator += '💤';
+  if (stats.loneliness < 10) indicator += '💔';
   if (stats.energy < 10) indicator += '⚡';
   
   return indicator;
@@ -208,7 +208,7 @@ export const updateEntityFeedback = (
   // Verificar alertas de necesidades
   const needsAlert = Object.entries(entity.stats).some(([key, value]) => {
     if (key === 'money') return false;
-    return value > 80 || (key === 'energy' && value < 20);
+    return value < 20 || (key === 'energy' && value < 20);
   });
   
   const feedback: EntityFeedback = {
@@ -264,7 +264,7 @@ export interface ContextualAnimation {
 
 export const generateContextualAnimation = (entity: Entity, resonance: number): ContextualAnimation | null => {
   // Animación de emergencia
-  const criticalStats = Object.values(entity.stats).filter(value => value > 90).length;
+  const criticalStats = Object.values(entity.stats).filter(value => value < 10).length;
   if (criticalStats > 0) {
     return {
       type: 'SHAKE',

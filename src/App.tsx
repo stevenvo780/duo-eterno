@@ -6,6 +6,7 @@ import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import { useUnifiedGameLoop } from './hooks/useUnifiedGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
+import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
 import { logGeneral } from './utils/logger';
@@ -13,13 +14,9 @@ import { logGeneral } from './utils/logger';
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   
-  // Hook unificado que maneja autopoiesis, game clock y movement
   useUnifiedGameLoop();
-  
-  // Hooks específicos que no están incluidos en el loop unificado
   useDialogueSystem();
-  
-  // TEMPORAL: Añadir movimiento hasta integrarlo en el loop unificado
+  useZoneEffects();
   useEntityMovementOptimized();
 
   React.useEffect(() => {
@@ -44,7 +41,6 @@ const GameContent: React.FC = React.memo(() => {
       overflow: 'hidden',
       fontFamily: 'system-ui, sans-serif'
     }}>
-      {/* Header */}
       <div style={{
         padding: '16px',
         background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
@@ -70,7 +66,6 @@ const GameContent: React.FC = React.memo(() => {
         </p>
       </div>
 
-      {/* Main game area */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -91,7 +86,6 @@ const GameContent: React.FC = React.memo(() => {
         <DialogOverlay />
       </div>
 
-      {/* Controls */}
       <UIControls 
         selectedEntityId={selectedEntityId}
         onEntitySelect={handleEntitySelect}

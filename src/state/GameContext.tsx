@@ -4,7 +4,6 @@ import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
 
-// Local type definitions
 interface GameState {
   entities: Entity[];
   resonance: number;
@@ -66,13 +65,13 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
+        hunger: 80,
+        sleepiness: 80,
+        loneliness: 80,
+        happiness: 80,
         energy: 80,
-        boredom: 20,
-        money: 50, // Dinero inicial
+        boredom: 80,
+        money: 50,
         health: 100
       },
       lastStateChange: Date.now(),
@@ -90,13 +89,13 @@ const initialGameState: GameState = {
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 60,
-        sleepiness: 30,
-        loneliness: 40,
-        happiness: 70,
+        hunger: 80,
+        sleepiness: 80,
+        loneliness: 80,
+        happiness: 80,
         energy: 80,
-        boredom: 20,
-        money: 50, // Dinero inicial
+        boredom: 80,
+        money: 50,
         health: 100
       },
       lastStateChange: Date.now(),
@@ -174,7 +173,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
             ? (() => {
-                // Clampear estadísticas entre 0 y 100 unificando actualizaciones absolutas
                 const updatedStats = { ...entity.stats };
                 Object.entries(action.payload.stats).forEach(([stat, value]) => {
                   const num = typeof value === 'number' ? value : updatedStats[stat as keyof typeof updatedStats];
@@ -205,7 +203,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           entity.id === action.payload.entityId
             ? { 
                 ...entity, 
-                thoughts: [...entity.thoughts.slice(-4), action.payload.thought] // Keep last 5 thoughts
+                thoughts: [...entity.thoughts.slice(-4), action.payload.thought]
               }
             : entity
         )
@@ -246,7 +244,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                   happiness: 40,
                   energy: 60,
                   boredom: 30,
-                  money: 25, // Dinero reducido al revivir
+                  money: 25,
                   health: 50
                 }
               }
@@ -354,7 +352,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dialogueDispatch(action);
   };
 
-  // Load saved state on mount
   useEffect(() => {
     const savedState = loadGameState();
     if (savedState) {
@@ -362,7 +359,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Save state on changes
   useEffect(() => {
     saveGameState(gameState);
   }, [gameState]);

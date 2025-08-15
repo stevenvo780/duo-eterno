@@ -200,8 +200,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
                 onClick={() => {
                   // Log del revival
                   dynamicsLogger.logEntityRevival(selectedEntity.id, {
-                    hunger: 50, sleepiness: 50, loneliness: 60, happiness: 40,
-                    energy: 60, boredom: 30, money: 25, health: 50
+                    hunger: 60, sleepiness: 60, loneliness: 60, happiness: 60,
+                    energy: 60, boredom: 60, money: 25, health: 50
                   });
                   
                   dispatch({ type: 'REVIVE_ENTITY', payload: { entityId: selectedEntity.id } });

@@ -8,6 +8,7 @@ import type { Entity, EntityActivity, EntityMood } from '../types';
 
 export interface LogEntry {
   timestamp: number;
+  system: 'love' | 'activity' | 'zone' | 'survival' | 'debug' | 'interaction';
   category: 'AUTONOMY' | 'LOVE' | 'SURVIVAL' | 'INTERACTION' | 'SYSTEM';
   level: 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG';
   entityId?: string;
@@ -42,6 +43,7 @@ export class DynamicsLogger {
   private sessionId = `session_${Date.now()}`;
   private exportInterval: number | null = null;
   private apiBaseUrl = 'http://localhost:3002';
+  private lastProximityLog = 0;
 
   // Configuración de qué logs mostrar
   private config = {
@@ -57,8 +59,8 @@ export class DynamicsLogger {
     // Auto-limpiar logs antiguos cada 30 segundos
     setInterval(() => this.cleanup(), 30000);
     
-    // Iniciar auto-exportación por defecto cada 10 segundos
-    this.startAutoExport(10000);
+    // Iniciar auto-exportación por defecto cada 5 segundos
+    this.startAutoExport(5000);
   }
 
   private cleanup() {
@@ -107,16 +109,18 @@ export class DynamicsLogger {
   
   logActivityChange(entityId: string, oldActivity: EntityActivity, newActivity: EntityActivity, reason: string) {
     this.log({
+      system: 'activity',
       category: 'AUTONOMY',
       level: 'INFO',
       entityId,
       message: `${entityId} cambió actividad: ${oldActivity} → ${newActivity}`,
-      data: { reason, oldActivity, newActivity }
+      data: { reason, oldActivity, newActivity, type: 'CHANGE' }
     });
   }
 
   logMoodChange(entityId: string, oldMood: EntityMood, newMood: EntityMood, stats: Entity['stats']) {
     this.log({
+      system: 'activity',
       category: 'AUTONOMY',
       level: 'INFO',
       entityId,
@@ -127,6 +131,7 @@ export class DynamicsLogger {
 
   logDecisionMaking(entityId: string, availableActivities: { activity: EntityActivity; score: number }[], chosen: EntityActivity) {
     this.log({
+      system: 'activity',
       category: 'AUTONOMY',
       level: 'DEBUG',
       entityId,
@@ -142,6 +147,7 @@ export class DynamicsLogger {
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
     
     this.log({
+      system: 'love',
       category: 'LOVE',
       level,
       message: `Resonancia ${change > 0 ? 'aumentó' : 'disminuyó'}: ${oldResonance.toFixed(1)} → ${newResonance.toFixed(1)}`,
@@ -149,30 +155,38 @@ export class DynamicsLogger {
         reason, 
         change: change.toFixed(2),
         distance: this.calculateDistance(entities),
-        bothAlive: entities.filter(e => !e.isDead).length === 2
+        bothAlive: entities.filter(e => !e.isDead).length === 2,
+        subtype: 'RESONANCE'
       }
     });
   }
 
   logProximityEffect(entities: Entity[], distance: number, effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL') {
-    if (effect === 'NEUTRAL') return; // No loguear efectos neutros
+    if (effect === 'NEUTRAL') return;
     
-    this.log({
-      category: 'LOVE',
-      level: 'INFO',
-      message: `Efecto de proximidad: ${effect} (distancia: ${distance.toFixed(1)})`,
-      data: {
-        distance,
-        effect,
-        entity1: entities[0]?.id,
-        entity2: entities[1]?.id,
-        moods: entities.map(e => e.mood)
-      }
-    });
+    // Reducir spam: solo loguear cada 5 segundos
+    const now = Date.now();
+    if (!this.lastProximityLog || now - this.lastProximityLog > 5000) {
+      this.log({
+        system: 'love',
+        category: 'LOVE',
+        level: 'INFO',
+        message: `Efecto de proximidad: ${effect} (distancia: ${distance.toFixed(1)})`,
+        data: {
+          distance,
+          effect,
+          entity1: entities[0]?.id,
+          entity2: entities[1]?.id,
+          moods: entities.map(e => e.mood)
+        }
+      });
+      this.lastProximityLog = now;
+    }
   }
 
   logTogetherTimeUpdate(oldTime: number, newTime: number, isIncreasing: boolean) {
     this.log({
+      system: 'love',
       category: 'LOVE',
       level: 'DEBUG',
       message: `Tiempo juntos ${isIncreasing ? 'aumenta' : 'disminuye'}: ${(newTime/1000).toFixed(1)}s`,
@@ -184,6 +198,7 @@ export class DynamicsLogger {
   
   logStatsCritical(entityId: string, criticalStats: string[], stats: Entity['stats']) {
     this.log({
+      system: 'survival',
       category: 'SURVIVAL',
       level: 'WARNING',
       entityId,
@@ -194,6 +209,7 @@ export class DynamicsLogger {
 
   logEntityDeath(entityId: string, cause: string, finalStats: Entity['stats']) {
     this.log({
+      system: 'survival',
       category: 'SURVIVAL',
       level: 'ERROR',
       entityId,
@@ -204,6 +220,7 @@ export class DynamicsLogger {
 
   logEntityRevival(entityId: string, newStats: Entity['stats']) {
     this.log({
+      system: 'survival',
       category: 'SURVIVAL',
       level: 'INFO',
       entityId,
@@ -217,6 +234,7 @@ export class DynamicsLogger {
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
     
     this.log({
+      system: 'survival',
       category: 'SURVIVAL',
       level,
       entityId,
@@ -225,10 +243,27 @@ export class DynamicsLogger {
     });
   }
 
+  // === LOGS DE ZONA ===
+  
+  logZoneEffect(entityId: string, zoneName: string, effects: Record<string, number>) {
+    const significantEffects = Object.entries(effects).filter(([_, value]) => Math.abs(value) > 1);
+    if (significantEffects.length === 0) return;
+    
+    this.log({
+      system: 'zone',
+      category: 'SYSTEM',
+      level: 'INFO',
+      entityId,
+      message: `Zone effects applied: ${zoneName}`,
+      data: { zone: zoneName, effects: Object.fromEntries(significantEffects) }
+    });
+  }
+
   // === LOGS DE INTERACCIONES ===
   
   logUserInteraction(interactionType: string, entityId: string | undefined, effect: unknown) {
     this.log({
+      system: 'interaction',
       category: 'INTERACTION',
       level: 'INFO',
       entityId,
@@ -239,6 +274,7 @@ export class DynamicsLogger {
 
   logDialogue(entityId: string | undefined, message: string, context: string) {
     this.log({
+      system: 'interaction',
       category: 'INTERACTION',
       level: 'DEBUG',
       entityId,

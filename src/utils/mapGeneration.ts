@@ -1,9 +1,7 @@
 import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
-  // Definición de zonas esenciales
   return [
-    // Jardín de Alimentos
     {
       id: 'food_garden',
       name: 'Jardín de Alimentos',
@@ -12,12 +10,10 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(34, 197, 94, 0.25)',
       attractiveness: 0.9,
       effects: {
-        hunger: -25,     // Reduce hambre
-        happiness: 8,    // Aumenta felicidad
-        energy: -5       // Consume un poco de energía
+        hunger: 25,
+        happiness: 8
       }
     },
-    // Cocina Comunal
     {
       id: 'kitchen',
       name: 'Cocina Comunal',
@@ -26,12 +22,10 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(34, 197, 94, 0.3)',
       attractiveness: 1.0,
       effects: {
-        hunger: -35,     // Reduce hambre significativamente
-        happiness: 12,   // Aumenta felicidad
-        energy: -8       // Consume energía cocinando
+        hunger: 35,
+        happiness: 12
       }
     },
-    // Santuario de Descanso
     {
       id: 'rest_sanctuary',
       name: 'Santuario de Descanso',
@@ -40,13 +34,11 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(168, 85, 247, 0.25)',
       attractiveness: 0.8,
       effects: {
-        sleepiness: -30, // Reduce sueño
-        energy: 25,      // Restaura energía
-        happiness: 10,   // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
+        sleepiness: 30,
+        energy: 25,
+        happiness: 10
       }
     },
-    // Área de Juegos
     {
       id: 'play_area',
       name: 'Área de Juegos',
@@ -55,13 +47,11 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(251, 191, 36, 0.3)',
       attractiveness: 1.0,
       effects: {
-        boredom: -40,    // Reduce aburrimiento significativamente
-        happiness: 20,   // Aumenta felicidad mucho
-        loneliness: -15, // Reduce soledad (jugar es social)
-        energy: -12      // Consume energía jugando
+        boredom: 40,
+        happiness: 20,
+        loneliness: 15
       }
     },
-    // Plaza Social
     {
       id: 'social_plaza',
       name: 'Plaza Social',
@@ -70,13 +60,11 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(236, 72, 153, 0.3)',
       attractiveness: 0.9,
       effects: {
-        loneliness: -35, // Reduce soledad significativamente
-        happiness: 18,   // Aumenta felicidad
-        boredom: -10,    // Reduce aburrimiento
-        energy: -5       // Consume poca energía
+        loneliness: 35,
+        happiness: 18,
+        boredom: 10
       }
     },
-    // Bosque de Meditación
     {
       id: 'meditation_grove',
       name: 'Bosque de Meditación',
@@ -85,14 +73,13 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(139, 92, 246, 0.25)',
       attractiveness: 0.7,
       effects: {
-        happiness: 15,   // Aumenta felicidad
-        boredom: -15,    // Reduce aburrimiento
-        loneliness: -10, // Reduce soledad un poco
-        sleepiness: -10, // Ayuda con el sueño
-        energy: 8        // Restaura energía lentamente
+        happiness: 15,
+        boredom: 15,
+        loneliness: 10,
+        sleepiness: 10,
+        energy: 8
       }
     },
-    // Estación Energética
     {
       id: 'energy_station',
       name: 'Estación Energética',
@@ -101,10 +88,20 @@ export const createDefaultZones = (): Zone[] => {
       color: 'rgba(245, 158, 11, 0.25)',
       attractiveness: 1.0,
       effects: {
-        energy: 40,      // Restaura energía significativamente
-        sleepiness: -15, // Reduce sueño
-        happiness: 8,    // Aumenta felicidad
-        boredom: 5       // Puede aburrir un poco
+        energy: 40,
+        sleepiness: 15,
+        happiness: 8
+      }
+    },
+    {
+      id: 'work_station',
+      name: 'Estación de Trabajo',
+      bounds: { x: 650, y: 50, width: 140, height: 100 },
+      type: 'work',
+      color: 'rgba(55, 65, 81, 0.25)',
+      attractiveness: 0.8,
+      effects: {
+        money: 60
       }
     }
   ];
@@ -112,7 +109,6 @@ export const createDefaultZones = (): Zone[] => {
 
 export const createDefaultMapElements = (): MapElement[] => {
   return [
-    // Obstáculos decorativos
     {
       id: 'rock1',
       type: 'obstacle',
@@ -140,14 +136,10 @@ export const createDefaultMapElements = (): MapElement[] => {
       position: { x: 150, y: 350 },
       size: { width: 25, height: 60 },
       color: '#059669'
-    },
-
-    // Elementos interactivos básicos mapeados a zonas principales
-    // ...ninguno por defecto...
+    }
   ];
 };
 
-// Función para verificar colisiones con obstáculos
 export const checkCollisionWithObstacles = (
   position: { x: number; y: number },
   entitySize: number,
@@ -169,7 +161,6 @@ export const checkCollisionWithObstacles = (
   return false;
 };
 
-// Función para verificar si una entidad está en una zona específica
 export const getEntityZone = (
   entityPosition: { x: number; y: number },
   zones: Zone[]
@@ -187,7 +178,6 @@ export const getEntityZone = (
   return null;
 };
 
-// Función para calcular el punto más atractivo para una entidad basado en sus necesidades
 export const getAttractionTarget = (
   entityStats: EntityStats,
   zones: Zone[],
@@ -199,18 +189,17 @@ export const getAttractionTarget = (
   for (const zone of zones) {
     let score = zone.attractiveness;
     
-    // Calcular score basado en las necesidades de la entidad
-    if (zone.effects?.hunger && entityStats.hunger > 70) score += 0.5;
-    if (zone.effects?.sleepiness && entityStats.sleepiness > 70) score += 0.5;
-    if (zone.effects?.loneliness && entityStats.loneliness > 70) score += 0.5;
-    if (zone.effects?.boredom && entityStats.boredom > 70) score += 0.5;
+    if (zone.effects?.hunger && entityStats.hunger < 30) score += 0.5;
+    if (zone.effects?.sleepiness && entityStats.sleepiness < 30) score += 0.5;
+    if (zone.effects?.loneliness && entityStats.loneliness < 30) score += 0.5;
+    if (zone.effects?.boredom && entityStats.boredom < 30) score += 0.5;
+    if (zone.effects?.money && entityStats.money < 40) score += 0.5;
     
-    // Penalizar por distancia
     const distance = Math.sqrt(
       Math.pow(currentPosition.x - (zone.bounds.x + zone.bounds.width / 2), 2) +
       Math.pow(currentPosition.y - (zone.bounds.y + zone.bounds.height / 2), 2)
     );
-    score -= distance / 1000; // Penalización leve por distancia
+    score -= distance / 1000;
     
     if (score > bestScore) {
       bestScore = score;
