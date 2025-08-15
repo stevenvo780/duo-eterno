@@ -139,8 +139,11 @@ app.get('/api/logs/analyze', async (req, res) => {
         analysis.timeSpan.end = log.timestamp;
       }
       
+      const msg = typeof log.message === 'string' ? log.message : '';
+      const msgLc = msg.toLowerCase();
+
       // Categorize important events
-      if (log.message.includes('murió') || log.message.includes('muerte')) {
+      if (msgLc.includes('murió') || msgLc.includes('muerte')) {
         analysis.deaths.push({
           timestamp: log.timestamp,
           entityId: log.entityId,
@@ -149,7 +152,7 @@ app.get('/api/logs/analyze', async (req, res) => {
         });
       }
       
-      if (log.message.includes('críticas') || log.level === 'WARNING') {
+      if (msgLc.includes('crítica') || log.level === 'WARNING') {
         analysis.criticalEvents.push({
           timestamp: log.timestamp,
           entityId: log.entityId,
@@ -158,7 +161,8 @@ app.get('/api/logs/analyze', async (req, res) => {
         });
       }
       
-      if (log.message.includes('resonancia')) {
+      // Resonance events: structured first, then fallback message-based
+      if ((log.system === 'love' && log.data && log.data.subtype === 'RESONANCE') || msgLc.includes('resonancia')) {
         analysis.resonanceEvents.push({
           timestamp: log.timestamp,
           message: log.message,
@@ -166,7 +170,8 @@ app.get('/api/logs/analyze', async (req, res) => {
         });
       }
       
-      if (log.message.includes('cambia actividad')) {
+      // Activity changes: structured first, then fallback message-based
+      if ((log.system === 'activity' && log.data && log.data.type === 'CHANGE') || msgLc.includes('cambia actividad')) {
         analysis.activityChanges.push({
           timestamp: log.timestamp,
           entityId: log.entityId,
@@ -175,7 +180,7 @@ app.get('/api/logs/analyze', async (req, res) => {
         });
       }
       
-      if (log.message.includes('salud') && log.level === 'WARNING') {
+      if (msgLc.includes('salud') && log.level === 'WARNING') {
         analysis.healthIssues.push({
           timestamp: log.timestamp,
           entityId: log.entityId,

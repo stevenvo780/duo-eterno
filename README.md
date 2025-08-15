@@ -47,7 +47,6 @@ npm run build && npm run preview
 # 4) Calidad de código
 npm run lint          # ESLint
 npm run format        # Prettier
-npm run clean-comments
 ```
 
 Comando extra (`npm run server`) levanta un servidor Express en `3002` para recibir logs.

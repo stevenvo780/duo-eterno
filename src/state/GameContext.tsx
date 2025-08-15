@@ -1,23 +1,9 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import type { EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
+import type { GameState, EntityMood, EntityStats, InteractionType, Entity, MapElement, Zone } from '../types';
 import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
 
-interface GameState {
-  entities: Entity[];
-  resonance: number;
-  cycles: number;
-  lastSave: number;
-  togetherTime: number;
-  connectionAnimation: {
-    active: boolean;
-    startTime: number;
-    type: InteractionType;
-  };
-  zones: Zone[];
-  mapElements: MapElement[];
-}
 
 interface DialogueState {
   visible: boolean;

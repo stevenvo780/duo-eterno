@@ -49,6 +49,7 @@ interface ActivitySession {
   effectiveness: number;
   satisfactionLevel: number;
   interruptions: number;
+  immediateApplied: boolean;
 }
 
 const activitySessions = new Map<string, ActivitySession>();
@@ -155,8 +156,35 @@ const startActivitySession = (
     plannedDuration,
     effectiveness: 1.0,
     satisfactionLevel: 0.5,
-    interruptions: 0
+    interruptions: 0,
+    immediateApplied: false
   });
+};
+
+// Simple habit memory per entity (decays over time via normalization)
+const activityHabits = new Map<string, Partial<Record<EntityActivity, number>>>();
+
+const updateHabit = (entityId: string, activity: EntityActivity, reward: number) => {
+  const habits = activityHabits.get(entityId) || {};
+  const prev = habits[activity] ?? 0;
+  habits[activity] = Math.max(0, prev * 0.95 + reward); // decay and reinforce
+  activityHabits.set(entityId, habits);
+};
+
+const getHabitBias = (entityId: string, activity: EntityActivity): number => {
+  const habits = activityHabits.get(entityId) || {};
+  return (habits[activity] ?? 0) * 5; // modest influence
+};
+
+const softmaxPick = (scores: Array<{ activity: EntityActivity; score: number }>, temperature = 0.7) => {
+  const exps = scores.map(s => Math.exp(s.score / Math.max(0.1, temperature)));
+  const sum = exps.reduce((a, b) => a + b, 0);
+  let r = Math.random() * sum;
+  for (let i = 0; i < scores.length; i++) {
+    r -= exps[i];
+    if (r <= 0) return scores[i].activity;
+  }
+  return scores[0].activity;
 };
 
 export const makeIntelligentDecision = (
@@ -185,20 +213,25 @@ export const makeIntelligentDecision = (
     activityScores.push({ activity, score: personalityModifiedScore });
   }
   
-  activityScores.sort((a, b) => b.score - a.score);
-  
-  const topActivity = activityScores[0];
-  
-  dynamicsLogger.logDecisionMaking(entity.id, activityScores, topActivity.activity);
-  
-  if (topActivity.activity !== entity.activity) {
-    const urgencyScore = topActivity.score;
+  // Add small habit bias and pick via softmax to avoid mode-locking
+  const biasedScores = activityScores.map(s => ({
+    activity: s.activity,
+    score: s.score + getHabitBias(entity.id, s.activity)
+  }));
+  biasedScores.sort((a, b) => b.score - a.score);
+  const chosen = softmaxPick(biasedScores, 0.9);
+  const chosenScore = biasedScores.find(a => a.activity === chosen)?.score ?? biasedScores[0].score;
+
+  dynamicsLogger.logDecisionMaking(entity.id, biasedScores, chosen);
+
+  if (chosen !== entity.activity) {
+    const urgencyScore = chosenScore;
     
     if (shouldChangeActivity(entity, currentTime, urgencyScore)) {
       dynamicsLogger.logActivityChange(
         entity.id, 
         entity.activity, 
-        topActivity.activity, 
+        chosen, 
         `urgencia: ${urgencyScore.toFixed(1)}`
       );
       
@@ -207,13 +240,15 @@ export const makeIntelligentDecision = (
         oldSession.interruptions++;
       }
       
-      startActivitySession(entity.id, topActivity.activity, currentTime);
+      startActivitySession(entity.id, chosen, currentTime);
       
       if (gameConfig.debugMode) {
-        logAI.debug(`${entity.id} cambia actividad: ${entity.activity} → ${topActivity.activity}`, { urgencia: urgencyScore.toFixed(1) });
+        logAI.debug(`${entity.id} cambia actividad: ${entity.activity} → ${chosen}`, { urgencia: urgencyScore.toFixed(1) });
       }
       
-      return topActivity.activity;
+      // Reward habit slightly for exploration and change
+      updateHabit(entity.id, chosen, 0.1);
+      return chosen;
     }
   }
   

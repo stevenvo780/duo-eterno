@@ -8,7 +8,9 @@ import { useGame } from './useGame';
 import type { GameState } from '../types';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
 import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performanceOptimizer';
-import { applyHybridDecay, applySurvivalCosts } from '../utils/activityDynamics';
+import { applyHybridDecay, applySurvivalCosts, ACTIVITY_EFFECTS, mapActivityToPreferredZone } from '../utils/activityDynamics';
+import { getEntityZone } from '../utils/mapGeneration';
+import { getActivitySession } from '../utils/aiDecisionEngine';
 import {
   HEALTH_CONFIG,
   RESONANCE_THRESHOLDS,
@@ -140,8 +142,65 @@ export const useUnifiedGameLoop = () => {
                 deltaTime
               );
               
+              // Aplicar efectos de actividad (perMinute + costos + immediate)
+              let statsAfterActivity = { ...newStats };
+              const session = getActivitySession(entity.id);
+              if (session) {
+                const effects = ACTIVITY_EFFECTS[session.activity];
+                const timeSpent = now - session.startTime;
+                let efficiency = effects.efficiencyOverTime(timeSpent);
+
+                // Bonus/penalty por estar en zona preferida
+                const preferredZone = mapActivityToPreferredZone(session.activity);
+                const inPreferred = (() => {
+                  const z = getEntityZone(entity.position, gameStateRef.current.zones);
+                  return z && preferredZone && z.type === preferredZone;
+                })();
+                efficiency *= inPreferred ? 1.15 : 0.9;
+
+                const dtMin = (deltaTime / 60000) * gameConfig.gameSpeedMultiplier;
+                Object.entries(effects.perMinute).forEach(([k, perMin]) => {
+                  const key = k as keyof Entity['stats'];
+                  const delta = perMin * efficiency * dtMin;
+                  const next = (statsAfterActivity[key] as number) + delta;
+                  statsAfterActivity[key] = (key === 'money'
+                    ? Math.max(0, next)
+                    : Math.max(0, Math.min(100, next))) as any;
+                });
+
+                if (effects.cost) {
+                  Object.entries(effects.cost).forEach(([k, cost]) => {
+                    const key = k as keyof Entity['stats'];
+                    if (key === 'money') {
+                      const next = (statsAfterActivity[key] as number) - cost * dtMin;
+                      statsAfterActivity[key] = Math.max(0, next) as any;
+                    }
+                  });
+                }
+
+                if (!session.immediateApplied) {
+                  Object.entries(effects.immediate).forEach(([k, imm]) => {
+                    const key = k as keyof Entity['stats'];
+                    const next = (statsAfterActivity[key] as number) + imm;
+                    statsAfterActivity[key] = (key === 'money'
+                      ? Math.max(0, next)
+                      : Math.max(0, Math.min(100, next))) as any;
+                  });
+                  session.immediateApplied = true;
+                }
+
+                // Actualiza efectividad/satisfacción simple
+                const gainKeys = Object.keys(effects.perMinute);
+                const deltaScore = gainKeys.reduce((acc, k) => {
+                  const key = k as keyof Entity['stats'];
+                  return acc + ((statsAfterActivity[key] as number) - (entity.stats[key] as number));
+                }, 0);
+                session.effectiveness = Math.max(0, Math.min(1, 0.5 + deltaScore / 200));
+                session.satisfactionLevel = Math.max(0, Math.min(1, session.satisfactionLevel * 0.8 + session.effectiveness * 0.2));
+              }
+
               // Aplicar costos de supervivencia
-              const finalStats = applySurvivalCosts(newStats, deltaTime);
+              const finalStats = applySurvivalCosts(statsAfterActivity, deltaTime);
               
               // Detectar estadísticas críticas
               const criticalStats = Object.entries(finalStats)
@@ -156,26 +215,6 @@ export const useUnifiedGameLoop = () => {
               
               if (criticalStats.length > 0) {
                 dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
-                
-                if (criticalStats.length >= 3) {
-                  dispatch({
-                    type: 'UPDATE_ENTITY_STATS',
-                    payload: { 
-                      entityId: entity.id, 
-                      stats: {
-                        hunger: 60,
-                        sleepiness: 60,
-                        energy: 60,
-                        happiness: 60,
-                        boredom: 60,
-                        loneliness: 60,
-                        money: Math.max(20, finalStats.money),
-                        health: Math.max(50, finalStats.health)
-                      }
-                    }
-                  });
-                  continue;
-                }
               }
               
               // Actualizar stats si hay cambios significativos
@@ -227,7 +266,8 @@ export const useUnifiedGameLoop = () => {
                 entity.stats.energy < 5
               ].filter(Boolean).length;
 
-              let healthChange = (deltaTime / 1000) * HEALTH_CONFIG.RECOVERY_RATE;
+              // Recuperación sujeta a resonancia; mayor vínculo ayuda
+              let healthChange = (deltaTime / 1000) * (HEALTH_CONFIG.RECOVERY_RATE + (gameStateRef.current.resonance - 50) / 1000);
               if (criticalCount > 0) {
                 const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
                 healthChange = -decay;
@@ -277,8 +317,9 @@ export const useUnifiedGameLoop = () => {
             });
             
             // Calcular incremento de resonancia basado en la proximidad y deltaTime
+            const dt = deltaTime / 1000;
             const proximityBonus = distance < CLOSE_DISTANCE ? 1.5 : 1.0;
-            const baseResonanceIncrement = (deltaTime / 1000) * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
+            const baseResonanceIncrement = dt * 2.0 * proximityBonus * gameConfig.gameSpeedMultiplier;
             
             // Ajuste por estado emocional
             let moodBonus = 1.0;
@@ -294,12 +335,17 @@ export const useUnifiedGameLoop = () => {
               moodBonus = 0.5; // Reducción si están tristes, pero aún hay incremento
             }
             
-            const finalResonanceIncrement = baseResonanceIncrement * moodBonus;
-            
+            // Bonus por sinergia de actividad y zona compartida
+            const sameActivity = entity1.activity === entity2.activity && ['SOCIALIZING','DANCING','CONTEMPLATING','MEDITATING','RESTING'].includes(entity1.activity);
+            const zone1 = getEntityZone(entity1.position, gameStateRef.current.zones);
+            const zone2 = getEntityZone(entity2.position, gameStateRef.current.zones);
+            const sameSocialZone = zone1 && zone2 && zone1.id === zone2.id && (zone1.type === 'social' || zone1.type === 'comfort');
+            const jointBonus = (sameActivity ? 0.6 : 0) + (sameSocialZone ? 0.6 : 0);
+            const finalResonanceIncrement = baseResonanceIncrement * moodBonus * (1 + jointBonus);
+
             // Aplicar incremento con límite máximo
             const newResonance = Math.min(100, gameStateRef.current.resonance + finalResonanceIncrement);
-            
-            
+
             if (finalResonanceIncrement > 0.001) { // Solo actualizar si hay cambio significativo
               dynamicsLogger.logResonanceChange(
                 gameStateRef.current.resonance, 
@@ -346,21 +392,21 @@ export const useUnifiedGameLoop = () => {
               });
             }
           }
-        }
-        
-        // Auto-save (cada 20 ticks)
-        if (loopStats.totalTicks % 20 === 0) {
-          try {
-            localStorage.setItem('duoEternoState', JSON.stringify({
-              ...gameStateRef.current,
-              lastSave: now
-            }));
-            logGeneral.debug('Auto-guardado realizado');
-          } catch (error) {
-            logGeneral.error('Error en auto-guardado', error);
+          // Homeostasis hacia equilibrio + penalización por estrés/críticos
+          const critical1 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity1.stats as any)[k] < 15);
+          const critical2 = ['hunger','sleepiness','loneliness','energy'].some(k => (entity2.stats as any)[k] < 15);
+          const stressPenalty = ((critical1 ? 0.3 : 0) + (critical2 ? 0.3 : 0)) * (deltaTime / 1000);
+          const gamma = 0.05;
+          const target = 70;
+          let R = gameStateRef.current.resonance;
+          R -= gamma * (R - target) * (deltaTime / 1000);
+          R = Math.max(0, Math.min(100, R - stressPenalty));
+          if (Math.abs(R - gameStateRef.current.resonance) > 0.001) {
+            dispatch({ type: 'UPDATE_RESONANCE', payload: R });
           }
         }
         
+                
         // Tomar snapshots regulares (cada 50 ticks)
         if (loopStats.totalTicks % 50 === 0) {
           livingEntities.forEach(entity => {

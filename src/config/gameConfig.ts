@@ -20,6 +20,7 @@ export interface GameConfig {
   aiPersonalityInfluence: number;
   activityInertiaBonus: number;
   moodInfluenceStrength: number;
+  entityMovementBaseSpeed: number;
 }
 
 const getEnvNumber = (key: string, defaultValue: number): number => {
@@ -40,16 +41,17 @@ export const gameConfig: GameConfig = {
   debugMode: getEnvBoolean('VITE_DEBUG_MODE', true),
   targetFPS: getEnvNumber('VITE_TARGET_FPS', 60),
   movementUpdateFPS: getEnvNumber('VITE_MOVEMENT_UPDATE_FPS', 30),
-  dialogueDuration: 2500,
+  dialogueDuration: getEnvNumber('VITE_DIALOGUE_DURATION', 2500),
   criticalEventProbability: 0.02,
   baseDecayMultiplier: getEnvNumber(
     'VITE_STAT_DECAY_SPEED',
-    getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 4.0)
+    getEnvNumber('VITE_BASE_DECAY_MULTIPLIER', 2.5)
   ),
-  zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.0),
+  zoneEffectivenessMultiplier: getEnvNumber('VITE_ZONE_EFFECTIVENESS_MULTIPLIER', 1.2),
   aiPersonalityInfluence: getEnvNumber('VITE_AI_PERSONALITY_INFLUENCE', 0.3),
   activityInertiaBonus: getEnvNumber('VITE_ACTIVITY_INERTIA_BONUS', 15.0),
-  moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5)
+  moodInfluenceStrength: getEnvNumber('VITE_MOOD_INFLUENCE_STRENGTH', 0.5),
+  entityMovementBaseSpeed: getEnvNumber('VITE_ENTITY_MOVEMENT_SPEED', 2.0)
 };
 
 export const speedPresets = {
@@ -82,12 +84,24 @@ const logConfig = () => {
   }
 };
 
-export const getGameIntervals = () => ({
-  autopoiesisInterval: Math.max(200, 500 / gameConfig.gameSpeedMultiplier),
-  gameClockInterval: Math.max(150, 300 / gameConfig.gameSpeedMultiplier),
-  zoneEffectsInterval: Math.max(100, 200 / gameConfig.gameSpeedMultiplier),
-  entityMovementSpeed: 2.0 * gameConfig.gameSpeedMultiplier
-});
+export const getGameIntervals = () => {
+  const overrideClock = getEnvNumber('VITE_GAME_CLOCK_INTERVAL', NaN);
+  const overrideAuto = getEnvNumber('VITE_AUTOPOIESIS_INTERVAL', NaN);
+  const overrideZone = getEnvNumber('VITE_ZONE_EFFECTS_INTERVAL', NaN);
+
+  return {
+    autopoiesisInterval: Number.isFinite(overrideAuto)
+      ? overrideAuto
+      : Math.max(200, 500 / gameConfig.gameSpeedMultiplier),
+    gameClockInterval: Number.isFinite(overrideClock)
+      ? overrideClock
+      : Math.max(150, 300 / gameConfig.gameSpeedMultiplier),
+    zoneEffectsInterval: Number.isFinite(overrideZone)
+      ? overrideZone
+      : Math.max(100, 200 / gameConfig.gameSpeedMultiplier),
+    entityMovementSpeed: gameConfig.entityMovementBaseSpeed * gameConfig.gameSpeedMultiplier
+  } as const;
+};
 
 if (import.meta.env.DEV) {
   window.gameConfig = gameConfig;

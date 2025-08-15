@@ -1,5 +1,5 @@
 import type { EntityStats, EntityActivity } from '../types';
-import type { ActivityType } from '../constants/gameConstants';
+import type { ActivityType, ZoneType } from '../constants/gameConstants';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
 
@@ -184,6 +184,25 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
   }
 };
 
+export const mapActivityToPreferredZone = (activity: EntityActivity): ZoneType | null => {
+  switch (activity) {
+    case 'RESTING': return 'rest';
+    case 'SOCIALIZING':
+    case 'DANCING': return 'social';
+    case 'EXERCISING':
+    case 'WANDERING':
+    case 'EXPLORING': return 'play';
+    case 'WORKING': return 'work';
+    case 'COOKING': return 'food';
+    case 'SHOPPING': return 'work';
+    case 'MEDITATING':
+    case 'CONTEMPLATING':
+    case 'WRITING': return 'comfort';
+    case 'HIDING': return 'comfort';
+    default: return null;
+  }
+};
+
 export const calculateActivityPriority = (
   activity: EntityActivity,
   currentStats: EntityStats,
@@ -192,40 +211,42 @@ export const calculateActivityPriority = (
   const effects = ACTIVITY_EFFECTS[activity];
   let priority = 0;
 
+  // Nonlinear need weighting: higher weight when stat is low, saturates when high
+  const w = (v: number, alpha = 1.6) => 1 - Math.pow(Math.min(100, Math.max(0, v)) / 100, alpha);
+
   if (activity === 'WORKING') {
-    priority += Math.max(0, (50 - currentStats.money) / 50) * 100;
-    priority -= Math.max(0, (40 - currentStats.energy) / 40) * 30;
+    priority += w(currentStats.money) * 100;
+    priority -= w(100 - currentStats.energy) * 30; // penalize fatigue
   }
 
   if (activity === 'SHOPPING') {
     const costMoney = effects.cost?.money ?? 0;
     if (currentStats.money > costMoney) {
-      const needLevel = (100 - currentStats.hunger + 100 - currentStats.boredom) / 2;
-      priority += needLevel * 0.8;
+      const needLevel = (w(currentStats.hunger) + w(currentStats.boredom)) / 2;
+      priority += needLevel * 100 * 0.8;
     } else {
       priority = 0;
     }
   }
 
   if (activity === 'RESTING') {
-    priority += Math.max(0, currentStats.sleepiness - 30) * 1.5;
-    priority += Math.max(0, (30 - currentStats.energy)) * 1.2;
+    priority += Math.max(0, (currentStats.sleepiness - 30)) * 1.2 + w(100 - currentStats.energy) * 80;
   }
 
   if (activity === 'COOKING') {
     const costMoney = effects.cost?.money ?? 0;
     if (currentStats.money >= costMoney) {
-      priority += Math.max(0, (40 - currentStats.hunger)) * 1.3;
+      priority += w(currentStats.hunger) * 100 * 0.9;
     }
   }
 
   if (activity === 'SOCIALIZING') {
-    priority += Math.max(0, (30 - currentStats.loneliness)) * 1.4;
+    priority += w(currentStats.loneliness) * 100 * 1.1;
   }
 
   if (activity === 'DANCING' || activity === 'EXERCISING') {
-    priority += Math.max(0, (40 - currentStats.boredom)) * 1.1;
-    priority -= Math.max(0, (30 - currentStats.energy)) * 0.8;
+    priority += w(currentStats.boredom) * 100 * 0.9;
+    priority -= w(100 - currentStats.energy) * 50;
   }
 
   const efficiency = effects.efficiencyOverTime(timeSpentInActivity);

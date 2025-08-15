@@ -5,6 +5,7 @@ import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
 import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from '../constants/gameConstants';
 import type { Entity, Zone, Position } from '../types';
+import { getGameIntervals } from '../config/gameConfig';
 
 // Sistema de movimiento optimizado con búsqueda de zonas
 export const useEntityMovementOptimized = () => {
@@ -140,9 +141,10 @@ export const useEntityMovementOptimized = () => {
     const dirX = dx / distance;
     const dirY = dy / distance;
     
-    // Calcular nueva posición con velocidad base
-    let newX = entity.position.x + dirX * MOVEMENT_CONFIG.BASE_MOVEMENT_SPEED;
-    let newY = entity.position.y + dirY * MOVEMENT_CONFIG.BASE_MOVEMENT_SPEED;
+    // Calcular nueva posición con velocidad base (parametrizada)
+    const { entityMovementSpeed } = getGameIntervals();
+    let newX = entity.position.x + dirX * entityMovementSpeed;
+    let newY = entity.position.y + dirY * entityMovementSpeed;
 
     // Aplicar repulsión si hay un compañero cerca
     if (companion) {
@@ -154,6 +156,13 @@ export const useEntityMovementOptimized = () => {
         const repulsionForce = MOVEMENT_CONFIG.REPULSION_FORCE;
         newX += (companionDx / companionDistance) * repulsionForce;
         newY += (companionDy / companionDistance) * repulsionForce;
+      } else {
+        // Suave atracción hacia una distancia preferida (anillo)
+        const preferred = 80;
+        const diff = companionDistance - preferred;
+        const k = 0.02; // fuerza suave
+        newX -= (companionDx / companionDistance) * (k * diff);
+        newY -= (companionDy / companionDistance) * (k * diff);
       }
     }
 
@@ -165,8 +174,8 @@ export const useEntityMovementOptimized = () => {
     const newPosition = { x: newX, y: newY };
     if (checkCollisionWithObstacles(newPosition, MOVEMENT_CONFIG.ENTITY_SIZE, gameState.mapElements)) {
       // Si hay colisión, intentar moverse lateralmente
-      const alternativeX = entity.position.x + dirY * MOVEMENT_CONFIG.BASE_MOVEMENT_SPEED;
-      const alternativeY = entity.position.y - dirX * MOVEMENT_CONFIG.BASE_MOVEMENT_SPEED;
+      const alternativeX = entity.position.x + dirY * entityMovementSpeed;
+      const alternativeY = entity.position.y - dirX * entityMovementSpeed;
       
       const alternativePosition = { x: alternativeX, y: alternativeY };
       if (!checkCollisionWithObstacles(alternativePosition, MOVEMENT_CONFIG.ENTITY_SIZE, gameState.mapElements)) {

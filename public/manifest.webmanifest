@@ -1,0 +1,19 @@
+{
+  "name": "Dúo Eterno",
+  "short_name": "DúoEterno",
+  "description": "Una carta interactiva instalable y offline.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0c",
+  "theme_color": "#111216",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
+

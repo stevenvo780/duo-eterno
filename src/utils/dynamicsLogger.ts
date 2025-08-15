@@ -42,7 +42,8 @@ export class DynamicsLogger {
   private isEnabled = true;
   private sessionId = `session_${Date.now()}`;
   private exportInterval: number | null = null;
-  private apiBaseUrl = 'http://localhost:3002';
+  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
+  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
   private lastProximityLog = 0;
 
   // Configuración de qué logs mostrar
@@ -59,8 +60,10 @@ export class DynamicsLogger {
     // Auto-limpiar logs antiguos cada 30 segundos
     setInterval(() => this.cleanup(), 30000);
     
-    // Iniciar auto-exportación por defecto cada 5 segundos
-    this.startAutoExport(5000);
+    // Iniciar auto-exportación solo si está habilitado por variables de entorno
+    if (this.exportEnabled) {
+      this.startAutoExport(5000);
+    }
   }
 
   private cleanup() {
@@ -520,6 +523,7 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
   startAutoExport(intervalMs: number = 10000): void {
     this.stopAutoExport();
     this.exportInterval = window.setInterval(() => {
+      if (!this.exportEnabled) return;
       if (this.logs.length > 0) {
         this.exportLogsToBackend();
       }

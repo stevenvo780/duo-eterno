@@ -9,7 +9,7 @@ import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { ZoneType } from '../constants/gameConstants';
 
 // Ajusta cuán intensamente actúan los efectos de las zonas sobre las estadísticas
-const ZONE_EFFECT_SCALE = 0.02;
+const ZONE_EFFECT_SCALE = 0.03;
 
 const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>> = {
   food:    { stats: ['hunger'],                 criticalThreshold: 20, label: 'Alimento' },
@@ -23,7 +23,8 @@ const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; crit
 
 const calculateZoneEffectiveness = (
   stats: EntityStats,
-  zoneType: ZoneType
+  zoneType: ZoneType,
+  occupancy: number
 ): { effectiveness: number; criticalNeed: boolean } => {
   const config = zoneConfigs[zoneType];
   if (!config) return { effectiveness: 1, criticalNeed: false };
@@ -32,8 +33,12 @@ const calculateZoneEffectiveness = (
   const criticalNeed = avgStat < config.criticalThreshold;
   const needLevel = 100 - avgStat;
   const baseEffectiveness = 1 + needLevel / 50;
+  // Crowding: reduce effectiveness as occupancy grows beyond 1
+  const capacityLambda = 0.4; // tuneable; per extra occupant
+  const crowdFactor = 1 / (1 + capacityLambda * Math.max(0, occupancy - 1));
+
   return {
-    effectiveness: baseEffectiveness * gameConfig.zoneEffectivenessMultiplier,
+    effectiveness: baseEffectiveness * gameConfig.zoneEffectivenessMultiplier * crowdFactor,
     criticalNeed
   };
 };
@@ -76,7 +81,12 @@ export const useZoneEffects = () => {
         const currentZone = getEntityZone(entity.position, gameState.zones);
         if (!currentZone || !currentZone.effects) continue;
 
-        const { effectiveness, criticalNeed } = calculateZoneEffectiveness(entity.stats, currentZone.type);
+        const occupancy = livingEntities.filter(e => {
+          const z = getEntityZone(e.position, gameState.zones);
+          return z && z.id === currentZone.id;
+        }).length;
+
+        const { effectiveness, criticalNeed } = calculateZoneEffectiveness(entity.stats, currentZone.type, occupancy);
         const timeMultiplier = (deltaTime / 1000) * gameConfig.gameSpeedMultiplier;
         const finalEffects: Partial<EntityStats> = {};
 

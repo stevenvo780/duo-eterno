@@ -8,6 +8,8 @@ interface PerformanceMetrics {
   lastMeasurement: number;
 }
 
+import { gameConfig } from '../config/gameConfig';
+
 class AdaptiveThrottler {
   private lastExecutionTime: number = 0;
   private adaptiveInterval: number;
@@ -74,7 +76,7 @@ export const measureExecutionTime = <T>(name: string, fn: () => T): T => {
   const result = fn();
   const end = performance.now();
   
-  if (performanceMetrics) {
+  if (performanceMetrics && gameConfig.debugMode) {
     console.debug(`${name}: ${(end - start).toFixed(2)}ms`);
   }
   
