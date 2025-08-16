@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Setup timer globals para vitest
 Object.defineProperty(global, 'setInterval', {
@@ -21,14 +22,31 @@ Object.defineProperty(global, 'clearTimeout', {
   writable: true
 });
 
-// Setup window object con timer methods
+// Mock window con todos los métodos necesarios para los tests
+const mockWindow = {
+  setInterval: setInterval,
+  clearInterval: clearInterval,
+  setTimeout: setTimeout,
+  clearTimeout: clearTimeout,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  location: { href: 'http://localhost:3000' },
+  document: globalThis.document,
+  performance: {
+    now: () => Date.now()
+  }
+};
+
+// Setup window object completo
 Object.defineProperty(globalThis, 'window', {
+  value: mockWindow,
+  writable: true
+});
+
+// Mock performance.now para compatibilidad
+Object.defineProperty(global, 'performance', {
   value: {
-    ...globalThis.window,
-    setInterval: setInterval,
-    clearInterval: clearInterval,
-    setTimeout: setTimeout,
-    clearTimeout: clearTimeout,
+    now: () => Date.now()
   },
   writable: true
 });
