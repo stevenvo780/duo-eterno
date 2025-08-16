@@ -144,7 +144,8 @@ export const useOptimizedUnifiedGameLoop = () => {
       loopStats.totalTicks++;
 
       measureExecutionTime('optimized-unified-game-loop', () => {
-        // Ejecutar tick base (sin dispatch directo, usar batching)
+        // Ejecutar tick base - DESPACHAR TICK para incrementar cycles
+        dispatch({ type: 'TICK', payload: deltaTime });
         loopStats.clockTicks++;
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);

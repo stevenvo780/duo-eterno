@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import { useGame } from './hooks/useGame';
 import OptimizedCanvas from './components/OptimizedCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
-import useSimpleGameLoop from './hooks/useSimpleGameLoop';
+import { useOptimizedUnifiedGameLoop } from './hooks/useOptimizedUnifiedGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
@@ -14,22 +13,9 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  const { gameState, dispatch } = useGame();
   
-  // 🎯 GAME LOOP SIMPLE - SIN SOBRE-INGENIERÍA
-  useSimpleGameLoop(
-    gameState.entities, 
-    gameState.zones, 
-    (_updatedEntities, _updatedZones, resonanceData) => {
-      // Simple update de resonancia cuando hay cambios
-      if (Math.abs(resonanceData.level - gameState.resonance) > 0.1) {
-        dispatch({ 
-          type: 'UPDATE_RESONANCE', 
-          payload: resonanceData.level 
-        });
-      }
-    }
-  );
+  // 🚀 GAME LOOP COMPLETO - Maneja resonancia, cycles, tiempo juntos y todas las dinámicas
+  useOptimizedUnifiedGameLoop();
   
   useDialogueSystem();
   useZoneEffects();
@@ -89,10 +75,7 @@ const GameContent: React.FC = React.memo(() => {
       }}>
         <OptimizedCanvas 
           width={1000} 
-          height={600} 
-          zoom={1}
-          panX={0}
-          panY={0}
+          height={600}
         />
         <DialogOverlay />
       </div>
