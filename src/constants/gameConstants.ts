@@ -40,7 +40,7 @@ export const RESONANCE_THRESHOLDS = {
 } as const;
 
 export const HEALTH_CONFIG = {
-  DECAY_PER_CRITICAL: 0.1,
+  DECAY_PER_CRITICAL: 0.07,  // 🔧 MEJORA MINIMALISTA: Reducido de 0.1 → 0.07 (30% menos agresivo)
   RECOVERY_RATE: 0.05
 } as const;
 

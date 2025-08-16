@@ -271,11 +271,12 @@ export const useOptimizedUnifiedGameLoop = () => {
         if (loopStats.totalTicks % 4 === 0) {
           measureExecutionTime('health-check-optimized', () => {
             for (const entity of livingEntities) {
+              // 🔧 MEJORA MINIMALISTA: Umbral crítico más tolerante (4 en lugar de 5)
               const criticalCount = [
-                entity.stats.hunger < 5,
-                entity.stats.sleepiness < 5,
-                entity.stats.loneliness < 5,
-                entity.stats.energy < 5
+                entity.stats.hunger < 4,
+                entity.stats.sleepiness < 4,
+                entity.stats.loneliness < 4,
+                entity.stats.energy < 4
               ].filter(Boolean).length;
 
               // Recuperación sujeta a resonancia

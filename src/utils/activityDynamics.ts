@@ -271,7 +271,7 @@ const HYBRID_DECAY_RATES = {
 } as const;
 
 const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
-  WORKING: 1.6,
+  WORKING: 1.4,      // 🔧 MEJORA MINIMALISTA: Reducido de 1.6 → 1.4 (12.5% menos penalizado)
   SHOPPING: 1.2,
   COOKING: 1.1,
   EXERCISING: 1.5,
