@@ -35,6 +35,8 @@ interface LoopStats {
   lastTickTime: number;
   averageTickDuration: number;
   memoryUsage: number;
+  loopStarts: number;
+  loopCleanups: number;
 }
 
 interface CleanupFunction {
@@ -59,7 +61,9 @@ export const useOptimizedUnifiedGameLoop = () => {
     clockTicks: 0,
     lastTickTime: Date.now(),
     averageTickDuration: 0,
-    memoryUsage: 0
+    memoryUsage: 0,
+    loopStarts: 0,
+    loopCleanups: 0
   });
 
   // Update game state ref when state changes
@@ -147,6 +151,31 @@ export const useOptimizedUnifiedGameLoop = () => {
     }
 
     startedRef.current = true;
+    // KPI: contar arranques del loop y exponer API
+    loopStatsRef.current.loopStarts++;
+    if (typeof window !== 'undefined') {
+      (window as unknown as {
+        kpi?: {
+          getLoopStats: () => LoopStats;
+          getLoggerMemory: () => ReturnType<typeof optimizedDynamicsLogger.getCurrentMemoryStats>;
+          getSummary: () => { totalTicks: number; avgTickMs: number; loopStarts: number; loopCleanups: number; loggerMB: number };
+        }
+      }).kpi = {
+        getLoopStats: () => loopStatsRef.current,
+        getLoggerMemory: () => optimizedDynamicsLogger.getCurrentMemoryStats(),
+        getSummary: () => {
+          const st = loopStatsRef.current;
+          const mem = optimizedDynamicsLogger.getCurrentMemoryStats();
+          return {
+            totalTicks: st.totalTicks,
+            avgTickMs: Number(st.averageTickDuration.toFixed(2)),
+            loopStarts: st.loopStarts,
+            loopCleanups: st.loopCleanups,
+            loggerMB: Number(mem.totalMemoryMB.toFixed(2))
+          };
+        }
+      };
+    }
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const loopStats = loopStatsRef.current;
@@ -443,6 +472,8 @@ export const useOptimizedUnifiedGameLoop = () => {
         intervalRef.current = undefined;
       }
       startedRef.current = false;
+      // KPI: contar limpiezas del loop
+      loopStatsRef.current.loopCleanups++;
     };
     registerCleanup(cleanup);
 
