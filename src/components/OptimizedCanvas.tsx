@@ -17,6 +17,11 @@ interface OptimizedCanvasProps {
   height: number;
 }
 
+const clamp = (v: number, min: number, max: number) => {
+  if (!Number.isFinite(v)) return min;
+  return Math.min(max, Math.max(min, v));
+};
+
 const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameContext = useContext(GameContext);
@@ -34,9 +39,12 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
     // Skip if dead
     if (isDead) return;
     
-    // Set entity color based on mood and type
+    // Safe positions and opacity
+    const px = clamp(position?.x as number, 0, width);
+    const py = clamp(position?.y as number, 0, height);
     const baseColor = id === 'circle' ? '#ff6b6b' : '#4ecdc4';
-    const opacity = Math.max(0.3, stats.energy / 100);
+    const energy = Number.isFinite(stats?.energy) ? stats.energy : 50;
+    const opacity = Math.max(0.3, Math.min(1, energy / 100));
     
     ctx.fillStyle = baseColor;
     ctx.globalAlpha = opacity;
@@ -44,14 +52,14 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
     // Draw entity
     if (id === 'circle') {
       ctx.beginPath();
-      ctx.arc(position.x, position.y, 15, 0, Math.PI * 2);
+      ctx.arc(px, py, 15, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      ctx.fillRect(position.x - 15, position.y - 15, 30, 30);
+      ctx.fillRect(px - 15, py - 15, 30, 30);
     }
     
     ctx.globalAlpha = 1.0;
-  }, []);
+  }, [width, height]);
 
   const drawZones = useCallback((ctx: CanvasRenderingContext2D) => {
     zones.forEach(zone => {
@@ -65,20 +73,26 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   }, [zones]);
 
   const drawResonanceEffect = useCallback((ctx: CanvasRenderingContext2D) => {
-    if (resonance > 50 && entities.length >= 2) {
+    const r = clamp(resonance, 0, 100);
+    if (r > 50 && entities.length >= 2) {
       const [entity1, entity2] = entities;
       
       if (!entity1.isDead && !entity2.isDead) {
-        ctx.strokeStyle = `hsla(${Math.floor(resonance * 3.6)}, 70%, 60%, ${resonance / 100})`;
-        ctx.lineWidth = Math.max(1, resonance / 25);
+        const x1 = clamp(entity1.position?.x as number, 0, width);
+        const y1 = clamp(entity1.position?.y as number, 0, height);
+        const x2 = clamp(entity2.position?.x as number, 0, width);
+        const y2 = clamp(entity2.position?.y as number, 0, height);
+
+        ctx.strokeStyle = `hsla(${Math.floor(r * 3.6)}, 70%, 60%, ${r / 100})`;
+        ctx.lineWidth = Math.max(1, r / 25);
         
         ctx.beginPath();
-        ctx.moveTo(entity1.position.x, entity1.position.y);
-        ctx.lineTo(entity2.position.x, entity2.position.y);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
         ctx.stroke();
       }
     }
-  }, [entities, resonance]);
+  }, [entities, resonance, width, height]);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;

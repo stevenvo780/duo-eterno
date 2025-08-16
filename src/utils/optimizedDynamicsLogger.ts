@@ -720,16 +720,20 @@ export const logGeneral = {
 
 export const logRender = {
   info: (message: string, data?: unknown) => {
-    console.info(`🖼️ [RENDER] ${message}`, data);
+    if (data !== undefined) console.info(`🖼️ [RENDER] ${message}`, data);
+    else console.info(`🖼️ [RENDER] ${message}`);
   },
   warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [RENDER] ${message}`, data);
+    if (data !== undefined) console.warn(`⚠️ [RENDER] ${message}`, data);
+    else console.warn(`⚠️ [RENDER] ${message}`);
   },
   error: (message: string, data?: unknown) => {
-    console.error(`❌ [RENDER] ${message}`, data);
+    if (data !== undefined) console.error(`❌ [RENDER] ${message}`, data);
+    else console.error(`❌ [RENDER] ${message}`);
   },
   debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [RENDER] ${message}`, data);
+    if (data !== undefined) console.debug(`🔧 [RENDER] ${message}`, data);
+    else console.debug(`🔧 [RENDER] ${message}`);
   }
 };
 
@@ -814,7 +818,8 @@ export const logGeneralCompat = (message: string, data?: unknown) => {
 };
 
 export const logRenderCompat = (message: string, data?: unknown) => {
-  console.log(`🎨 [RENDER] ${message}`, data);
+  if (data !== undefined) console.log(`🎨 [RENDER] ${message}`, data);
+  else console.log(`🎨 [RENDER] ${message}`);
 };
 
 export const logPerformanceCompat = (message: string, data?: unknown) => {

@@ -3,6 +3,7 @@ import type { GameState, EntityMood, EntityStats, InteractionType } from '../typ
 import { saveGameState, loadGameState } from '../utils/storage';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
+import { usePersistence } from '../hooks/usePersistence';
 
 
 interface DialogueState {
@@ -345,8 +346,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Persistencia mínima (autosave 20s + beforeunload)
+  usePersistence(gameState, dispatch);
+
   useEffect(() => {
-    saveGameState(gameState);
+    // Mantener compatibilidad con storage.ts pero reducir spam de escrituras
+    const throttle = window.setTimeout(() => saveGameState(gameState), 2500);
+    return () => clearTimeout(throttle);
   }, [gameState]);
 
   return (

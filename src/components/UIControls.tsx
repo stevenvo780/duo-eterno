@@ -4,8 +4,11 @@ import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
+import Toast from './Toast';
+import LoadingSpinner from './LoadingSpinner';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
+import { gameConfig } from '../config/gameConfig';
 
 interface UIControlsProps {
   selectedEntityId?: string | null;
@@ -16,13 +19,15 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   const { gameState, dispatch } = useGame();
   const [showStats, setShowStats] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success'|'info'|'warning'|'error' } | null>(null);
+  const [loading, setLoading] = useState(false);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
   const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
     if (entityId) {
-      // Apply to specific entity
+    // Apply to specific entity
       const entity = gameState.entities.find(e => e.id === entityId);
       if (!entity || entity.isDead) return;
 
@@ -61,7 +66,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         });
       }
     } else {
-      // Apply to both entities (global interaction)
+    // Apply to both entities (global interaction)
       gameState.entities.forEach(entity => {
         if (entity.isDead) return;
         
@@ -91,6 +96,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         dynamicsLogger.logUserInteraction(type, undefined, { baseResonanceGain, attenuation, appliedGain: gain });
         
         dispatch({ type: 'UPDATE_RESONANCE', payload: newResonance });
+
+        setToast({ message: 'Vínculo nutrido (+resonancia)', type: 'success' });
         
         const message = getRandomDialogue('post-nutrition');
         dynamicsLogger.logDialogue(undefined, message, 'post-nutrition');
@@ -106,10 +113,17 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
     }
   };
 
-  const resetGame = () => {
+  const resetGame = async () => {
     if (confirm('¿Estás seguro de que quieres reiniciar el juego?')) {
-      dispatch({ type: 'RESET_GAME' });
-      onEntitySelect?.(null);
+      setLoading(true);
+      try {
+        await new Promise(r => setTimeout(r, 300));
+        dispatch({ type: 'RESET_GAME' });
+        onEntitySelect?.(null);
+        setToast({ message: 'Juego reiniciado', type: 'info' });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -131,6 +145,11 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
 
   const getStatName = (stat: string): string => {
     return TRANSLATIONS.STATS[stat as StatKey] || stat;
+  };
+
+  const toggleDebugMode = () => {
+    gameConfig.debugMode = !gameConfig.debugMode;
+    setToast({ message: gameConfig.debugMode ? 'Debug ON' : 'Debug OFF', type: 'info' });
   };
 
   return (
@@ -555,28 +574,51 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             <span>Stats</span>
           </button>
 
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            style={{
-              background: showDebug
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : 'rgba(51, 65, 85, 0.5)',
-              border: '1px solid #10b981',
-              borderRadius: '6px',
-              padding: '4px 8px',
-              color: '#f1f5f9',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <span>🔍</span>
-            <span>Debug</span>
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              style={{
+                background: showDebug
+                  ? 'linear-gradient(135deg, #10b981, #059669)'
+                  : 'rgba(51, 65, 85, 0.5)',
+                border: '1px solid #10b981',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                color: '#f1f5f9',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>🔍</span>
+              <span>Debug</span>
+            </button>
+            <button
+              onClick={toggleDebugMode}
+              title="Toggle logs dev/prod"
+              style={{
+                background: gameConfig.debugMode ? 'rgba(34,197,94,0.2)' : 'rgba(148,163,184,0.2)',
+                border: `1px solid ${gameConfig.debugMode ? '#22c55e' : '#94a3b8'}`,
+                borderRadius: '6px',
+                padding: '4px 8px',
+                color: '#f1f5f9',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>{gameConfig.debugMode ? '🟢' : '⚪'}</span>
+              <span>Logs</span>
+            </button>
+          </div>
 
 
           <div style={{
@@ -617,6 +659,14 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           </button>
         </div>
       </div>
+      
+      {toast && <Toast message={toast.message} type={toast.type} />}
+      
+      {loading && (
+        <div style={{ position: 'fixed', top: 10, right: 10, zIndex: 1500 }}>
+          <LoadingSpinner />
+        </div>
+      )}
       
       <DynamicsDebugPanel 
         visible={showDebug} 

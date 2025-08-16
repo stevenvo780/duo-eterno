@@ -197,6 +197,12 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     return color.includes('#') ? color : `rgba(255,255,255,${alpha})`;
   };
 
+  // Clamping utilitario y defaults seguros para el render
+  const clamp = (v: number, min: number, max: number) => {
+    if (!Number.isFinite(v)) return min;
+    return Math.min(max, Math.max(min, v));
+  };
+
   // Función para aplicar animaciones contextuales (devuelve un restore flag)
   const applyContextualAnimations = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number) => {
     let transformed = false;
@@ -270,6 +276,23 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
   //  entity drawing function with quality levels
   const drawEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number, quality: 'low' | 'medium' | 'high') => {
     const { position, state, pulsePhase, colorHue, id, isDead } = entity;
+
+    // Defaults y clamping antes de dibujar
+    const px = Number.isFinite(position?.x) ? clamp(position.x, 0, width) : width / 2;
+    const py = Number.isFinite(position?.y) ? clamp(position.y, 0, height) : height / 2;
+    const hueRaw = Number.isFinite(colorHue) ? colorHue : 200;
+    const hue = clamp(hueRaw, 0, 360);
+    const safeRes = clamp(gameState.resonance, 0, 100);
+
+    // Desfase de dibujo si el estado contiene valores fuera de rango
+    const offsetX = px - (Number.isFinite(position?.x) ? position.x : px);
+    const offsetY = py - (Number.isFinite(position?.y) ? position.y : py);
+
+    // Envolver todo el dibujo en un translate que corrige coordenadas
+    ctx.save();
+    if (offsetX !== 0 || offsetY !== 0) {
+      ctx.translate(offsetX, offsetY);
+    }
     
     // Dead entities have simple rendering
     if (isDead || state === 'DEAD') {
@@ -305,6 +328,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
       }
       
       ctx.globalAlpha = 1;
+      ctx.restore();
       return;
     }
     
@@ -321,51 +345,52 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     }
 
     // Color changes based on resonance and state
-    const saturation = Math.max(30, gameState.resonance * 0.8); // Slight optimization
+    const saturation = Math.max(30, safeRes * 0.8); // Slight optimization
     const lightness = state === 'LOW_RESONANCE' ? 40 + (pulse * 15) : 60;
     
     ctx.globalAlpha = opacity;
-    ctx.fillStyle = `hsl(${colorHue}, ${saturation}%, ${lightness}%)`;
+    ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 
-    const size = 16 * pulse;
+    const size = Math.max(4, 16 * pulse);
 
     if (id === 'circle') {
       // Draw circle entity
       ctx.beginPath();
       ctx.arc(position.x, position.y, size / 2, 0, Math.PI * 2);
       ctx.fill();
-    } else {
+      } else {
       // Draw square entity
       ctx.fillRect(
-        position.x - size / 2,
-        position.y - size / 2,
-        size,
-        size
+      position.x - size / 2,
+      position.y - size / 2,
+      size,
+      size
       );
-    }
-
-    // Add glow effect only for medium/high quality
-    if (quality !== 'low') {
+      }
+      
+      // Add glow effect only for medium/high quality
+      if (quality !== 'low') {
       ctx.globalAlpha = opacity * 0.2;
-      ctx.fillStyle = `hsl(${colorHue}, ${saturation}%, 80%)`;
+      ctx.fillStyle = `hsl(${hue}, ${saturation}%, 80%)`;
       const glowSize = size * 1.3;
       
       if (id === 'circle') {
-        ctx.beginPath();
-        ctx.arc(position.x, position.y, glowSize / 2, 0, Math.PI * 2);
-        ctx.fill();
+      ctx.beginPath();
+      ctx.arc(position.x, position.y, glowSize / 2, 0, Math.PI * 2);
+      ctx.fill();
       } else {
-        ctx.fillRect(
-          position.x - glowSize / 2,
-          position.y - glowSize / 2,
-          glowSize,
-          glowSize
-        );
+      ctx.fillRect(
+      position.x - glowSize / 2,
+      position.y - glowSize / 2,
+      glowSize,
+      glowSize
+      );
       }
-    }
-
-    ctx.globalAlpha = 1;
-  }, [gameState.resonance]);
+      }
+      
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      }, [gameState.resonance, width, height]);
 
   //  particle update function
   const updateParticles = useCallback((now: number, quality: 'low' | 'medium' | 'high') => {

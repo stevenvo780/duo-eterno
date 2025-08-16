@@ -50,6 +50,7 @@ export const useOptimizedUnifiedGameLoop = () => {
   // Refs para state management y cleanup
   const gameStateRef = useRef<GameState>(gameState);
   const intervalRef = useRef<number | undefined>(undefined);
+  const startedRef = useRef<boolean>(false);
   const cleanupFunctions = useRef<CleanupFunction[]>([]);
   const loopStatsRef = useRef<LoopStats>({
     totalTicks: 0,
@@ -100,7 +101,9 @@ export const useOptimizedUnifiedGameLoop = () => {
   // Maneja transiciones de estado basadas en la resonancia del vínculo
   const updateResonanceStates = useCallback(
     (entities: Entity[], resonanceLevel: number, nowMs: number) => {
+      const MIN_TRANSITION_MS = 900;
       for (const entity of entities) {
+        const elapsed = nowMs - entity.lastStateChange;
         if (resonanceLevel <= 0) {
           if (entity.state !== 'FADING') {
             batcher.batchEntityStateUpdate(entity.id, 'FADING', 'CRITICAL');
@@ -112,11 +115,13 @@ export const useOptimizedUnifiedGameLoop = () => {
             batcher.batchEntityStateUpdate(entity.id, 'IDLE', 'CRITICAL');
           }
         } else if (resonanceLevel < RESONANCE_THRESHOLDS.CRITICAL) {
-          if (entity.state !== 'LOW_RESONANCE') {
+          if (entity.state !== 'LOW_RESONANCE' && elapsed >= MIN_TRANSITION_MS) {
             batcher.batchEntityStateUpdate(entity.id, 'LOW_RESONANCE', 'HIGH');
           }
         } else if (entity.state === 'LOW_RESONANCE') {
-          batcher.batchEntityStateUpdate(entity.id, 'IDLE', 'HIGH');
+          if (elapsed >= MIN_TRANSITION_MS) {
+            batcher.batchEntityStateUpdate(entity.id, 'IDLE', 'HIGH');
+          }
         }
       }
     }, [batcher, dispatch]);
@@ -124,13 +129,24 @@ export const useOptimizedUnifiedGameLoop = () => {
   // === MAIN GAME LOOP ===
   useEffect(() => {
     const { gameClockInterval } = getGameIntervals();
-    
-    console.log('🚀 Iniciando Unified Game Loop Optimizado:', {
-      interval: gameClockInterval,
-      batchingEnabled: true,
-      loggerOptimized: true
-    });
 
+    // Guard clause: evitar reinicios múltiples del loop
+    if (intervalRef.current != null || startedRef.current) {
+      if (gameConfig.debugMode) {
+        logGeneral.warn('Unified Game Loop ya está activo, se evita reinicio');
+      }
+      return () => {};
+    }
+
+    if (gameConfig.debugMode) {
+      logGeneral.info('Iniciando Unified Game Loop Optimizado', {
+        interval: gameClockInterval,
+        batchingEnabled: true,
+        loggerOptimized: true
+      });
+    }
+
+    startedRef.current = true;
     intervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const loopStats = loopStatsRef.current;
@@ -426,6 +442,7 @@ export const useOptimizedUnifiedGameLoop = () => {
         clearInterval(intervalRef.current);
         intervalRef.current = undefined;
       }
+      startedRef.current = false;
     };
     registerCleanup(cleanup);
 
@@ -441,7 +458,9 @@ export const useOptimizedUnifiedGameLoop = () => {
   // === CLEANUP EFFECT ===
   useEffect(() => {
     return () => {
-      console.log('🧹 Limpiando Unified Game Loop Optimizado...');
+      if (gameConfig.debugMode) {
+        console.log('🧹 Limpiando Unified Game Loop Optimizado...');
+      }
       
       // Execute all registered cleanup functions
       cleanupFunctions.current.forEach(cleanup => {
@@ -458,6 +477,7 @@ export const useOptimizedUnifiedGameLoop = () => {
         clearInterval(intervalRef.current);
         intervalRef.current = undefined;
       }
+      startedRef.current = false;
       
       // Force flush any pending batched updates
       batcher.forceFlush();
@@ -465,7 +485,9 @@ export const useOptimizedUnifiedGameLoop = () => {
       // Final cleanup of logger
       optimizedDynamicsLogger.forceCleanup();
       
-      console.log('✅ Cleanup completado');
+      if (gameConfig.debugMode) {
+        console.log('✅ Cleanup completado');
+      }
     };
   }, [batcher]);
 

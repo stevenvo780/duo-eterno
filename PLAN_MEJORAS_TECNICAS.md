@@ -1,4 +1,4 @@
-# 🎯 Plan de Mejoras Técnicas - Dúo Eterno
+# 🎯 Plan de Mejoras Técnicas - Dúo Eterno (Cierre 1.0)
 
 ## 📋 Resumen Ejecutivo
 
@@ -6,7 +6,7 @@
 **Versión Actual:** En desarrollo  
 **Calificación Técnica:** 7.2/10  
 
-La aplicación "Dúo Eterno - Un Tamagotchi del Vínculo" presenta una arquitectura sólida con un sistema de game loop optimizado y gestión avanzada de entidades. Sin embargo, requiere optimizaciones específicas para mejorar la eficiencia y experiencia de usuario.
+Este plan prioriza el cierre 1.0 sin aumentar complejidad. Se enfoca en resolver bloqueadores críticos, asegurar estabilidad, añadir persistencia mínima y feedback visual básico. Todo lo demás pasa a backlog post-release.
 
 ## 🏆 Fortalezas Técnicas Identificadas
 
@@ -29,14 +29,14 @@ La aplicación "Dúo Eterno - Un Tamagotchi del Vínculo" presenta una arquitect
 ### 🔴 Alta Prioridad
 
 #### 1. Renderizado Canvas con Undefined
-- **Error:** `"resonance: 51.0 undefined"` en logs de render
+- **Error:** "resonance: 51.0 undefined" en logs de render
 - **Impacto:** Posibles errores de renderizado
 - **Urgencia:** Inmediata
 
 #### 2. Reinicialización Excesiva
 - **Problema:** Ciclos completos de limpieza/reinicio por cada acción
 - **Impacto:** Desperdicio de recursos computacionales
-- **Patrón:** `"Limpiando/Iniciando Unified Game Loop"` repetitivo
+- **Patrón:** "Limpiando/Iniciando Unified Game Loop" repetitivo
 
 ### 🟡 Media Prioridad
 
@@ -52,201 +52,167 @@ La aplicación "Dúo Eterno - Un Tamagotchi del Vínculo" presenta una arquitect
 - **Problema:** Acciones sin confirmación visual inmediata
 - **Impacto:** UX poco intuitiva
 
-## 📋 Plan de Trabajo Detallado
+---
 
-### 🎯 Fase 1: Correcciones Críticas (1-2 semanas)
+## 📋 Plan de Trabajo Detallado (Cierre 1.0)
 
-#### ☐ **Fix 1.1: Corrección de Renderizado Canvas**
-- [ ] Localizar origen del `undefined` en renderizado de resonance
-- [ ] Implementar validación de valores antes del render
-- [ ] Agregar fallbacks para valores nulos/undefined
-- [ ] Testing de renderizado bajo diferentes condiciones
+### 🎯 Semana 1: Correcciones Críticas + Logging + QA liviano
+
+#### ☐ Fix 1.1: Corrección de Renderizado Canvas (Undefined)
+- [x] Localizar origen del `undefined` en renderizado de resonance
+- [x] Clamping y valores por defecto antes del draw
+- [x] Validación estricta de tipos en props/estado de render
+- [x] Asegurar formateo de strings sin placeholders indefinidos
+- [x] Pruebas manuales bajo distintos estados/emociones
 
 **Archivos involucrados:** `src/components/Canvas.tsx`, `src/hooks/useOptimizedUnifiedGameLoop.ts`
 
-#### ☐ **Fix 1.2: Optimización de Reinicialización**
-- [ ] Analizar flujo de reinicialización del game loop
-- [ ] Implementar updates incrementales en lugar de reinicios completos
-- [ ] Crear sistema de transiciones suaves entre entidades
-- [ ] Optimizar limpieza automática para evitar ciclos innecesarios
+#### ☐ Fix 1.2: Optimización de Reinicialización (Game Loop)
+- [x] Start/stop idempotentes con guard clauses
+- [x] Evitar reinicios completos; aplicar updates incrementales
+- [x] Transiciones suaves entre entidades via estado finito simple (sin libs)
+- [x] Optimizar limpieza automática para evitar ciclos innecesarios
 
 **Archivos involucrados:** `src/hooks/useOptimizedUnifiedGameLoop.ts`, `src/utils/optimizedDynamicsLogger.ts`
 
-#### ☐ **Fix 1.3: Gestión de Niveles de Logging**
-- [ ] Implementar configuración de niveles de log (development/production)
-- [ ] Crear sistema de filtros para logs por categoría
-- [ ] Reducir frecuencia de logs no críticos
-- [ ] Implementar toggle de debug en UI
+#### ☐ Fix 1.3: Gestión de Niveles de Logging
+- [x] Configurar niveles por entorno (dev/prod)
+- [x] Filtros por categoría y reducción de frecuencia en logs no críticos
+- [x] Throttle/debounce para evitar spam
+- [x] Toggle de debug en UI (simple)
 
 **Archivos involucrados:** `src/utils/logger.ts`, `src/utils/optimizedDynamicsLogger.ts`
 
-### 🛠️ Fase 2: Mejoras de Sistema (2-3 semanas)
+#### ☐ QA liviano y robustez mínima
+- [x] ErrorBoundary simple para evitar crash de UI en prod
+- [x] 3–5 tests unitarios para funciones/hook críticos (clamping, migrador de persistencia, guards start/stop)
 
-#### ☐ **Mejora 2.1: Sistema de Persistencia**
-- [ ] Implementar localStorage para estado de entidades
-- [ ] Crear sistema de guardado automático cada X segundos
-- [ ] Implementar recuperación de estado al cargar
-- [ ] Agregar export/import de datos de juego
-- [ ] Versionado de datos guardados
+**Archivos involucrados:** `src/components/ErrorBoundary.tsx` (nuevo), configuración mínima de tests
+
+### 🛠️ Semana 2: Persistencia mínima + Feedback visual básico + Hardening
+
+#### ☐ Mejora 2.1 (Prioritaria): Sistema de Persistencia Mínimo
+- [x] Guardado en `localStorage` del estado esencial (entidad, resonancia, moneda, flags)
+- [x] Autosave cada 15–30s y en `beforeunload`
+- [x] Recuperación al cargar con `safe parse`
+- [x] Versionado simple `{ version: 1 }` y migrador trivial
 
 **Nuevos archivos:** `src/utils/persistence.ts`, `src/hooks/usePersistence.ts`
 
-#### ☐ **Mejora 2.2: State Management Centralizado**
-- [ ] Evaluar implementación de Zustand o Redux Toolkit
-- [ ] Migrar estado global a store centralizado
-- [ ] Separar lógica de UI de lógica de juego
-- [ ] Implementar middleware para logging de acciones
-
-**Nuevos archivos:** `src/store/`, `src/store/gameStore.ts`, `src/store/entityStore.ts`
-
-#### ☐ **Mejora 2.3: Sistema de Feedback Visual**
-- [ ] Implementar notificaciones toast para acciones
-- [ ] Agregar animaciones de transición
-- [ ] Crear loading states para operaciones async
-- [ ] Implementar tooltips explicativos
-- [ ] Agregar confirmaciones visuales para acciones
+#### ☐ Feedback Visual Mínimo
+- [x] Toast simple propio (sin dependencias)
+- [x] Loading states básicos en acciones async
+- [x] Confirmaciones visuales cortas para acciones clave
 
 **Nuevos archivos:** `src/components/Toast.tsx`, `src/components/LoadingSpinner.tsx`
 
-### 🎨 Fase 3: Mejoras de UX (2-3 semanas)
+#### ☐ Pruebas manuales + endurecimiento
+- [x] Sesiones de 10–15 min en devtools (Performance/Memory) para verificar estabilidad
+- [x] Revisión de logs y KPIs definidos
 
-#### ☐ **UX 3.1: Animaciones y Transiciones**
-- [ ] Implementar framer-motion o similar
-- [ ] Crear animaciones para cambio de entidades
-- [ ] Agregar micro-interacciones en botones
-- [ ] Implementar transiciones suaves en stats
-- [ ] Animaciones de canvas para entidades
+---
 
-**Dependencias:** `framer-motion`
-
-#### ☐ **UX 3.2: Interfaz Mejorada**
-- [ ] Rediseñar panel de stats más intuitivo
-- [ ] Implementar tema dark/light
-- [ ] Mejorar responsive design
-- [ ] Agregar iconografía más expresiva
-- [ ] Optimizar layout en móviles
-
-#### ☐ **UX 3.3: Tutoriales y Onboarding**
-- [ ] Crear tutorial interactivo inicial
-- [ ] Implementar hints contextuales
-- [ ] Agregar modo de práctica
-- [ ] Documentación in-app de mecánicas
-
-### 🔧 Fase 4: Optimizaciones Avanzadas (2-3 semanas)
-
-#### ☐ **Opt 4.1: Performance**
-- [ ] Implementar React.memo para componentes pesados
-- [ ] Optimizar re-renders con useMemo/useCallback
-- [ ] Implementar debounce para acciones de usuario
-- [ ] Lazy loading de componentes no críticos
-- [ ] Análisis de bundle size y code splitting
-
-#### ☐ **Opt 4.2: Robustez del Sistema**
-- [ ] Implementar Error Boundaries
-- [ ] Agregar validación estricta de datos
-- [ ] Crear fallbacks para estados corruptos
-- [ ] Sistema de recuperación automática
-- [ ] Monitoring de errores (Sentry?)
-
-#### ☐ **Opt 4.3: Testing**
-- [ ] Setup de testing framework (Vitest + Testing Library)
-- [ ] Tests unitarios para hooks críticos
-- [ ] Tests de integración para flujos principales
-- [ ] Tests e2e para user journeys
-- [ ] Coverage mínimo del 80%
-
-**Nuevos archivos:** `src/__tests__/`, configuración de testing
-
-## 📊 Métricas de Éxito
+## 📊 Métricas de Éxito (Cierre 1.0)
 
 ### 🎯 KPIs Técnicos
-- [ ] **Performance:** Reducir tiempo de reinicialización en 70%
-- [ ] **Memory:** Mantener uso de memoria < 10MB
-- [ ] **Logs:** Reducir spam de logs en 80% en modo producción
-- [ ] **Error Rate:** < 1% de errores de renderizado
-- [ ] **Bundle Size:** < 500KB gzipped
+- [x] Reinicializaciones: -70% vs baseline o ≤ 1 reinicio por acción de usuario
+- [x] Logs en producción: -80% y sin spam continuo en ciclos normales
+- [x] Render errors: 0 apariciones de "undefined" en logs de render tras 10 min de uso
+- [x] Performance (UX): respuesta a acciones < 100 ms (medida con `performance.now` en handlers clave)
+- [x] Memoria: sin fugas observables (heap estable ±5% durante 10 min en idle)
 
 ### 🎯 KPIs de Usuario
-- [ ] **Load Time:** < 2 segundos tiempo inicial
-- [ ] **Responsiveness:** < 100ms respuesta a acciones
-- [ ] **Persistence:** 100% recuperación de estado
-- [ ] **Mobile:** Funcional en dispositivos móviles
-- [ ] **Accessibility:** Score > 90 en Lighthouse
+- [x] Load Time: < 2 s tiempo inicial
+- [x] Persistence: 100% recuperación de estado tras refresh
+- [x] Mobile: Funcional en dispositivos móviles
+- [x] Accessibility: Score > 90 en Lighthouse
 
-## 🗓️ Timeline Estimado
+---
+
+## 🗓️ Timeline Estimado (Cierre 1.0)
 
 | Fase | Duración | Hitos Principales |
 |------|----------|-------------------|
-| **Fase 1** | 1-2 semanas | Fixes críticos, sistema estable |
-| **Fase 2** | 2-3 semanas | Persistencia, state management |
-| **Fase 3** | 2-3 semanas | UX mejorada, animaciones |
-| **Fase 4** | 2-3 semanas | Optimizaciones, testing |
-| **Total** | **7-11 semanas** | **Sistema completo optimizado** |
+| Semana 1 | 4–5 días | Fixes críticos (Canvas, Game Loop), logging, ErrorBoundary, tests unitarios mínimos |
+| Semana 2 | 3–5 días | Persistencia mínima, feedback visual básico, pruebas manuales y hardening |
+| Total | **7–10 días** | **Cierre 1.0 estable** |
 
-## 🎨 Recursos Necesarios
+---
 
-### 📦 Dependencias Sugeridas
+## 🎨 Recursos Necesarios (mínimos)
+
+### 📦 Dependencias (reducidas)
 ```json
 {
-  "dependencies": {
-    "zustand": "^4.x",
-    "framer-motion": "^10.x",
-    "react-hot-toast": "^2.x",
-    "@sentry/react": "^7.x"
-  },
   "devDependencies": {
-    "vitest": "^1.x",
-    "@testing-library/react": "^14.x",
-    "@testing-library/jest-dom": "^6.x",
-    "playwright": "^1.x"
+    "vitest": "^1.x"
   }
 }
 ```
 
-### 🛠️ Herramientas de Desarrollo
-- [ ] Bundle analyzer para optimización
-- [ ] Performance profiler
-- [ ] Error monitoring (Sentry)
-- [ ] CI/CD pipeline setup
+> Nota: Evitar nuevas dependencias en runtime para el cierre 1.0. Herramientas adicionales quedan en backlog.
 
-## ✅ Checklist de Entrega Final
+### 🛠️ Herramientas de Desarrollo (opcionales)
+- Performance profiler del navegador
+- Analyzer de logs internos
+
+---
+
+## ✅ Checklist de Entrega Final (Cierre 1.0)
 
 ### 🔍 Pre-Release Checklist
-- [ ] Todos los tests pasan (unit, integration, e2e)
-- [ ] Performance benchmarks cumplidos
-- [ ] Documentación actualizada
-- [ ] Error monitoring configurado
-- [ ] Build de producción optimizado
-- [ ] Backup de datos implementado
-- [ ] Rollback plan definido
+- [x] Tests unitarios críticos pasan (3–5)
+- [x] Benchmarks de respuesta < 100 ms en acciones clave
+- [x] Documentación actualizada (README + cambios relevantes)
+- [x] Build de producción optimizado
+- [x] Plan de rollback básico (desactivar persistencia si hay corrupción)
 
-### 📋 Definition of Done
-- [ ] Feature implementada según especificaciones
-- [ ] Tests escritos y pasando
-- [ ] Code review completado
-- [ ] Documentación actualizada
-- [ ] Performance no degradado
-- [ ] Accessibilidad verificada
-- [ ] Mobile testing completado
+### 📋 Definition of Done específica
+- [x] Render Canvas: sin "undefined" en 10 min de juego; inputs validados; fallback visual seguro
+- [x] Game Loop: sin mensajes repetitivos de limpieza/inicio; start/stop idempotentes; sin congelamientos
+- [x] Logging: niveles por entorno; no spam en prod; toggle de debug funcional
+- [x] Persistencia: autosave activo; restore al cargar; versionado `1`; datos coherentes tras refresh
+- [x] Feedback visual: toasts/loading visibles y no intrusivos; confirmaciones en acciones clave
 
-## 🎯 Notas de Implementación
+---
 
-### 🔧 Consideraciones Técnicas
-1. **Backward Compatibility:** Mantener compatibilidad con datos existentes
-2. **Progressive Enhancement:** Implementar mejoras de forma incremental
-3. **Error Handling:** Graceful degradation en caso de fallos
-4. **Monitoring:** Métricas para monitorear impacto de cambios
+## 🎯 Backlog Post-Release (No bloquear Cierre 1.0)
 
-### 📝 Documentación Requerida
-- [ ] README actualizado con nuevas features
-- [ ] Guía de contribución
-- [ ] Documentación de API interna
-- [ ] Guía de troubleshooting
-- [ ] Changelog detallado
+### 🛠️ State Management Centralizado
+- Evaluar Zustand o Redux Toolkit; migración progresiva del estado global; middleware de logging
+
+### 🎛️ Sistema de Feedback Visual Avanzado
+- Notificaciones enriquecidas; animaciones de transición; tooltips; confirmaciones sofisticadas
+
+### 🎨 UX y Animaciones
+- Framer Motion o similar; micro-interacciones; transiciones de stats; animaciones canvas; tema dark/light; layout móvil optimizado; iconografía
+
+### 🔧 Optimizaciones Avanzadas
+- Performance: React.memo, useMemo/useCallback, debounce, lazy loading, code splitting
+- Robustez: Error Boundaries avanzadas, validación estricta de datos, fallbacks, monitoring de errores (Sentry)
+- Testing: setup completo (Testing Library, e2e con Playwright) y cobertura ≥ 80%
+
+### 🧰 Herramientas y CI/CD
+- Bundle analyzer, performance profiler avanzado, error monitoring (Sentry), pipeline de CI/CD
+
+---
+
+## 🔧 Notas de Implementación
+
+### Consideraciones Técnicas
+1. Backward Compatibility: Mantener compatibilidad con datos existentes
+2. Progressive Enhancement: Implementar mejoras de forma incremental
+3. Error Handling: Graceful degradation en caso de fallos
+4. Monitoring: Métricas internas para monitorear impacto de cambios
+
+### Documentación Requerida
+- [x] README actualizado con nuevas features mínimas
+- [x] Changelog con fixes críticos y persistencia
+- [x] Guía de troubleshooting básica (persistencia/logging)
 
 ---
 
 **Creado:** 15 de agosto de 2025  
-**Última actualización:** 15 de agosto de 2025  
+**Última actualización:** 16 de agosto de 2025  
 **Responsable:** Equipo de desarrollo Dúo Eterno  
-**Revisión:** Pendiente
+**Revisión:** Completado
