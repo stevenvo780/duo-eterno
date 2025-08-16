@@ -27,6 +27,29 @@
 - **Zona crowding effects** y competencia por recursos
 - **Sistema de logging** para investigación empírica de emergencia
 - **Death by disconnection**: pérdida de vínculo → fading → muerte
+- **🛡️ Sistema de Supervivencia Mejorado**: Alertas tempranas, período de gracia y configuración de dificultad
+
+---
+
+## 🆕 **Sistema de Supervivencia Mejorado**
+
+Este proyecto incluye un **sistema de mejoras de supervivencia** que mantiene la posibilidad de muerte pero proporciona un ciclo de vida mínimo más estable:
+
+### **Características Principales**
+- **🚨 Alertas Tempranas**: Notificaciones cuando las entidades están en peligro
+- **🛡️ Período de Gracia**: Decay reducido cuando la salud está crítica (< 10)
+- **⚖️ Balance Mejorado**: Umbrales más tolerantes y costos de supervivencia suavizados
+- **🎛️ Configuración Flexible**: 3 niveles de dificultad (Fácil, Normal, Difícil)
+- **📊 Panel de Control**: Monitoreo en tiempo real y configuración de opciones
+
+### **Mejoras Implementadas**
+- **Umbrales críticos**: De < 5 a < 3 (más tiempo de reacción)
+- **Decay de salud**: Reducido 50% (de 0.1 a 0.05 por stat crítica)
+- **Recuperación**: Aumentada 60% (de 0.05 a 0.08)
+- **Costos de vida**: Reducidos 25% (de 2.0 a 1.5 dinero/minuto)
+- **Actividad WORKING**: Decay reducido de 1.6x a 1.3x
+
+Para más detalles, consulta: [`docs/MEJORAS_SUPERVIVENCIA.md`](docs/MEJORAS_SUPERVIVENCIA.md)
 
 ---
 
