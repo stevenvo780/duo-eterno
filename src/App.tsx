@@ -1,30 +1,42 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import Canvas from './components/Canvas';
+import { useGame } from './hooks/useGame';
+import OptimizedCanvas from './components/OptimizedCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
-import { useUnifiedGameLoop } from './hooks/useUnifiedGameLoop';
+import useSimpleGameLoop from './hooks/useSimpleGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
-import { logGeneral } from './utils/logger';
+import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger';
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const { gameState, dispatch } = useGame();
   
-  useUnifiedGameLoop();
+  // 🎯 GAME LOOP SIMPLE - SIN SOBRE-INGENIERÍA
+  useSimpleGameLoop(
+    gameState.entities, 
+    gameState.zones, 
+    (_updatedEntities, _updatedZones, resonanceData) => {
+      // Simple update de resonancia cuando hay cambios
+      if (Math.abs(resonanceData.level - gameState.resonance) > 0.1) {
+        dispatch({ 
+          type: 'UPDATE_RESONANCE', 
+          payload: resonanceData.level 
+        });
+      }
+    }
+  );
+  
   useDialogueSystem();
   useZoneEffects();
   useEntityMovementOptimized();
 
   React.useEffect(() => {
-    logGeneral.info('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
-  }, []);
-
-  const handleEntityClick = React.useCallback((entityId: string) => {
-    setSelectedEntityId(entityId);
+    logGeneral('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
   }, []);
 
   const handleEntitySelect = React.useCallback((entityId: string | null) => {
@@ -75,10 +87,9 @@ const GameContent: React.FC = React.memo(() => {
         padding: '20px',
         position: 'relative'
       }}>
-        <Canvas 
+        <OptimizedCanvas 
           width={1000} 
           height={600} 
-          onEntityClick={handleEntityClick}
           zoom={1}
           panX={0}
           panY={0}

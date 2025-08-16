@@ -1,11 +1,61 @@
-# Dúo Eterno ‑ Manual Técnico y de Diseño ✨
+# Dúo Eterno ‑ Laboratorio de Autopoiesis y Emergencia 🧬✨
 
-> **Dedicatoria**  
+> **Dedicatoria Filosófica**  
 > Esta obra interactiva es un regalo de **Steven Vallejo Ortiz** —informático y filósofo— para su amada esposa **Isabella Loaiza Gómez**.  
 > Cada línea de código, cada latido de estas pequeñas entidades, es una metáfora de cómo el amor nutre la homeostasis de nuestros cuerpos y almas.  
 > Recorre el repositorio como quien lee una carta infinita: encontrarás mensajes dispersos, zonas de refugio y ecuaciones que cantan al cuidado mutuo.
 
-> *“Dos pequeñas luces orbitan en un mundo minimalista; su brillo depende del cuidado que les prestes.”*
+> *"Dos entidades autónomas emergen, co-evolucionan y resuenan en un universo de complejidad matemática.*  
+> *Su existencia depende no solo del cuidado externo, sino de la calidad de su vínculo mutuo."*
+
+---
+
+## 🎯 **Naturaleza del Proyecto**
+
+**Dúo Eterno NO es un tamagotchi tradicional**. Es un **experimento filosófico interactivo** que explora:
+
+- **🧬 Autopoiesis**: Sistemas que se auto-mantienen y auto-organizan
+- **🌊 Emergencia**: Comportamientos complejos que surgen de reglas simples  
+- **💫 Resonancia**: Interdependencia existencial entre entidades
+- **🔄 Co-evolución**: Adaptación mutua y aprendizaje dinámico
+- **⚡ Complejidad**: Dinámicas no-lineales con múltiples feedback loops
+
+### **Conceptos Implementados**
+- **Personalidades diferenciadas** (circle: social/intuitivo, square: persistente/eficiente)
+- **Activity inertia** y flow states realistas
+- **Hybrid decay** que modela desgaste diferencial por actividad  
+- **Zona crowding effects** y competencia por recursos
+- **Sistema de logging** para investigación empírica de emergencia
+- **Death by disconnection**: pérdida de vínculo → fading → muerte
+
+---
+
+## 📊 **Tabla de Contenidos**
+1. [Arquitectura Filosófica](#1-arquitectura-filosófica)
+2. [Instalación y Comandos](#2-instalación-y-comandos)
+3. [Arquitectura de Carpetas](#3-arquitectura-de-carpetas)
+4. [Matemáticas de la Emergencia](#4-matemáticas-de-la-emergencia)
+5. [Sistema de Investigación](#5-sistema-de-investigación)
+6. [Configuración Avanzada](#6-configuración-avanzada)
+7. [Análisis de Logs](#7-análisis-de-logs)
+8. [Research Capabilities](#8-research-capabilities)
+
+---
+
+## 1. **Arquitectura Filosófica**
+
+### **Entidades como Agentes Autónomos**
+Cada entidad ("●" Circle, "■" Square) posee:
+- **8 dimensiones de estado** (hunger, sleepiness, loneliness, happiness, energy, boredom, money, health)
+- **Personalidad matemática** que afecta decision-making
+- **Memory de actividades** (reinforcement learning básico)
+- **Estados existenciales** (IDLE, SEEKING, LOW_RESONANCE, FADING, DEAD)
+
+### **Resonancia como Vínculo Existencial**
+La **resonancia** (0-100) no es solo un score - es la medida de la calidad del vínculo entre entidades:
+- **Resonancia = 0** → Las entidades entran en estado FADING  
+- **Sin recuperación** → Muerte por desconexión existencial
+- **Emergencia de codependencia** → Supervivencia mutua requerida
 
 ---
 
@@ -36,35 +86,332 @@ Dúo Eterno es una *experiencia-tamagotchi* con dos entidades (“●” y “�
 
 ---
 
-## 2. Instalación y Comandos
+## 2. **Instalación y Comandos**
+
+### **Setup Básico**
 ```bash
-# 1) Dependencias
-npm i
-# 2) Desarrollo
-npm run dev           # Abre http://localhost:5173
-# 3) Producción
+# Instalación
+npm install
+
+# Desarrollo (con hot reload)
+npm run dev              # → http://localhost:5173
+
+# Testing (con memory limits ajustados)
+npm test                 # Nota: puede requerir más RAM
+
+# Producción
 npm run build && npm run preview
-# 4) Calidad de código
-npm run lint          # ESLint
-npm run format        # Prettier
+
+# Calidad de código
+npm run lint && npm run format
 ```
 
-Comando extra (`npm run server`) levanta un servidor Express en `3002` para recibir logs.
+### **Comandos de Investigación**
+```bash
+# Iniciar logging server (puerto 3002)
+npm run server
+
+# Desarrollo completo (app + server)
+npm run dev-full
+
+# Análisis de session logs
+npm run analyze-session
+npm run show-stats
+npm run analyze-now
+```
 
 ---
 
-## 3. Arquitectura de Carpetas (resumida)
+## 3. **Arquitectura de Carpetas**
+
 ```
 src/
- ├─ components/          UI (Canvas, Panels)
- ├─ hooks/               Lógica de juego (render loop, IA, zonas…)
- ├─ utils/               Algoritmos reutilizables (AI, logger…)
- ├─ constants/           Datos inmutables (umbrales, traducciones)
- ├─ state/               GameContext (React Context + Reducer)
- └─ types/               Tipos globales
+ ├─ components/          # UI Components
+ │   ├─ Canvas.tsx       # Motor de renderizado con optimización adaptiva
+ │   ├─ UIControls.tsx   # Interfaz de interacción y stats
+ │   └─ DynamicsDebugPanel.tsx  # Herramientas de investigación
+ ├─ hooks/               # Game Logic Hooks
+ │   ├─ useUnifiedGameLoop.ts    # Loop principal optimizado
+ │   ├─ useEntityMovementOptimized.ts  # Sistema de movimiento IA
+ │   ├─ useZoneEffects.ts        # Dinámicas de zonas
+ │   └─ useDialogueSystem.ts     # Sistema de feedback
+ ├─ utils/               # Core Algorithms
+ │   ├─ aiDecisionEngine.ts      # IA con personalidades y learning
+ │   ├─ activityDynamics.ts      # Matemáticas de autopoiesis
+ │   ├─ dynamicsLogger.ts        # Sistema de logging para research
+ │   └─ feedbackSystem.ts        # Análisis de intenciones emergentes
+ ├─ state/               # State Management
+ │   └─ GameContext.tsx          # React Context con reducer complejo
+ └─ types/               # TypeScript Definitions
+     └─ index.ts                 # Tipos para entidades, stats, actividades
+
+backend/
+ ├─ server.js            # Express server para recibir logs
+ ├─ logSummarizer.js     # Análisis automático de patterns
+ └─ logs/                # 3,799+ archivos de research data (1.5GB)
 ```
 
 ---
+
+## 4. **Matemáticas de la Emergencia**
+
+### **4.1 Autopoiesis: Sistema de Decay Híbrido**
+```typescript
+// Cada stat decae de manera diferencial según actividad
+∆stat = baseRate × activityMultiplier × decayMultiplier × dt
+
+// Ejemplo: WORKING acelera decay, RESTING lo reduce
+ACTIVITY_DECAY_MULTIPLIERS = {
+  WORKING: 1.6,      // El trabajo desgasta más
+  RESTING: 0.4,      // El descanso preserva
+  MEDITATING: 0.6,   // La contemplación reduce entropía
+  EXERCISING: 1.5    // El ejercicio consume energía
+}
+```
+
+### **4.2 Personalidades Emergentes**
+```typescript
+// Diferencias matemáticas que generan comportamientos únicos
+ENTITY_PERSONALITIES = {
+  circle: {
+    socialPreference: 0.7,     // Más social, busca compañía
+    activityPersistence: 0.6,  // Cambia de actividad más frecuentemente  
+    riskTolerance: 0.4,        // Más cauteloso en decisiones
+    energyEfficiency: 0.5      // Consumo energético standard
+  },
+  square: {
+    socialPreference: 0.5,     // Más independiente
+    activityPersistence: 0.8,  // Se enfoca en tareas por más tiempo
+    riskTolerance: 0.6,        // Más dispuesto a explorar
+    energyEfficiency: 0.7      // Más eficiente energéticamente
+  }
+}
+```
+
+### **4.3 Dinámicas de Zona con Crowding Effects**
+```typescript
+// Efectividad de zona depende de necesidad y competencia
+needLevel = 100 - avg(relevant_stats)
+baseEffectiveness = 1 + needLevel / 50  // Más necesidad = más efectividad
+crowdPenalty = 1 / (1 + 0.4 * max(0, occupancy - 1))  // Competencia reduce efectividad
+
+finalEffectiveness = baseEff × crowdPenalty × globalMultiplier
+```
+
+### **4.4 Resonancia como Sistema Dinámico**
+```typescript
+// Proximidad física genera resonancia
+closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))
+
+// Ganancia saturante (homeostasis implícita)
+gain = BOND_GAIN_PER_SEC × closeness × moodBonus × synergy × (1 - resonance/100)
+
+// Pérdida por separación y stress
+separation = SEPARATION_DECAY × (1 - closeness) × (resonance/100)
+stress = STRESS_DECAY × criticalStatsCount × (resonance/100)
+
+// Ecuación diferencial
+dResonance/dt = gain - separation - stress
+```
+
+### **4.5 Activity Inertia & Flow States**
+```typescript
+// Las entidades desarrollan "momentum" en actividades
+calculateActivityInertia(entity, currentTime) {
+  const session = activitySessions.get(entity.id);
+  let inertia = personality.activityPersistence;
+  
+  if (session.effectiveness > 0.7) {
+    inertia += 0.2;  // Flow state aumenta persistencia
+  }
+  
+  if (session.interruptions > 2) {
+    inertia -= 0.3;  // Interrupciones fragmentan focus
+  }
+  
+  return inertia;
+}
+```
+
+---
+
+## 5. **Sistema de Investigación**
+
+### **5.1 Logging Granular para Emergencia**
+El sistema captura **automáticamente**:
+- **Activity changes** con effectiveness tracking
+- **Mood transitions** y sus triggers
+- **Proximity events** y resonance dynamics  
+- **Decision-making** patterns de la IA
+- **Zone utilization** y crowding effects
+- **Critical events** (near-death, recovery, etc.)
+
+### **5.2 Métricas de Emergencia Detectadas**
+```json
+{
+  "sessionId": "session_1751919358910",
+  "totalCycles": 39599,
+  "resonanceChanges": 102,
+  "proximityEvents": 452,
+  "emergentPatterns": {
+    "coEvolution": "Circle desarrolló preferencia por zonas sociales",
+    "adaptiveBehavior": "Square optimizó rutinas de work-rest",
+    "emergentSymbiosis": "Sincronización de ciclos sleep-wake"
+  }
+}
+```
+
+### **5.3 Data Export para Análisis**
+```bash
+# Exportar datos de investigación
+npm run analyze-session  # → JSON con patterns detectados
+npm run show-stats       # → Resumen estadístico
+npm run analyze-now      # → Análisis en tiempo real
+```
+
+---
+
+## 6. **Configuración Avanzada**
+
+### **6.1 Variables de Investigación**
+```bash
+# Velocidades de simulación
+VITE_GAME_SPEED_MULTIPLIER=5.0      # 5x speed para estudios long-term
+VITE_BASE_DECAY_MULTIPLIER=1.0      # Decay más lento para observar patterns
+
+# Influencias comportamentales  
+VITE_AI_PERSONALITY_INFLUENCE=0.8   # Personalidades más marcadas
+VITE_AI_SOFTMAX_TAU=0.5            # Decisiones menos aleatorias
+VITE_MOOD_INFLUENCE_STRENGTH=0.8    # Estados emocionales más impactantes
+
+# Dinámicas de zona
+VITE_ZONE_EFFECTIVENESS_MULTIPLIER=2.0  # Zonas más poderosas
+VITE_ACTIVITY_INERTIA_BONUS=25.0        # Flow states más estables
+
+# Research logging
+VITE_ENABLE_LOG_EXPORT=true        # Exportar a backend automáticamente
+VITE_LOG_SERVER_URL=http://localhost:3002
+```
+
+### **6.2 Controles de Simulación**
+```javascript
+// Controles en browser console para investigación
+window.setGameSpeed(10);             // Acelerar simulación
+window.speedPresets['Turbo (5x)'];   // Presets disponibles
+window.logConfig();                  // Ver configuración actual
+```
+
+---
+
+## 7. **Análisis de Logs**
+
+### **7.1 Estructura de Logs**
+Cada archivo contiene:
+```json
+{
+  "timestamp": "2025-07-08T04:10:31.073Z",
+  "sessionId": "session_unique_id",
+  "gameState": {
+    "resonance": 45,
+    "cycles": 39599,
+    "entities": [/* estado completo */],
+    "emergentBehaviors": [/* patterns detectados */]
+  },
+  "analysis": {
+    "loveStats": { "avgResonance": 45, "resonanceChanges": 102 },
+    "behaviorPatterns": [/* co-evolution data */],
+    "criticalEvents": [/* near-death experiences */]
+  }
+}
+```
+
+### **7.2 Research Insights Típicos**
+- **Co-evolución observable**: Entidades adaptan rutinas mutualmente
+- **Emergencia de roles**: Una entidad se vuelve "provider", otra "nurturer"
+- **Cycles emergentes**: Patterns de sleep-wake auto-organizados
+- **Crisis-recovery dynamics**: Cómo las entidades se rescatan mutuamente
+
+---
+
+## 8. **Research Capabilities**
+
+### **8.1 Estudios Posibles**
+1. **Autopoiesis**: ¿Cómo emergen patterns de auto-mantenimiento?
+2. **Co-dependencia**: ¿Cuándo se vuelve crítica la resonancia mutua?
+3. **Adaptation**: ¿Cómo aprenden las entidades de experience?
+4. **Emergence**: ¿Qué behaviors surgen sin programación explícita?
+5. **Crisis management**: ¿Cómo responden a near-death scenarios?
+
+### **8.2 Herramientas de Análisis**
+- **Real-time monitoring** con DynamicsDebugPanel
+- **Historical analysis** con exported JSON data
+- **Pattern detection** automático en logs
+- **Statistical summaries** de sessions completas
+- **Visualization** de trajectories comportamentales
+
+### **8.3 Export para Python/R**
+Los logs JSON son compatibles con:
+```python
+import pandas as pd
+import json
+
+# Cargar session data
+with open('logs/session_data.json') as f:
+    data = json.load(f)
+
+# Análisis de patterns
+df = pd.DataFrame(data['entitySnapshots'])
+df.plot(x='timestamp', y=['resonance', 'avgHealth'])
+```
+
+---
+
+## 9. **Road-map de Investigación**
+
+### **Fase 1: Optimización Técnica** ⚡
+- [ ] Fix memory leaks en logging system
+- [ ] Implementar log rotation automática  
+- [ ] Optimizar performance del game loop
+- [ ] Batching de state updates
+
+### **Fase 2: Enhanced Research Tools** 🔬
+- [ ] Pattern detection algorithms avanzados
+- [ ] Real-time visualization de emergent behaviors  
+- [ ] Export directo a Python/R notebooks
+- [ ] Machine learning para predecir critical events
+
+### **Fase 3: Experimentos Avanzados** 🧬
+- [ ] Multiple entity populations (3-5 entidades)
+- [ ] Evolutionary pressure scenarios
+- [ ] Environmental changes dinámicos
+- [ ] Cross-session learning persistence
+
+### **Fase 4: Academic Publication** 📚
+- [ ] Paper sobre emergent behavior patterns
+- [ ] Dataset público para research community
+- [ ] Interactive demos para conferences
+- [ ] Open source research framework
+
+---
+
+## 🔬 **Para Investigadores**
+
+Este proyecto implementa conceptos de:
+- **Sistemas adaptativos complejos** (Holland, Kauffman)
+- **Autopoiesis** (Maturana & Varela)  
+- **Emergencia** (Steven Johnson, Mitchell)
+- **Teoría de redes** (Barabási)
+- **Behavioral economics** (Kahneman)
+
+Los logs generados son **data empírica real** sobre:
+- Decision-making en sistemas autónomos
+- Co-evolution en ambientes constrained
+- Emergence de cooperation vs competition
+- Resilience y recovery en sistemas complejos
+
+---
+
+**Licencia** MIT — Creado con amor y curiosidad filosófica por Steven Vallejo Ortiz 💙
 
 ## 4. Matemáticas del Juego
 ### 4.1 Estadísticas & Decaimiento
