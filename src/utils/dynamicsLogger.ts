@@ -40,10 +40,6 @@ export class DynamicsLogger {
   private systemSnapshots: SystemSnapshot[] = [];
   private maxLogSize = 1000;
   private isEnabled = true;
-  private sessionId = `session_${Date.now()}`;
-  private exportInterval: number | null = null;
-  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
-  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
   private lastProximityLog = 0;
 
   // Configuración de qué logs mostrar
@@ -60,10 +56,7 @@ export class DynamicsLogger {
     // Auto-limpiar logs antiguos cada 30 segundos
     setInterval(() => this.cleanup(), 30000);
     
-    // Iniciar auto-exportación solo si está habilitado por variables de entorno
-    if (this.exportEnabled) {
-      this.startAutoExport(5000);
-    }
+    console.log('🚀 DynamicsLogger iniciado en modo local');
   }
 
   private cleanup() {
@@ -446,6 +439,20 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
   // === EXPORTACIÓN AUTOMÁTICA ===
   
   private async exportLogsToBackend(): Promise<void> {
+    // 🚫 MÉTODO COMPLETAMENTE DESHABILITADO - NO EJECUTAR JAMÁS
+    console.warn('🚫 exportLogsToBackend está deshabilitado para evitar errores de red');
+    return;
+    
+    // El resto del código está comentado para evitar ejecución accidental
+    /*
+    // Backend completamente deshabilitado para evitar errores de red
+    if (!this.exportEnabled) {
+      return;
+    }
+    
+    // Verificación adicional para asegurar que no se ejecute
+    return;
+    
     try {
       const gameState = this.getGameStateFromSnapshots();
       const metadata = {
@@ -520,7 +527,12 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
     };
   }
   
-  startAutoExport(intervalMs: number = 10000): void {
+  startAutoExport(): void {
+    // Método completamente deshabilitado para evitar errores de red
+    console.warn('🚫 Auto-exportación está deshabilitada para evitar errores de backend');
+    return;
+    
+    /*
     this.stopAutoExport();
     this.exportInterval = window.setInterval(() => {
       if (!this.exportEnabled) return;
@@ -528,6 +540,7 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
         this.exportLogsToBackend();
       }
     }, intervalMs);
+    */
   }
   
   stopAutoExport(): void {
@@ -541,9 +554,12 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
     await this.exportLogsToBackend();
   }
   
+  // setApiUrl deshabilitado ya que apiBaseUrl está comentado
+  /*
   setApiUrl(url: string): void {
     this.apiBaseUrl = url;
   }
+  */
 }
 
 // Instancia global del logger

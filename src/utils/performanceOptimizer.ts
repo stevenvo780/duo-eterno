@@ -268,8 +268,10 @@ export const measureExecutionTime = <T>(name: string, fn: () => T): T => {
   const result = fn();
   const end = performance.now();
   
-  if (gameConfig.debugMode) {
-    console.debug(`${name}: ${(end - start).toFixed(2)}ms`);
+  // Solo log operaciones críticas (>20ms) para reducir spam
+  const duration = end - start;
+  if (gameConfig.debugMode && duration > 20) {
+    console.debug(`⚠️ ${name}: ${duration.toFixed(2)}ms`);
   }
   
   return result;
