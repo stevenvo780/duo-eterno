@@ -44,18 +44,20 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
     const px = clamp(position?.x as number, 0, width);
     const py = clamp(position?.y as number, 0, height);
     
-    // Determine which sprite to use based on entity state and mood
-    let spriteKey = '';
+    // Determinar sprite basado en estado de ánimo y salud
+    let spriteKey = id;
     if (isDead) {
-      spriteKey = id === 'circle' ? 'entidad_circulo_muriendo' : 'entidad_cuadrado_muriendo';
-    } else if (id === 'circle' || id === 'square') {
-      const baseKey = id === 'circle' ? 'entidad_circulo' : 'entidad_cuadrado';
+      spriteKey = `entidad_${id}_dying`;
+    } else {
+      // Determinar estado visual basado en stats y mood
       if (mood === 'HAPPY' && stats.energy > 70) {
-        spriteKey = `${baseKey}_viva`;
-      } else if (stats.energy < 30 || mood === 'SAD') {
-        spriteKey = `${baseKey}_muriendo`;
+        spriteKey = `entidad_${id}_happy`;
+      } else if (stats.health < 30 || mood === 'SAD') {
+        spriteKey = `entidad_${id}_sad`;
+      } else if (stats.energy < 30) {
+        spriteKey = `entidad_${id}_dying`;
       } else {
-        spriteKey = `${baseKey}_principal`;
+        spriteKey = `entidad_${id}_happy`; // Estado por defecto
       }
     }
     
@@ -278,12 +280,12 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       'canvas_base', 
       'conexion_entidades',
       'dialogo_overlay',
-      'entidad_circulo_muriendo',
-      'entidad_circulo_principal',
-      'entidad_circulo_viva',
-      'entidad_cuadrado_muriendo',
-      'entidad_cuadrado_principal', 
-      'entidad_cuadrado_viva',
+      'entidad_circle_happy',
+      'entidad_circle_sad', 
+      'entidad_circle_dying',
+      'entidad_square_happy',
+      'entidad_square_sad',
+      'entidad_square_dying',
       'obstaculo_arbol',
       'obstaculo_roca',
       'zona_cocina',
