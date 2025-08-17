@@ -1,6 +1,6 @@
 import type { Entity, EntityActivity, EntityMood } from '../types';
 import { ACTIVITY_TYPES } from '../constants/gameConstants';
-import { ACTIVITY_DYNAMICS, ACTIVITY_EFFECTS, calculateActivityPriority } from './activityDynamics';
+import { ACTIVITY_EFFECTS, calculateActivityPriority, getActivityDynamics } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
 import { logAI } from './logger';
 import { dynamicsLogger } from './dynamicsLogger';
@@ -151,7 +151,8 @@ const startActivitySession = (
   activity: EntityActivity,
   currentTime: number
 ): void => {
-  const plannedDuration = ACTIVITY_DYNAMICS[activity]?.optimalDuration || 20000;
+  const activityDynamics = getActivityDynamics();
+  const plannedDuration = activityDynamics[activity]?.optimalDuration || 20000;
   
   activitySessions.set(entityId, {
     activity,

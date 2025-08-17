@@ -18,12 +18,6 @@ import { shouldUpdateAutopoiesis, measureExecutionTime } from '../utils/performa
 import { applyHybridDecay, applySurvivalCosts, ACTIVITY_EFFECTS, mapActivityToPreferredZone } from '../utils/activityDynamics';
 import { getEntityZone } from '../utils/mapGeneration';
 import { getActivitySession } from '../utils/aiDecisionEngine';
-import {
-  HEALTH_CONFIG,
-  RESONANCE_THRESHOLDS,
-  FADING_TIMEOUT_MS,
-  FADING_RECOVERY_THRESHOLD
-} from '../constants/gameConstants';
 import { logGeneral } from '../utils/logger';
 import { optimizedDynamicsLogger } from '../utils/optimizedDynamicsLogger';
 

@@ -106,7 +106,106 @@ export const TRANSLATIONS = {
   } as const
 } as const;
 
-export const FADING_TIMEOUT_MS = 10000;
-export const FADING_RECOVERY_THRESHOLD = 10;
+// === IMPORTACIONES DE CONSTANTES ESPECIALIZADAS ===
+
+import { 
+  ACTIVITY_DURATIONS,
+  ACTIVITY_COSTS,
+  ACTIVITY_EFFECTS
+} from './biologicalDynamics';
+
+import { 
+  SPECIAL_TIMEOUTS 
+} from './systemTiming';
+
+// === RE-EXPORTACIONES DE CONSTANTES ESPECIALIZADAS ===
+
+/**
+ * Timeouts especiales - importados de systemTiming
+ * Basados en ciclos naturales y procesos cognitivos
+ */
+export const FADING_TIMEOUT_MS = SPECIAL_TIMEOUTS.FADING_TIMEOUT_MS;
+export const FADING_RECOVERY_THRESHOLD = SPECIAL_TIMEOUTS.FADING_RECOVERY_THRESHOLD;
+
+// === CONFIGURACIONES CONSOLIDADAS PARA COMPATIBILIDAD ===
+
+/**
+ * Duraciones de actividades - consolidadas desde biologicalDynamics
+ * Mantiene compatibilidad con código existente
+ */
+export const ACTIVITY_DURATION_CONFIG = {
+  WANDERING: ACTIVITY_DURATIONS.WANDERING,
+  MEDITATING: ACTIVITY_DURATIONS.MEDITATING,
+  WRITING: ACTIVITY_DURATIONS.WRITING,
+  RESTING: ACTIVITY_DURATIONS.RESTING,
+  SOCIALIZING: ACTIVITY_DURATIONS.SOCIALIZING,
+  EXPLORING: ACTIVITY_DURATIONS.EXPLORING,
+  CONTEMPLATING: ACTIVITY_DURATIONS.CONTEMPLATING,
+  DANCING: ACTIVITY_DURATIONS.DANCING,
+  HIDING: ACTIVITY_DURATIONS.HIDING,
+  WORKING: ACTIVITY_DURATIONS.WORKING,
+  SHOPPING: ACTIVITY_DURATIONS.SHOPPING,
+  EXERCISING: ACTIVITY_DURATIONS.EXERCISING,
+  COOKING: ACTIVITY_DURATIONS.COOKING
+} as const;
+
+/**
+ * Costos de actividades - consolidados desde biologicalDynamics
+ */
+export const ACTIVITY_COST_CONFIG = {
+  SHOPPING: ACTIVITY_COSTS.SHOPPING,
+  COOKING: ACTIVITY_COSTS.COOKING
+} as const;
+
+/**
+ * Efectos de actividades - consolidados desde biologicalDynamics
+ * Incluye todos los efectos inmediatos y sostenidos
+ */
+export const ACTIVITY_EFFECT_CONFIG = {
+  WORKING: ACTIVITY_EFFECTS.WORKING,
+  RESTING: ACTIVITY_EFFECTS.RESTING,
+  SOCIALIZING: ACTIVITY_EFFECTS.SOCIALIZING,
+  DANCING: ACTIVITY_EFFECTS.DANCING,
+  EXERCISING: ACTIVITY_EFFECTS.EXERCISING,
+  MEDITATING: ACTIVITY_EFFECTS.MEDITATING
+} as const;
+
+// === VALIDACIÓN CONSOLIDADA ===
+
+/**
+ * Valida que todas las constantes del juego sean coherentes
+ * Llama a las validaciones de todos los módulos especializados
+ */
+export async function validateAllGameConstants(): Promise<boolean> {
+  const validations = await Promise.all([
+    import('./mathematicalCore').then(m => m.validateMathematicalConstants()),
+    import('./biologicalDynamics').then(m => m.validateBiologicalConstants()),
+    import('./physicsAndMovement').then(m => m.validatePhysicsConstants()),
+    import('./systemTiming').then(m => m.validateTimingConstants())
+  ]);
+  
+  const allValid = validations.every(v => v === true);
+  
+  if (import.meta.env.DEV) {
+    if (!allValid) {
+      console.error('❌ Game constants validation failed!');
+      console.log('Validation results:', {
+        mathematical: validations[0],
+        biological: validations[1],
+        physics: validations[2],
+        timing: validations[3]
+      });
+    } else {
+      console.log('✅ All game constants validated successfully');
+    }
+  }
+  
+  return allValid;
+}
+
+// Validar al cargar en desarrollo
+if (import.meta.env.DEV) {
+  validateAllGameConstants();
+}
 
 
