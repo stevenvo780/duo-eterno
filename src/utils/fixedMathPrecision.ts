@@ -9,11 +9,8 @@
  */
 
 import { 
-  GOLDEN_RATIO_CONJUGATE,
-  HIGH_PRECISION_EPSILON,
-  ULTRA_PRECISION_EPSILON,
-  EFFECTIVE_ZERO
-} from '../constants/mathematicalCore';
+  MATH
+} from '../constants';
 
 // === FUNCIONES DE PRECISIÓN CORREGIDAS ===
 
@@ -32,13 +29,13 @@ export const preciseRound = (value: number, decimals: number = 6): number => {
  * Comparación de números con tolerancia mejorada
  * CORRIGIDO: Usa epsilon relativo para números grandes
  */
-export const areEqual = (a: number, b: number, epsilon: number = HIGH_PRECISION_EPSILON): boolean => {
+export const areEqual = (a: number, b: number, epsilon: number = MATH.HIGH_PRECISION_EPSILON): boolean => {
   if (a === b) return true; // Optimización para casos exactos
   
   const diff = Math.abs(a - b);
   
   // Para números cercanos a cero, usar epsilon absoluto
-  if (Math.abs(a) < EFFECTIVE_ZERO && Math.abs(b) < EFFECTIVE_ZERO) {
+  if (Math.abs(a) < MATH.EFFECTIVE_ZERO && Math.abs(b) < MATH.EFFECTIVE_ZERO) {
     return diff <= epsilon;
   }
   
@@ -78,7 +75,7 @@ export const safeNormalize = (value: number, min: number, max: number): number =
     return 0.5; // Valor seguro por defecto
   }
   
-  if (areEqual(min, max, ULTRA_PRECISION_EPSILON)) {
+  if (areEqual(min, max, MATH.ULTRA_PRECISION_EPSILON)) {
     return 0.5; // Rango cero
   }
   
@@ -227,7 +224,7 @@ export const calculateCoherence = (history: number[]): number => {
   }, 0) / (n - 1);
   
   // Manejar varianza cero o muy pequeña
-  if (variance < ULTRA_PRECISION_EPSILON) {
+  if (variance < MATH.ULTRA_PRECISION_EPSILON) {
     return 1.0; // Perfectamente coherente (sin variación)
   }
   
@@ -327,7 +324,7 @@ const vectorMath = {
   
   normalize: (vector: Vector2D): Vector2D => {
     const mag = vectorMath.magnitude(vector);
-    if (mag < ULTRA_PRECISION_EPSILON) {
+    if (mag < MATH.ULTRA_PRECISION_EPSILON) {
       return { x: 0, y: 0 };
     }
     return { x: vector.x / mag, y: vector.y / mag };
@@ -386,7 +383,7 @@ export const validateNumber = (
   }
   
   // Verificar cero si no está permitido
-  if (!allowZero && Math.abs(value) < EFFECTIVE_ZERO) {
+  if (!allowZero && Math.abs(value) < MATH.EFFECTIVE_ZERO) {
     console.warn(`🔧 Valor demasiado cercano a cero en ${context}: ${value}`);
     return false;
   }
@@ -446,7 +443,7 @@ export const calculateResonance = (
   
   // Combinación usando proportión áurea para naturalidad
   const resonanceRaw = baseResonance + 
-    (proximityFactor * 25 * GOLDEN_RATIO_CONJUGATE) + 
+    (proximityFactor * 25 * MATH.GOLDEN_RATIO_CONJUGATE) + 
     (harmonyFactor * 20) + 
     timeFactor;
   

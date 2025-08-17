@@ -1,5 +1,5 @@
 import type { Entity, EntityActivity, EntityMood } from '../types';
-import { ACTIVITY_TYPES } from '../constants/gameConstants';
+import { ACTIVITY_TYPES } from "../constants";
 import { ACTIVITY_EFFECTS, calculateActivityPriority, getActivityDynamics } from './activityDynamics';
 import { gameConfig } from '../config/gameConfig';
 import { logAI } from './logger';

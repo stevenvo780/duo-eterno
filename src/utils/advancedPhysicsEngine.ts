@@ -12,15 +12,15 @@
 
 import type { Entity } from '../types';
 import { 
-  mathUtils, 
+  fixedMathUtils as mathUtils, 
   vectorMath, 
   type Vector2D, 
   type AdvancedResonanceState,
   type BehaviorPattern,
   type VectorField,
-  type AdvancedZoneEffect,
-  MATH_CONSTANTS
-} from './mathPrecision';
+  type AdvancedZoneEffect
+} from './fixedMathPrecision';
+import { MATH } from '../constants';
 
 // === INTERFACES DE FÍSICA AVANZADA ===
 
@@ -223,7 +223,7 @@ export class AdvancedPhysicsEngine {
 
     // Resistencia del aire
     const speed = vectorMath.magnitude(physics.velocity);
-    if (speed > MATH_CONSTANTS.ULTRA_PRECISION_EPSILON) {
+    if (speed > MATH.ULTRA_PRECISION_EPSILON) {
       const dragDirection = vectorMath.normalize({
         x: -physics.velocity.x,
         y: -physics.velocity.y
@@ -307,18 +307,20 @@ export class AdvancedPhysicsEngine {
       case 'REPULSOR':
         forceMagnitude = -zone.strength * zone.effect.totalEffect * (1 - distance / zone.radius);
         break;
-      case 'VORTEX':
+      case 'VORTEX': {
         // Fuerza tangencial para crear rotación
         const tangent = { x: -direction.y, y: direction.x };
         return {
           x: tangent.x * zone.strength * zone.effect.totalEffect * (1 - distance / zone.radius),
           y: tangent.y * zone.strength * zone.effect.totalEffect * (1 - distance / zone.radius)
         };
-      case 'FIELD':
+      }
+      case 'FIELD': {
         // Campo complejo basado en harmónicos
         const fieldEffect = Math.sin(distance / zone.radius * Math.PI * 2) * zone.effect.harmonicResonance;
         forceMagnitude = zone.strength * fieldEffect;
         break;
+      }
     }
 
     return {
@@ -328,7 +330,7 @@ export class AdvancedPhysicsEngine {
   }
 
   private calculateResonanceForces(entityId: string, physics: PhysicsState, entities: Entity[]): Vector2D {
-    let resonanceForce = { x: 0, y: 0 };
+    const resonanceForce = { x: 0, y: 0 };
 
     entities.forEach(other => {
       if (other.id === entityId || other.isDead) return;
@@ -337,7 +339,7 @@ export class AdvancedPhysicsEngine {
       if (!otherPhysics) return;
 
       const distance = vectorMath.distance(physics.position, otherPhysics.position);
-      if (distance < MATH_CONSTANTS.ULTRA_PRECISION_EPSILON) return;
+      if (distance < MATH.ULTRA_PRECISION_EPSILON) return;
 
       const direction = vectorMath.normalize({
         x: otherPhysics.position.x - physics.position.x,
@@ -522,8 +524,8 @@ export class AdvancedPhysicsEngine {
       });
 
       // Mantener solo los últimos N registros
-      if (history.length > MATH_CONSTANTS.PATTERN_MEMORY_DEPTH) {
-        history.splice(0, history.length - MATH_CONSTANTS.PATTERN_MEMORY_DEPTH);
+      if (history.length > 50) { // Valor fijo ya que PATTERN_MEMORY_DEPTH puede no existir
+        history.splice(0, history.length - 50);
       }
 
       this.behaviorHistory.set(entityId, history);
@@ -623,7 +625,7 @@ export class AdvancedPhysicsEngine {
     return [...this.particles];
   }
 
-  getPredictions(entityId: string): import('./mathPrecision').PredictionState | null {
+  getPredictions(entityId: string): import('./fixedMathPrecision').PredictionState | null {
     const history = this.behaviorHistory.get(entityId);
     if (!history || history.length < 5) return null;
 
@@ -654,7 +656,7 @@ if (typeof window !== 'undefined') {
     advancedPhysicsEngine: AdvancedPhysicsEngine;
     physicsCommands: {
       getEntityPhysics: (id: string) => PhysicsState | null;
-      getPredictions: (id: string) => import('./mathPrecision').PredictionState | null;
+      getPredictions: (id: string) => import('./fixedMathPrecision').PredictionState | null;
       getParticles: () => AdvancedParticle[];
       updateConfig: (config: Partial<PhysicsConfiguration>) => void;
       reset: () => void;
@@ -665,7 +667,7 @@ if (typeof window !== 'undefined') {
   (window as typeof window & { 
     physicsCommands: {
       getEntityPhysics: (id: string) => PhysicsState | null;
-      getPredictions: (id: string) => import('./mathPrecision').PredictionState | null;
+      getPredictions: (id: string) => import('./fixedMathPrecision').PredictionState | null;
       getParticles: () => AdvancedParticle[];
       updateConfig: (config: Partial<PhysicsConfiguration>) => void;
       reset: () => void;

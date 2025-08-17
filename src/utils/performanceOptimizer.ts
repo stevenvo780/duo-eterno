@@ -11,7 +11,7 @@
  */
 
 import { gameConfig } from '../config/gameConfig';
-import { MATH_CONSTANTS } from './mathPrecision';
+// import { MATH } from '../constants'; // No usado actualmente
 
 interface PerformanceMetrics {
   fps: number;
@@ -150,7 +150,7 @@ class SimplePerformanceMonitor {
     const snapshot: PerformanceSnapshot = {
       timestamp: now,
       fps: this.frameCount || 60,
-      frameDuration: MATH_CONSTANTS.FRAME_TIME_60FPS,
+      frameDuration: 1000 / 60, // 60 FPS = ~16.67ms
       memoryUsage,
       cpuUsage: this.estimateCPUUsage(),
       renderCalls: this.renderCallCount,

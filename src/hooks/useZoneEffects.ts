@@ -6,7 +6,7 @@ import type { EntityStats } from '../types';
 import { shouldUpdateAutopoiesis } from '../utils/performanceOptimizer';
 import { logZones } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
-import type { ZoneType } from '../constants/gameConstants';
+import type { ZoneType } from "../constants";
 
 // Ajusta cuán intensamente actúan los efectos de las zonas sobre las estadísticas
 const ZONE_EFFECT_SCALE = 0.03;

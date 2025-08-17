@@ -9,7 +9,7 @@
  */
 
 import type { EntityStats } from '../types';
-import { SURVIVAL_THRESHOLDS } from '../constants/biologicalDynamics';
+import { SURVIVAL } from '../constants';
 import { fixedMathUtils } from './fixedMathPrecision';
 
 // === VALIDACIÓN ROBUSTA DE STATS ===
@@ -207,10 +207,11 @@ export function calculateSurvivalLevel(stats: EntityStats): {
   };
   
   for (const [statName, value] of Object.entries(survivalStats)) {
-    if (value > SURVIVAL_THRESHOLDS.CRITICAL) {
+    const threshold = SURVIVAL.CRITICAL_THRESHOLDS[statName.toUpperCase() as keyof typeof SURVIVAL.CRITICAL_THRESHOLDS] || 80;
+    if (value > threshold) {
       criticalStats.push(statName);
       // Presión aumenta exponencialmente cerca de 100
-      totalCriticalPressure += Math.pow((value - SURVIVAL_THRESHOLDS.CRITICAL) / (100 - SURVIVAL_THRESHOLDS.CRITICAL), 2);
+      totalCriticalPressure += Math.pow((value - 80) / (100 - 80), 2);
     }
   }
   

@@ -9,7 +9,7 @@
  */
 
 import type { Entity, EntityMood, EntityStats } from '../types';
-import { TRANSLATIONS, MOVEMENT_CONFIG } from '../constants/gameConstants';
+import { TRANSLATIONS, MOVEMENT_CONFIG } from "../constants";
 import { getActivitySession } from './aiDecisionEngine';
 
 // Tipos para el sistema de feedback

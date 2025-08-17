@@ -1,5 +1,5 @@
 import type { GameState, Entity, Zone, ZoneType, EntityStateType, ActivityType, MoodType } from '../types';
-import { STAT_KEYS, ACTIVITY_TYPES, ENTITY_STATES, MOOD_TYPES, ZONE_TYPES } from '../constants/gameConstants';
+import { STAT_KEYS, ACTIVITY_TYPES, ENTITY_STATES, MOOD_TYPES, ZONE_TYPES } from "../constants";
 import { logStorage } from './logger';
 
 const STORAGE_KEY = 'duoEternoState';

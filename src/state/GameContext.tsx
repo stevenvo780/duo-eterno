@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import type { GameState, EntityMood, EntityStats, InteractionType } from '../types';
 import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
-import type { ActivityType, EntityStateType } from '../constants/gameConstants';
+import type { ActivityType, EntityStateType } from "../constants";
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
 
@@ -50,8 +50,8 @@ const initialGameState: GameState = {
     {
       id: 'circle',
       position: { x: gameConfig.entityCircleInitialX, y: gameConfig.entityCircleInitialY },
-      state: 'IDLE',
-      activity: 'WANDERING',
+      state: 'alive',
+      activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
         sleepiness: gameConfig.entityInitialStats,
@@ -67,15 +67,15 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: 0,
       colorHue: 200,
-      mood: 'CONTENT',
+      mood: 'content',
       thoughts: [],
       isDead: false
     },
     {
       id: 'square',
       position: { x: gameConfig.entitySquareInitialX, y: gameConfig.entitySquareInitialY },
-      state: 'IDLE',
-      activity: 'WANDERING',
+      state: 'alive',
+      activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
         sleepiness: gameConfig.entityInitialStats,
@@ -91,7 +91,7 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: Math.PI,
       colorHue: 300,
-      mood: 'CONTENT',
+      mood: 'content',
       thoughts: [],
       isDead: false
     }

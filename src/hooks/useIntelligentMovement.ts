@@ -10,10 +10,10 @@
 
 import { useState, useRef, useCallback } from 'react';
 import type { Entity } from '../types';
-import { MOVEMENT_DYNAMICS, PATHFINDING_CONFIG, ENTITY_PHYSICS } from '../constants/physicsAndMovement';
+// import { PHYSICS, MOVEMENT_CONFIG } from '../constants'; // No usado actualmente
 import { fixedMathUtils, vectorMath, type Vector2D } from '../utils/fixedMathPrecision';
 import { personalityVariation } from '../utils/naturalVariability';
-import { getGameConfig } from '../config/unifiedGameConfig';
+import { getGameConfig } from '../config/gameConfig';
 
 // === INTERFACES ===
 
@@ -195,7 +195,7 @@ export const useIntelligentMovement = (
    * CORRIGIDO: Lógica determinista sin aleatoriedad
    */
   const avoidObstacles = useCallback((entity: Entity, obstacles: ObstacleInfo[]): Vector2D => {
-    let avoidanceForce = { x: 0, y: 0 };
+    const avoidanceForce = { x: 0, y: 0 };
     
     for (const obstacle of obstacles) {
       const distance = vectorMath.distance(entity.position, obstacle.position);
@@ -224,7 +224,7 @@ export const useIntelligentMovement = (
    * CORRIGIDO: Usa distancia mínima de las constantes físicas
    */
   const separate = useCallback((entity: Entity, neighbors: Entity[]): Vector2D => {
-    let separationForce = { x: 0, y: 0 };
+    const separationForce = { x: 0, y: 0 };
     let count = 0;
     
     for (const neighbor of neighbors) {
@@ -382,7 +382,7 @@ export const useIntelligentMovement = (
     });
     
     // Calcular fuerzas de steering
-    let steeringForce = { x: 0, y: 0 };
+    const steeringForce = { x: 0, y: 0 };
     
     if (targetPosition) {
       // Seguir objetivo con pathfinding si es necesario

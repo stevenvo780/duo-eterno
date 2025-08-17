@@ -9,7 +9,7 @@ import StatBar from './StatBar';
 import Toast from './Toast';
 import LoadingSpinner from './LoadingSpinner';
 import type { InteractionType } from '../types';
-import { TRANSLATIONS } from '../constants/gameConstants';
+import { TRANSLATIONS } from "../constants";
 import { gameConfig } from '../config/gameConfig';
 
 interface UIControlsProps {

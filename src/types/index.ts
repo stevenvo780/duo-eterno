@@ -1,4 +1,4 @@
-import type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
+import type { ZoneType, ActivityType, EntityStateType, MoodType } from "../constants";
 
 export interface Position {
   x: number;
@@ -71,7 +71,7 @@ export interface Zone {
   attractiveness: number;
 }
 
-export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants/gameConstants';
+export type { ZoneType, ActivityType, EntityStateType, MoodType } from "../constants";
 
 export interface InteractionEffect {
   stats: Partial<EntityStats>;

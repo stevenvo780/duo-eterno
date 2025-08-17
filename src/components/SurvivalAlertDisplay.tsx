@@ -7,7 +7,7 @@
 
 import React from 'react';
 import type { SurvivalAlert } from '../improvements/survivabilityEnhancements';
-import { TRANSLATIONS } from '../constants/gameConstants';
+import { TRANSLATIONS } from "../constants";
 
 interface SurvivalAlertDisplayProps {
   alert: SurvivalAlert | null;

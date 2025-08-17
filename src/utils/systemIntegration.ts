@@ -8,8 +8,8 @@
  * - Documenta las correcciones aplicadas
  */
 
-import { validateAllGameConstants } from '../constants/gameConstants';
-import { getGameConfig, validateGameConfiguration } from '../config/unifiedGameConfig';
+import { validateAllGameConstants } from "../constants";
+import { getGameConfig } from '../config/gameConfig';
 import { fixedMathUtils } from './fixedMathPrecision';
 import { robustStateUtils } from './robustStateManagement';
 

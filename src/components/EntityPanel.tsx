@@ -5,7 +5,7 @@ import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, InteractionType } from '../types';
 import StatBar from './StatBar';
-import { TRANSLATIONS } from '../constants/gameConstants';
+import { TRANSLATIONS } from "../constants";
 
 interface EntityPanelProps {
   entity: Entity;
