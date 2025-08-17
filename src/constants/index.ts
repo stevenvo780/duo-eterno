@@ -246,8 +246,6 @@ export type MoodType = 'happy' | 'sad' | 'angry' | 'calm' | 'excited' | 'bored' 
 // Constantes de actividades (retrocompatibilidad)
 export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
 
-// Alias eliminado - duplicado con línea 210
-
 // === CONSTANTES ADICIONALES PARA RETROCOMPATIBILIDAD ===
 
 export const STAT_KEYS = ['hunger', 'energy', 'happiness', 'sleepiness', 'boredom', 'loneliness', 'health'] as const;
@@ -328,14 +326,6 @@ export const ENTITY_PHYSICS = {
   BASE_FRICTION: 0.1,
   ELASTICITY: MATH.GOLDEN_RATIO_CONJUGATE,
   MOMENT_OF_INERTIA: 1.0
-} as const;
-
-export const MOVEMENT_DYNAMICS = {
-  BASE_MOVEMENT_SPEED: PHYSICS.BASE_MOVEMENT_SPEED,
-  MIN_DISTANCE_BETWEEN_ENTITIES: 25,
-  REPULSION_FORCE: MATH.GOLDEN_RATIO_CONJUGATE * 3,
-  COMPANION_SEEK_DISTANCE: 200,
-  VELOCITY_SMOOTHING: 0.983
 } as const;
 
 export const PATHFINDING_CONFIG = {

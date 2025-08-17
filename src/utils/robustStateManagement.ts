@@ -37,7 +37,12 @@ export function validateAndFixStat(
   value: unknown, 
   context: string = 'unknown'
 ): number {
+  // Verificación robusta de config
   const config = STAT_VALIDATION_CONFIG[statName];
+  if (!config) {
+    console.error(`🚨 No hay config para stat: ${statName}. Stats válidos:`, Object.keys(STAT_VALIDATION_CONFIG));
+    return 50; // fallback
+  }
   
   // Convertir a número de manera segura
   let numValue: number;
@@ -134,7 +139,23 @@ export function applyStatChange(
   change: number,
   context: string = 'unknown'
 ): EntityStats {
+  // Verificación robusta de config
+  const config = STAT_VALIDATION_CONFIG[statName];
+  if (!config) {
+    console.error(`🚨 No hay config para stat: ${statName}. Stats válidos:`, Object.keys(STAT_VALIDATION_CONFIG));
+    return currentStats; // retorna sin cambios
+  }
+  
   const currentValue = currentStats[statName];
+  
+  // Validar que currentValue existe
+  if (typeof currentValue !== 'number') {
+    console.warn(`🛡️ Stat ${statName} no existe en currentStats o no es número: ${currentValue}, usando default`);
+    // Crear un stats válido con el default
+    const newStats = { ...currentStats };
+    (newStats as Record<string, number>)[statName as keyof EntityStats] = config.default;
+    return newStats;
+  }
   
   // Validar el cambio propuesto
   if (!fixedMathUtils.validateNumber(change, `change_${statName}@${context}`)) {
