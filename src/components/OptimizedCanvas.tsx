@@ -43,19 +43,19 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
     
     // Determinar sprite basado en estado de ánimo y salud
     const entityName = id === 'circle' ? 'circulo' : id;
-    let spriteKey = id;
+    let spriteKey: string = id;
     if (isDead) {
-      spriteKey = `entidad_${entityName}_dying` as any;
+      spriteKey = `entidad_${entityName}_dying`;
     } else {
       // Determinar estado visual basado en stats y mood
       if (mood === 'HAPPY' && stats.energy > 70) {
-        spriteKey = `entidad_${entityName}_happy` as any;
+        spriteKey = `entidad_${entityName}_happy`;
       } else if (stats.health < 30 || mood === 'SAD') {
-        spriteKey = `entidad_${entityName}_sad` as any;
+        spriteKey = `entidad_${entityName}_sad`;
       } else if (stats.energy < 30) {
-        spriteKey = `entidad_${entityName}_dying` as any;
+        spriteKey = `entidad_${entityName}_dying`;
       } else {
-        spriteKey = `entidad_${entityName}_happy` as any; // Estado por defecto
+        spriteKey = `entidad_${entityName}_happy`; // Estado por defecto
       }
     }
     
@@ -308,7 +308,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
         ctx.restore();
       }
     }
-  }, [entities, resonance, width, height, loadedImages]);
+  }, [entities, resonance, width, height]);
 
   // Load all sprite assets
   useEffect(() => {
@@ -444,7 +444,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       console.error('Error durante el renderizado:', error);
       logRenderCompat(`Error en renderizado: ${error}`);
     }
-  }, [width, height, entities, zones, resonance, mapElements, drawEntity, drawZones, drawMapElements, drawResonanceEffect]);
+  }, [width, height, entities, zones, resonance, mapElements, drawEntity, drawZones, drawMapElements, drawResonanceEffect, loadedImages]);
 
   useEffect(() => {
     render();

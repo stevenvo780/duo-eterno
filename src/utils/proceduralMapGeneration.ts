@@ -154,7 +154,7 @@ export function generateHouseLayout(seed: string): {
     const corner = corners[index];
     
     // Ajustar posición según la esquina
-    let roomBounds = {
+    const roomBounds = {
       x: corner.x,
       y: corner.y,
       width: roomConfig.preferredSize.width,

@@ -814,7 +814,7 @@ export const calculateAdvancedVectorField = (
   _flowField: Vector2D[][],
   time: number
 ): VectorField => {
-  let resultantForce = { x: 0, y: 0 };
+  const resultantForce = { x: 0, y: 0 };
   
   // Fuerzas de atracción
   attractors.forEach(attractor => {
@@ -923,7 +923,7 @@ const calculateGradient = (position: Vector2D, attractors: Vector2D[], _repulsor
   const eps = 0.01;
   
   const field = (pos: Vector2D) => {
-    let force = { x: 0, y: 0 };
+    const force = { x: 0, y: 0 };
     
     attractors.forEach(attractor => {
       const distance = vectorMath.distance(pos, attractor);
