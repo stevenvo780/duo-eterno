@@ -60,11 +60,21 @@ export const useZoneEffects = () => {
   const intervalRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);
   const messageCounter = useRef<number>(0);
+  const gameStateRef = useRef(gameState);
+  const dispatchRef = useRef(dispatch);
 
+  // Actualizar refs cuando cambien los valores
+  useEffect(() => {
+    gameStateRef.current = gameState;
+    dispatchRef.current = dispatch;
+  }, [gameState, dispatch]);
+
+  // Crear el intervalo solo una vez
   useEffect(() => {
     const { zoneEffectsInterval } = getGameIntervals();
+    
     logZones.info('Zone Effects iniciado', { interval: zoneEffectsInterval });
-
+    
     intervalRef.current = window.setInterval(() => {
       if (!shouldUpdateAutopoiesis()) return;
 
@@ -73,16 +83,16 @@ export const useZoneEffects = () => {
       lastUpdateTime.current = now;
       messageCounter.current++;
 
-      const livingEntities = gameState.entities.filter(
+      const livingEntities = gameStateRef.current.entities.filter(
         e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
       );
 
       for (const entity of livingEntities) {
-        const currentZone = getEntityZone(entity.position, gameState.zones);
+        const currentZone = getEntityZone(entity.position, gameStateRef.current.zones);
         if (!currentZone || !currentZone.effects) continue;
 
         const occupancy = livingEntities.filter(e => {
-          const z = getEntityZone(e.position, gameState.zones);
+          const z = getEntityZone(e.position, gameStateRef.current.zones);
           return z && z.id === currentZone.id;
         }).length;
 
@@ -106,7 +116,7 @@ export const useZoneEffects = () => {
         });
 
         if (Object.keys(finalEffects).length) {
-          dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: finalEffects } });
+          dispatchRef.current({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: finalEffects } });
           
           // Log para análisis
           dynamicsLogger.logZoneEffect(entity.id, currentZone.name, finalEffects as Record<string, number>);
@@ -118,7 +128,7 @@ export const useZoneEffects = () => {
 
         if (criticalNeed && messageCounter.current % 15 === 0) {
           const message = getContextualZoneMessage(entity.id, currentZone.type, effectiveness, criticalNeed);
-          if (message) dispatch({ type: 'SHOW_DIALOGUE', payload: { message, duration: 2000 } });
+          if (message) dispatchRef.current({ type: 'SHOW_DIALOGUE', payload: { message, duration: 2000 } });
         }
       }
     }, zoneEffectsInterval);
@@ -126,8 +136,9 @@ export const useZoneEffects = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
         logZones.info('Zone Effects detenido');
       }
     };
-  }, [gameState.entities, gameState.zones, dispatch]);
+  }, []); // Sin dependencias - solo se ejecuta una vez
 };

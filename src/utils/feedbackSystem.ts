@@ -171,7 +171,10 @@ const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): string => 
     'CALM': '😐',
     'TIRED': '😴',
     'SAD': '😢',
-    'ANXIOUS': '😰'
+    'ANXIOUS': '😰',
+    'ANGRY': '😠',
+    'BORED': '😑',
+    'LONELY': '😔'
   };
   
   let indicator = moodEmojis[mood];

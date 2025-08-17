@@ -1,10 +1,20 @@
 import { useEffect, useRef } from 'react';
-import type { GameState } from '../types';
+import type { GameState, EntityStateType, ActivityType, EntityStats, MoodType } from '../types';
 import { safeLoad, safeSave } from '../utils/persistence';
 import { logStorage } from '../utils/logger';
 
+type GameAction = 
+  | { type: 'UPDATE_RESONANCE'; payload: number }
+  | { type: 'UPDATE_ENTITY_POSITION'; payload: { entityId: string; position: { x: number; y: number } } }
+  | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityStateType } }
+  | { type: 'UPDATE_ENTITY_ACTIVITY'; payload: { entityId: string; activity: ActivityType } }
+  | { type: 'UPDATE_ENTITY_STATS'; payload: { entityId: string; stats: Partial<EntityStats> } }
+  | { type: 'UPDATE_ENTITY_MOOD'; payload: { entityId: string; mood: MoodType } }
+  | { type: 'KILL_ENTITY'; payload: { entityId: string } }
+  | { type: 'UPDATE_TOGETHER_TIME'; payload: number };
+
 // Persistencia mínima: autosave cada 20s y beforeunload
-export const usePersistence = (gameState: GameState, dispatch: (action: any) => void) => {
+export const usePersistence = (gameState: GameState, dispatch: (action: GameAction) => void) => {
   const lastSaveRef = useRef<number>(0);
 
   // Load on mount
@@ -38,7 +48,12 @@ export const usePersistence = (gameState: GameState, dispatch: (action: any) => 
     }, 5000);
 
     const beforeUnload = () => {
-      try { safeSave(gameState); } catch {}
+      try { 
+        safeSave(gameState); 
+      } catch (error) {
+        // Ignore save errors on unload
+        logStorage.warn('Failed to save on unload', error);
+      }
     };
     window.addEventListener('beforeunload', beforeUnload);
 

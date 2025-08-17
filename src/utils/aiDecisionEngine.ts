@@ -37,9 +37,12 @@ const MOOD_MODIFIERS: Record<EntityMood, {
   'EXCITED': { activityChange: 0.8, socialSeek: 0.8, riskTaking: 0.8, energyConservation: 0.2 },
   'CONTENT': { activityChange: 0.2, socialSeek: 0.5, riskTaking: 0.4, energyConservation: 0.4 },
   'CALM': { activityChange: 0.1, socialSeek: 0.4, riskTaking: 0.3, energyConservation: 0.6 },
-  'TIRED': { activityChange: 0.1, socialSeek: 0.2, riskTaking: 0.1, energyConservation: 0.9 },
   'SAD': { activityChange: 0.4, socialSeek: 0.9, riskTaking: 0.2, energyConservation: 0.7 },
-  'ANXIOUS': { activityChange: 0.7, socialSeek: 0.6, riskTaking: 0.1, energyConservation: 0.8 }
+  'ANXIOUS': { activityChange: 0.7, socialSeek: 0.6, riskTaking: 0.1, energyConservation: 0.8 },
+  'ANGRY': { activityChange: 0.6, socialSeek: 0.3, riskTaking: 0.7, energyConservation: 0.4 },
+  'BORED': { activityChange: 0.8, socialSeek: 0.4, riskTaking: 0.5, energyConservation: 0.3 },
+  'LONELY': { activityChange: 0.5, socialSeek: 0.9, riskTaking: 0.3, energyConservation: 0.6 },
+  'TIRED': { activityChange: 0.1, socialSeek: 0.2, riskTaking: 0.1, energyConservation: 0.9 }
 };
 
 interface ActivitySession {
@@ -104,8 +107,17 @@ const shouldChangeActivity = (
   }
   
   const personality = getPersonalityProfile(entity.id);
-  const moodModifier = MOOD_MODIFIERS[entity.mood];
+  
+  // Normalizar el mood antes de usar - conversión de minúsculas a mayúsculas si es necesario
+  const normalizedMood = entity.mood.toUpperCase() as keyof typeof MOOD_MODIFIERS;
+  const moodModifier = MOOD_MODIFIERS[normalizedMood];
   const inertia = calculateActivityInertia(entity, currentTime);
+  
+  // Verificar que el moodModifier existe antes de acceder a sus propiedades
+  if (!moodModifier) {
+    console.warn(`🚨 Mood modifier no encontrado para mood: "${entity.mood}" (normalizado: "${normalizedMood}"). Usando valores por defecto.`);
+    return urgencyScore > 80; // Decisión simple basada en urgencia
+  }
   
   let changeChance = moodModifier.activityChange;
   changeChance *= (1 - inertia);
@@ -128,10 +140,19 @@ const applyMoodModifiers = (
   activity: EntityActivity,
   mood: EntityMood
 ): number => {
-  const moodModifier = MOOD_MODIFIERS[mood];
+  // Normalizar el mood antes de usar
+  const normalizedMood = mood.toUpperCase() as keyof typeof MOOD_MODIFIERS;
+  const moodModifier = MOOD_MODIFIERS[normalizedMood];
+  
+  // Validación para prevenir errores undefined
+  if (!moodModifier) {
+    console.warn(`🚨 Mood modifier no encontrado para mood: "${mood}" (normalizado: "${normalizedMood}"). Usando valores por defecto.`);
+    return baseScore; // Retornar score base sin modificaciones
+  }
+  
   let modifiedScore = baseScore;
   
-  if (activity === 'SOCIALIZING' || activity === 'DANCING') {
+  if (activity === 'SOCIALIZING') {
     modifiedScore += moodModifier.socialSeek * 20;
   }
   
@@ -139,7 +160,7 @@ const applyMoodModifiers = (
     modifiedScore += moodModifier.energyConservation * 15;
   }
   
-  if (activity === 'EXPLORING' || activity === 'EXERCISING') {
+  if (activity === 'EXERCISING') {
     modifiedScore += (moodModifier.riskTaking - 0.5) * 25;
   }
   
@@ -208,7 +229,7 @@ export const makeIntelligentDecision = (
     
     let personalityModifiedScore = moodModifiedScore;
     
-    if ((activity === 'SOCIALIZING' || activity === 'DANCING') && companion && !companion.isDead) {
+    if ((activity === 'SOCIALIZING') && companion && !companion.isDead) {
       personalityModifiedScore += personality.socialPreference * 15 * Math.max(0, Math.min(1, gameConfig.aiPersonalityInfluence));
     }
     

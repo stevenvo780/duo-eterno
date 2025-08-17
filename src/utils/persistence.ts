@@ -52,7 +52,7 @@ export const serializeStateV1 = (state: GameState): PersistedStateV1 => ({
 
 export const migrateToLatest = (raw: unknown): PersistedStateV1 | null => {
   if (!raw || typeof raw !== 'object') return null;
-  const data = raw as Partial<PersistedStateAny> & Record<string, any>;
+  const data = raw as Partial<PersistedStateAny> & Record<string, unknown>;
   const version = typeof data.version === 'number' ? data.version : 1;
 
   // Currently only V1 supported; future versions can be mapped here
@@ -66,24 +66,27 @@ export const migrateToLatest = (raw: unknown): PersistedStateV1 | null => {
   try {
     const v1: PersistedStateV1 = {
       version: 1,
-      resonance: Number((data as any).resonance) || 50,
+      resonance: Number((data as Record<string, unknown>).resonance) || 50,
       lastSave: Date.now(),
-      togetherTime: Number((data as any).togetherTime) || 0,
-      cycles: Number((data as any).cycles) || 0,
-      entities: ((data as any).entities || []).map((e: any) => ({
-        id: e.id,
-        position: e.position,
-        stats: e.stats,
-        mood: e.mood,
-        state: e.state,
-        activity: e.activity,
-        isDead: !!e.isDead,
-        pulsePhase: Number(e.pulsePhase) || 0,
-        colorHue: Number(e.colorHue) || 0,
-        lastStateChange: Number(e.lastStateChange) || Date.now(),
-        lastActivityChange: Number(e.lastActivityChange) || Date.now(),
-        lastInteraction: Number(e.lastInteraction) || Date.now()
-      }))
+      togetherTime: Number((data as Record<string, unknown>).togetherTime) || 0,
+      cycles: Number((data as Record<string, unknown>).cycles) || 0,
+      entities: ((data as Record<string, unknown>).entities as unknown[] || []).map((e: unknown) => {
+        const entity = e as Record<string, unknown>;
+        return {
+          id: entity.id as string,
+          position: entity.position as { x: number; y: number },
+          stats: entity.stats as GameState['entities'][number]['stats'],
+          mood: entity.mood as GameState['entities'][number]['mood'],
+          state: entity.state as GameState['entities'][number]['state'],
+          activity: entity.activity as GameState['entities'][number]['activity'],
+          isDead: !!entity.isDead,
+          pulsePhase: Number(entity.pulsePhase) || 0,
+          colorHue: Number(entity.colorHue) || 0,
+          lastStateChange: Number(entity.lastStateChange) || Date.now(),
+          lastActivityChange: Number(entity.lastActivityChange) || Date.now(),
+          lastInteraction: Number(entity.lastInteraction) || Date.now()
+        };
+      })
     };
     return v1;
   } catch (e) {
@@ -117,5 +120,8 @@ export const safeSave = (state: GameState): void => {
 export const clearPersisted = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
-  } catch {}
+  } catch (error) {
+    // Ignore localStorage errors - not critical
+    logStorage.warn('Failed to clear persisted state', error);
+  }
 };

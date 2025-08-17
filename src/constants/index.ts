@@ -161,49 +161,62 @@ export const PHYSICS = {
 // === CONSTANTES DE ACTIVIDADES ===
 
 export const ACTIVITIES = {
-  // Tipos de actividades disponibles
+  // Tipos de actividades disponibles (alineadas con activityDynamics)
   TYPES: [
-    'RESTING', 'SLEEPING', 'EATING', 'MEDITATING',
-    'READING', 'EXERCISING', 'SOCIALIZING', 'WORKING', 'PLAYING'
+    'RESTING', 'MEDITATING', 'SOCIALIZING', 'WORKING', 'EXERCISING',
+    'WANDERING', 'WRITING', 'EXPLORING', 'CONTEMPLATING', 'DANCING',
+    'HIDING', 'SHOPPING', 'COOKING'
   ] as const,
   
   // Duración óptima de actividades (en ms)
   OPTIMAL_DURATION: {
     RESTING: 180000, // 3 minutos
-    SLEEPING: 480000, // 8 minutos (simulando horas)
-    EATING: 120000, // 2 minutos
     MEDITATING: 300000, // 5 minutos
-    READING: 600000, // 10 minutos
-    EXERCISING: 240000, // 4 minutos
     SOCIALIZING: 360000, // 6 minutos
     WORKING: 1200000, // 20 minutos
-    PLAYING: 480000, // 8 minutos
+    EXERCISING: 240000, // 4 minutos
+    WANDERING: 120000, // 2 minutos
+    WRITING: 600000, // 10 minutos
+    EXPLORING: 300000, // 5 minutos
+    CONTEMPLATING: 480000, // 8 minutos
+    DANCING: 180000, // 3 minutos
+    HIDING: 240000, // 4 minutos
+    SHOPPING: 120000, // 2 minutos
+    COOKING: 180000, // 3 minutos
   },
   
   // Efectos en stats (por minuto de actividad)
   EFFECTS: {
     RESTING: { energy: 2, happiness: 1, sleepiness: -1 },
-    SLEEPING: { energy: 5, sleepiness: -8, health: 1 },
-    EATING: { hunger: -6, happiness: 2, health: 0.5 },
     MEDITATING: { happiness: 3, loneliness: -1, boredom: -2 },
-    READING: { boredom: -3, happiness: 1, loneliness: 1 },
-    EXERCISING: { energy: -2, happiness: 2, health: 2, hunger: 1 },
     SOCIALIZING: { loneliness: -4, happiness: 3, boredom: -2 },
     WORKING: { boredom: 1, energy: -1, happiness: -0.5 },
-    PLAYING: { happiness: 4, boredom: -4, energy: -0.5 },
+    EXERCISING: { energy: -2, happiness: 2, health: 2, hunger: 1 },
+    WANDERING: { boredom: -1, energy: -0.5, happiness: 1 },
+    WRITING: { boredom: -2, happiness: 1, loneliness: 1 },
+    EXPLORING: { boredom: -3, energy: -1, happiness: 2 },
+    CONTEMPLATING: { happiness: 2, loneliness: -2, boredom: -1 },
+    DANCING: { happiness: 4, boredom: -3, energy: -1.5 },
+    HIDING: { loneliness: 2, happiness: -1, energy: 0.5 },
+    SHOPPING: { happiness: 2, boredom: -1, money: -1 },
+    COOKING: { hunger: -4, happiness: 1, boredom: -1 },
   },
   
   // Zonas preferidas por actividad
   PREFERRED_ZONES: {
-    RESTING: 'living',
-    SLEEPING: 'bedroom',
-    EATING: 'kitchen',
-    MEDITATING: 'living',
-    READING: 'library',
-    EXERCISING: 'gym',
+    RESTING: 'rest',
+    MEDITATING: 'comfort',
     SOCIALIZING: 'social',
-    WORKING: 'office',
-    PLAYING: 'recreation',
+    WORKING: 'work',
+    EXERCISING: 'play',
+    WANDERING: 'play',
+    WRITING: 'comfort',
+    EXPLORING: 'play',
+    CONTEMPLATING: 'comfort',
+    DANCING: 'social',
+    HIDING: 'comfort',
+    SHOPPING: 'work',
+    COOKING: 'food',
   },
 } as const;
 
@@ -241,7 +254,7 @@ export const {
 export type ActivityType = typeof ACTIVITIES.TYPES[number];
 export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'office' | 'gym' | 'library' | 'social' | 'recreation' | 'food' | 'rest' | 'play' | 'comfort' | 'work' | 'energy';
 export type EntityStateType = 'alive' | 'resting' | 'dead' | 'fading' | 'DEAD' | 'FADING' | 'LOW_RESONANCE' | 'SEEKING' | 'IDLE';
-export type MoodType = 'happy' | 'sad' | 'angry' | 'calm' | 'excited' | 'bored' | 'lonely' | 'content' | 'HAPPY' | 'SAD' | 'EXCITED' | 'CONTENT' | 'CALM' | 'ANXIOUS';
+export type MoodType = 'HAPPY' | 'SAD' | 'ANGRY' | 'CALM' | 'EXCITED' | 'BORED' | 'LONELY' | 'CONTENT' | 'ANXIOUS' | 'TIRED';
 
 // Constantes de actividades (retrocompatibilidad)
 export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
@@ -250,7 +263,7 @@ export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
 
 export const STAT_KEYS = ['hunger', 'energy', 'happiness', 'sleepiness', 'boredom', 'loneliness', 'health'] as const;
 export const ENTITY_STATES = ['alive', 'resting', 'dead', 'fading', 'DEAD', 'FADING', 'LOW_RESONANCE', 'SEEKING', 'IDLE'] as const;
-export const MOOD_TYPES = ['happy', 'sad', 'angry', 'calm', 'excited', 'bored', 'lonely', 'content', 'HAPPY', 'SAD', 'EXCITED', 'CONTENT', 'CALM', 'ANXIOUS'] as const;
+export const MOOD_TYPES = ['HAPPY', 'SAD', 'ANGRY', 'CALM', 'EXCITED', 'BORED', 'LONELY', 'CONTENT', 'ANXIOUS', 'TIRED'] as const;
 export const ZONE_TYPES = ['kitchen', 'bedroom', 'living', 'bathroom', 'office', 'gym', 'library', 'social', 'recreation', 'food', 'rest', 'play', 'comfort', 'work', 'energy'] as const;
 
 // Constantes de traducción y configuración
@@ -282,6 +295,14 @@ export const TRANSLATIONS = {
     SOCIALIZING: 'Socializando',
     WORKING: 'Trabajando',
     PLAYING: 'Jugando',
+    WANDERING: 'Vagando',
+    WRITING: 'Escribiendo',
+    EXPLORING: 'Explorando',
+    CONTEMPLATING: 'Contemplando',
+    DANCING: 'Bailando',
+    HIDING: 'Escondiéndose',
+    SHOPPING: 'Comprando',
+    COOKING: 'Cocinando'
   },
   
   // Stats
@@ -297,6 +318,16 @@ export const TRANSLATIONS = {
   
   // Moods extended
   MOODS: {
+    HAPPY: 'Feliz',
+    SAD: 'Triste',
+    ANGRY: 'Enojado',
+    CALM: 'Calmado',
+    EXCITED: 'Emocionado',
+    BORED: 'Aburrido',
+    LONELY: 'Solo',
+    CONTENT: 'Contento',
+    ANXIOUS: 'Ansioso',
+    TIRED: 'Cansado',
     happy: 'Feliz',
     sad: 'Triste',
     angry: 'Enojado',
@@ -304,7 +335,6 @@ export const TRANSLATIONS = {
     excited: 'Emocionado',
     bored: 'Aburrido',
     lonely: 'Solo',
-    content: 'Contento',
   }
 } as const;
 

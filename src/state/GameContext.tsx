@@ -67,7 +67,7 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: 0,
       colorHue: 200,
-      mood: 'content',
+      mood: 'CONTENT',
       thoughts: [],
       isDead: false
     },
@@ -91,7 +91,7 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: Math.PI,
       colorHue: 300,
-      mood: 'content',
+      mood: 'CONTENT',
       thoughts: [],
       isDead: false
     }

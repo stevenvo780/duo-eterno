@@ -57,8 +57,8 @@ export function generatePaths(
 }
 
 function createPath(
-  zone1: { x: number; y: number; bounds: any },
-  zone2: { x: number; y: number; bounds: any },
+  zone1: { x: number; y: number; bounds: { width: number; height: number; x?: number; y?: number } },
+  zone2: { x: number; y: number; bounds: { width: number; height: number; x?: number; y?: number } },
   pathWidth: number,
   pathType: string,
   seededRandom: () => number
@@ -142,11 +142,15 @@ function createPath(
 }
 
 function getConnectionPoint(
-  fromZone: { x: number; y: number; bounds: any },
-  toZone: { x: number; y: number; bounds: any }
+  fromZone: { x: number; y: number; bounds: { width: number; height: number; x?: number; y?: number } },
+  toZone: { x: number; y: number; bounds: { width: number; height: number; x?: number; y?: number } }
 ): { x: number; y: number } {
   const dx = toZone.x - fromZone.x;
   const dy = toZone.y - fromZone.y;
+
+  // Use zone center if bounds x,y are undefined
+  const fromBoundsX = fromZone.bounds.x ?? (fromZone.x - fromZone.bounds.width / 2);
+  const fromBoundsY = fromZone.bounds.y ?? (fromZone.y - fromZone.bounds.height / 2);
 
   // Determinar qué lado de la zona usar para la conexión
   if (Math.abs(dx) > Math.abs(dy)) {
@@ -154,13 +158,13 @@ function getConnectionPoint(
     if (dx > 0) {
       // toZone está a la derecha, usar lado derecho de fromZone
       return {
-        x: fromZone.bounds.x + fromZone.bounds.width,
+        x: fromBoundsX + fromZone.bounds.width,
         y: fromZone.y
       };
     } else {
       // toZone está a la izquierda, usar lado izquierdo de fromZone
       return {
-        x: fromZone.bounds.x,
+        x: fromBoundsX,
         y: fromZone.y
       };
     }
@@ -170,13 +174,13 @@ function getConnectionPoint(
       // toZone está abajo, usar lado inferior de fromZone
       return {
         x: fromZone.x,
-        y: fromZone.bounds.y + fromZone.bounds.height
+        y: fromBoundsY + fromZone.bounds.height
       };
     } else {
       // toZone está arriba, usar lado superior de fromZone
       return {
         x: fromZone.x,
-        y: fromZone.bounds.y
+        y: fromBoundsY
       };
     }
   }

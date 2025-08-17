@@ -15,6 +15,22 @@ import { fixedMathUtils, vectorMath, type Vector2D } from '../utils/fixedMathPre
 import { personalityVariation } from '../utils/naturalVariability';
 import { getGameConfig } from '../config/gameConfig';
 
+// === CONSTANTS ===
+
+const MOVEMENT_DYNAMICS = {
+  BASE_MOVEMENT_SPEED: 0.8,
+  MIN_DISTANCE_BETWEEN_ENTITIES: 30
+} as const;
+
+const ENTITY_PHYSICS = {
+  SIZE: 15
+} as const;
+
+const PATHFINDING_CONFIG = {
+  DIRECT_PATH_MAX_DISTANCE: 50,
+  ARRIVAL_THRESHOLD: 8
+} as const;
+
 // === INTERFACES ===
 
 interface MovementTarget {
@@ -104,6 +120,7 @@ export const useIntelligentMovement = (
     // Para esta versión simplificada, usar navegación por waypoints
     const waypoints = generateWaypoints(start, goal, obstacles);
     return waypoints.length > 0 ? waypoints : [goal];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   /**
@@ -136,6 +153,7 @@ export const useIntelligentMovement = (
     
     waypoints.push(goal);
     return waypoints;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   /**

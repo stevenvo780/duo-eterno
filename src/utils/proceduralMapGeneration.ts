@@ -422,7 +422,15 @@ function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
     social: { loneliness: 40, happiness: 20, boredom: 15 },
     work: { money: 80 },
     comfort: { happiness: 18, boredom: 20, loneliness: 15 },
-    energy: { energy: 50, sleepiness: 25, happiness: 10 }
+    energy: { energy: 50, sleepiness: 25, happiness: 10 },
+    kitchen: { hunger: 25, happiness: 10 },
+    bedroom: { sleepiness: 40, energy: 25 },
+    living: { happiness: 15, loneliness: 10 },
+    bathroom: { health: 10, happiness: 5 },
+    office: { money: 60, boredom: -5 },
+    gym: { energy: -10, health: 20, happiness: 15 },
+    library: { happiness: 10, boredom: 30 },
+    recreation: { happiness: 20, boredom: 25 }
   };
   
   return effects[zoneType] || {};

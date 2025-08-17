@@ -12,6 +12,21 @@ import { validateAllGameConstants } from "../constants";
 import { getGameConfig } from '../config/gameConfig';
 import { fixedMathUtils } from './fixedMathPrecision';
 import { robustStateUtils } from './robustStateManagement';
+import { logGeneral } from './logger';
+
+/**
+ * Valida la configuración del juego
+ */
+function validateGameConfiguration(): boolean {
+  try {
+    // Validación básica de la configuración
+    const config = getGameConfig();
+    return !!(config && config.entityInitialStats !== undefined);
+  } catch (error) {
+    logGeneral.warn('Error validating game configuration:', error);
+    return false;
+  }
+}
 
 // === RESUMEN DE CORRECCIONES APLICADAS ===
 

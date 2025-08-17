@@ -48,9 +48,9 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       spriteKey = `entidad_${entityName}_dying`;
     } else {
       // Determinar estado visual basado en stats y mood
-      if (mood === 'happy' && stats.energy > 70) {
+      if (mood === 'HAPPY' && stats.energy > 70) {
         spriteKey = `entidad_${entityName}_happy`;
-      } else if (stats.health < 30 || mood === 'sad') {
+      } else if (stats.health < 30 || mood === 'SAD') {
         spriteKey = `entidad_${entityName}_sad`;
       } else if (stats.energy < 30) {
         spriteKey = `entidad_${entityName}_dying`;
