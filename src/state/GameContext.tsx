@@ -1,7 +1,6 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import type { GameState, EntityMood, EntityStats, InteractionType } from '../types';
-import { saveGameState, loadGameState } from '../utils/storage';
-import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
+import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
 import { usePersistence } from '../hooks/usePersistence';
 
@@ -41,6 +40,7 @@ type GameAction =
   | { type: 'START_CONNECTION_ANIMATION'; payload: { type: InteractionType } }
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
   | { type: 'RESET_GAME' }
+  | { type: 'GENERATE_NEW_MAP'; payload?: { seed?: string } }
   | { type: 'LOAD_SAVED_STATE'; payload: GameState }
 ;
 
@@ -104,8 +104,9 @@ const initialGameState: GameState = {
     startTime: 0,
     type: 'NOURISH'
   },
-  zones: createDefaultZones(),
-  mapElements: createDefaultMapElements()
+  zones: [],
+  mapElements: [],
+  mapSeed: generateMapSeed() // Generar semilla única para cada partida
 };
 
 const initialDialogueState: DialogueState = {
@@ -292,7 +293,26 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     
     case 'RESET_GAME': {
-      return { ...initialGameState, cycles: 0 };
+      const newSeed = generateMapSeed();
+      const { zones, mapElements } = generateProceduralMap(newSeed);
+      return { 
+        ...initialGameState, 
+        cycles: 0,
+        mapSeed: newSeed,
+        zones,
+        mapElements
+      };
+    }
+
+    case 'GENERATE_NEW_MAP': {
+      const newSeed = action.payload?.seed || generateMapSeed();
+      const { zones, mapElements } = generateProceduralMap(newSeed);
+      return {
+        ...state,
+        mapSeed: newSeed,
+        zones,
+        mapElements
+      };
     }
     
     case 'LOAD_SAVED_STATE': {
@@ -340,20 +360,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const savedState = loadGameState();
-    if (savedState) {
-      dispatch({ type: 'LOAD_SAVED_STATE', payload: savedState });
-    }
+    // Generar mapa inicial
+    dispatch({ type: 'GENERATE_NEW_MAP' });
   }, []);
 
   // Persistencia mínima (autosave 20s + beforeunload)
   usePersistence(gameState, dispatch);
 
-  useEffect(() => {
-    // Mantener compatibilidad con storage.ts pero reducir spam de escrituras
-    const throttle = window.setTimeout(() => saveGameState(gameState), 2500);
-    return () => clearTimeout(throttle);
-  }, [gameState]);
 
   return (
     <GameContext.Provider value={{ gameState, dialogueState, dispatch }}>

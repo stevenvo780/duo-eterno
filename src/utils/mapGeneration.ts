@@ -220,7 +220,7 @@ export const createDefaultMapElements = (): MapElement[] => {
     // Decorativos - Estación de trabajo
     {
       id: 'lampara_work',
-      type: 'work_zone',
+      type: 'play_zone',
       position: { x: 720, y: 70 },
       size: { width: 16, height: 24 },
       color: '#f2d450'
@@ -229,21 +229,21 @@ export const createDefaultMapElements = (): MapElement[] => {
     // Decorativos - Bosque de meditación
     {
       id: 'flower_meditation_1',
-      type: 'comfort_zone',
+      type: 'food_zone',
       position: { x: 300, y: 440 },
       size: { width: 8, height: 8 },
       color: '#8a5fb8'
     },
     {
       id: 'flower_meditation_2',
-      type: 'comfort_zone',
+      type: 'food_zone',
       position: { x: 380, y: 480 },
       size: { width: 8, height: 8 },
       color: '#639bff'
     },
     {
       id: 'flower_meditation_3',
-      type: 'comfort_zone',
+      type: 'food_zone',
       position: { x: 420, y: 520 },
       size: { width: 8, height: 8 },
       color: '#ff6b9d'

@@ -16,7 +16,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
   const { dispatch } = useGame();
   
   const handleInteraction = (type: InteractionType) => {
-    if (entity.isDead && type !== 'REVIVE') return;
+    if (entity.isDead) return;
 
     const result = applyInteractionEffect(entity.stats, type);
     dynamicsLogger.logUserInteraction(type, entity.id, result);

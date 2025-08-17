@@ -4,7 +4,7 @@ import { GameProvider } from './state/GameContext';
 import OptimizedCanvas from './components/OptimizedCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
-import { useOptimizedUnifiedGameLoop } from './hooks/useOptimizedUnifiedGameLoop';
+import { useBalancedGameLoop } from './hooks/useBalancedGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
@@ -14,8 +14,8 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   
-  // 🚀 GAME LOOP COMPLETO - Maneja resonancia, cycles, tiempo juntos y todas las dinámicas
-  useOptimizedUnifiedGameLoop();
+  // 🎮 GAME LOOP BALANCEADO - Dinámicas de supervivencia mejoradas con degradación estratégica
+  useBalancedGameLoop();
   
   useDialogueSystem();
   useZoneEffects();

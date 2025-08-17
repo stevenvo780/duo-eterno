@@ -95,4 +95,5 @@ export interface GameState {
   };
   zones: Zone[];
   mapElements: MapElement[];
+  mapSeed?: string; // Semilla para generación procedimental
 }

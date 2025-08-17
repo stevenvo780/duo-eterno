@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
-import { applyInteractionEffect, getStatColor } from '../utils/interactions';
+import { applyInteractionEffect } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
@@ -9,7 +9,7 @@ import StatBar from './StatBar';
 import Toast from './Toast';
 import LoadingSpinner from './LoadingSpinner';
 import type { InteractionType } from '../types';
-import { TRANSLATIONS, type StatKey, type ActivityType, type MoodType } from '../constants/gameConstants';
+import { TRANSLATIONS } from '../constants/gameConstants';
 import { gameConfig } from '../config/gameConfig';
 
 interface UIControlsProps {
@@ -149,17 +149,6 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
     return TRANSLATIONS.ENTITIES[id as keyof typeof TRANSLATIONS.ENTITIES] || id;
   };
 
-  const getActivityName = (activity: string): string => {
-    return TRANSLATIONS.ACTIVITIES[activity as ActivityType] || activity;
-  };
-
-  const getMoodName = (mood: string): string => {
-    return TRANSLATIONS.MOODS[mood as MoodType] || mood;
-  };
-
-  const getStatName = (stat: string): string => {
-    return TRANSLATIONS.STATS[stat as StatKey] || stat;
-  };
 
   const toggleDebugMode = () => {
     gameConfig.debugMode = !gameConfig.debugMode;

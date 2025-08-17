@@ -315,7 +315,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        img.onerror = (error) => {
+        img.onerror = () => {
           console.warn(`Failed to load ${assetName}, trying alternative paths...`);
           // Try unified sprites directory
           const altImg = new Image();
@@ -333,7 +333,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
           try {
             const img = await loadImage(assetName);
             return [assetName, img] as [string, HTMLImageElement];
-          } catch (error) {
+          } catch {
             console.warn(`Could not load asset: ${assetName}`);
             return null;
           }
