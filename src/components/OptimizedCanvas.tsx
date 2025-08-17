@@ -102,24 +102,23 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       const sprite = spriteKey ? loadedImages[spriteKey] : null;
       
       if (sprite && sprite.complete) {
-        // Scale and tile the zone sprite to fit the zone bounds
-        const tileSize = 64; // Base tile size
-        const tilesX = Math.ceil(zone.bounds.width / tileSize);
-        const tilesY = Math.ceil(zone.bounds.height / tileSize);
+        // Usar patrón repetido sin deformación
+        ctx.save();
         
-        for (let x = 0; x < tilesX; x++) {
-          for (let y = 0; y < tilesY; y++) {
-            const drawX = zone.bounds.x + (x * tileSize);
-            const drawY = zone.bounds.y + (y * tileSize);
-            const drawWidth = Math.min(tileSize, zone.bounds.x + zone.bounds.width - drawX);
-            const drawHeight = Math.min(tileSize, zone.bounds.y + zone.bounds.height - drawY);
-            
-            if (drawWidth > 0 && drawHeight > 0) {
-              // Usar el patrón como texture repetida
-              ctx.drawImage(sprite, 0, 0, sprite.width, sprite.height, drawX, drawY, drawWidth, drawHeight);
-            }
-          }
+        // Crear patrón repetido del sprite
+        const pattern = ctx.createPattern(sprite, 'repeat');
+        if (pattern) {
+          // Aplicar clip para limitar al área de la zona
+          ctx.beginPath();
+          ctx.rect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
+          ctx.clip();
+          
+          // Llenar con el patrón
+          ctx.fillStyle = pattern;
+          ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         }
+        
+        ctx.restore();
         
         // Add zone border for clarity
         ctx.strokeStyle = zone.color.replace('0.25', '0.6').replace('0.3', '0.8');
@@ -258,31 +257,55 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
         const x2 = clamp(entity2.position?.x as number, 0, width);
         const y2 = clamp(entity2.position?.y as number, 0, height);
 
-        // Use connection sprite if available
-        const connectionSprite = loadedImages['conexion_entidades'];
-        if (connectionSprite && connectionSprite.complete) {
-          // Draw connection sprite along the line
-          const dx = x2 - x1;
-          const dy = y2 - y1;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          const steps = Math.floor(distance / 16); // Every 16 pixels
+        // Línea de conexión elegante con gradiente y efectos
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Crear gradiente dinámico basado en la resonancia
+        const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+        const hue1 = Math.floor(r * 3.6); // Color basado en resonancia
+        const hue2 = (hue1 + 60) % 360; // Color complementario
+        
+        gradient.addColorStop(0, `hsla(${hue1}, 70%, 60%, ${Math.min(0.9, r / 100 + 0.3)})`);
+        gradient.addColorStop(0.5, `hsla(${(hue1 + hue2) / 2}, 80%, 70%, ${Math.min(1.0, r / 100 + 0.4)})`);
+        gradient.addColorStop(1, `hsla(${hue2}, 70%, 60%, ${Math.min(0.9, r / 100 + 0.3)})`);
+        
+        // Línea principal con efecto pulsante
+        const pulseIntensity = Math.sin(Date.now() * 0.003) * 0.3 + 0.7;
+        const lineWidth = Math.max(2, r / 20) * pulseIntensity;
+        
+        ctx.save();
+        
+        // Sombra suave
+        ctx.shadowColor = `hsla(${hue1}, 50%, 40%, 0.4)`;
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // Línea principal
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        
+        // Efecto de partículas en la línea
+        const numParticles = Math.floor(distance / 40);
+        for (let i = 0; i < numParticles; i++) {
+          const t = i / numParticles;
+          const px = x1 + dx * t + (Math.sin(Date.now() * 0.005 + i) * 3);
+          const py = y1 + dy * t + (Math.cos(Date.now() * 0.005 + i) * 3);
           
-          for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const px = x1 + dx * t;
-            const py = y1 + dy * t;
-            ctx.drawImage(connectionSprite, px - 8, py - 8, 16, 16);
-          }
-        } else {
-          // Fallback to line drawing
-          ctx.strokeStyle = `hsla(${Math.floor(r * 3.6)}, 70%, 60%, ${r / 100})`;
-          ctx.lineWidth = Math.max(1, r / 25);
-          
+          ctx.fillStyle = `hsla(${hue1 + (i * 10)}, 80%, 80%, ${0.6 * pulseIntensity})`;
           ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
+          ctx.arc(px, py, 2, 0, Math.PI * 2);
+          ctx.fill();
         }
+        
+        ctx.restore();
       }
     }
   }, [entities, resonance, width, height, loadedImages]);
