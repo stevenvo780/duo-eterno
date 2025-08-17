@@ -4,7 +4,8 @@
  * Reemplaza el sistema agresivo de degradación con uno más estratégico
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
+import { Entity } from '../../types';
 import { useGame } from './useGame';
 import type { EntityStats, EntityMood } from '../types';
 import { BALANCED_DEGRADATION, BALANCED_ZONE_EFFECTS, BALANCED_SURVIVAL_COSTS, calculateLifeExpectancy, needsAttention } from '../config/balancedGameplay';
@@ -30,7 +31,7 @@ export const useBalancedGameLoop = () => {
     survivalEvents: 0
   });
 
-  const applyBalancedDegradation = useCallback((entity: any, deltaTimeSeconds: number) => {
+  const applyBalancedDegradation = useCallback((entity: Entity, deltaTimeSeconds: number) => {
     const newStats = { ...entity.stats };
     const activityMultiplier = BALANCED_DEGRADATION.ACTIVITY_MULTIPLIERS[entity.activity as keyof typeof BALANCED_DEGRADATION.ACTIVITY_MULTIPLIERS] || 1.0;
     
@@ -64,7 +65,7 @@ export const useBalancedGameLoop = () => {
     return newStats;
   }, []);
 
-  const applyZoneEffects = useCallback((entity: any, deltaTimeSeconds: number) => {
+  const applyZoneEffects = useCallback((entity: Entity, deltaTimeSeconds: number) => {
     const zone = getEntityZone(entity.position, gameState.zones);
     if (!zone) return entity.stats;
 
@@ -216,10 +217,13 @@ export const useBalancedGameLoop = () => {
     statsRef.current.averageTickTime = 
       (statsRef.current.averageTickTime * 0.9) + (tickTime * 0.1);
 
-  }, [gameState.entities, gameState.zones, dispatch, applyBalancedDegradation, applyZoneEffects, updateHealthBasedOnStats, determineMood]);
+  }, [gameState.entities, dispatch, applyBalancedDegradation, applyZoneEffects, updateHealthBasedOnStats, determineMood]);
 
   // Configurar el loop principal
   useEffect(() => {
+    // Capturar stats para cleanup
+    const statsForCleanup = statsRef.current;
+    
     // Limpiar loop anterior
     if (loopRef.current) {
       clearInterval(loopRef.current);
@@ -239,11 +243,12 @@ export const useBalancedGameLoop = () => {
         loopRef.current = null;
       }
       
+      // Usar stats capturados al inicio del effect
       logGeneral('🎮 Game Loop Balanceado detenido', {
-        totalTicks: statsRef.current.tickCount,
-        degradationEvents: statsRef.current.degradationEvents,
-        survivalEvents: statsRef.current.survivalEvents,
-        averageTickTime: `${statsRef.current.averageTickTime.toFixed(2)}ms`
+        totalTicks: statsForCleanup.tickCount,
+        degradationEvents: statsForCleanup.degradationEvents,
+        survivalEvents: statsForCleanup.survivalEvents,
+        averageTickTime: `${statsForCleanup.averageTickTime.toFixed(2)}ms`
       });
     };
   }, [gameLoopTick]);

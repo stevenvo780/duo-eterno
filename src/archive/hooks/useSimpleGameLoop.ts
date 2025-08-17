@@ -47,10 +47,10 @@ export default function useSimpleGameLoop(
             return;
         }
 
-        const interval = (setInterval as any)(throttledUpdate.current, 200);
+        const interval = setInterval(throttledUpdate.current, 200);
 
         return () => {
-            (clearInterval as any)(interval);
+            clearInterval(interval);
         };
     }, [entities.length, zones.length]);  return { 
     isActive: !!intervalRef.current,

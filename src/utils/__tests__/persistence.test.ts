@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { migrateToLatest, serializeStateV1, safeLoad, safeSave } from '../persistence';
 import type { GameState } from '../../types';
 
@@ -27,14 +27,12 @@ const baseState: GameState = {
 };
 
 describe('persistence migrator and io', () => {
-  const storageKey = 'duoEternoState';
   let originalLS: Storage;
 
   beforeEach(() => {
     // Mock localStorage
     originalLS = global.localStorage;
     const store = new Map<string, string>();
-    // @ts-expect-error redefine
     global.localStorage = {
       getItem: (k: string) => store.get(k) ?? null,
       setItem: (k: string, v: string) => void store.set(k, v),
@@ -42,11 +40,10 @@ describe('persistence migrator and io', () => {
       clear: () => store.clear(),
       key: (i: number) => Array.from(store.keys())[i] ?? null,
       length: 0
-    } as any;
+    } as Storage;
   });
 
   afterEach(() => {
-    // @ts-expect-error restore
     global.localStorage = originalLS;
   });
 

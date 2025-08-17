@@ -2,13 +2,13 @@
  * 🧪 Tests simplificados para useOptimizedUnifiedGameLoop
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('useOptimizedUnifiedGameLoop', () => {
   
   it('should have basic functionality tests', () => {
     // Test funciones matemáticas utilizadas en el game loop
-    const calculateMood = (stats: any, resonance: number) => {
+    const calculateMood = (stats: { hunger: number; sleepiness: number; energy: number }) => {
       const criticalFactors = [
         stats.hunger < 15,
         stats.sleepiness < 15,
@@ -24,7 +24,7 @@ describe('useOptimizedUnifiedGameLoop', () => {
   });
 
   it('should calculate distance correctly', () => {
-    const calculateDistance = (entity1: any, entity2: any) => {
+    const calculateDistance = (entity1: { position: { x: number; y: number } }, entity2: { position: { x: number; y: number } }) => {
       return Math.sqrt(
         Math.pow(entity1.position.x - entity2.position.x, 2) +
         Math.pow(entity1.position.y - entity2.position.y, 2)

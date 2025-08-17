@@ -444,7 +444,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       console.error('Error durante el renderizado:', error);
       logRenderCompat(`Error en renderizado: ${error}`);
     }
-  }, [width, height, entities, zones, resonance, mapElements, drawEntity, drawZones, drawMapElements, drawResonanceEffect, loadedImages]);
+  }, [width, height, entities, zones, resonance, drawEntity, drawZones, drawMapElements, drawResonanceEffect, loadedImages]);
 
   useEffect(() => {
     render();
