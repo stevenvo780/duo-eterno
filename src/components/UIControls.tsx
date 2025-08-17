@@ -4,6 +4,8 @@ import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
+import EntityPanel from './EntityPanel';
+import StatBar from './StatBar';
 import Toast from './Toast';
 import LoadingSpinner from './LoadingSpinner';
 import type { InteractionType } from '../types';
@@ -21,89 +23,21 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   const [showDebug, setShowDebug] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success'|'info'|'warning'|'error' } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [statBarSprite, setStatBarSprite] = useState<HTMLImageElement | null>(null);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
   const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
-
-  // Load stat bar sprite
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => setStatBarSprite(img);
-    img.onerror = () => console.error('Failed to load stat bar sprite');
-    img.src = '/assets/pixel_art/barra_estadistica.png';
-  }, []);
-
-  // Custom stat bar component using pixel art
-  const PixelStatBar: React.FC<{ value: number; stat: string }> = ({ value, stat }) => {
-    if (statBarSprite && statBarSprite.complete) {
-      return (
-        <div style={{ position: 'relative', width: '100%', height: '16px' }}>
-          <canvas
-            width="100"
-            height="16"
-            style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
-            ref={(canvas) => {
-              if (canvas && statBarSprite) {
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                  // Clear canvas
-                  ctx.clearRect(0, 0, 100, 16);
-                  
-                  // Draw empty bar background
-                  ctx.drawImage(statBarSprite, 0, 0, 100, 16);
-                  
-                  // Draw filled portion
-                  const fillWidth = (value / 100) * 100;
-                  if (fillWidth > 0) {
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'source-atop';
-                    ctx.fillStyle = getStatColor(value);
-                    ctx.fillRect(2, 2, fillWidth - 4, 12);
-                    ctx.restore();
-                  }
-                }
-              }
-            }}
-          />
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            color: '#fff',
-            textShadow: '1px 1px 0px #000'
-          }}>
-            {Math.round(value)}%
-          </div>
-        </div>
-      );
-    }
-    
-    // Fallback to original bar
-    return (
-      <div style={{
-        height: '4px',
-        background: '#374151',
-        borderRadius: '2px',
-        overflow: 'hidden',
-        marginBottom: '4px'
-      }}>
-        <div style={{
-          width: `${value}%`,
-          height: '100%',
-          background: getStatColor(value),
-          transition: 'width 0.3s ease'
-        }} />
-      </div>
-    );
-  };
+  
+  // Calculate entities status for quick overview
+  const entitiesStatus = gameState.entities.map(entity => {
+    const criticalStats = ['hunger', 'sleepiness', 'loneliness', 'energy', 'health'];
+    const avgHealth = criticalStats.reduce((sum, stat) => sum + (entity.stats[stat as keyof typeof entity.stats] || 0), 0) / criticalStats.length;
+    return {
+      id: entity.id,
+      health: Math.round(avgHealth),
+      isDead: entity.isDead,
+      criticalCount: criticalStats.filter(stat => (entity.stats[stat as keyof typeof entity.stats] || 0) < 20).length
+    };
+  });
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
     if (entityId) {
@@ -234,199 +168,12 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Entity Selection and Stats Overlay */}
+      {/* Entity Panel - New Component */}
       {selectedEntity && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          background: 'rgba(30, 41, 59, 0.95)',
-          border: '1px solid #475569',
-          borderRadius: '12px',
-          padding: '16px',
-          color: '#f1f5f9',
-          minWidth: '280px',
-          maxWidth: '320px',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          zIndex: 1000
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }}>
-            <span style={{ fontSize: '20px' }}>{getEntityIcon(selectedEntity.id)}</span>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-              {getEntityName(selectedEntity.id)}
-            </h3>
-            {selectedEntity.isDead && (
-              <span style={{
-                fontSize: '12px',
-                color: '#ef4444',
-                fontWeight: '500',
-                background: 'rgba(239, 68, 68, 0.1)',
-                padding: '2px 6px',
-                borderRadius: '4px'
-              }}>
-                MUERTO
-              </span>
-            )}
-            <button
-              onClick={() => onEntitySelect?.(null)}
-              style={{
-                marginLeft: 'auto',
-                background: 'none',
-                border: 'none',
-                color: '#94a3b8',
-                cursor: 'pointer',
-                fontSize: '18px'
-              }}
-            >
-              ×
-            </button>
-          </div>
-
-          {selectedEntity.isDead ? (
-            <div style={{
-              padding: '12px',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
-              marginBottom: '12px'
-            }}>
-              <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#fca5a5' }}>
-                Esta entidad ha perdido su esencia. Su vínculo con la existencia se ha roto.
-              </p>
-              <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#94a3b8' }}>
-                {selectedEntity.timeOfDeath && 
-                  `Falleció hace ${Math.floor((Date.now() - selectedEntity.timeOfDeath) / 1000)}s`
-                }
-              </p>
-              <button
-                onClick={() => {
-                  // Log del revival
-                  dynamicsLogger.logEntityRevival(selectedEntity.id, {
-                    hunger: 60, sleepiness: 60, loneliness: 60, happiness: 60,
-                    energy: 60, boredom: 60, money: 25, health: 50
-                  });
-                  
-                  dispatch({ type: 'REVIVE_ENTITY', payload: { entityId: selectedEntity.id } });
-                  
-                  const message = getRandomDialogue('revival');
-                  dynamicsLogger.logDialogue(undefined, message, 'revival');
-                  
-                  dispatch({
-                    type: 'SHOW_DIALOGUE',
-                    payload: { 
-                      message,
-                      duration: 4000 
-                    }
-                  });
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '8px 16px',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  width: '100%'
-                }}
-              >
-                💫 Revivir Entidad
-              </button>
-            </div>
-          ) : (
-            <>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                {Object.entries(selectedEntity.stats).map(([stat, value]) => (
-                  <div key={stat} style={{
-                    background: 'rgba(15, 20, 25, 0.5)',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    border: '1px solid #374151'
-                  }}>
-                    <div style={{ 
-                      fontSize: '12px', 
-                      color: '#94a3b8', 
-                      marginBottom: '4px',
-                      fontWeight: '500'
-                    }}>
-                      {getStatName(stat)}
-                    </div>
-                    <PixelStatBar value={value} stat={stat} />
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ 
-                  fontSize: '12px', 
-                  color: '#94a3b8', 
-                  marginBottom: '4px' 
-                }}>
-                  Estado: <span style={{ color: '#f1f5f9', fontWeight: '500' }}>
-                    {getMoodName(selectedEntity.mood)}
-                  </span>
-                </div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  color: '#94a3b8' 
-                }}>
-                  Actividad: <span style={{ color: '#f1f5f9', fontWeight: '500' }}>
-                    {getActivityName(selectedEntity.activity)}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px'
-              }}>
-                {[
-                  { type: 'FEED', label: '🍽️', title: 'Alimentar' },
-                  { type: 'PLAY', label: '🎮', title: 'Jugar' },
-                  { type: 'COMFORT', label: '🤗', title: 'Consolar' },
-                  { type: 'DISTURB', label: '😤', title: 'Molestar' }
-                ].map(({ type, label, title }) => (
-                  <button
-                    key={type}
-                    onClick={() => handleInteraction(type as InteractionType, selectedEntity.id)}
-                    style={{
-                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '8px 12px',
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                    }}
-                    title={title}
-                  >
-                    <span>{label}</span>
-                    <span>{title}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <EntityPanel 
+          entity={selectedEntity} 
+          onClose={() => onEntitySelect?.(null)} 
+        />
       )}
 
       {/* Global Stats Overlay */}
@@ -506,7 +253,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         padding: '0 16px',
         boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Left: Entity Selectors */}
+        {/* Left: Entity Selectors with Status */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ 
             fontSize: '12px', 
@@ -516,39 +263,106 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           }}>
             Entidades:
           </span>
-          {gameState.entities.map(entity => (
-            <button
-              key={entity.id}
-              onClick={() => onEntitySelect?.(entity.id)}
-              style={{
-                background: selectedEntity?.id === entity.id 
-                  ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' 
-                  : entity.isDead 
-                    ? 'rgba(239, 68, 68, 0.2)'
-                    : 'rgba(51, 65, 85, 0.5)',
-                border: selectedEntity?.id === entity.id 
-                  ? '1px solid #60a5fa' 
-                  : entity.isDead
-                    ? '1px solid #ef4444'
-                    : '1px solid #475569',
-                borderRadius: '6px',
-                padding: '4px 8px',
-                color: entity.isDead ? '#fca5a5' : '#f1f5f9',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.2s ease',
-                opacity: entity.isDead ? 0.7 : 1
-              }}
-            >
-              <span style={{ fontSize: '14px' }}>{getEntityIcon(entity.id)}</span>
-              <span>{getEntityName(entity.id)}</span>
-              {entity.isDead && <span style={{ fontSize: '10px' }}>💀</span>}
-            </button>
-          ))}
+          {gameState.entities.map((entity, index) => {
+            const entityStatus = entitiesStatus[index];
+            const getHealthColor = (health: number) => {
+              if (health >= 70) return '#22c55e';
+              if (health >= 40) return '#f59e0b';
+              if (health >= 20) return '#ef4444';
+              return '#7f1d1d';
+            };
+
+            return (
+              <button
+                key={entity.id}
+                onClick={() => onEntitySelect?.(entity.id)}
+                style={{
+                  background: selectedEntity?.id === entity.id 
+                    ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' 
+                    : entity.isDead 
+                      ? 'rgba(239, 68, 68, 0.2)'
+                      : 'rgba(51, 65, 85, 0.5)',
+                  border: selectedEntity?.id === entity.id 
+                    ? '2px solid #60a5fa' 
+                    : entity.isDead
+                      ? '2px solid #ef4444'
+                      : `2px solid ${getHealthColor(entityStatus.health)}40`,
+                  borderRadius: '8px',
+                  padding: '6px 10px',
+                  color: entity.isDead ? '#fca5a5' : '#f1f5f9',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease',
+                  opacity: entity.isDead ? 0.7 : 1,
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  if (!entity.isDead) {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = `0 4px 12px ${getHealthColor(entityStatus.health)}30`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span style={{ 
+                  fontSize: '16px',
+                  filter: entity.isDead ? 'grayscale(100%) opacity(0.6)' : 'none'
+                }}>
+                  {getEntityIcon(entity.id)}
+                </span>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span>{getEntityName(entity.id)}</span>
+                  {!entity.isDead && (
+                    <div style={{
+                      fontSize: '9px',
+                      color: getHealthColor(entityStatus.health),
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px'
+                    }}>
+                      <span style={{ fontSize: '8px' }}>●</span>
+                      {entityStatus.health}%
+                      {entityStatus.criticalCount > 0 && (
+                        <span style={{ color: '#ef4444' }}>⚠{entityStatus.criticalCount}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {entity.isDead && <span style={{ fontSize: '14px' }}>💀</span>}
+                
+                {/* Health indicator bar */}
+                {!entity.isDead && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '2px',
+                    left: '2px',
+                    right: '2px',
+                    height: '2px',
+                    background: 'rgba(0,0,0,0.3)',
+                    borderRadius: '1px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${entityStatus.health}%`,
+                      height: '100%',
+                      background: getHealthColor(entityStatus.health),
+                      borderRadius: '1px'
+                    }} />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Center: Resonance compacto */}
@@ -561,8 +375,14 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             }}>
               Vínculo
             </div>
-            <div style={{ width: '80px', height: '16px' }}>
-              <PixelStatBar value={gameState.resonance} stat="resonance" />
+            <div style={{ width: '100px' }}>
+              <StatBar 
+                label=""
+                value={gameState.resonance}
+                height={16}
+                showLabel={false}
+                animated={true}
+              />
             </div>
             <div style={{ 
               fontSize: '10px', 

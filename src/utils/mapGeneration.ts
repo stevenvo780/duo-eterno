@@ -2,106 +2,113 @@ import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
   return [
+    // Zona alimentaria integrada (jardín + cocina) - esquina superior izquierda
     {
-      id: 'food_garden',
-      name: 'Jardín de Alimentos',
-      bounds: { x: 50, y: 50, width: 140, height: 100 },
+      id: 'food_complex',
+      name: 'Complejo Alimentario',
+      bounds: { x: 50, y: 40, width: 300, height: 120 },
       type: 'food',
-      color: 'rgba(34, 197, 94, 0.25)',
-      attractiveness: 0.9,
-      effects: {
-        hunger: 25,
-        happiness: 8
-      }
-    },
-    {
-      id: 'kitchen',
-      name: 'Cocina Comunal',
-      bounds: { x: 220, y: 40, width: 120, height: 80 },
-      type: 'food',
-      color: 'rgba(34, 197, 94, 0.3)',
+      color: 'rgba(122, 199, 90, 0.25)',
       attractiveness: 1.0,
       effects: {
-        hunger: 35,
-        happiness: 12
+        hunger: 30,
+        happiness: 12,
+        energy: 5
       }
     },
+    
+    // Santuario de descanso - superior derecha cerca del trabajo
     {
       id: 'rest_sanctuary',
       name: 'Santuario de Descanso',
-      bounds: { x: 400, y: 50, width: 140, height: 100 },
+      bounds: { x: 400, y: 50, width: 200, height: 120 },
       type: 'rest',
-      color: 'rgba(168, 85, 247, 0.25)',
-      attractiveness: 0.8,
-      effects: {
-        sleepiness: 30,
-        energy: 25,
-        happiness: 10
-      }
-    },
-    {
-      id: 'play_area',
-      name: 'Área de Juegos',
-      bounds: { x: 350, y: 220, width: 200, height: 140 },
-      type: 'play',
-      color: 'rgba(251, 191, 36, 0.3)',
-      attractiveness: 1.0,
-      effects: {
-        boredom: 40,
-        happiness: 20,
-        loneliness: 15
-      }
-    },
-    {
-      id: 'social_plaza',
-      name: 'Plaza Social',
-      bounds: { x: 50, y: 400, width: 180, height: 120 },
-      type: 'social',
-      color: 'rgba(236, 72, 153, 0.3)',
+      color: 'rgba(99, 155, 255, 0.25)',
       attractiveness: 0.9,
       effects: {
-        loneliness: 35,
-        happiness: 18,
-        boredom: 10
+        sleepiness: 35,
+        energy: 30,
+        happiness: 15
       }
     },
+    
+    // Área de juegos central - corazón del mapa
+    {
+      id: 'play_central',
+      name: 'Plaza de Juegos Central',
+      bounds: { x: 350, y: 200, width: 250, height: 180 },
+      type: 'play',
+      color: 'rgba(242, 212, 80, 0.3)',
+      attractiveness: 1.2,
+      effects: {
+        boredom: 45,
+        happiness: 25,
+        loneliness: 20,
+        energy: -5
+      }
+    },
+    
+    // Plaza social con fuente - esquina inferior izquierda
+    {
+      id: 'social_plaza',
+      name: 'Plaza Social Comunitaria',
+      bounds: { x: 50, y: 400, width: 200, height: 140 },
+      type: 'social',
+      color: 'rgba(99, 189, 164, 0.3)',
+      attractiveness: 1.1,
+      effects: {
+        loneliness: 40,
+        happiness: 20,
+        boredom: 15,
+        energy: 5
+      }
+    },
+    
+    // Bosque de meditación - inferior central
     {
       id: 'meditation_grove',
-      name: 'Bosque de Meditación',
-      bounds: { x: 280, y: 420, width: 160, height: 130 },
+      name: 'Bosque de Meditación Zen',
+      bounds: { x: 280, y: 420, width: 180, height: 150 },
       type: 'comfort',
-      color: 'rgba(139, 92, 246, 0.25)',
-      attractiveness: 0.7,
+      color: 'rgba(138, 95, 184, 0.25)',
+      attractiveness: 0.8,
       effects: {
-        happiness: 15,
-        boredom: 15,
-        loneliness: 10,
-        sleepiness: 10,
-        energy: 8
+        happiness: 18,
+        boredom: 20,
+        loneliness: 15,
+        sleepiness: 15,
+        energy: 10
       }
     },
+    
+    // Estación de trabajo - superior derecha
+    {
+      id: 'work_station',
+      name: 'Centro de Trabajo Productivo',
+      bounds: { x: 650, y: 50, width: 180, height: 120 },
+      type: 'work',
+      color: 'rgba(138, 95, 184, 0.25)',
+      attractiveness: 0.7,
+      effects: {
+        money: 80,
+        boredom: -10,
+        energy: -15
+      }
+    },
+    
+    // Estación energética - lateral derecha
     {
       id: 'energy_station',
-      name: 'Estación Energética',
-      bounds: { x: 800, y: 200, width: 120, height: 100 },
+      name: 'Reactor Energético',
+      bounds: { x: 700, y: 200, width: 150, height: 120 },
       type: 'energy',
       color: 'rgba(245, 158, 11, 0.25)',
       attractiveness: 1.0,
       effects: {
-        energy: 40,
-        sleepiness: 15,
-        happiness: 8
-      }
-    },
-    {
-      id: 'work_station',
-      name: 'Estación de Trabajo',
-      bounds: { x: 650, y: 50, width: 140, height: 100 },
-      type: 'work',
-      color: 'rgba(55, 65, 81, 0.25)',
-      attractiveness: 0.8,
-      effects: {
-        money: 60
+        energy: 50,
+        sleepiness: 25,
+        happiness: 10,
+        money: -10
       }
     }
   ];
@@ -109,33 +116,137 @@ export const createDefaultZones = (): Zone[] => {
 
 export const createDefaultMapElements = (): MapElement[] => {
   return [
+    // Obstáculos funcionales
     {
-      id: 'rock1',
+      id: 'rock_central',
       type: 'obstacle',
-      position: { x: 200, y: 150 },
-      size: { width: 40, height: 40 },
+      position: { x: 480, y: 280 },
+      size: { width: 40, height: 35 },
       color: '#64748b'
     },
     {
-      id: 'rock2',
+      id: 'tree_kitchen_shade',
       type: 'obstacle',
-      position: { x: 550, y: 250 },
-      size: { width: 30, height: 30 },
-      color: '#64748b'
-    },
-    {
-      id: 'tree1',
-      type: 'obstacle',
-      position: { x: 400, y: 100 },
+      position: { x: 190, y: 35 },
       size: { width: 25, height: 60 },
       color: '#059669'
     },
     {
-      id: 'tree2',
+      id: 'tree_social_corner',
       type: 'obstacle',
-      position: { x: 150, y: 350 },
+      position: { x: 240, y: 410 },
       size: { width: 25, height: 60 },
       color: '#059669'
+    },
+    
+    // Elementos decorativos - Jardín de alimentos
+    {
+      id: 'flower_garden_1',
+      type: 'food_zone',
+      position: { x: 70, y: 70 },
+      size: { width: 8, height: 8 },
+      color: '#ff6b9d'
+    },
+    {
+      id: 'flower_garden_2',
+      type: 'food_zone',
+      position: { x: 120, y: 90 },
+      size: { width: 8, height: 8 },
+      color: '#f2d450'
+    },
+    {
+      id: 'flower_garden_3',
+      type: 'food_zone',
+      position: { x: 160, y: 120 },
+      size: { width: 8, height: 8 },
+      color: '#639bff'
+    },
+    
+    // Decorativos - Área de descanso
+    {
+      id: 'banco_rest_1',
+      type: 'rest_zone',
+      position: { x: 420, y: 80 },
+      size: { width: 24, height: 12 },
+      color: '#9e684c'
+    },
+    {
+      id: 'banco_rest_2',
+      type: 'rest_zone',
+      position: { x: 480, y: 130 },
+      size: { width: 24, height: 12 },
+      color: '#9e684c'
+    },
+    
+    // Decorativos - Plaza social
+    {
+      id: 'fuente_social',
+      type: 'social_zone',
+      position: { x: 130, y: 450 },
+      size: { width: 32, height: 32 },
+      color: '#63bda4'
+    },
+    {
+      id: 'banco_social_1',
+      type: 'social_zone',
+      position: { x: 80, y: 480 },
+      size: { width: 24, height: 12 },
+      color: '#9e684c'
+    },
+    {
+      id: 'banco_social_2',
+      type: 'social_zone',
+      position: { x: 190, y: 480 },
+      size: { width: 24, height: 12 },
+      color: '#9e684c'
+    },
+    
+    // Decorativos - Área de juegos
+    {
+      id: 'lampara_juegos_1',
+      type: 'play_zone',
+      position: { x: 370, y: 240 },
+      size: { width: 16, height: 24 },
+      color: '#f2d450'
+    },
+    {
+      id: 'lampara_juegos_2',
+      type: 'play_zone',
+      position: { x: 520, y: 240 },
+      size: { width: 16, height: 24 },
+      color: '#f2d450'
+    },
+    
+    // Decorativos - Estación de trabajo
+    {
+      id: 'lampara_work',
+      type: 'work_zone',
+      position: { x: 720, y: 70 },
+      size: { width: 16, height: 24 },
+      color: '#f2d450'
+    },
+    
+    // Decorativos - Bosque de meditación
+    {
+      id: 'flower_meditation_1',
+      type: 'comfort_zone',
+      position: { x: 300, y: 440 },
+      size: { width: 8, height: 8 },
+      color: '#8a5fb8'
+    },
+    {
+      id: 'flower_meditation_2',
+      type: 'comfort_zone',
+      position: { x: 380, y: 480 },
+      size: { width: 8, height: 8 },
+      color: '#639bff'
+    },
+    {
+      id: 'flower_meditation_3',
+      type: 'comfort_zone',
+      position: { x: 420, y: 520 },
+      size: { width: 8, height: 8 },
+      color: '#ff6b9d'
     }
   ];
 };
