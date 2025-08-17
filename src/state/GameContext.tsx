@@ -3,6 +3,7 @@ import type { GameState, EntityMood, EntityStats, InteractionType } from '../typ
 import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
 import type { ActivityType, EntityStateType } from '../constants/gameConstants';
 import { usePersistence } from '../hooks/usePersistence';
+import { gameConfig } from '../config/gameConfig';
 
 
 interface DialogueState {
@@ -48,18 +49,18 @@ const initialGameState: GameState = {
   entities: [
     {
       id: 'circle',
-      position: { x: 150, y: 200 },
+      position: { x: gameConfig.entityCircleInitialX, y: gameConfig.entityCircleInitialY },
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 80,
-        sleepiness: 80,
-        loneliness: 80,
-        happiness: 80,
-        energy: 80,
-        boredom: 80,
-        money: 50,
-        health: 100
+        hunger: gameConfig.entityInitialStats,
+        sleepiness: gameConfig.entityInitialStats,
+        loneliness: gameConfig.entityInitialStats,
+        happiness: gameConfig.entityInitialStats,
+        energy: gameConfig.entityInitialStats,
+        boredom: gameConfig.entityInitialStats,
+        money: gameConfig.entityInitialMoney,
+        health: gameConfig.entityInitialHealth
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -72,18 +73,18 @@ const initialGameState: GameState = {
     },
     {
       id: 'square',
-      position: { x: 250, y: 200 },
+      position: { x: gameConfig.entitySquareInitialX, y: gameConfig.entitySquareInitialY },
       state: 'IDLE',
       activity: 'WANDERING',
       stats: {
-        hunger: 80,
-        sleepiness: 80,
-        loneliness: 80,
-        happiness: 80,
-        energy: 80,
-        boredom: 80,
-        money: 50,
-        health: 100
+        hunger: gameConfig.entityInitialStats,
+        sleepiness: gameConfig.entityInitialStats,
+        loneliness: gameConfig.entityInitialStats,
+        happiness: gameConfig.entityInitialStats,
+        energy: gameConfig.entityInitialStats,
+        boredom: gameConfig.entityInitialStats,
+        money: gameConfig.entityInitialMoney,
+        health: gameConfig.entityInitialHealth
       },
       lastStateChange: Date.now(),
       lastActivityChange: Date.now(),
@@ -95,7 +96,7 @@ const initialGameState: GameState = {
       isDead: false
     }
   ],
-  resonance: 75,
+  resonance: gameConfig.initialResonance,
   cycles: 0,
   lastSave: Date.now(),
   togetherTime: 0,
@@ -231,14 +232,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                 state: 'IDLE',
                 timeOfDeath: undefined,
                 stats: {
-                  hunger: 50,
-                  sleepiness: 50,
-                  loneliness: 60,
-                  happiness: 40,
-                  energy: 60,
-                  boredom: 30,
-                  money: 25,
-                  health: 50
+                  hunger: gameConfig.thresholdLow,
+                  sleepiness: gameConfig.thresholdLow,
+                  loneliness: gameConfig.thresholdComfortable - 10,
+                  happiness: gameConfig.thresholdLow - 10,
+                  energy: gameConfig.thresholdComfortable - 10,
+                  boredom: gameConfig.thresholdWarning,
+                  money: gameConfig.entityInitialMoney / 2,
+                  health: gameConfig.thresholdLow
                 }
               }
             : entity

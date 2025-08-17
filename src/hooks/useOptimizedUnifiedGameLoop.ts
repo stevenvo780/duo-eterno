@@ -81,21 +81,21 @@ export const useOptimizedUnifiedGameLoop = () => {
   // Calcula el mood optimizado en base a stats y resonancia
   const calculateOptimizedMood = useCallback((stats: Entity['stats'], resonance: number): EntityMood => {
     const criticalFactors = [
-      stats.hunger < 15,
-      stats.sleepiness < 15,
-      stats.loneliness < 15,
-      stats.energy < 15,
-      stats.money < 10
+      stats.hunger < gameConfig.thresholdCritical,
+      stats.sleepiness < gameConfig.thresholdCritical,
+      stats.loneliness < gameConfig.thresholdCritical,
+      stats.energy < gameConfig.thresholdCritical,
+      stats.money < gameConfig.survivalPovertyThreshold / 2
     ].filter(Boolean).length;
     
     if (criticalFactors >= 2) return 'ANXIOUS';
     
     const positiveScore = (stats.happiness + stats.energy + Math.min(100, stats.money)) / 3;
     const negativeScore = (100 - stats.hunger + 100 - stats.sleepiness + 100 - stats.boredom + 100 - stats.loneliness) / 4;
-    const bondBonus = resonance > 70 ? 15 : resonance < 30 ? -10 : 0;
+    const bondBonus = resonance > gameConfig.resonanceGood ? 15 : resonance < gameConfig.resonanceCritical ? -10 : 0;
     const moodScore = positiveScore - negativeScore + bondBonus;
     
-    if (moodScore > 50 && stats.energy > 60) return 'EXCITED';
+    if (moodScore > 50 && stats.energy > gameConfig.thresholdComfortable) return 'EXCITED';
     if (moodScore > 25) return 'CONTENT';
     if (moodScore > 5) return 'CALM';
     if (moodScore > -15) return 'TIRED';
@@ -111,14 +111,14 @@ export const useOptimizedUnifiedGameLoop = () => {
         if (resonanceLevel <= 0) {
           if (entity.state !== 'FADING') {
             batcher.batchEntityStateUpdate(entity.id, 'FADING', 'CRITICAL');
-          } else if (nowMs - entity.lastStateChange > FADING_TIMEOUT_MS) {
+          } else if (nowMs - entity.lastStateChange > gameConfig.fadingTimeoutMs) {
             dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
           }
         } else if (entity.state === 'FADING') {
-          if (resonanceLevel > FADING_RECOVERY_THRESHOLD) {
+          if (resonanceLevel > gameConfig.fadingRecoveryThreshold) {
             batcher.batchEntityStateUpdate(entity.id, 'IDLE', 'CRITICAL');
           }
-        } else if (resonanceLevel < RESONANCE_THRESHOLDS.CRITICAL) {
+        } else if (resonanceLevel < gameConfig.resonanceCritical) {
           if (entity.state !== 'LOW_RESONANCE' && elapsed >= MIN_TRANSITION_MS) {
             batcher.batchEntityStateUpdate(entity.id, 'LOW_RESONANCE', 'HIGH');
           }
@@ -234,7 +234,8 @@ export const useOptimizedUnifiedGameLoop = () => {
                 const dtMin = (deltaTime / 60000) * gameConfig.gameSpeedMultiplier;
                 Object.entries(effects.perMinute).forEach(([k, perMin]) => {
                   const key = k as keyof Entity['stats'];
-                  const delta = perMin * efficiency * dtMin;
+                  const adjustedPerMin = perMin * gameConfig.activityPerMinuteMultiplier;
+                  const delta = adjustedPerMin * efficiency * dtMin;
                   const next = (statsAfterActivity[key] as number) + delta;
                   statsAfterActivity[key] = (key === 'money'
                     ? Math.max(0, next)
@@ -256,7 +257,8 @@ export const useOptimizedUnifiedGameLoop = () => {
                 if (!session.immediateApplied) {
                   Object.entries(effects.immediate).forEach(([k, imm]) => {
                     const key = k as keyof Entity['stats'];
-                    const next = (statsAfterActivity[key] as number) + imm;
+                    const adjustedImm = imm * gameConfig.activityImmediateMultiplier;
+                    const next = (statsAfterActivity[key] as number) + adjustedImm;
                     statsAfterActivity[key] = (key === 'money'
                       ? Math.max(0, next)
                       : Math.max(0, Math.min(100, next))) as number;
@@ -272,10 +274,10 @@ export const useOptimizedUnifiedGameLoop = () => {
               const criticalStats = Object.entries(finalStats)
                 .filter(([key, value]) => {
                   if (key === 'money') return false;
-                  if (key === 'health') return value < 20;
-                  if (key === 'energy') return value < 30;
-                  if (key === 'happiness') return value < 35;
-                  return value < 25;
+                  if (key === 'health') return value < gameConfig.thresholdWarning;
+                  if (key === 'energy') return value < gameConfig.thresholdWarning;
+                  if (key === 'happiness') return value < gameConfig.thresholdWarning;
+                  return value < gameConfig.thresholdCritical;
                 })
                 .map(([key]) => key);
               
@@ -316,19 +318,19 @@ export const useOptimizedUnifiedGameLoop = () => {
         if (loopStats.totalTicks % 4 === 0) {
           measureExecutionTime('health-check-optimized', () => {
             for (const entity of livingEntities) {
-              // 🔧 MEJORA MINIMALISTA: Umbral crítico más tolerante (4 en lugar de 5)
+              // Umbral crítico configurable
               const criticalCount = [
-                entity.stats.hunger < 4,
-                entity.stats.sleepiness < 4,
-                entity.stats.loneliness < 4,
-                entity.stats.energy < 4
+                entity.stats.hunger < gameConfig.thresholdEmergency,
+                entity.stats.sleepiness < gameConfig.thresholdEmergency,
+                entity.stats.loneliness < gameConfig.thresholdEmergency,
+                entity.stats.energy < gameConfig.thresholdEmergency
               ].filter(Boolean).length;
 
               // Recuperación sujeta a resonancia
-              let healthChange = (deltaTime / 1000) * (HEALTH_CONFIG.RECOVERY_RATE + (gameStateRef.current.resonance - 50) / 1000);
+              let healthChange = (deltaTime / 1000) * (gameConfig.healthRecoveryRate + (gameStateRef.current.resonance - 50) / 1000);
 
               if (criticalCount > 0) {
-                const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
+                const decay = criticalCount * gameConfig.healthDecayPerCritical * (deltaTime / 1000);
                 healthChange = -decay;
               }
 
@@ -361,13 +363,13 @@ export const useOptimizedUnifiedGameLoop = () => {
           );
 
           // Constantes del modelo unificado
-          const BOND_DISTANCE = 80;
+          const BOND_DISTANCE = gameConfig.bondDistance;
           const dtSec = deltaTime / 1000;
-          const BOND_GAIN_PER_SEC = 1.8;
-          const SEPARATION_DECAY_PER_SEC = 0.2;
-          const STRESS_DECAY_PER_SEC = 0.3;
-          const DISTANCE_SCALE = 30;
-          const JOINT_BONUS_UNIT = 0.3;
+          const BOND_GAIN_PER_SEC = gameConfig.resonanceBondGainPerSec;
+          const SEPARATION_DECAY_PER_SEC = gameConfig.resonanceSeparationDecayPerSec;
+          const STRESS_DECAY_PER_SEC = gameConfig.resonanceStressDecayPerSec;
+          const DISTANCE_SCALE = gameConfig.distanceScale;
+          const JOINT_BONUS_UNIT = gameConfig.jointBonusUnit;
 
           // Factor de cercanía usando sigmoide
           const closeness = 1 / (1 + Math.exp((distance - BOND_DISTANCE) / Math.max(1, DISTANCE_SCALE)));
@@ -393,8 +395,8 @@ export const useOptimizedUnifiedGameLoop = () => {
           const synergy = 1 + JOINT_BONUS_UNIT * ((sameActivity ? 1 : 0) + (sameSocialZone ? 1 : 0));
 
           // Estrés por stats críticas
-          const critical1 = (entity1.stats.hunger < 15 || entity1.stats.sleepiness < 15 || entity1.stats.loneliness < 15 || entity1.stats.energy < 15);
-          const critical2 = (entity2.stats.hunger < 15 || entity2.stats.sleepiness < 15 || entity2.stats.loneliness < 15 || entity2.stats.energy < 15);
+          const critical1 = (entity1.stats.hunger < gameConfig.thresholdCritical || entity1.stats.sleepiness < gameConfig.thresholdCritical || entity1.stats.loneliness < gameConfig.thresholdCritical || entity1.stats.energy < gameConfig.thresholdCritical);
+          const critical2 = (entity2.stats.hunger < gameConfig.thresholdCritical || entity2.stats.sleepiness < gameConfig.thresholdCritical || entity2.stats.loneliness < gameConfig.thresholdCritical || entity2.stats.energy < gameConfig.thresholdCritical);
           const stressCount = (critical1 ? 1 : 0) + (critical2 ? 1 : 0);
 
           // Ecuación unificada de resonancia
