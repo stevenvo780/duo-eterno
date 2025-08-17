@@ -107,8 +107,7 @@ export class OptimizedDynamicsLogger {
   private archiveInterval: number | null = null;
   
   // === EXPORT SETTINGS ===
-  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
-  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
+  // Variables reservadas para funcionalidad futura de exportación
 
   constructor() {
     this.initializeCleanupSystems();
@@ -251,10 +250,12 @@ export class OptimizedDynamicsLogger {
 
   private shouldArchiveCurrentSession(): boolean {
     const sessionAge = Date.now() - this.sessionStartTime;
+    const timeSinceLastArchive = Date.now() - this.lastArchive;
     const hasSignificantData = this.logs.length >= 50 || this.entitySnapshots.length >= 20;
     const isOldEnough = sessionAge > this.config.maxLogAge / 2; // Archive después de 1 hora
+    const archiveIntervalReached = timeSinceLastArchive > 30000; // 30 seconds between archives
     
-    return hasSignificantData && isOldEnough;
+    return hasSignificantData && isOldEnough && archiveIntervalReached;
   }
 
   private archiveCurrentSession(): void {

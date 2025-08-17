@@ -126,25 +126,52 @@ def draw_entity(draw, width, height, args):
     else:
         draw_shaded_square(draw, box, base_color, light_color, outline_color)
 
-    # Expresiones faciales mejoradas
-    if args.mood and args.mood != 'dying':
-        eye_y = height // 3
-        eye_x1 = width // 3
-        eye_x2 = width * 2 // 3
-        eye_color = outline_color
-
-        if args.mood == 'happy':
-            # Ojos cerrados y felices
-            draw.arc([eye_x1 - 1, eye_y - 2, eye_x1 + 3, eye_y + 2], 180, 360, fill=eye_color, width=2)
-            draw.arc([eye_x2 - 1, eye_y - 2, eye_x2 + 3, eye_y + 2], 180, 360, fill=eye_color, width=2)
-            # Sonrisa grande
-            draw.arc([eye_x1, eye_y + 2, eye_x2, height * 2 // 3 + 1], 0, 180, fill=eye_color, width=2)
-        elif args.mood == 'sad':
-            # Ojos caídos
-            draw.rectangle([eye_x1 - 1, eye_y, eye_x1 + 1, eye_y + 2], fill=eye_color)
-            draw.rectangle([eye_x2 - 1, eye_y, eye_x2 + 1, eye_y + 2], fill=eye_color)
-            # Boca triste
-            draw.arc([eye_x1, eye_y + 5, eye_x2, height * 2 // 3 + 1], 180, 360, fill=eye_color, width=2)
+    # Expresiones faciales mejoradas para TODOS los moods
+    eye_y = height // 3
+    eye_x1 = width // 3
+    eye_x2 = width * 2 // 3
+    eye_color = get_color(COLORS["white"])
+    pupil_color = outline_color
+    
+    if args.mood == 'happy':
+        # Ojos brillantes
+        draw.ellipse([eye_x1 - 2, eye_y - 1, eye_x1 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        draw.ellipse([eye_x2 - 2, eye_y - 1, eye_x2 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        # Pupilas
+        draw.rectangle([eye_x1, eye_y, eye_x1 + 1, eye_y + 1], fill=pupil_color)
+        draw.rectangle([eye_x2, eye_y, eye_x2 + 1, eye_y + 1], fill=pupil_color)
+        # Sonrisa grande
+        draw.arc([eye_x1 - 2, eye_y + 4, eye_x2 + 2, height * 2 // 3 + 2], 0, 180, fill=pupil_color, width=2)
+    elif args.mood == 'sad':
+        # Ojos caídos
+        draw.ellipse([eye_x1 - 2, eye_y - 1, eye_x1 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        draw.ellipse([eye_x2 - 2, eye_y - 1, eye_x2 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        # Pupilas caídas
+        draw.rectangle([eye_x1, eye_y + 1, eye_x1 + 1, eye_y + 2], fill=pupil_color)
+        draw.rectangle([eye_x2, eye_y + 1, eye_x2 + 1, eye_y + 2], fill=pupil_color)
+        # Lágrimas
+        draw.ellipse([eye_x1 - 1, eye_y + 3, eye_x1 + 1, eye_y + 6], fill=get_color(COLORS["player_1_light"]))
+        # Boca triste
+        draw.arc([eye_x1, eye_y + 8, eye_x2, height * 2 // 3 + 4], 180, 360, fill=pupil_color, width=2)
+    elif args.mood == 'dying':
+        # Ojos X
+        draw.line([eye_x1 - 2, eye_y - 1, eye_x1 + 2, eye_y + 3], fill=pupil_color, width=2)
+        draw.line([eye_x1 + 2, eye_y - 1, eye_x1 - 2, eye_y + 3], fill=pupil_color, width=2)
+        draw.line([eye_x2 - 2, eye_y - 1, eye_x2 + 2, eye_y + 3], fill=pupil_color, width=2)
+        draw.line([eye_x2 + 2, eye_y - 1, eye_x2 - 2, eye_y + 3], fill=pupil_color, width=2)
+        # Boca ondulada
+        draw.line([eye_x1, eye_y + 6, eye_x1 + 2, eye_y + 8], fill=pupil_color, width=2)
+        draw.line([eye_x1 + 2, eye_y + 8, eye_x1 + 4, eye_y + 6], fill=pupil_color, width=2)
+        draw.line([eye_x1 + 4, eye_y + 6, eye_x2, eye_y + 8], fill=pupil_color, width=2)
+    else:  # normal/default
+        # Ojos normales
+        draw.ellipse([eye_x1 - 2, eye_y - 1, eye_x1 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        draw.ellipse([eye_x2 - 2, eye_y - 1, eye_x2 + 2, eye_y + 3], fill=eye_color, outline=pupil_color)
+        # Pupilas centrales
+        draw.rectangle([eye_x1, eye_y + 1, eye_x1 + 1, eye_y + 2], fill=pupil_color)
+        draw.rectangle([eye_x2, eye_y + 1, eye_x2 + 1, eye_y + 2], fill=pupil_color)
+        # Boca neutral
+        draw.line([eye_x1 + 2, eye_y + 6, eye_x2 - 2, eye_y + 6], fill=pupil_color, width=2)
 
 def draw_zone(draw, width, height, args):
     """Dibuja una zona con temática específica y tiles repetitivos."""

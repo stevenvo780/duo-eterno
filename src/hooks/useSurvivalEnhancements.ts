@@ -83,12 +83,24 @@ export const useSurvivalEnhancements = () => {
       stats.energy < IMPROVED_CRITICAL_THRESHOLDS.CRITICAL
     ].filter(Boolean).length;
 
-    return applyImprovedHealthRecovery(
+    const recoveredHealth = applyImprovedHealthRecovery(
       currentHealth,
       criticalCount,
       resonance,
       deltaTime
     );
+
+    // Log health recovery for debugging
+    if (recoveredHealth !== currentHealth) {
+      console.debug(`Health recovery for ${entityId}:`, {
+        from: currentHealth,
+        to: recoveredHealth,
+        criticalCount,
+        resonance
+      });
+    }
+
+    return recoveredHealth;
   }, [config.enabled]);
 
   // Función para aplicar costos de supervivencia mejorados

@@ -349,7 +349,7 @@ export class AdvancedPhysicsEngine {
       const resonanceState = mathUtils.calculateAdvancedResonance(
         distance,
         history.slice(-10).map(h => h.timestamp),
-        (other.stats.love + other.stats.energy) / 2,
+        (other.stats.happiness + other.stats.energy) / 2,
         performance.now() - this.lastUpdateTime
       );
 
@@ -488,7 +488,7 @@ export class AdvancedPhysicsEngine {
           },
           lifeTime: 0,
           maxLifeTime: 1000 + Math.random() * 2000,
-          color: `hsl(${(entity.stats.love + entity.stats.energy) * 1.8}, 70%, 60%)`,
+          color: `hsl(${(entity.stats.happiness + entity.stats.energy) * 1.8}, 70%, 60%)`,
           size: 2 + Math.random() * 3,
           opacity: 1,
           particleType: speed > 100 ? 'TURBULENCE' : 'RESONANCE'

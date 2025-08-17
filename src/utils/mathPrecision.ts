@@ -432,7 +432,7 @@ export const calculateAdvancedResonance = (
   interactionHistory: number[],
   harmonyLevel: number,
   timeBonus: number = 0,
-  currentResonance: AdvancedResonanceState | null = null
+  _currentResonance: AdvancedResonanceState | null = null
 ): AdvancedResonanceState => {
   // Calcular frecuencia fundamental basada en proximidad
   const distanceNorm = safeNormalize(entityDistance, 0, 500);
@@ -511,7 +511,7 @@ const calculateCoherence = (history: number[]): number => {
  * Cálculo de estabilidad de armónicos
  */
 const calculateStability = (harmonics: ResonanceHarmonic[]): number => {
-  const amplitudeVariance = harmonics.reduce((sum, h, i, arr) => {
+  const amplitudeVariance = harmonics.reduce((sum, h, _i, arr) => {
     const avgAmplitude = arr.reduce((s, hh) => s + hh.amplitude, 0) / arr.length;
     return sum + Math.pow(h.amplitude - avgAmplitude, 2);
   }, 0) / harmonics.length;
@@ -583,7 +583,7 @@ export interface PredictionState {
  */
 export const predictBehaviorPatterns = (
   behaviorHistory: Array<{ action: string; timestamp: number; context: unknown }>,
-  currentContext: unknown
+  _currentContext: unknown
 ): PredictionState => {
   if (behaviorHistory.length < MATH_CONSTANTS.PATTERN_MEMORY_DEPTH / 4) {
     return {
@@ -683,7 +683,7 @@ const predictNextOccurrence = (
   const probability = actionCount / recent.length;
   
   // Estimar timeframe basado en intervalos históricos
-  const lastOccurrence = [...history].reverse().find(entry => entry.action === targetAction);
+  // const lastOccurrence = [...history].reverse().find(entry => entry.action === targetAction);
   const avgInterval = history.length > 1 ? 
     (history[history.length - 1].timestamp - history[0].timestamp) / history.length : 
     1000;
@@ -811,7 +811,7 @@ export const calculateAdvancedVectorField = (
   position: Vector2D,
   attractors: Vector2D[],
   repulsors: Vector2D[],
-  flowField: Vector2D[][],
+  _flowField: Vector2D[][],
   time: number
 ): VectorField => {
   let resultantForce = { x: 0, y: 0 };
@@ -919,7 +919,7 @@ for (let i = 0; i < 256; i++) {
 /**
  * Cálculo de gradiente del campo vectorial
  */
-const calculateGradient = (position: Vector2D, attractors: Vector2D[], repulsors: Vector2D[]): Vector2D => {
+const calculateGradient = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): Vector2D => {
   const eps = 0.01;
   
   const field = (pos: Vector2D) => {
@@ -955,7 +955,7 @@ const calculateGradient = (position: Vector2D, attractors: Vector2D[], repulsors
 /**
  * Cálculo de divergencia del campo vectorial
  */
-const calculateDivergence = (position: Vector2D, attractors: Vector2D[], repulsors: Vector2D[]): number => {
+const calculateDivergence = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): number => {
   const eps = 0.01;
   
   const fieldX = (pos: Vector2D) => {
@@ -991,7 +991,7 @@ const calculateDivergence = (position: Vector2D, attractors: Vector2D[], repulso
 /**
  * Cálculo de curl del campo vectorial
  */
-const calculateCurl = (position: Vector2D, attractors: Vector2D[], repulsors: Vector2D[]): number => {
+const calculateCurl = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): number => {
   const eps = 0.01;
   
   const fieldX = (pos: Vector2D) => {
@@ -1042,7 +1042,7 @@ export const calculateAdvancedZoneEffect = (
   entityPosition: Vector2D,
   zoneCenter: Vector2D,
   zoneRadius: number,
-  zoneType: string,
+  _zoneType: string,
   resonanceState: AdvancedResonanceState,
   nearbyEntities: Vector2D[]
 ): AdvancedZoneEffect => {

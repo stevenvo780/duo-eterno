@@ -6,6 +6,7 @@
  */
 
 import type { Zone, MapElement } from '../types';
+import { generatePaths } from './pathGeneration';
 
 // 📐 CONFIGURACIÓN DEL LIENZO
 export const MAP_CONFIG = {
@@ -23,7 +24,7 @@ export const ROOM_TYPES = {
     type: 'food' as const,
     preferredSize: { width: 120, height: 80 },
     preferredPosition: 'corner', // corner, wall, center
-    decorations: ['flower', 'lamp'],
+    decorations: ['plant_small', 'deco_lamp', 'furniture_table_dining'],
     adjacentTo: ['DINING', 'GARDEN'],
     color: 'rgba(122, 199, 90, 0.25)'
   },
@@ -33,7 +34,7 @@ export const ROOM_TYPES = {
     type: 'rest' as const,
     preferredSize: { width: 140, height: 100 },
     preferredPosition: 'corner',
-    decorations: ['banco', 'flower'],
+    decorations: ['furniture_bed_simple', 'furniture_bed_double', 'deco_lamp', 'plant_small'],
     adjacentTo: ['BATHROOM', 'HALLWAY'],
     color: 'rgba(99, 155, 255, 0.25)'
   },
@@ -43,7 +44,7 @@ export const ROOM_TYPES = {
     type: 'social' as const,
     preferredSize: { width: 180, height: 120 },
     preferredPosition: 'center',
-    decorations: ['fuente', 'banco', 'lamp'],
+    decorations: ['furniture_sofa_modern', 'furniture_sofa_classic', 'furniture_table_coffee', 'plant_tree', 'deco_bookshelf'],
     adjacentTo: ['KITCHEN', 'HALLWAY'],
     color: 'rgba(99, 189, 164, 0.3)'
   },
@@ -53,7 +54,7 @@ export const ROOM_TYPES = {
     type: 'play' as const,
     preferredSize: { width: 200, height: 140 },
     preferredPosition: 'center',
-    decorations: ['lamp', 'banco'],
+    decorations: ['furniture_table_coffee', 'deco_lamp', 'plant_flower'],
     adjacentTo: ['LIVING_ROOM'],
     color: 'rgba(242, 212, 80, 0.3)'
   },
@@ -63,7 +64,7 @@ export const ROOM_TYPES = {
     type: 'work' as const,
     preferredSize: { width: 140, height: 100 },
     preferredPosition: 'corner',
-    decorations: ['lamp'],
+    decorations: ['deco_bookshelf', 'deco_lamp', 'deco_clock', 'plant_small'],
     adjacentTo: ['HALLWAY'],
     color: 'rgba(138, 95, 184, 0.25)'
   },
@@ -73,7 +74,7 @@ export const ROOM_TYPES = {
     type: 'comfort' as const,
     preferredSize: { width: 160, height: 130 },
     preferredPosition: 'wall',
-    decorations: ['flower', 'banco', 'arbol'],
+    decorations: ['plant_flower', 'plant_tree', 'plant_small', 'banco'],
     adjacentTo: ['KITCHEN'],
     color: 'rgba(138, 95, 184, 0.25)'
   },
@@ -83,7 +84,7 @@ export const ROOM_TYPES = {
     type: 'energy' as const,
     preferredSize: { width: 120, height: 100 },
     preferredPosition: 'corner',
-    decorations: ['lamp'],
+    decorations: ['deco_lamp', 'plant_small'],
     adjacentTo: [],
     color: 'rgba(245, 158, 11, 0.25)'
   }
@@ -289,6 +290,25 @@ export function placeDecorations(
 // 🛠️ FUNCIONES AUXILIARES
 function getDecorationSize(type: string): { width: number; height: number } {
   const sizes: Record<string, { width: number; height: number }> = {
+    // Muebles
+    furniture_bed_simple: { width: 32, height: 20 },
+    furniture_bed_double: { width: 32, height: 24 },
+    furniture_sofa_modern: { width: 32, height: 16 },
+    furniture_sofa_classic: { width: 32, height: 18 },
+    furniture_table_coffee: { width: 24, height: 16 },
+    furniture_table_dining: { width: 32, height: 20 },
+    
+    // Plantas
+    plant_small: { width: 12, height: 12 },
+    plant_tree: { width: 32, height: 40 },
+    plant_flower: { width: 16, height: 16 },
+    
+    // Decoración
+    deco_lamp: { width: 12, height: 20 },
+    deco_clock: { width: 16, height: 16 },
+    deco_bookshelf: { width: 28, height: 32 },
+    
+    // Legacy (mantener compatibilidad)
     flower: { width: 8, height: 8 },
     banco: { width: 24, height: 12 },
     lamp: { width: 16, height: 24 },
@@ -301,6 +321,25 @@ function getDecorationSize(type: string): { width: number; height: number } {
 
 function getDecorationMapType(decorationType: string): MapElement['type'] {
   const typeMap: Record<string, MapElement['type']> = {
+    // Muebles
+    furniture_bed_simple: 'rest_zone',
+    furniture_bed_double: 'rest_zone',
+    furniture_sofa_modern: 'social_zone',
+    furniture_sofa_classic: 'social_zone',
+    furniture_table_coffee: 'social_zone',
+    furniture_table_dining: 'food_zone',
+    
+    // Plantas
+    plant_small: 'food_zone',
+    plant_tree: 'obstacle',
+    plant_flower: 'food_zone',
+    
+    // Decoración
+    deco_lamp: 'play_zone',
+    deco_clock: 'play_zone',
+    deco_bookshelf: 'play_zone',
+    
+    // Legacy
     flower: 'food_zone',
     banco: 'rest_zone',
     lamp: 'play_zone',
@@ -313,6 +352,25 @@ function getDecorationMapType(decorationType: string): MapElement['type'] {
 
 function getDecorationColor(decorationType: string): string {
   const colors: Record<string, string> = {
+    // Muebles
+    furniture_bed_simple: '#8B4513',
+    furniture_bed_double: '#654321',
+    furniture_sofa_modern: '#4169E1',
+    furniture_sofa_classic: '#DC143C',
+    furniture_table_coffee: '#DEB887',
+    furniture_table_dining: '#A0522D',
+    
+    // Plantas
+    plant_small: '#228B22',
+    plant_tree: '#006400',
+    plant_flower: '#ff6b9d',
+    
+    // Decoración
+    deco_lamp: '#f2d450',
+    deco_clock: '#B5A642',
+    deco_bookshelf: '#8B4513',
+    
+    // Legacy
     flower: '#ff6b9d',
     banco: '#9e684c',
     lamp: '#f2d450',
@@ -345,7 +403,13 @@ export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElemen
   });
 
   // Generar decoraciones
-  const mapElements = placeDecorations(rooms, mapSeed);
+  const decorations = placeDecorations(rooms, mapSeed);
+  
+  // Generar caminos entre zonas
+  const paths = generatePaths(zones, mapSeed);
+  
+  // Combinar todas las decoraciones y caminos
+  const mapElements = [...decorations, ...paths];
 
   return { zones, mapElements };
 }

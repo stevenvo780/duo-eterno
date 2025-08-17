@@ -37,27 +37,25 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   const drawEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
     const { position, id, stats, isDead, mood } = entity;
     
-    // Skip if dead
-    if (isDead) return;
-    
     // Safe positions
     const px = clamp(position?.x as number, 0, width);
     const py = clamp(position?.y as number, 0, height);
     
     // Determinar sprite basado en estado de ánimo y salud
+    const entityName = id === 'circle' ? 'circulo' : id;
     let spriteKey = id;
     if (isDead) {
-      spriteKey = `entidad_${id}_dying`;
+      spriteKey = `entidad_${entityName}_dying` as any;
     } else {
       // Determinar estado visual basado en stats y mood
       if (mood === 'HAPPY' && stats.energy > 70) {
-        spriteKey = `entidad_${id}_happy`;
+        spriteKey = `entidad_${entityName}_happy` as any;
       } else if (stats.health < 30 || mood === 'SAD') {
-        spriteKey = `entidad_${id}_sad`;
+        spriteKey = `entidad_${entityName}_sad` as any;
       } else if (stats.energy < 30) {
-        spriteKey = `entidad_${id}_dying`;
+        spriteKey = `entidad_${entityName}_dying` as any;
       } else {
-        spriteKey = `entidad_${id}_happy`; // Estado por defecto
+        spriteKey = `entidad_${entityName}_happy` as any; // Estado por defecto
       }
     }
     
@@ -91,14 +89,13 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
     zones.forEach(zone => {
       // Map zone types to sprite assets
       const zoneSprites: Record<string, string> = {
-        'food': 'zona_cocina',
-        'rest': 'zona_descanso',
-        'play': 'zona_juegos',
-        'social': 'zona_social',
-        'work': 'zona_trabajo',
-        'garden': 'zona_jardin_alimentos',
-        'energy': 'zona_energia',
-        'meditation': 'zona_meditacion'
+        'food': 'pattern_kitchen',
+        'rest': 'pattern_bedroom',
+        'play': 'pattern_living',
+        'social': 'pattern_living',
+        'work': 'pattern_tiles_only',
+        'comfort': 'pattern_garden',
+        'energy': 'pattern_stone'
       };
       
       const spriteKey = zoneSprites[zone.type] || null;
@@ -118,7 +115,8 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
             const drawHeight = Math.min(tileSize, zone.bounds.y + zone.bounds.height - drawY);
             
             if (drawWidth > 0 && drawHeight > 0) {
-              ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
+              // Usar el patrón como texture repetida
+              ctx.drawImage(sprite, 0, 0, sprite.width, sprite.height, drawX, drawY, drawWidth, drawHeight);
             }
           }
         }
@@ -151,8 +149,24 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
           spriteKey = 'obstaculo_roca';
         }
       } else {
-        // Handle decorative elements based on type and naming
-        if (element.id.includes('flower')) {
+        // Handle decorative elements based on type and naming - new system
+        if (element.id.includes('furniture_bed')) {
+          spriteKey = element.id.includes('double') ? 'furniture_bed_double' : 'furniture_bed_simple';
+        } else if (element.id.includes('furniture_sofa')) {
+          spriteKey = element.id.includes('classic') ? 'furniture_sofa_classic' : 'furniture_sofa_modern';
+        } else if (element.id.includes('furniture_table')) {
+          spriteKey = element.id.includes('dining') ? 'furniture_table_dining' : 'furniture_table_coffee';
+        } else if (element.id.includes('plant_')) {
+          if (element.id.includes('tree')) spriteKey = 'plant_tree';
+          else if (element.id.includes('flower')) spriteKey = 'plant_flower';
+          else spriteKey = 'plant_small';
+        } else if (element.id.includes('deco_')) {
+          if (element.id.includes('lamp')) spriteKey = 'deco_lamp';
+          else if (element.id.includes('clock')) spriteKey = 'deco_clock';
+          else if (element.id.includes('bookshelf')) spriteKey = 'deco_bookshelf';
+        }
+        // Legacy mapping
+        else if (element.id.includes('flower')) {
           spriteKey = 'flor_rosa';
         } else if (element.id.includes('banco')) {
           spriteKey = 'banco';
@@ -280,38 +294,46 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       'canvas_base', 
       'conexion_entidades',
       'dialogo_overlay',
-      'entidad_circle_happy',
-      'entidad_circle_sad', 
-      'entidad_circle_dying',
+      'entidad_circulo_happy',
+      'entidad_circulo_sad', 
+      'entidad_circulo_dying',
       'entidad_square_happy',
       'entidad_square_sad',
       'entidad_square_dying',
+      'pattern_kitchen',
+      'pattern_bedroom',
+      'pattern_living',
+      'pattern_garden',
+      'pattern_stone',
+      'pattern_tiles_only',
+      // Mobiliario
+      'furniture_bed_simple',
+      'furniture_bed_double',
+      'furniture_sofa_modern',
+      'furniture_sofa_classic',
+      'furniture_table_coffee',
+      'furniture_table_dining',
+      // Plantas
+      'plant_small',
+      'plant_tree',
+      'plant_flower',
+      // Decoración
+      'deco_lamp',
+      'deco_clock',
+      'deco_bookshelf',
+      // Caminos
+      'path_stone_h',
+      'path_stone_v',
+      'path_brick_h',
+      'path_dirt_h',
       'obstaculo_arbol',
       'obstaculo_roca',
-      'zona_cocina',
-      'zona_descanso',
-      'zona_energia',
-      'zona_jardin_alimentos',
-      'zona_juegos',
-      'zona_meditacion',
-      'zona_social',
-      'zona_trabajo'
-    ];
-    
-    // Add new pixel art assets
-    const newAssets = [
+      // Legacy assets para compatibilidad
+      'banco',
       'flor_rosa',
-      'banco', 
-      'lampara',
       'fuente_agua',
-      'zona_cocina_64',
-      'zona_descanso_64',
-      'zona_juegos_64',
-      'zona_social_64',
-      'zona_trabajo_64'
+      'lampara'
     ];
-    
-    const allAssets = [...assetsToLoad, ...newAssets];
 
     const loadImage = (assetName: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
@@ -331,7 +353,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
 
     const loadAllImages = async () => {
       try {
-        const imagePromises = allAssets.map(async (assetName) => {
+        const imagePromises = assetsToLoad.map(async (assetName) => {
           try {
             const img = await loadImage(assetName);
             return [assetName, img] as [string, HTMLImageElement];
@@ -346,7 +368,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
         const imageMap = Object.fromEntries(imageEntries);
         
         setLoadedImages(imageMap);
-        logRenderCompat(`Loaded ${Object.keys(imageMap).length}/${allAssets.length} pixel art assets`);
+        logRenderCompat(`Loaded ${Object.keys(imageMap).length}/${assetsToLoad.length} pixel art assets`);
       } catch (error) {
         console.error('Error loading pixel art assets:', error);
         logRenderCompat(`Error loading assets: ${error}`);
