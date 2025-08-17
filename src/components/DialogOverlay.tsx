@@ -1,8 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGame } from '../hooks/useGame';
 
 const DialogOverlay: React.FC = () => {
   const { dialogueState, dispatch } = useGame();
+  const [dialogSprite, setDialogSprite] = useState<HTMLImageElement | null>(null);
+
+  // Load dialog overlay sprite
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setDialogSprite(img);
+    img.onerror = () => console.error('Failed to load dialog sprite');
+    img.src = '/assets/pixel_art/dialogo_overlay.png';
+  }, []);
 
   useEffect(() => {
     if (dialogueState.visible) {
@@ -20,6 +29,52 @@ const DialogOverlay: React.FC = () => {
   const progress = elapsed / dialogueState.duration;
   const opacity = progress < 0.9 ? 1 : 1 - ((progress - 0.9) / 0.1);
 
+  if (dialogSprite && dialogSprite.complete) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          opacity: opacity,
+          transition: 'opacity 0.3s ease',
+          pointerEvents: 'none',
+          zIndex: 10
+        }}
+      >
+        <div style={{
+          position: 'relative',
+          width: '320px',
+          height: '120px',
+          backgroundImage: `url(/assets/pixel_art/dialogo_overlay.png)`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          imageRendering: 'pixelated'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            fontSize: '14px',
+            lineHeight: '1.5',
+            fontFamily: 'system-ui, sans-serif',
+            textAlign: 'center',
+            maxWidth: '280px',
+            textShadow: '2px 2px 0px #000',
+            fontWeight: '500'
+          }}>
+            {dialogueState.message}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to original style
   return (
     <div
       style={{

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect, getStatColor } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
@@ -21,9 +21,89 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   const [showDebug, setShowDebug] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success'|'info'|'warning'|'error' } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [statBarSprite, setStatBarSprite] = useState<HTMLImageElement | null>(null);
   
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
   const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
+
+  // Load stat bar sprite
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setStatBarSprite(img);
+    img.onerror = () => console.error('Failed to load stat bar sprite');
+    img.src = '/assets/pixel_art/barra_estadistica.png';
+  }, []);
+
+  // Custom stat bar component using pixel art
+  const PixelStatBar: React.FC<{ value: number; stat: string }> = ({ value, stat }) => {
+    if (statBarSprite && statBarSprite.complete) {
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '16px' }}>
+          <canvas
+            width="100"
+            height="16"
+            style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+            ref={(canvas) => {
+              if (canvas && statBarSprite) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  // Clear canvas
+                  ctx.clearRect(0, 0, 100, 16);
+                  
+                  // Draw empty bar background
+                  ctx.drawImage(statBarSprite, 0, 0, 100, 16);
+                  
+                  // Draw filled portion
+                  const fillWidth = (value / 100) * 100;
+                  if (fillWidth > 0) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'source-atop';
+                    ctx.fillStyle = getStatColor(value);
+                    ctx.fillRect(2, 2, fillWidth - 4, 12);
+                    ctx.restore();
+                  }
+                }
+              }
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            color: '#fff',
+            textShadow: '1px 1px 0px #000'
+          }}>
+            {Math.round(value)}%
+          </div>
+        </div>
+      );
+    }
+    
+    // Fallback to original bar
+    return (
+      <div style={{
+        height: '4px',
+        background: '#374151',
+        borderRadius: '2px',
+        overflow: 'hidden',
+        marginBottom: '4px'
+      }}>
+        <div style={{
+          width: `${value}%`,
+          height: '100%',
+          background: getStatColor(value),
+          transition: 'width 0.3s ease'
+        }} />
+      </div>
+    );
+  };
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
     if (entityId) {
@@ -283,27 +363,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
                     }}>
                       {getStatName(stat)}
                     </div>
-                    <div style={{
-                      height: '4px',
-                      background: '#374151',
-                      borderRadius: '2px',
-                      overflow: 'hidden',
-                      marginBottom: '4px'
-                    }}>
-                      <div style={{
-                        width: `${value}%`,
-                        height: '100%',
-                        background: getStatColor(value),
-                        transition: 'width 0.3s ease'
-                      }} />
-                    </div>
-                    <div style={{ 
-                      fontSize: '12px', 
-                      color: '#f1f5f9',
-                      fontWeight: '600'
-                    }}>
-                      {Math.round(value)}%
-                    </div>
+                    <PixelStatBar value={value} stat={stat} />
                   </div>
                 ))}
               </div>
@@ -501,20 +561,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             }}>
               Vínculo
             </div>
-            <div style={{
-              width: '80px',
-              height: '4px',
-              background: '#374151',
-              borderRadius: '2px',
-              overflow: 'hidden',
-              position: 'relative'
-            }}>
-              <div style={{
-                width: `${gameState.resonance}%`,
-                height: '100%',
-                background: `linear-gradient(90deg, ${getStatColor(gameState.resonance)}, ${getStatColor(Math.min(100, gameState.resonance + 20))})`,
-                transition: 'width 0.3s ease'
-              }} />
+            <div style={{ width: '80px', height: '16px' }}>
+              <PixelStatBar value={gameState.resonance} stat="resonance" />
             </div>
             <div style={{ 
               fontSize: '10px', 
