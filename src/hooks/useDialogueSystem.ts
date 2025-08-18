@@ -65,7 +65,7 @@ export const useDialogueSystem = () => {
       if (!gameState.connectionAnimation.active) {
         gameState.entities.forEach(entity => {
           // Probabilidad de hablar basada en el estado y actividad
-          const shouldSpeak = Math.random() < 0.02; // 2% de probabilidad cada segundo
+          const shouldSpeak = Math.random() < 0.05; // 5% de probabilidad cada segundo (aumentado para testing)
           
           if (shouldSpeak && !entity.isDead) {
             const speaker = getSpeakerForEntity(entity.id);

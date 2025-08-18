@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint . --ext .ts,.tsx",
-    "lint:unused": "eslint . --ext .ts,.tsx --no-eslintrc --config eslint.config.js",
+    "lint:unused": "eslint . --config eslint.config.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "preview": "vite preview",
     "find-unused": "ts-prune --project tsconfig.app.json",

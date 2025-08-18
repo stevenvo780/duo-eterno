@@ -44,23 +44,13 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
 
   if (!visible && opacity === 0) return null;
 
-  const getEmotionColor = (emotion: string, speaker: string) => {
+  const getEmotionColor = (speaker: string) => {
     const baseColors = {
       ISA: '#ff69b4',    // Rosa para ISA
       STEV: '#4169e1'    // Azul para STEV
     };
 
-    const emotionModifiers = {
-      'LOVE': { saturation: 1.2, brightness: 1.1 },
-      'PLAYFUL': { saturation: 1.3, brightness: 1.2 },
-      'SADNESS': { saturation: 0.7, brightness: 0.8 },
-      'NEUTRAL': { saturation: 0.9, brightness: 0.9 },
-      'CURIOUS': { saturation: 1.1, brightness: 1.0 },
-      'APOLOGY': { saturation: 0.8, brightness: 0.9 }
-    };
-
     const base = baseColors[speaker as keyof typeof baseColors] || baseColors.STEV;
-    const modifier = emotionModifiers[emotion as keyof typeof emotionModifiers] || emotionModifiers.NEUTRAL;
     
     return {
       background: `${base}dd`,
@@ -68,7 +58,7 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
     };
   };
 
-  const colors = getEmotionColor(emotion, speaker);
+  const colors = getEmotionColor(speaker);
 
   return (
     <div
