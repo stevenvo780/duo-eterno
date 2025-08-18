@@ -6,6 +6,7 @@ import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import EntityDialogueSystem from './components/EntityDialogueSystem';
 import IntroNarrative from './components/IntroNarrative';
+import { SpriteDemoPage } from './components/SpriteDemoPage';
 import { useGameLoop } from './hooks/useGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
@@ -15,7 +16,10 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 import type { Entity } from './types';
 import { safeLoad, markIntroAsSeen } from './utils/persistence';
 
+type AppMode = 'game' | 'demo';
+
 const GameContent: React.FC = React.memo(() => {
+  const [mode, setMode] = useState<AppMode>('game');
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   // Mostrar la intro solo si no existe partida guardada O si existe pero no ha visto la intro
   const [showIntro, setShowIntro] = useState<boolean>(() => {
@@ -28,7 +32,6 @@ const GameContent: React.FC = React.memo(() => {
   });
 
   useGameLoop();
-
   useDialogueSystem();
   useZoneEffects();
   useEntityMovementOptimized();
@@ -63,6 +66,35 @@ const GameContent: React.FC = React.memo(() => {
     markIntroAsSeen();
   }, []);
 
+  // Si estamos en modo demo, mostrar solo la página de demo
+  if (mode === 'demo') {
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        {/* Botón para volver al juego */}
+        <button
+          onClick={() => setMode('game')}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            zIndex: 1000,
+            padding: '10px 20px',
+            background: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          🎮 Volver al Juego
+        </button>
+        
+        <SpriteDemoPage />
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -75,6 +107,26 @@ const GameContent: React.FC = React.memo(() => {
         fontFamily: 'system-ui, sans-serif'
       }}
     >
+      {/* Botón para alternar a demo */}
+      <button
+        onClick={() => setMode('demo')}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 1000,
+          padding: '10px 20px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        }}
+      >
+        🎬 Demo Sprites
+      </button>
+
       {/* Narrativa de introducción */}
       {showIntro && <IntroNarrative onComplete={handleIntroComplete} />}
 

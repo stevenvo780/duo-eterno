@@ -207,11 +207,11 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     }
 
     // Cargar todas las animaciones y sprites en paralelo
-    const animationPromises = folder.animations.map(anim => 
+    const animationPromises = folder.animations.map((anim: AnimationAsset) => 
       this.loadAnimation(anim.id, folderName)
     );
     
-    const spritePromises = folder.staticSprites.map(sprite => 
+    const spritePromises = folder.staticSprites.map((sprite: StaticSpriteAsset) => 
       this.loadSprite(sprite.id, folderName)
     );
 
@@ -223,20 +223,20 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     // Filtrar solo los exitosos y loggar errores
     const successfulAnimations = animations
       .filter((result): result is PromiseFulfilledResult<LoadedAnimation> => result.status === 'fulfilled')
-      .map(result => result.value);
+      .map((result: PromiseFulfilledResult<LoadedAnimation>) => result.value);
 
     const successfulSprites = sprites
       .filter((result): result is PromiseFulfilledResult<LoadedSprite> => result.status === 'fulfilled')
-      .map(result => result.value);
+      .map((result: PromiseFulfilledResult<LoadedSprite>) => result.value);
 
     // Loggar errores si los hay
-    animations.forEach((result, index) => {
+    animations.forEach((result: PromiseSettledResult<LoadedAnimation>, index: number) => {
       if (result.status === 'rejected') {
         console.warn(`Failed to load animation ${folder.animations[index].id}:`, result.reason);
       }
     });
 
-    sprites.forEach((result, index) => {
+    sprites.forEach((result: PromiseSettledResult<LoadedSprite>, index: number) => {
       if (result.status === 'rejected') {
         console.warn(`Failed to load sprite ${folder.staticSprites[index].id}:`, result.reason);
       }
@@ -300,7 +300,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     const animations: string[] = [];
     
     Object.values(this.assetManifest).forEach(folder => {
-      folder.animations.forEach(anim => {
+      folder.animations.forEach((anim: AnimationAsset) => {
         if (!entityType || anim.id.includes(entityType) || anim.name.includes(entityType)) {
           animations.push(anim.id);
         }
@@ -308,8 +308,8 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       
       // Buscar en subcarpetas
       if (folder.subfolders) {
-        Object.values(folder.subfolders).forEach(subfolder => {
-          subfolder.animations.forEach(anim => {
+        Object.values(folder.subfolders).forEach((subfolder: AssetFolder) => {
+          subfolder.animations.forEach((anim: AnimationAsset) => {
             if (!entityType || anim.id.includes(entityType) || anim.name.includes(entityType)) {
               animations.push(anim.id);
             }
@@ -326,16 +326,16 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
 
     if (folder) {
       const folderData = this.assetManifest[folder];
-      return folderData ? folderData.staticSprites.map(s => s.id) : [];
+      return folderData ? folderData.staticSprites.map((s: StaticSpriteAsset) => s.id) : [];
     }
 
     const sprites: string[] = [];
     Object.values(this.assetManifest).forEach(folderData => {
-      sprites.push(...folderData.staticSprites.map(s => s.id));
+      sprites.push(...folderData.staticSprites.map((s: StaticSpriteAsset) => s.id));
       
       if (folderData.subfolders) {
-        Object.values(folderData.subfolders).forEach(subfolder => {
-          sprites.push(...subfolder.staticSprites.map(s => s.id));
+        Object.values(folderData.subfolders).forEach((subfolder: AssetFolder) => {
+          sprites.push(...subfolder.staticSprites.map((s: StaticSpriteAsset) => s.id));
         });
       }
     });

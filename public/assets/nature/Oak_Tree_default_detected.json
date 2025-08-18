@@ -1,0 +1,160 @@
+{
+  "name": "default",
+  "frame_count": 20,
+  "frame_size": [
+    16,
+    16
+  ],
+  "columns": 4,
+  "rows": 5,
+  "total_duration": 1600,
+  "loop": true,
+  "fps": 13,
+  "frames": [
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    }
+  ],
+  "source_image": "Oak_Tree.png",
+  "detected_automatically": true,
+  "detection_confidence": 45,
+  "engine_version": "duo-eterno-v1.0",
+  "created_at": "2025-08-18T09:52:31.157Z"
+}

@@ -1,0 +1,3138 @@
+{
+  "summary": {
+    "timestamp": "2025-08-18T09:52:31.158Z",
+    "engine_version": "duo-eterno-v1.0",
+    "imagesScanned": 343,
+    "spritesheetsDetected": 142,
+    "animationsGenerated": 142,
+    "framesSplit": 3590
+  },
+  "detectedSpritesheets": [
+    {
+      "path": "public/assets/activities/ARZone.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Air Europa.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/AirBnB.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Amazon Prime.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Amazon Shopping.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Amazon.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/ArtStation.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Authy.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Battle.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Booking.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/CityMapper.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Cuenta DNI.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Deliveroo.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Deviantart.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Discord.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Duolingo.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Evernote.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Express VPN.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Facebook Messenger.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Facebook.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Firefox.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/FitBod.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Galaxy Store.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Glovo.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Gmail.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Authentificator Old.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Authentificator.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Calendar.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Chrome.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Currents.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Docs.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Drive.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Files.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Fit.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Forms.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Hangouts.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Keep.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Launcher.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Maps Old.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Maps.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Photos.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Playstore.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Podcasts.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Sheets.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 60
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Slides.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google TV.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google TalkBack.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Text to Speech.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Translate.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google Wallet.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Google.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Idealista.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Instagram Old.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Instagram.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Itch io.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Ko Fi.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Letterboxd.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/LinkedIn.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Lloyds Bank.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/London Guide.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/London Offline Map.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/London Tube Map.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Mercadolibre.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Mercadopago.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Mi Argentina.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Access.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Authentificator.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Edge.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Excel.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Launcher.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Link to Windows.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Office.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft OneDrive.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft OneNote.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft PowerPoint.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Publisher.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft To Do.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Microsoft Word.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Miro.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Moj.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/My Fitness Pal.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Netflix v2.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Netflix.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Notion.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Nova Launcher.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Nuffield Health.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Opera.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Outlook.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Patreon.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/PayPal.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/PedidosYa.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Pikmin.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Pinterest.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Reddit.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Rubiks Cube.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Safari.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Samsung Free.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Santander.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Skype.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Slack v2.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Slack.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Snapchat.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/SocioPlus.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/SoundCloud.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Spareroom.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Spotify.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Steam.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Tarjeta Transporte Madrid.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Telegram.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Terraria.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Tfl Go.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Tfl Oyster.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/TickTick.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/TikTok.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Tinder.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Todoist.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Toggl Blue Icon.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Toggl Hire.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Toggl Plan.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Toggl Track.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Toggl.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Trello v2.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Trello.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Tumblr.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Twitch.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Twitter.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Uber Eats.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Uber.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Vitality GP.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Vitality.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Vivaldi.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Vodafone.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Whatsapp.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Wikipedia.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/WinRAR.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Youtube.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/activities/Zoom.png",
+      "dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "layout": {
+        "frameWidth": 24,
+        "frameHeight": 24,
+        "columns": 5,
+        "rows": 5,
+        "totalFrames": 25,
+        "confidence": 45
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/buildings/CityWall_Gate_1.png",
+      "dimensions": {
+        "width": 80,
+        "height": 96
+      },
+      "layout": {
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "columns": 5,
+        "rows": 6,
+        "totalFrames": 30,
+        "confidence": 35
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/buildings/Fences.png",
+      "dimensions": {
+        "width": 64,
+        "height": 64
+      },
+      "layout": {
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "columns": 4,
+        "rows": 4,
+        "totalFrames": 16,
+        "confidence": 55
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/buildings/House.png",
+      "dimensions": {
+        "width": 80,
+        "height": 112
+      },
+      "layout": {
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "columns": 5,
+        "rows": 7,
+        "totalFrames": 35,
+        "confidence": 35
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/buildings/House_Hay_4_Purple.png",
+      "dimensions": {
+        "width": 128,
+        "height": 128
+      },
+      "layout": {
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "columns": 8,
+        "rows": 8,
+        "totalFrames": 64,
+        "confidence": 55
+      },
+      "type": "default"
+    },
+    {
+      "path": "public/assets/nature/Oak_Tree.png",
+      "dimensions": {
+        "width": 64,
+        "height": 80
+      },
+      "layout": {
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "columns": 4,
+        "rows": 5,
+        "totalFrames": 20,
+        "confidence": 45
+      },
+      "type": "default"
+    }
+  ],
+  "generatedAnimations": [
+    {
+      "name": "ARZone_default_detected",
+      "metadataPath": "public/assets/activities/ARZone_default_detected.json",
+      "sourcePath": "public/assets/activities/ARZone.png",
+      "type": "default"
+    },
+    {
+      "name": "Air Europa_default_detected",
+      "metadataPath": "public/assets/activities/Air Europa_default_detected.json",
+      "sourcePath": "public/assets/activities/Air Europa.png",
+      "type": "default"
+    },
+    {
+      "name": "AirBnB_default_detected",
+      "metadataPath": "public/assets/activities/AirBnB_default_detected.json",
+      "sourcePath": "public/assets/activities/AirBnB.png",
+      "type": "default"
+    },
+    {
+      "name": "Amazon Prime_default_detected",
+      "metadataPath": "public/assets/activities/Amazon Prime_default_detected.json",
+      "sourcePath": "public/assets/activities/Amazon Prime.png",
+      "type": "default"
+    },
+    {
+      "name": "Amazon Shopping_default_detected",
+      "metadataPath": "public/assets/activities/Amazon Shopping_default_detected.json",
+      "sourcePath": "public/assets/activities/Amazon Shopping.png",
+      "type": "default"
+    },
+    {
+      "name": "Amazon_default_detected",
+      "metadataPath": "public/assets/activities/Amazon_default_detected.json",
+      "sourcePath": "public/assets/activities/Amazon.png",
+      "type": "default"
+    },
+    {
+      "name": "ArtStation_default_detected",
+      "metadataPath": "public/assets/activities/ArtStation_default_detected.json",
+      "sourcePath": "public/assets/activities/ArtStation.png",
+      "type": "default"
+    },
+    {
+      "name": "Authy_default_detected",
+      "metadataPath": "public/assets/activities/Authy_default_detected.json",
+      "sourcePath": "public/assets/activities/Authy.png",
+      "type": "default"
+    },
+    {
+      "name": "Battle_default_detected",
+      "metadataPath": "public/assets/activities/Battle_default_detected.json",
+      "sourcePath": "public/assets/activities/Battle.png",
+      "type": "default"
+    },
+    {
+      "name": "Booking_default_detected",
+      "metadataPath": "public/assets/activities/Booking_default_detected.json",
+      "sourcePath": "public/assets/activities/Booking.png",
+      "type": "default"
+    },
+    {
+      "name": "CityMapper_default_detected",
+      "metadataPath": "public/assets/activities/CityMapper_default_detected.json",
+      "sourcePath": "public/assets/activities/CityMapper.png",
+      "type": "default"
+    },
+    {
+      "name": "Cuenta DNI_default_detected",
+      "metadataPath": "public/assets/activities/Cuenta DNI_default_detected.json",
+      "sourcePath": "public/assets/activities/Cuenta DNI.png",
+      "type": "default"
+    },
+    {
+      "name": "Deliveroo_default_detected",
+      "metadataPath": "public/assets/activities/Deliveroo_default_detected.json",
+      "sourcePath": "public/assets/activities/Deliveroo.png",
+      "type": "default"
+    },
+    {
+      "name": "Deviantart_default_detected",
+      "metadataPath": "public/assets/activities/Deviantart_default_detected.json",
+      "sourcePath": "public/assets/activities/Deviantart.png",
+      "type": "default"
+    },
+    {
+      "name": "Discord_default_detected",
+      "metadataPath": "public/assets/activities/Discord_default_detected.json",
+      "sourcePath": "public/assets/activities/Discord.png",
+      "type": "default"
+    },
+    {
+      "name": "Duolingo_default_detected",
+      "metadataPath": "public/assets/activities/Duolingo_default_detected.json",
+      "sourcePath": "public/assets/activities/Duolingo.png",
+      "type": "default"
+    },
+    {
+      "name": "Evernote_default_detected",
+      "metadataPath": "public/assets/activities/Evernote_default_detected.json",
+      "sourcePath": "public/assets/activities/Evernote.png",
+      "type": "default"
+    },
+    {
+      "name": "Express VPN_default_detected",
+      "metadataPath": "public/assets/activities/Express VPN_default_detected.json",
+      "sourcePath": "public/assets/activities/Express VPN.png",
+      "type": "default"
+    },
+    {
+      "name": "Facebook Messenger_default_detected",
+      "metadataPath": "public/assets/activities/Facebook Messenger_default_detected.json",
+      "sourcePath": "public/assets/activities/Facebook Messenger.png",
+      "type": "default"
+    },
+    {
+      "name": "Facebook_default_detected",
+      "metadataPath": "public/assets/activities/Facebook_default_detected.json",
+      "sourcePath": "public/assets/activities/Facebook.png",
+      "type": "default"
+    },
+    {
+      "name": "Firefox_default_detected",
+      "metadataPath": "public/assets/activities/Firefox_default_detected.json",
+      "sourcePath": "public/assets/activities/Firefox.png",
+      "type": "default"
+    },
+    {
+      "name": "FitBod_default_detected",
+      "metadataPath": "public/assets/activities/FitBod_default_detected.json",
+      "sourcePath": "public/assets/activities/FitBod.png",
+      "type": "default"
+    },
+    {
+      "name": "Galaxy Store_default_detected",
+      "metadataPath": "public/assets/activities/Galaxy Store_default_detected.json",
+      "sourcePath": "public/assets/activities/Galaxy Store.png",
+      "type": "default"
+    },
+    {
+      "name": "Glovo_default_detected",
+      "metadataPath": "public/assets/activities/Glovo_default_detected.json",
+      "sourcePath": "public/assets/activities/Glovo.png",
+      "type": "default"
+    },
+    {
+      "name": "Gmail_default_detected",
+      "metadataPath": "public/assets/activities/Gmail_default_detected.json",
+      "sourcePath": "public/assets/activities/Gmail.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Authentificator Old_default_detected",
+      "metadataPath": "public/assets/activities/Google Authentificator Old_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Authentificator Old.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Authentificator_default_detected",
+      "metadataPath": "public/assets/activities/Google Authentificator_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Authentificator.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Calendar_default_detected",
+      "metadataPath": "public/assets/activities/Google Calendar_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Calendar.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Chrome_default_detected",
+      "metadataPath": "public/assets/activities/Google Chrome_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Chrome.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Currents_default_detected",
+      "metadataPath": "public/assets/activities/Google Currents_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Currents.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Docs_default_detected",
+      "metadataPath": "public/assets/activities/Google Docs_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Docs.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Drive_default_detected",
+      "metadataPath": "public/assets/activities/Google Drive_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Drive.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Files_default_detected",
+      "metadataPath": "public/assets/activities/Google Files_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Files.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Fit_default_detected",
+      "metadataPath": "public/assets/activities/Google Fit_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Fit.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Forms_default_detected",
+      "metadataPath": "public/assets/activities/Google Forms_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Forms.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Hangouts_default_detected",
+      "metadataPath": "public/assets/activities/Google Hangouts_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Hangouts.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Keep_default_detected",
+      "metadataPath": "public/assets/activities/Google Keep_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Keep.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Launcher_default_detected",
+      "metadataPath": "public/assets/activities/Google Launcher_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Launcher.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Maps Old_default_detected",
+      "metadataPath": "public/assets/activities/Google Maps Old_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Maps Old.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Maps_default_detected",
+      "metadataPath": "public/assets/activities/Google Maps_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Maps.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Photos_default_detected",
+      "metadataPath": "public/assets/activities/Google Photos_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Photos.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Playstore_default_detected",
+      "metadataPath": "public/assets/activities/Google Playstore_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Playstore.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Podcasts_default_detected",
+      "metadataPath": "public/assets/activities/Google Podcasts_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Podcasts.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Sheets_default_detected",
+      "metadataPath": "public/assets/activities/Google Sheets_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Sheets.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Slides_default_detected",
+      "metadataPath": "public/assets/activities/Google Slides_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Slides.png",
+      "type": "default"
+    },
+    {
+      "name": "Google TV_default_detected",
+      "metadataPath": "public/assets/activities/Google TV_default_detected.json",
+      "sourcePath": "public/assets/activities/Google TV.png",
+      "type": "default"
+    },
+    {
+      "name": "Google TalkBack_default_detected",
+      "metadataPath": "public/assets/activities/Google TalkBack_default_detected.json",
+      "sourcePath": "public/assets/activities/Google TalkBack.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Text to Speech_default_detected",
+      "metadataPath": "public/assets/activities/Google Text to Speech_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Text to Speech.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Translate_default_detected",
+      "metadataPath": "public/assets/activities/Google Translate_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Translate.png",
+      "type": "default"
+    },
+    {
+      "name": "Google Wallet_default_detected",
+      "metadataPath": "public/assets/activities/Google Wallet_default_detected.json",
+      "sourcePath": "public/assets/activities/Google Wallet.png",
+      "type": "default"
+    },
+    {
+      "name": "Google_default_detected",
+      "metadataPath": "public/assets/activities/Google_default_detected.json",
+      "sourcePath": "public/assets/activities/Google.png",
+      "type": "default"
+    },
+    {
+      "name": "Idealista_default_detected",
+      "metadataPath": "public/assets/activities/Idealista_default_detected.json",
+      "sourcePath": "public/assets/activities/Idealista.png",
+      "type": "default"
+    },
+    {
+      "name": "Instagram Old_default_detected",
+      "metadataPath": "public/assets/activities/Instagram Old_default_detected.json",
+      "sourcePath": "public/assets/activities/Instagram Old.png",
+      "type": "default"
+    },
+    {
+      "name": "Instagram_default_detected",
+      "metadataPath": "public/assets/activities/Instagram_default_detected.json",
+      "sourcePath": "public/assets/activities/Instagram.png",
+      "type": "default"
+    },
+    {
+      "name": "Itch io_default_detected",
+      "metadataPath": "public/assets/activities/Itch io_default_detected.json",
+      "sourcePath": "public/assets/activities/Itch io.png",
+      "type": "default"
+    },
+    {
+      "name": "Ko Fi_default_detected",
+      "metadataPath": "public/assets/activities/Ko Fi_default_detected.json",
+      "sourcePath": "public/assets/activities/Ko Fi.png",
+      "type": "default"
+    },
+    {
+      "name": "Letterboxd_default_detected",
+      "metadataPath": "public/assets/activities/Letterboxd_default_detected.json",
+      "sourcePath": "public/assets/activities/Letterboxd.png",
+      "type": "default"
+    },
+    {
+      "name": "LinkedIn_default_detected",
+      "metadataPath": "public/assets/activities/LinkedIn_default_detected.json",
+      "sourcePath": "public/assets/activities/LinkedIn.png",
+      "type": "default"
+    },
+    {
+      "name": "Lloyds Bank_default_detected",
+      "metadataPath": "public/assets/activities/Lloyds Bank_default_detected.json",
+      "sourcePath": "public/assets/activities/Lloyds Bank.png",
+      "type": "default"
+    },
+    {
+      "name": "London Guide_default_detected",
+      "metadataPath": "public/assets/activities/London Guide_default_detected.json",
+      "sourcePath": "public/assets/activities/London Guide.png",
+      "type": "default"
+    },
+    {
+      "name": "London Offline Map_default_detected",
+      "metadataPath": "public/assets/activities/London Offline Map_default_detected.json",
+      "sourcePath": "public/assets/activities/London Offline Map.png",
+      "type": "default"
+    },
+    {
+      "name": "London Tube Map_default_detected",
+      "metadataPath": "public/assets/activities/London Tube Map_default_detected.json",
+      "sourcePath": "public/assets/activities/London Tube Map.png",
+      "type": "default"
+    },
+    {
+      "name": "Mercadolibre_default_detected",
+      "metadataPath": "public/assets/activities/Mercadolibre_default_detected.json",
+      "sourcePath": "public/assets/activities/Mercadolibre.png",
+      "type": "default"
+    },
+    {
+      "name": "Mercadopago_default_detected",
+      "metadataPath": "public/assets/activities/Mercadopago_default_detected.json",
+      "sourcePath": "public/assets/activities/Mercadopago.png",
+      "type": "default"
+    },
+    {
+      "name": "Mi Argentina_default_detected",
+      "metadataPath": "public/assets/activities/Mi Argentina_default_detected.json",
+      "sourcePath": "public/assets/activities/Mi Argentina.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Access_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Access_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Access.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Authentificator_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Authentificator_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Authentificator.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Edge_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Edge_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Edge.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Excel_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Excel_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Excel.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Launcher_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Launcher_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Launcher.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Link to Windows_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Link to Windows_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Link to Windows.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Office_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Office_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Office.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft OneDrive_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft OneDrive_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft OneDrive.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft OneNote_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft OneNote_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft OneNote.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft PowerPoint_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft PowerPoint_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft PowerPoint.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Publisher_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Publisher_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Publisher.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft To Do_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft To Do_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft To Do.png",
+      "type": "default"
+    },
+    {
+      "name": "Microsoft Word_default_detected",
+      "metadataPath": "public/assets/activities/Microsoft Word_default_detected.json",
+      "sourcePath": "public/assets/activities/Microsoft Word.png",
+      "type": "default"
+    },
+    {
+      "name": "Miro_default_detected",
+      "metadataPath": "public/assets/activities/Miro_default_detected.json",
+      "sourcePath": "public/assets/activities/Miro.png",
+      "type": "default"
+    },
+    {
+      "name": "Moj_default_detected",
+      "metadataPath": "public/assets/activities/Moj_default_detected.json",
+      "sourcePath": "public/assets/activities/Moj.png",
+      "type": "default"
+    },
+    {
+      "name": "My Fitness Pal_default_detected",
+      "metadataPath": "public/assets/activities/My Fitness Pal_default_detected.json",
+      "sourcePath": "public/assets/activities/My Fitness Pal.png",
+      "type": "default"
+    },
+    {
+      "name": "Netflix v2_default_detected",
+      "metadataPath": "public/assets/activities/Netflix v2_default_detected.json",
+      "sourcePath": "public/assets/activities/Netflix v2.png",
+      "type": "default"
+    },
+    {
+      "name": "Netflix_default_detected",
+      "metadataPath": "public/assets/activities/Netflix_default_detected.json",
+      "sourcePath": "public/assets/activities/Netflix.png",
+      "type": "default"
+    },
+    {
+      "name": "Notion_default_detected",
+      "metadataPath": "public/assets/activities/Notion_default_detected.json",
+      "sourcePath": "public/assets/activities/Notion.png",
+      "type": "default"
+    },
+    {
+      "name": "Nova Launcher_default_detected",
+      "metadataPath": "public/assets/activities/Nova Launcher_default_detected.json",
+      "sourcePath": "public/assets/activities/Nova Launcher.png",
+      "type": "default"
+    },
+    {
+      "name": "Nuffield Health_default_detected",
+      "metadataPath": "public/assets/activities/Nuffield Health_default_detected.json",
+      "sourcePath": "public/assets/activities/Nuffield Health.png",
+      "type": "default"
+    },
+    {
+      "name": "Opera_default_detected",
+      "metadataPath": "public/assets/activities/Opera_default_detected.json",
+      "sourcePath": "public/assets/activities/Opera.png",
+      "type": "default"
+    },
+    {
+      "name": "Outlook_default_detected",
+      "metadataPath": "public/assets/activities/Outlook_default_detected.json",
+      "sourcePath": "public/assets/activities/Outlook.png",
+      "type": "default"
+    },
+    {
+      "name": "Patreon_default_detected",
+      "metadataPath": "public/assets/activities/Patreon_default_detected.json",
+      "sourcePath": "public/assets/activities/Patreon.png",
+      "type": "default"
+    },
+    {
+      "name": "PayPal_default_detected",
+      "metadataPath": "public/assets/activities/PayPal_default_detected.json",
+      "sourcePath": "public/assets/activities/PayPal.png",
+      "type": "default"
+    },
+    {
+      "name": "PedidosYa_default_detected",
+      "metadataPath": "public/assets/activities/PedidosYa_default_detected.json",
+      "sourcePath": "public/assets/activities/PedidosYa.png",
+      "type": "default"
+    },
+    {
+      "name": "Pikmin_default_detected",
+      "metadataPath": "public/assets/activities/Pikmin_default_detected.json",
+      "sourcePath": "public/assets/activities/Pikmin.png",
+      "type": "default"
+    },
+    {
+      "name": "Pinterest_default_detected",
+      "metadataPath": "public/assets/activities/Pinterest_default_detected.json",
+      "sourcePath": "public/assets/activities/Pinterest.png",
+      "type": "default"
+    },
+    {
+      "name": "Reddit_default_detected",
+      "metadataPath": "public/assets/activities/Reddit_default_detected.json",
+      "sourcePath": "public/assets/activities/Reddit.png",
+      "type": "default"
+    },
+    {
+      "name": "Rubiks Cube_default_detected",
+      "metadataPath": "public/assets/activities/Rubiks Cube_default_detected.json",
+      "sourcePath": "public/assets/activities/Rubiks Cube.png",
+      "type": "default"
+    },
+    {
+      "name": "Safari_default_detected",
+      "metadataPath": "public/assets/activities/Safari_default_detected.json",
+      "sourcePath": "public/assets/activities/Safari.png",
+      "type": "default"
+    },
+    {
+      "name": "Samsung Free_default_detected",
+      "metadataPath": "public/assets/activities/Samsung Free_default_detected.json",
+      "sourcePath": "public/assets/activities/Samsung Free.png",
+      "type": "default"
+    },
+    {
+      "name": "Santander_default_detected",
+      "metadataPath": "public/assets/activities/Santander_default_detected.json",
+      "sourcePath": "public/assets/activities/Santander.png",
+      "type": "default"
+    },
+    {
+      "name": "Skype_default_detected",
+      "metadataPath": "public/assets/activities/Skype_default_detected.json",
+      "sourcePath": "public/assets/activities/Skype.png",
+      "type": "default"
+    },
+    {
+      "name": "Slack v2_default_detected",
+      "metadataPath": "public/assets/activities/Slack v2_default_detected.json",
+      "sourcePath": "public/assets/activities/Slack v2.png",
+      "type": "default"
+    },
+    {
+      "name": "Slack_default_detected",
+      "metadataPath": "public/assets/activities/Slack_default_detected.json",
+      "sourcePath": "public/assets/activities/Slack.png",
+      "type": "default"
+    },
+    {
+      "name": "Snapchat_default_detected",
+      "metadataPath": "public/assets/activities/Snapchat_default_detected.json",
+      "sourcePath": "public/assets/activities/Snapchat.png",
+      "type": "default"
+    },
+    {
+      "name": "SocioPlus_default_detected",
+      "metadataPath": "public/assets/activities/SocioPlus_default_detected.json",
+      "sourcePath": "public/assets/activities/SocioPlus.png",
+      "type": "default"
+    },
+    {
+      "name": "SoundCloud_default_detected",
+      "metadataPath": "public/assets/activities/SoundCloud_default_detected.json",
+      "sourcePath": "public/assets/activities/SoundCloud.png",
+      "type": "default"
+    },
+    {
+      "name": "Spareroom_default_detected",
+      "metadataPath": "public/assets/activities/Spareroom_default_detected.json",
+      "sourcePath": "public/assets/activities/Spareroom.png",
+      "type": "default"
+    },
+    {
+      "name": "Spotify_default_detected",
+      "metadataPath": "public/assets/activities/Spotify_default_detected.json",
+      "sourcePath": "public/assets/activities/Spotify.png",
+      "type": "default"
+    },
+    {
+      "name": "Steam_default_detected",
+      "metadataPath": "public/assets/activities/Steam_default_detected.json",
+      "sourcePath": "public/assets/activities/Steam.png",
+      "type": "default"
+    },
+    {
+      "name": "Tarjeta Transporte Madrid_default_detected",
+      "metadataPath": "public/assets/activities/Tarjeta Transporte Madrid_default_detected.json",
+      "sourcePath": "public/assets/activities/Tarjeta Transporte Madrid.png",
+      "type": "default"
+    },
+    {
+      "name": "Telegram_default_detected",
+      "metadataPath": "public/assets/activities/Telegram_default_detected.json",
+      "sourcePath": "public/assets/activities/Telegram.png",
+      "type": "default"
+    },
+    {
+      "name": "Terraria_default_detected",
+      "metadataPath": "public/assets/activities/Terraria_default_detected.json",
+      "sourcePath": "public/assets/activities/Terraria.png",
+      "type": "default"
+    },
+    {
+      "name": "Tfl Go_default_detected",
+      "metadataPath": "public/assets/activities/Tfl Go_default_detected.json",
+      "sourcePath": "public/assets/activities/Tfl Go.png",
+      "type": "default"
+    },
+    {
+      "name": "Tfl Oyster_default_detected",
+      "metadataPath": "public/assets/activities/Tfl Oyster_default_detected.json",
+      "sourcePath": "public/assets/activities/Tfl Oyster.png",
+      "type": "default"
+    },
+    {
+      "name": "TickTick_default_detected",
+      "metadataPath": "public/assets/activities/TickTick_default_detected.json",
+      "sourcePath": "public/assets/activities/TickTick.png",
+      "type": "default"
+    },
+    {
+      "name": "TikTok_default_detected",
+      "metadataPath": "public/assets/activities/TikTok_default_detected.json",
+      "sourcePath": "public/assets/activities/TikTok.png",
+      "type": "default"
+    },
+    {
+      "name": "Tinder_default_detected",
+      "metadataPath": "public/assets/activities/Tinder_default_detected.json",
+      "sourcePath": "public/assets/activities/Tinder.png",
+      "type": "default"
+    },
+    {
+      "name": "Todoist_default_detected",
+      "metadataPath": "public/assets/activities/Todoist_default_detected.json",
+      "sourcePath": "public/assets/activities/Todoist.png",
+      "type": "default"
+    },
+    {
+      "name": "Toggl Blue Icon_default_detected",
+      "metadataPath": "public/assets/activities/Toggl Blue Icon_default_detected.json",
+      "sourcePath": "public/assets/activities/Toggl Blue Icon.png",
+      "type": "default"
+    },
+    {
+      "name": "Toggl Hire_default_detected",
+      "metadataPath": "public/assets/activities/Toggl Hire_default_detected.json",
+      "sourcePath": "public/assets/activities/Toggl Hire.png",
+      "type": "default"
+    },
+    {
+      "name": "Toggl Plan_default_detected",
+      "metadataPath": "public/assets/activities/Toggl Plan_default_detected.json",
+      "sourcePath": "public/assets/activities/Toggl Plan.png",
+      "type": "default"
+    },
+    {
+      "name": "Toggl Track_default_detected",
+      "metadataPath": "public/assets/activities/Toggl Track_default_detected.json",
+      "sourcePath": "public/assets/activities/Toggl Track.png",
+      "type": "default"
+    },
+    {
+      "name": "Toggl_default_detected",
+      "metadataPath": "public/assets/activities/Toggl_default_detected.json",
+      "sourcePath": "public/assets/activities/Toggl.png",
+      "type": "default"
+    },
+    {
+      "name": "Trello v2_default_detected",
+      "metadataPath": "public/assets/activities/Trello v2_default_detected.json",
+      "sourcePath": "public/assets/activities/Trello v2.png",
+      "type": "default"
+    },
+    {
+      "name": "Trello_default_detected",
+      "metadataPath": "public/assets/activities/Trello_default_detected.json",
+      "sourcePath": "public/assets/activities/Trello.png",
+      "type": "default"
+    },
+    {
+      "name": "Tumblr_default_detected",
+      "metadataPath": "public/assets/activities/Tumblr_default_detected.json",
+      "sourcePath": "public/assets/activities/Tumblr.png",
+      "type": "default"
+    },
+    {
+      "name": "Twitch_default_detected",
+      "metadataPath": "public/assets/activities/Twitch_default_detected.json",
+      "sourcePath": "public/assets/activities/Twitch.png",
+      "type": "default"
+    },
+    {
+      "name": "Twitter_default_detected",
+      "metadataPath": "public/assets/activities/Twitter_default_detected.json",
+      "sourcePath": "public/assets/activities/Twitter.png",
+      "type": "default"
+    },
+    {
+      "name": "Uber Eats_default_detected",
+      "metadataPath": "public/assets/activities/Uber Eats_default_detected.json",
+      "sourcePath": "public/assets/activities/Uber Eats.png",
+      "type": "default"
+    },
+    {
+      "name": "Uber_default_detected",
+      "metadataPath": "public/assets/activities/Uber_default_detected.json",
+      "sourcePath": "public/assets/activities/Uber.png",
+      "type": "default"
+    },
+    {
+      "name": "Vitality GP_default_detected",
+      "metadataPath": "public/assets/activities/Vitality GP_default_detected.json",
+      "sourcePath": "public/assets/activities/Vitality GP.png",
+      "type": "default"
+    },
+    {
+      "name": "Vitality_default_detected",
+      "metadataPath": "public/assets/activities/Vitality_default_detected.json",
+      "sourcePath": "public/assets/activities/Vitality.png",
+      "type": "default"
+    },
+    {
+      "name": "Vivaldi_default_detected",
+      "metadataPath": "public/assets/activities/Vivaldi_default_detected.json",
+      "sourcePath": "public/assets/activities/Vivaldi.png",
+      "type": "default"
+    },
+    {
+      "name": "Vodafone_default_detected",
+      "metadataPath": "public/assets/activities/Vodafone_default_detected.json",
+      "sourcePath": "public/assets/activities/Vodafone.png",
+      "type": "default"
+    },
+    {
+      "name": "Whatsapp_default_detected",
+      "metadataPath": "public/assets/activities/Whatsapp_default_detected.json",
+      "sourcePath": "public/assets/activities/Whatsapp.png",
+      "type": "default"
+    },
+    {
+      "name": "Wikipedia_default_detected",
+      "metadataPath": "public/assets/activities/Wikipedia_default_detected.json",
+      "sourcePath": "public/assets/activities/Wikipedia.png",
+      "type": "default"
+    },
+    {
+      "name": "WinRAR_default_detected",
+      "metadataPath": "public/assets/activities/WinRAR_default_detected.json",
+      "sourcePath": "public/assets/activities/WinRAR.png",
+      "type": "default"
+    },
+    {
+      "name": "Youtube_default_detected",
+      "metadataPath": "public/assets/activities/Youtube_default_detected.json",
+      "sourcePath": "public/assets/activities/Youtube.png",
+      "type": "default"
+    },
+    {
+      "name": "Zoom_default_detected",
+      "metadataPath": "public/assets/activities/Zoom_default_detected.json",
+      "sourcePath": "public/assets/activities/Zoom.png",
+      "type": "default"
+    },
+    {
+      "name": "CityWall_Gate_1_default_detected",
+      "metadataPath": "public/assets/buildings/CityWall_Gate_1_default_detected.json",
+      "sourcePath": "public/assets/buildings/CityWall_Gate_1.png",
+      "type": "default"
+    },
+    {
+      "name": "Fences_default_detected",
+      "metadataPath": "public/assets/buildings/Fences_default_detected.json",
+      "sourcePath": "public/assets/buildings/Fences.png",
+      "type": "default"
+    },
+    {
+      "name": "House_default_detected",
+      "metadataPath": "public/assets/buildings/House_default_detected.json",
+      "sourcePath": "public/assets/buildings/House.png",
+      "type": "default"
+    },
+    {
+      "name": "House_Hay_4_Purple_default_detected",
+      "metadataPath": "public/assets/buildings/House_Hay_4_Purple_default_detected.json",
+      "sourcePath": "public/assets/buildings/House_Hay_4_Purple.png",
+      "type": "default"
+    },
+    {
+      "name": "Oak_Tree_default_detected",
+      "metadataPath": "public/assets/nature/Oak_Tree_default_detected.json",
+      "sourcePath": "public/assets/nature/Oak_Tree.png",
+      "type": "default"
+    }
+  ]
+}

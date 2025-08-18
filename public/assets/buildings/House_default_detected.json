@@ -1,0 +1,265 @@
+{
+  "name": "default",
+  "frame_count": 35,
+  "frame_size": [
+    16,
+    16
+  ],
+  "columns": 5,
+  "rows": 7,
+  "total_duration": 2800,
+  "loop": true,
+  "fps": 13,
+  "frames": [
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 16,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 32,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 48,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 64,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 80,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 80,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 80,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 80,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 80,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 0,
+      "y": 96,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 16,
+      "y": 96,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 32,
+      "y": 96,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 48,
+      "y": 96,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "duration": 80,
+      "x": 64,
+      "y": 96,
+      "width": 16,
+      "height": 16
+    }
+  ],
+  "source_image": "House.png",
+  "detected_automatically": true,
+  "detection_confidence": 35,
+  "engine_version": "duo-eterno-v1.0",
+  "created_at": "2025-08-18T09:52:31.154Z"
+}

@@ -26,6 +26,7 @@ const ANIMATION_TYPES_FILE = path.join(OUTPUT_DIR, 'animation-types.ts');
 // Tipos de archivos soportados
 const SUPPORTED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 const ANIMATION_JSON_SUFFIX = '_anim.json';
+const DETECTED_JSON_SUFFIX = '_detected.json';
 
 /**
  * Explorar recursivamente una carpeta y obtener todos los archivos
@@ -80,7 +81,17 @@ function detectAnimations(items) {
         baseName: item.nameWithoutExt.replace('_anim', ''),
         jsonPath: item.path
       }));
-    
+
+    // Buscar archivos que terminen en _detected.json (spritesheets detectados)
+    const detectedJsonFiles = currentItems
+      .filter(item => item.type === 'file' && item.name.endsWith(DETECTED_JSON_SUFFIX))
+      .map(item => ({
+        ...item,
+        baseName: item.nameWithoutExt.replace('_detected', ''),
+        jsonPath: item.path
+      }));
+
+    // Procesar animaciones manuales (_anim.json)
     for (const jsonFile of animationJsonFiles) {
       // Buscar el PNG correspondiente
       const pngFile = currentItems.find(item => 
@@ -104,6 +115,44 @@ function detectAnimations(items) {
           });
         } catch (error) {
           console.warn(`⚠️ Error leyendo metadatos de ${jsonFile.path}:`, error.message);
+        }
+      }
+    }
+
+    // Procesar spritesheets detectados automáticamente (_detected.json)
+    for (const jsonFile of detectedJsonFiles) {
+      // Extraer el nombre base del archivo detectado
+      // Ej: "Netflix_default_detected.json" -> baseName = "Netflix_default"
+      let baseName = jsonFile.nameWithoutExt.replace('_detected', '');
+      
+      // Si el baseName contiene "_default", intentar también sin esa parte
+      let possibleNames = [baseName];
+      if (baseName.includes('_default')) {
+        possibleNames.push(baseName.replace('_default', ''));
+      }
+      
+      // Buscar el PNG correspondiente con cualquiera de los nombres posibles
+      const pngFile = currentItems.find(item => 
+        item.type === 'file' && 
+        possibleNames.includes(item.nameWithoutExt) &&
+        item.extension === '.png'
+      );
+      
+      if (pngFile) {
+        // Leer metadatos del spritesheet detectado
+        try {
+          const jsonPath = path.join(ASSETS_DIR, jsonFile.path);
+          const metadata = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+          
+          animations.push({
+            id: pngFile.nameWithoutExt + '_detected', // Usar el nombre del PNG + _detected para evitar duplicados
+            name: metadata.name || pngFile.nameWithoutExt,
+            jsonPath: jsonFile.path,
+            spritePath: pngFile.path,
+            metadata: metadata
+          });
+        } catch (error) {
+          console.warn(`⚠️ Error leyendo metadatos de spritesheet detectado ${jsonFile.path}:`, error.message);
         }
       }
     }

@@ -67,11 +67,17 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         setLoadingProgress(10);
         console.log('🎨 Iniciando carga de assets...');
 
-        // Precargar assets esenciales
+        // Precargar assets esenciales tradicionales
         await assetManager.preloadEssentialAssets();
-        setLoadingProgress(50);
+        setLoadingProgress(30);
 
-        // Cargar assets adicionales por categorías
+        // Cargar assets dinámicos por carpetas
+        await assetManager.preloadEssentialAssetsByFolders([
+          'ground', 'buildings', 'nature', 'roads', 'water', 'ambient', 'activities'
+        ]);
+        setLoadingProgress(60);
+
+        // Cargar assets adicionales por categorías tradicionales
         await Promise.all([
           assetManager.loadAssetsByCategory('GROUND'),
           assetManager.loadAssetsByCategory('BUILDINGS'),
@@ -79,15 +85,22 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           assetManager.loadAssetsByCategory('ROADS'),
           assetManager.loadAssetsByCategory('WATER')
         ]);
+        setLoadingProgress(80);
+
+        // Precargar animaciones de entidades
+        await spriteAnimationManager.preloadEntityAssets('circulo');
+        await spriteAnimationManager.preloadEntityAssets('square');
         setLoadingProgress(90);
 
         const stats = assetManager.getStats();
+        const animStats = spriteAnimationManager.getLoadedAssets();
         console.log('✅ Assets cargados:', stats);
+        console.log('✅ Animaciones cargadas:', animStats);
 
         setLoadingProgress(100);
         setAssetsLoaded(true);
 
-        // Precargar animaciones del personaje
+        // Precargar animaciones adicionales
         await preloadAnimations([{ name: 'idle', category: 'entities' }]);
       } catch (error) {
         console.error('❌ Error cargando assets:', error);
@@ -132,7 +145,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     // Intentar cargar muebles reales primero
     try {
       await assetManager.loadAssetsByCategory('FURNITURE');
-    } catch (_) {
+    } catch {
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
 
@@ -213,48 +226,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   useEffect(() => {
     generateGameObjects();
   }, [generateGameObjects]);
-
-  // Función de renderizado de entidades
-  const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
-    if (!entity.position) return;
-
-    const x = entity.position.x;
-    const y = entity.position.y;
-    const size = 24;
-
-    // Círculo de sombra
-    ctx.globalAlpha = 0.3;
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.ellipse(x + 2, y + size - 2, size / 2, size / 6, 0, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = 1.0;
-
-    // Entidad principal
-    ctx.fillStyle = entity.id === 'circle' ? '#FF6B6B' : '#4ECDC4';
-    ctx.beginPath();
-    if (entity.id === 'circle') {
-      ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
-    } else {
-      ctx.roundRect(x - size / 2, y - size / 2, size, size, 4);
-    }
-    ctx.fill();
-
-    // Indicador de actividad
-    if (entity.activity) {
-      const activityColor = getActivityColor(entity.activity);
-      ctx.fillStyle = activityColor;
-      ctx.beginPath();
-      ctx.arc(x + size / 3, y - size / 3, 6, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    // Indicador de estado de ánimo
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#FFF';
-    ctx.fillText(getMoodEmoji(entity.mood), x, y + 4);
-  }, []);
 
   // Función de renderizado principal
   const renderProfessionalScene = useCallback(
@@ -426,12 +397,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         }
       });
 
-      // Renderizar entidades
-      if (gameState.entities) {
-        gameState.entities.forEach((entity: Entity) => {
-          renderTopDownEntity(ctx, entity);
-        });
-      }
+      // NOTA: Las entidades ahora se renderizan como overlay animado, no en el canvas
 
       // Aplicar efectos de día/noche
       const lightIntensity = getLightIntensity();
@@ -458,7 +424,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       assetsLoaded,
       terrainResult,
       gameObjects,
-      gameState.entities,
       zones,
       width,
       height,
@@ -466,8 +431,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       panX,
       panY,
       getLightIntensity,
-      phase,
-      renderTopDownEntity
+      phase
     ]
   );
 
@@ -542,6 +506,18 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         }}
       />
 
+      {/* Entidades animadas renderizadas como overlay */}
+      {assetsLoaded && gameState.entities && gameState.entities.map((entity: Entity) => (
+        <AnimatedEntity
+          key={entity.id}
+          entity={entity}
+          size={48} // Tamaño más grande para mejor visibilidad de las animaciones
+          showMoodIndicator={true}
+          showActivityIndicator={true}
+          onClick={() => onEntityClick?.(entity)}
+        />
+      ))}
+
       {/* Loading indicator */}
       {!assetsLoaded && (
         <div
@@ -557,7 +533,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
             textAlign: 'center'
           }}
         >
-          <div>Cargando assets... {loadingProgress}%</div>
+          <div>Cargando assets y animaciones... {loadingProgress}%</div>
           <div
             style={{
               width: '200px',
@@ -580,7 +556,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Debug info */}
+      {/* Debug info mejorado */}
       {assetsLoaded && (
         <div
           style={{
@@ -596,7 +572,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
             border: '1px solid #8B4513'
           }}
         >
-          🎨 Assets: {assetManager.getStats().totalLoaded} | Objetos: {gameObjects.length}
+          🎨 Assets: {assetManager.getStats().totalLoaded} | 🎬 Animaciones: {spriteAnimationManager.getLoadedAssets().animations} | Objetos: {gameObjects.length}
         </div>
       )}
 
@@ -605,41 +581,5 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     </div>
   );
 };
-
-// Funciones auxiliares
-function getActivityColor(activity: string): string {
-  const colors: Record<string, string> = {
-    WANDERING: '#FFD93D',
-    RESTING: '#6BCF7F',
-    SOCIALIZING: '#FF6B9D',
-    MEDITATING: '#9B59B6',
-    WRITING: '#3498DB',
-    EXPLORING: '#E67E22',
-    CONTEMPLATING: '#8E44AD',
-    DANCING: '#E91E63',
-    HIDING: '#95A5A6',
-    WORKING: '#F39C12',
-    SHOPPING: '#27AE60',
-    EXERCISING: '#E74C3C',
-    COOKING: '#FF9F43'
-  };
-  return colors[activity] || '#BDC3C7';
-}
-
-function getMoodEmoji(mood: string): string {
-  const emojis: Record<string, string> = {
-    happy: '😊',
-    excited: '🤩',
-    content: '😌',
-    calm: '😇',
-    sad: '😢',
-    anxious: '😰',
-    angry: '😠',
-    bored: '😑',
-    lonely: '😔',
-    tired: '😴'
-  };
-  return emojis[mood.toLowerCase()] || '😐';
-}
 
 export default ProfessionalTopDownCanvas;
