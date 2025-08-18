@@ -77,8 +77,8 @@ export const ROOM_TYPES = {
     baseSize: { width: 120, height: 100 },
     priority: 9,
     decorations: {
-      essential: ['furniture_table_dining', 'deco_lamp'],
-      optional: ['plant_small', 'deco_clock']
+      essential: ['tile_furniture_stove', 'tile_furniture_fridge'],
+      optional: ['tile_furniture_dining_table']
     }
   },
   LIVING_ROOM: {
@@ -87,8 +87,8 @@ export const ROOM_TYPES = {
     baseSize: { width: 140, height: 120 },
     priority: 8,
     decorations: {
-      essential: ['furniture_sofa_modern', 'furniture_table_coffee'],
-      optional: ['plant_small', 'deco_lamp', 'deco_bookshelf']
+      essential: ['tile_furniture_sofa_brown', 'tile_furniture_coffee_table'],
+      optional: ['tile_furniture_tv_stand', 'tile_furniture_armchair']
     }
   },
   BEDROOM: {
@@ -97,8 +97,8 @@ export const ROOM_TYPES = {
     baseSize: { width: 110, height: 100 },
     priority: 7,
     decorations: {
-      essential: ['furniture_bed_double', 'deco_lamp'],
-      optional: ['plant_small', 'deco_clock']
+      essential: ['tile_furniture_bed_double'],
+      optional: ['tile_furniture_nightstand', 'tile_furniture_dresser', 'tile_furniture_wardrobe']
     }
   },
   BATHROOM: {
@@ -107,8 +107,8 @@ export const ROOM_TYPES = {
     baseSize: { width: 80, height: 80 },
     priority: 6,
     decorations: {
-      essential: ['deco_lamp'],
-      optional: ['plant_small']
+      essential: [],
+      optional: ['tile_furniture_mirror']
     }
   },
   STUDY: {
@@ -117,8 +117,8 @@ export const ROOM_TYPES = {
     baseSize: { width: 100, height: 90 },
     priority: 5,
     decorations: {
-      essential: ['deco_bookshelf', 'deco_lamp'],
-      optional: ['plant_small', 'deco_clock']
+      essential: ['tile_furniture_desk'],
+      optional: ['tile_furniture_stool']
     }
   },
   UTILITY: {
@@ -750,6 +750,24 @@ export class OrganicMapGenerator {
 
   private getDecorationSize(type: string): { width: number; height: number } {
     const sizes: Record<string, { width: number; height: number }> = {
+      // Muebles reales actualizados con nombres correctos
+      'tile_furniture_bed_double': { width: 48, height: 32 },
+      'tile_furniture_sofa_brown': { width: 48, height: 24 },
+      'tile_furniture_coffee_table': { width: 32, height: 24 },
+      'tile_furniture_dining_table': { width: 48, height: 32 },
+      'tile_furniture_table_long': { width: 64, height: 24 },
+      'tile_furniture_table_round': { width: 32, height: 32 },
+      'tile_furniture_stove': { width: 32, height: 32 },
+      'tile_furniture_fridge': { width: 32, height: 40 },
+      'tile_furniture_mirror': { width: 24, height: 32 },
+      'tile_furniture_desk': { width: 48, height: 32 },
+      'tile_furniture_tv_stand': { width: 48, height: 24 },
+      'tile_furniture_armchair': { width: 32, height: 32 },
+      'tile_furniture_nightstand': { width: 24, height: 24 },
+      'tile_furniture_dresser': { width: 48, height: 32 },
+      'tile_furniture_wardrobe': { width: 32, height: 48 },
+      'tile_furniture_stool': { width: 16, height: 16 },
+      // Fallbacks para assets antiguos
       furniture_bed_simple: { width: 32, height: 20 },
       furniture_bed_double: { width: 32, height: 24 },
       furniture_sofa_modern: { width: 32, height: 16 },
@@ -764,26 +782,44 @@ export class OrganicMapGenerator {
       deco_bookshelf: { width: 28, height: 32 }
     };
 
-    return sizes[type] || { width: 16, height: 16 };
+    return sizes[type] || { width: 32, height: 32 };
   }
 
   private getDecorationMapType(decorationType: string): MapElement['type'] {
     const typeMap: Record<string, MapElement['type']> = {
+      // Muebles reales con nombres correctos
+      'tile_furniture_bed_double': 'rest_zone',
+      'tile_furniture_sofa_brown': 'social_zone', 
+      'tile_furniture_coffee_table': 'social_zone',
+      'tile_furniture_dining_table': 'food_zone',
+      'tile_furniture_table_long': 'food_zone',
+      'tile_furniture_table_round': 'social_zone',
+      'tile_furniture_stove': 'food_zone',
+      'tile_furniture_fridge': 'food_zone',
+      'tile_furniture_mirror': 'comfort_zone',
+      'tile_furniture_desk': 'work_zone',
+      'tile_furniture_tv_stand': 'social_zone',
+      'tile_furniture_armchair': 'social_zone',
+      'tile_furniture_nightstand': 'rest_zone',
+      'tile_furniture_dresser': 'rest_zone',
+      'tile_furniture_wardrobe': 'rest_zone',
+      'tile_furniture_stool': 'decoration',
+      // Fallbacks para assets antiguos
       furniture_bed_simple: 'rest_zone',
       furniture_bed_double: 'rest_zone',
       furniture_sofa_modern: 'social_zone',
       furniture_sofa_classic: 'social_zone',
       furniture_table_coffee: 'social_zone',
       furniture_table_dining: 'food_zone',
-      plant_small: 'food_zone',
+      plant_small: 'decoration',
       plant_tree: 'obstacle',
-      plant_flower: 'food_zone',
-      deco_lamp: 'play_zone',
-      deco_clock: 'play_zone',
-      deco_bookshelf: 'play_zone'
+      plant_flower: 'decoration',
+      deco_lamp: 'decoration',
+      deco_clock: 'decoration',
+      deco_bookshelf: 'work_zone'
     };
 
-    return typeMap[decorationType] || 'obstacle';
+    return typeMap[decorationType] || 'decoration';
   }
 
   private getThemedDecorationColor(decorationType: string): string {

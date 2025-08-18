@@ -13,10 +13,15 @@ import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
 import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger';
 import type { Entity } from './types';
+import { safeLoad, markIntroAsSeen } from './utils/persistence';
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  const [showIntro, setShowIntro] = useState(true);
+  // Mostrar la intro solo si no existe partida guardada O si existe pero no ha visto la intro
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    const savedGame = safeLoad();
+    return !savedGame || !savedGame.hasSeenIntro;
+  });
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
@@ -55,6 +60,7 @@ const GameContent: React.FC = React.memo(() => {
 
   const handleIntroComplete = React.useCallback(() => {
     setShowIntro(false);
+    markIntroAsSeen();
   }, []);
 
   return (

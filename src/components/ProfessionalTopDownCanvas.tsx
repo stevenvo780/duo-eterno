@@ -5,8 +5,7 @@ import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { assetManager, type Asset } from '../utils/assetManager';
-import { generateOrganicProceduralMap } from '../utils/organicMapGeneration';
-import type { Entity, Zone, MapElement } from '../types';
+import type { Entity } from '../types';
 
 interface TileMap {
   tiles: string[][];
@@ -52,9 +51,9 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   const [tileMap, setTileMap] = useState<TileMap | null>(null);
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
 
-  // Estados para el sistema orgánico
-  const [organicZones, setOrganicZones] = useState<Zone[]>([]);
-  const [organicMapElements, setOrganicMapElements] = useState<MapElement[]>([]);
+  // Usar zones y mapElements directamente del GameContext
+  const zones = gameState.zones || [];
+  const mapElements = gameState.mapElements || [];
 
   // Cargar assets esenciales
   useEffect(() => {
@@ -93,85 +92,30 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     loadAssets();
   }, [preloadAnimations]);
 
-  // Generar mapa orgánico cuando cambie la semilla
-  useEffect(() => {
-    if (!assetsLoaded) return;
-
-    console.log('🗺️ Generando mapa orgánico...');
-    const { zones, mapElements } = generateOrganicProceduralMap(gameState.mapSeed, {
-      theme: 'MODERN',
-      useVoronoi: true,
-      organicStreets: true,
-      densityVariation: 0.8,
-      naturalClustering: true
-    });
-
-    setOrganicZones(zones);
-    setOrganicMapElements(mapElements);
-  }, [gameState.mapSeed, assetsLoaded]);
+  // El mapa ya se genera en el GameContext, no necesitamos regenerarlo aquí
 
   // Generar tilemap dinámico
   const generateSmartTileMap = useCallback(() => {
-    if (!assetsLoaded || organicZones.length === 0) return;
+    if (!assetsLoaded || zones.length === 0) return;
 
     const tileSize = 32;
     const mapWidth = Math.ceil(width / tileSize) + 4;
     const mapHeight = Math.ceil(height / tileSize) + 4;
     const tiles: string[][] = [];
 
-    console.log('🗺️ Generando mapa inteligente...');
+    console.log('🗺️ Generando tilemap con fondo de césped...');
 
-    // Crear mapa base con césped
+    // Crear mapa base COMPLETO con césped uniforme
+    const grassAsset = assetManager.getAssetById('tile_0182_suelo_cesped') || 
+                       assetManager.getAssetById('tile_0210_suelo_cesped');
+    const grassTileId = grassAsset?.id || 'tile_0182_suelo_cesped';
+    
     for (let y = 0; y < mapHeight; y++) {
       tiles[y] = [];
       for (let x = 0; x < mapWidth; x++) {
-        const grassAsset = assetManager.getRandomAssetByType('ground', 'cesped');
-        tiles[y][x] = grassAsset?.id || 'tile_0182_suelo_cesped';
+        tiles[y][x] = grassTileId; // TODO EL FONDO ES CÉSPED
       }
     }
-
-    // Aplicar zonas orgánicas
-    organicZones.forEach(zone => {
-      const startX = Math.floor(zone.bounds.x / tileSize);
-      const startY = Math.floor(zone.bounds.y / tileSize);
-      const endX = Math.min(
-        mapWidth - 1,
-        Math.floor((zone.bounds.x + zone.bounds.width) / tileSize)
-      );
-      const endY = Math.min(
-        mapHeight - 1,
-        Math.floor((zone.bounds.y + zone.bounds.height) / tileSize)
-      );
-
-      for (let y = startY; y <= endY; y++) {
-        for (let x = startX; x <= endX; x++) {
-          if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth) {
-            // Seleccionar tile según el tipo de zona
-            let tileAsset: Asset | null = null;
-
-            switch (zone.type) {
-              case 'food':
-              case 'kitchen':
-                tileAsset = assetManager.getRandomAssetByType('ground', 'piedra');
-                break;
-              case 'rest':
-              case 'bedroom':
-                tileAsset = assetManager.getRandomAssetByType('ground', 'tierra');
-                break;
-              case 'recreation':
-                tileAsset = assetManager.getRandomAssetByType('ground', 'cesped');
-                break;
-              default:
-                tileAsset = assetManager.getRandomAssetByType('ground', 'cesped');
-            }
-
-            if (tileAsset) {
-              tiles[y][x] = tileAsset.id;
-            }
-          }
-        }
-      }
-    });
 
     setTileMap({
       tiles,
@@ -180,38 +124,68 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       height: mapHeight
     });
 
-    console.log(`✅ Mapa inteligente generado: ${mapWidth}x${mapHeight}`);
-  }, [width, height, assetsLoaded, organicZones]);
+    console.log(`✅ Fondo de césped generado: ${mapWidth}x${mapHeight}`);
+  }, [width, height, assetsLoaded, zones]);
 
   // Generar objetos del juego
-  const generateGameObjects = useCallback(() => {
-    if (!assetsLoaded || organicMapElements.length === 0) return;
+  const generateGameObjects = useCallback(async () => {
+    if (!assetsLoaded || mapElements.length === 0) return;
 
     const objects: GameObject[] = [];
     let objectId = 0;
 
-    organicMapElements.forEach(element => {
+    // Intentar cargar muebles reales primero
+    try {
+      await assetManager.loadAssetsByCategory('FURNITURE');
+    } catch (error) {
+      console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
+    }
+
+    mapElements.forEach(element => {
       let asset: Asset | null = null;
 
-      // Seleccionar asset según el tipo de elemento
+      // Seleccionar asset según el tipo de elemento, priorizando muebles reales
       switch (element.type) {
         case 'food_zone':
-          asset = assetManager.getRandomAssetByType('buildings', 'pequeño');
+          // Intentar usar muebles de cocina primero
+          asset = assetManager.getRandomAssetByType('kitchen') || 
+                 assetManager.getRandomAssetByType('buildings', 'pequeño');
           break;
         case 'rest_zone':
-          asset = assetManager.getRandomAssetByType('buildings', 'comercial');
+          // Usar muebles de dormitorio
+          asset = assetManager.getRandomAssetByType('bedroom') || 
+                 assetManager.getRandomAssetByType('buildings', 'comercial');
           break;
         case 'play_zone':
-          asset = assetManager.getRandomAssetByType('roads', 'horizontal');
+        case 'decoration':
+          // Usar decoraciones y entretenimiento
+          asset = assetManager.getRandomAssetByType('entertainment') || 
+                 assetManager.getRandomAssetByType('decoration') ||
+                 assetManager.getRandomAssetByType('roads', 'horizontal');
           break;
         case 'social_zone':
-          asset = assetManager.getRandomAssetByType('buildings', 'grande');
+          // Usar muebles de sala
+          asset = assetManager.getRandomAssetByType('seating') || 
+                 assetManager.getRandomAssetByType('tables') ||
+                 assetManager.getRandomAssetByType('buildings', 'grande');
+          break;
+        case 'work_zone':
+          // Usar muebles de oficina
+          asset = assetManager.getRandomAssetByType('office') || 
+                 assetManager.getRandomAssetByType('buildings', 'comercial');
+          break;
+        case 'comfort_zone':
+          // Usar muebles de baño
+          asset = assetManager.getRandomAssetByType('bathroom') || 
+                 assetManager.getRandomAssetByType('buildings', 'pequeño');
           break;
         case 'obstacle':
-          asset = assetManager.getRandomAssetByType('nature', 'arbol_grande');
+          asset = assetManager.getRandomAssetByType('nature', 'arboles') ||
+                 assetManager.getRandomAssetByType('nature', 'arbol_grande');
           break;
         default:
-          asset = assetManager.getRandomAssetByType('nature', 'arbol_pequeño');
+          asset = assetManager.getRandomAssetByType('nature', 'arboles') ||
+                 assetManager.getRandomAssetByType('nature', 'arbol_pequeño');
       }
 
       if (asset) {
@@ -225,8 +199,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     });
 
     setGameObjects(objects);
-    console.log(`✅ Generados ${objects.length} objetos del juego`);
-  }, [assetsLoaded, organicMapElements]);
+    console.log(`✅ Generados ${objects.length} objetos del juego (incluyendo muebles reales)`);
+  }, [assetsLoaded, mapElements]);
 
   // Ejecutar generaciones cuando sea necesario
   useEffect(() => {
@@ -236,94 +210,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   useEffect(() => {
     generateGameObjects();
   }, [generateGameObjects]);
-
-  // Función de renderizado principal
-  const renderProfessionalScene = useCallback(
-    (ctx: CanvasRenderingContext2D) => {
-      if (!assetsLoaded || !tileMap) return;
-
-      ctx.clearRect(0, 0, width, height);
-      ctx.save();
-      ctx.scale(zoom, zoom);
-      ctx.translate(panX, panY);
-
-      // Renderizar tilemap
-      for (let y = 0; y < tileMap.height; y++) {
-        for (let x = 0; x < tileMap.width; x++) {
-          const tileId = tileMap.tiles[y][x];
-          const asset = assetManager.getAssetById(tileId);
-
-          if (asset?.image) {
-            ctx.drawImage(
-              asset.image,
-              x * tileMap.tileSize,
-              y * tileMap.tileSize,
-              tileMap.tileSize,
-              tileMap.tileSize
-            );
-          }
-        }
-      }
-
-      // Renderizar zonas orgánicas como fondos sutiles
-      organicZones.forEach(zone => {
-        ctx.globalAlpha = 0.1;
-        ctx.fillStyle = zone.color;
-        ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
-        ctx.globalAlpha = 1.0;
-      });
-
-      // Renderizar objetos del juego
-      gameObjects.forEach(obj => {
-        if (obj.asset.image) {
-          ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
-        }
-      });
-
-      // Renderizar entidades
-      if (gameState.entities) {
-        gameState.entities.forEach(entity => {
-          renderTopDownEntity(ctx, entity);
-        });
-      }
-
-      // Aplicar efectos de día/noche
-      const lightIntensity = getLightIntensity();
-      if (lightIntensity < 1.0) {
-        // Overlay de oscuridad para la noche
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.fillStyle = `rgba(100, 150, 255, ${1 - lightIntensity})`;
-        ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
-
-        // Overlay cálido para el atardecer/amanecer
-        if (phase === 'dusk' || phase === 'dawn') {
-          ctx.globalCompositeOperation = 'overlay';
-          const warmth = phase === 'dusk' ? 0.3 : 0.2;
-          ctx.fillStyle = `rgba(255, 150, 100, ${warmth})`;
-          ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
-        }
-
-        ctx.globalCompositeOperation = 'source-over';
-      }
-
-      ctx.restore();
-    },
-    [
-      assetsLoaded,
-      tileMap,
-      gameObjects,
-      gameState.entities,
-      organicZones,
-      width,
-      height,
-      zoom,
-      panX,
-      panY,
-      getLightIntensity,
-      phase,
-      renderTopDownEntity
-    ]
-  );
 
   // Función de renderizado de entidades
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
@@ -366,6 +252,99 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     ctx.fillStyle = '#FFF';
     ctx.fillText(getMoodEmoji(entity.mood), x, y + 4);
   }, []);
+
+  // Función de renderizado principal
+  const renderProfessionalScene = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      if (!assetsLoaded || !tileMap) return;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.scale(zoom, zoom);
+      ctx.translate(panX, panY);
+
+      // Renderizar tilemap
+      for (let y = 0; y < tileMap.height; y++) {
+        for (let x = 0; x < tileMap.width; x++) {
+          const tileId = tileMap.tiles[y][x];
+          const asset = assetManager.getAssetById(tileId);
+
+          if (asset?.image) {
+            ctx.drawImage(
+              asset.image,
+              x * tileMap.tileSize,
+              y * tileMap.tileSize,
+              tileMap.tileSize,
+              tileMap.tileSize
+            );
+          }
+        }
+      }
+
+      // Renderizar zonas como fondos sutiles
+      zones.forEach(zone => {
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = zone.color;
+        ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
+        ctx.globalAlpha = 1.0;
+        
+        // Renderizar nombre de la zona
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.font = '12px Arial';
+        ctx.fillText(zone.name, zone.bounds.x + 5, zone.bounds.y + 15);
+      });
+
+      // Renderizar objetos del juego
+      gameObjects.forEach(obj => {
+        if (obj.asset.image) {
+          ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
+        }
+      });
+
+      // Renderizar entidades
+      if (gameState.entities) {
+        gameState.entities.forEach(entity => {
+          renderTopDownEntity(ctx, entity);
+        });
+      }
+
+      // Aplicar efectos de día/noche
+      const lightIntensity = getLightIntensity();
+      if (lightIntensity < 1.0) {
+        // Overlay de oscuridad para la noche
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = `rgba(100, 150, 255, ${1 - lightIntensity})`;
+        ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
+
+        // Overlay cálido para el atardecer/amanecer
+        if (phase === 'dusk' || phase === 'dawn') {
+          ctx.globalCompositeOperation = 'overlay';
+          const warmth = phase === 'dusk' ? 0.3 : 0.2;
+          ctx.fillStyle = `rgba(255, 150, 100, ${warmth})`;
+          ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      ctx.restore();
+    },
+    [
+      assetsLoaded,
+      tileMap,
+      gameObjects,
+      gameState.entities,
+      zones,
+      width,
+      height,
+      zoom,
+      panX,
+      panY,
+      getLightIntensity,
+      phase,
+      renderTopDownEntity
+    ]
+  );
 
   // Loop de animación
   useEffect(() => {

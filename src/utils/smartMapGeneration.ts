@@ -47,31 +47,30 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
     minSize: { width: 120, height: 100 },
     maxSize: { width: 200, height: 180 },
     requiredFurniture: [
-      'furniture/tile_furniture_sofa_brown',
-      'furniture/tile_furniture_coffee_table'
+      'tile_furniture_sofa_brown',
+      'tile_furniture_coffee_table'
     ],
     optionalFurniture: [
-      'furniture/tile_furniture_tv_stand',
-      'furniture/tile_furniture_lamp',
-      'furniture/tile_furniture_armchair'
+      'tile_furniture_tv_stand',
+      'tile_furniture_armchair'
     ],
-    wallRequirements: ['furniture/tile_furniture_tv_stand', 'furniture/tile_furniture_bookshelf'],
-    centerRequirements: ['furniture/tile_furniture_coffee_table'],
+    wallRequirements: ['tile_furniture_tv_stand'],
+    centerRequirements: ['tile_furniture_coffee_table'],
     pathways: true
   },
   bedroom: {
     minSize: { width: 100, height: 90 },
     maxSize: { width: 150, height: 130 },
-    requiredFurniture: ['furniture/tile_furniture_bed_double'],
+    requiredFurniture: ['tile_furniture_bed_double'],
     optionalFurniture: [
-      'furniture/tile_furniture_nightstand',
-      'furniture/tile_furniture_dresser',
-      'furniture/tile_furniture_wardrobe'
+      'tile_furniture_nightstand',
+      'tile_furniture_dresser',
+      'tile_furniture_wardrobe'
     ],
     wallRequirements: [
-      'furniture/tile_furniture_bed_double',
-      'furniture/tile_furniture_dresser',
-      'furniture/tile_furniture_wardrobe'
+      'tile_furniture_bed_double',
+      'tile_furniture_dresser',
+      'tile_furniture_wardrobe'
     ],
     centerRequirements: [],
     pathways: true
@@ -79,25 +78,22 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
   kitchen: {
     minSize: { width: 80, height: 70 },
     maxSize: { width: 140, height: 120 },
-    requiredFurniture: ['furniture/tile_furniture_stove', 'furniture/tile_furniture_fridge'],
-    optionalFurniture: ['furniture/tile_furniture_sink', 'furniture/tile_furniture_dining_table'],
+    requiredFurniture: ['tile_furniture_stove', 'tile_furniture_fridge'],
+    optionalFurniture: ['tile_furniture_dining_table'],
     wallRequirements: [
-      'furniture/tile_furniture_stove',
-      'furniture/tile_furniture_fridge',
-      'furniture/tile_furniture_sink'
+      'tile_furniture_stove',
+      'tile_furniture_fridge'
     ],
-    centerRequirements: ['furniture/tile_furniture_dining_table'],
+    centerRequirements: ['tile_furniture_dining_table'],
     pathways: true
   },
   bathroom: {
     minSize: { width: 60, height: 60 },
     maxSize: { width: 100, height: 100 },
-    requiredFurniture: ['furniture/tile_furniture_toilet'],
-    optionalFurniture: ['furniture/tile_furniture_bathtub', 'furniture/tile_furniture_mirror'],
+    requiredFurniture: [],
+    optionalFurniture: ['tile_furniture_mirror'],
     wallRequirements: [
-      'furniture/tile_furniture_toilet',
-      'furniture/tile_furniture_bathtub',
-      'furniture/tile_furniture_mirror'
+      'tile_furniture_mirror'
     ],
     centerRequirements: [],
     pathways: false
@@ -105,12 +101,11 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
   office: {
     minSize: { width: 90, height: 80 },
     maxSize: { width: 130, height: 120 },
-    requiredFurniture: ['furniture/tile_furniture_desk'],
+    requiredFurniture: ['tile_furniture_desk'],
     optionalFurniture: [
-      'furniture/tile_furniture_bookshelf',
-      'furniture/tile_furniture_chair_fancy'
+      'tile_furniture_stool'
     ],
-    wallRequirements: ['furniture/tile_furniture_desk', 'furniture/tile_furniture_bookshelf'],
+    wallRequirements: ['tile_furniture_desk'],
     centerRequirements: [],
     pathways: true
   }

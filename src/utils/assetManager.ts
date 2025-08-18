@@ -36,60 +36,53 @@ export const ASSET_CATEGORIES = {
     residencial: ['tile_0004_edificio_pequeño', 'tile_0005_edificio_grande']
   },
 
-  // Muebles reales descargados (400+ assets de calidad)
+  // Muebles reales disponibles en furniture_light
   FURNITURE: {
     // Muebles de sala
     seating: [
-      'furniture/tile_furniture_sofa_brown',
-      'furniture/tile_furniture_armchair',
-      'furniture/tile_furniture_chair_wood'
+      'tile_furniture_sofa_brown',
+      'tile_furniture_armchair'
     ],
     tables: [
-      'furniture/tile_furniture_table_round',
-      'furniture/tile_furniture_coffee_table',
-      'furniture/tile_furniture_dining_table'
+      'tile_furniture_table_round',
+      'tile_furniture_coffee_table',
+      'tile_furniture_dining_table',
+      'tile_furniture_table_long'
     ],
 
     // Dormitorio
     bedroom: [
-      'furniture/tile_furniture_bed_double',
-      'furniture/tile_furniture_nightstand',
-      'furniture/tile_furniture_dresser'
+      'tile_furniture_bed_double',
+      'tile_furniture_nightstand',
+      'tile_furniture_dresser'
     ],
 
     // Cocina
     kitchen: [
-      'furniture/tile_furniture_stove',
-      'furniture/tile_furniture_fridge',
-      'furniture/tile_furniture_sink'
+      'tile_furniture_stove',
+      'tile_furniture_fridge'
     ],
 
     // Oficina/Estudio
     office: [
-      'furniture/tile_furniture_desk',
-      'furniture/tile_furniture_bookshelf',
-      'furniture/tile_furniture_chair_fancy'
+      'tile_furniture_desk'
     ],
 
     // Baño
     bathroom: [
-      'furniture/tile_furniture_toilet',
-      'furniture/tile_furniture_bathtub',
-      'furniture/tile_furniture_mirror'
+      'tile_furniture_mirror'
     ],
 
     // Entretenimiento
     entertainment: [
-      'furniture/tile_furniture_tv_stand',
-      'furniture/tile_furniture_piano',
-      'furniture/tile_furniture_fireplace'
+      'tile_furniture_tv_stand'
     ],
 
     // Almacenamiento
-    storage: ['furniture/tile_furniture_wardrobe', 'furniture/tile_furniture_cabinet'],
+    storage: ['tile_furniture_wardrobe'],
 
     // Decoración
-    decoration: ['furniture/tile_furniture_lamp']
+    decoration: ['tile_furniture_stool']
   },
 
   // Naturaleza (3 assets)
@@ -163,9 +156,11 @@ export class AssetManager {
   private createLoadPromise(assetId: string): Promise<Asset> {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      // Soporte para muebles en subcarpeta
-      const path = assetId.startsWith('furniture/')
+      // Soporte para muebles en subcarpeta furniture_light
+      const path = assetId.startsWith('furniture_light/')
         ? `/assets/Tiles/${assetId}.png`
+        : assetId.startsWith('tile_furniture_')
+        ? `/assets/Tiles/furniture_light/${assetId}.png`
         : `/assets/Tiles/${assetId}.png`;
 
       image.onload = () => {
@@ -293,6 +288,20 @@ export class AssetManager {
     // Detecta el subtipo basado en el nombre del archivo
     const name = id.toLowerCase();
 
+    // Para muebles (prioridad alta)
+    if (name.includes('furniture_')) {
+      if (name.includes('sofa') || name.includes('chair') || name.includes('armchair')) return 'seating';
+      if (name.includes('table') || name.includes('coffee_table') || name.includes('dining_table')) return 'tables';
+      if (name.includes('bed') || name.includes('nightstand') || name.includes('dresser')) return 'bedroom';
+      if (name.includes('stove') || name.includes('fridge') || name.includes('sink')) return 'kitchen';
+      if (name.includes('desk') || name.includes('bookshelf') || name.includes('chair_fancy')) return 'office';
+      if (name.includes('toilet') || name.includes('bathtub') || name.includes('mirror')) return 'bathroom';
+      if (name.includes('tv_stand') || name.includes('piano') || name.includes('fireplace')) return 'entertainment';
+      if (name.includes('wardrobe') || name.includes('cabinet')) return 'storage';
+      if (name.includes('lamp')) return 'decoration';
+      return 'decoration'; // fallback para muebles no categorizados
+    }
+
     // Para suelos
     if (name.includes('cesped')) return 'cesped';
     if (name.includes('tierra')) return 'tierra';
@@ -302,16 +311,13 @@ export class AssetManager {
     // Para edificios
     if (name.includes('principal')) return 'principal';
     if (name.includes('comercial')) return 'comercial';
-    if (name.includes('pequeño')) return 'pequeño';
-    if (name.includes('grande')) return 'grande';
+    if (name.includes('pequeño')) return 'residencial';
+    if (name.includes('grande')) return 'residencial';
     if (name.includes('alto')) return 'alto';
     if (name.includes('tejado')) return 'tejado';
 
-    // Para árboles
-    if (name.includes('grande')) return 'arbol_grande';
-    if (name.includes('pequeño')) return 'arbol_pequeño';
-    if (name.includes('frondoso')) return 'arbol_frondoso';
-    if (name.includes('joven')) return 'arbol_joven';
+    // Para árboles (simplificado)
+    if (name.includes('arbol')) return 'arboles';
 
     // Para carreteras
     if (name.includes('horizontal')) return 'horizontal';
@@ -320,10 +326,7 @@ export class AssetManager {
     if (name.includes('cruce')) return 'cruce';
 
     // Para agua
-    if (name.includes('profunda')) return 'profunda';
-    if (name.includes('estanque')) return 'estanque';
-    if (name.includes('clara')) return 'clara';
-    if (name.includes('corriente')) return 'corriente';
+    if (name.includes('agua')) return 'deep';
 
     return undefined;
   }
