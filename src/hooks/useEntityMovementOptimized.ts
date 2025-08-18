@@ -154,17 +154,20 @@ export const useEntityMovementOptimized = () => {
       const companionDy = entity.position.y - companion.position.y;
       const companionDistance = Math.sqrt(companionDx * companionDx + companionDy * companionDy);
       
-      if (companionDistance < MOVEMENT_CONFIG.MIN_DISTANCE_BETWEEN_ENTITIES) {
-        const repulsionForce = MOVEMENT_CONFIG.REPULSION_FORCE;
-        newX += (companionDx / companionDistance) * repulsionForce;
-        newY += (companionDy / companionDistance) * repulsionForce;
-      } else {
-
-        const preferred = 80;
-        const diff = companionDistance - preferred;
-        const k = 0.02;
-        newX -= (companionDx / companionDistance) * (k * diff);
-        newY -= (companionDy / companionDistance) * (k * diff);
+      // CORRIGIDO: Protección contra división por cero en repulsión
+      if (companionDistance > 1e-10) { // Evitar división por cero
+        if (companionDistance < MOVEMENT_CONFIG.MIN_DISTANCE_BETWEEN_ENTITIES) {
+          const repulsionForce = MOVEMENT_CONFIG.REPULSION_FORCE;
+          newX += (companionDx / companionDistance) * repulsionForce;
+          newY += (companionDy / companionDistance) * repulsionForce;
+        } else {
+          // CORRIGIDO: Mejor lógica de seguimiento con validación
+          const preferred = 80;
+          const diff = companionDistance - preferred;
+          const k = 0.02;
+          newX -= (companionDx / companionDistance) * (k * diff);
+          newY -= (companionDy / companionDistance) * (k * diff);
+        }
       }
     }
 
@@ -233,19 +236,27 @@ export const useEntityMovementOptimized = () => {
           }
 
 
+          // CORRIGIDO: Usar timestamp y entity ID para determinismo
           let target = entityTargets.current.get(entity.id);
-          if (!target || Math.random() < 0.01) {
+          const targetRefreshCheck = (now + entity.id.charCodeAt(0) * 100) % 10000 < 100; // ~1% chance determinísticamente
+          if (!target || targetRefreshCheck) {
             target = getEntityTarget(entity, gameState.zones, companion);
             if (target) {
               entityTargets.current.set(entity.id, target);
             }
           }
           
-
-          if (!target || Math.random() < 0.005) {
+          // CORRIGIDO: Fallback determinístico en lugar de aleatorio
+          const fallbackCheck = (now + entity.id.charCodeAt(1) * 200) % 20000 < 100; // ~0.5% chance determinísticamente
+          if (!target || fallbackCheck) {
+            // CORRIGIDO: Usar seed determinista basado en entity para posición
+            const seed = entity.id.charCodeAt(0) + now % 10000;
+            const normalizedSeedX = (seed * 9301) % 233280 / 233280; // LCG determinístico
+            const normalizedSeedY = ((seed + 1000) * 9301) % 233280 / 233280;
+            
             target = {
-              x: Math.random() * 800 + 100,
-              y: Math.random() * 400 + 100
+              x: normalizedSeedX * (MAP_CONFIG.width - 200) + 100,
+              y: normalizedSeedY * (MAP_CONFIG.height - 200) + 100
             };
             entityTargets.current.set(entity.id, target);
           }

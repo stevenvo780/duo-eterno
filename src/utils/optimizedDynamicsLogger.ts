@@ -719,99 +719,6 @@ export const logGeneral = {
   }
 };
 
-export const logRender = {
-  info: (message: string, data?: unknown) => {
-    if (data !== undefined) console.info(`🖼️ [RENDER] ${message}`, data);
-    else console.info(`🖼️ [RENDER] ${message}`);
-  },
-  warn: (message: string, data?: unknown) => {
-    if (data !== undefined) console.warn(`⚠️ [RENDER] ${message}`, data);
-    else console.warn(`⚠️ [RENDER] ${message}`);
-  },
-  error: (message: string, data?: unknown) => {
-    if (data !== undefined) console.error(`❌ [RENDER] ${message}`, data);
-    else console.error(`❌ [RENDER] ${message}`);
-  },
-  debug: (message: string, data?: unknown) => {
-    if (data !== undefined) console.debug(`🔧 [RENDER] ${message}`, data);
-    else console.debug(`🔧 [RENDER] ${message}`);
-  }
-};
-
-export const logPerformance = {
-  info: (message: string, data?: unknown) => {
-    console.info(`⚡ [PERF] ${message}`, data);
-  },
-  warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [PERF] ${message}`, data);
-  },
-  error: (message: string, data?: unknown) => {
-    console.error(`❌ [PERF] ${message}`, data);
-  },
-  debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [PERF] ${message}`, data);
-  }
-};
-
-export const logMovement = {
-  info: (message: string, data?: unknown) => {
-    console.info(`🏃 [MOVE] ${message}`, data);
-  },
-  warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [MOVE] ${message}`, data);
-  },
-  error: (message: string, data?: unknown) => {
-    console.error(`❌ [MOVE] ${message}`, data);
-  },
-  debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [MOVE] ${message}`, data);
-  }
-};
-
-export const logActivities = {
-  info: (message: string, data?: unknown) => {
-    console.info(`🎯 [ACTIVITY] ${message}`, data);
-  },
-  warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [ACTIVITY] ${message}`, data);
-  },
-  error: (message: string, data?: unknown) => {
-    console.error(`❌ [ACTIVITY] ${message}`, data);
-  },
-  debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [ACTIVITY] ${message}`, data);
-  }
-};
-
-export const logLove = {
-  info: (message: string, data?: unknown) => {
-    console.info(`💖 [LOVE] ${message}`, data);
-  },
-  warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [LOVE] ${message}`, data);
-  },
-  error: (message: string, data?: unknown) => {
-    console.error(`❌ [LOVE] ${message}`, data);
-  },
-  debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [LOVE] ${message}`, data);
-  }
-};
-
-export const logSurvival = {
-  info: (message: string, data?: unknown) => {
-    console.info(`🛡️ [SURVIVAL] ${message}`, data);
-  },
-  warn: (message: string, data?: unknown) => {
-    console.warn(`⚠️ [SURVIVAL] ${message}`, data);
-  },
-  error: (message: string, data?: unknown) => {
-    console.error(`❌ [SURVIVAL] ${message}`, data);
-  },
-  debug: (message: string, data?: unknown) => {
-    console.debug(`🔧 [SURVIVAL] ${message}`, data);
-  }
-};
 
 
 export const logGeneralCompat = (message: string, data?: unknown) => {
@@ -823,9 +730,4 @@ export const logRenderCompat = (message: string, data?: unknown) => {
   else console.log(`🎨 [RENDER] ${message}`);
 };
 
-export const logPerformanceCompat = (message: string, data?: unknown) => {
-  console.log(`⚡ [PERF] ${message}`, data);
-};
-
-
-export { optimizedDynamicsLogger as logger };
+// Exportes de logging especializados no usados han sido eliminados.

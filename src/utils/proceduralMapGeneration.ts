@@ -324,6 +324,7 @@ function selectThemeAndLayout(seed: string): {
 }
 
 
+/* Removed unused export generateHouseLayout
 export function generateHouseLayout(seed: string): {
   rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>;
   hallways: Array<{ x: number; y: number; width: number; height: number }>;
@@ -367,6 +368,7 @@ export function generateHouseLayout(seed: string): {
 
   return { rooms, hallways: [], theme };
 }
+*/
 
 
 function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomType[] {
@@ -754,6 +756,7 @@ function getPositionAroundCourtyard(
 }
 
 
+/* Removed unused export placeDecorations
 export function placeDecorations(
   rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>,
   seed: string,
@@ -884,6 +887,7 @@ export function placeDecorations(
 
   return decorations;
 }
+*/
 
 
 function getThemedDecorationColor(decorationType: string, theme: keyof typeof ARCHITECTURAL_THEMES): string {
@@ -1013,6 +1017,7 @@ export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElemen
 }
 
 
+/* Removed unused export getThemedRoomColor
 export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITECTURAL_THEMES): string {
   const themeConfig = ARCHITECTURAL_THEMES[theme];
   
@@ -1037,9 +1042,11 @@ export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof A
   
   return themeConfig.colors[colorMap[zoneType] || 'primary'];
 }
+*/
 
 
 
+/* Removed unused export getZoneEffects
 export function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
   const effects: Record<Zone['type'], Zone['effects']> = {
     food: { hunger: 30, happiness: 12, energy: 5 },
@@ -1061,3 +1068,4 @@ export function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
   
   return effects[zoneType] || {};
 }
+*/

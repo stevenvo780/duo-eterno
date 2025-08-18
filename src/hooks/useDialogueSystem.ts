@@ -61,13 +61,13 @@ export const useDialogueSystem = () => {
     if (!dialoguesLoaded) return;
 
     const interval = setInterval(() => {
-
+      // CORRIGIDO: Eliminar Math.random() para hacer el comportamiento más predecible
       if (!gameState.connectionAnimation.active) {
-        gameState.entities.forEach(entity => {
-
-          const shouldSpeak = Math.random() < 0.05;
+        gameState.entities.forEach((entity) => {
+          // CORRIGIDO: Usar índice y tiempo para determinismo en lugar de Math.random()
+          const timeBasedTrigger = (Date.now() + entity.id.charCodeAt(0) * 1000) % 20000 < 1000;
           
-          if (shouldSpeak && !entity.isDead) {
+          if (timeBasedTrigger && !entity.isDead) {
             const speaker = getSpeakerForEntity(entity.id);
             const emotion = getEmotionForActivity(entity.activity);
             const dialogue = getNextDialogue(speaker, emotion, entity.activity);
