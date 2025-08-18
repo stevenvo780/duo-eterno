@@ -1,23 +1,41 @@
 /**
- * 🎨 SISTEMA SIMPLIFICADO DE GESTIÓN DE ASSETS
+ * 🎨 SISTEMA AVANZADO DE GESTIÓN DE ASSETS
  *
- * Maneja assets individuales de la carpeta Tiles/ de forma eficiente
- * Sin extracción de sprites - cada tile es un archivo independiente
+ * Sistema híbrido que combina:
+ * 1. Assets tradicionales (tiles) para compatibilidad
+ * 2. Sistema dinámico basado en manifest generado automáticamente
+ * 3. Carga automática por nombre de carpeta
  */
+
+import { spriteAnimationManager } from './spriteAnimationManager';
 
 export interface Asset {
   id: string;
   name: string;
-  category: 'ground' | 'buildings' | 'furniture' | 'nature' | 'roads' | 'water' | 'decorations';
+  category: 'ground' | 'buildings' | 'furniture' | 'nature' | 'roads' | 'water' | 'decorations' | 'animations' | 'activities' | 'food' | 'ambient';
   subtype?: string;
   image: HTMLImageElement;
-  size: number; // Tamaño estándar del tile
+  size: number;
   path: string;
 }
 
 export interface AssetCategory {
   [key: string]: Asset[];
 }
+
+// Mapeo de categorías dinámicas a tipos estáticos
+const DYNAMIC_CATEGORY_MAPPING = {
+  'ground': 'ground',
+  'buildings': 'buildings', 
+  'nature': 'nature',
+  'roads': 'roads',
+  'water': 'water',
+  'animations': 'animations',
+  'activities': 'decorations',
+  'food': 'decorations',
+  'ambient': 'decorations',
+  'furniture': 'furniture'
+} as const;
 
 // Assets reales disponibles después de la limpieza (21 assets esenciales + 400+ muebles)
 export const ASSET_CATEGORIES = {
@@ -92,9 +110,127 @@ export class AssetManager {
   private assets: Map<string, Asset> = new Map();
   private categorizedAssets: AssetCategory = {};
   private loadingPromises: Map<string, Promise<Asset>> = new Map();
+  private dynamicAssetsLoaded: Set<string> = new Set();
 
   constructor() {
     this.initializeCategories();
+  }
+
+  /**
+   * Cargar assets dinámicamente por nombre de carpeta
+   */
+  async loadAssetsByFolderName(folderName: string): Promise<Asset[]> {
+    if (this.dynamicAssetsLoaded.has(folderName)) {
+      return this.getAssetsByType(folderName);
+    }
+
+    try {
+      // Usar el sprite animation manager para obtener assets de la carpeta
+      const folderAssets = await spriteAnimationManager.loadAssetsByFolder(folderName);
+      const assets: Asset[] = [];
+
+      // Convertir sprites estáticos a assets
+      for (const sprite of folderAssets.sprites) {
+        const asset: Asset = {
+          id: sprite.asset.id,
+          name: sprite.asset.name,
+          category: this.mapDynamicCategory(folderName),
+          image: sprite.image,
+          size: 32, // tamaño por defecto
+          path: sprite.asset.path
+        };
+        
+        this.assets.set(asset.id, asset);
+        assets.push(asset);
+      }
+
+      // Categorizar los assets cargados
+      this.categorizeAssetsByFolder(assets, folderName);
+      this.dynamicAssetsLoaded.add(folderName);
+
+      console.log(`✅ Cargados ${assets.length} assets dinámicos de la carpeta: ${folderName}`);
+      return assets;
+    } catch (error) {
+      console.warn(`⚠️ Error cargando assets de la carpeta ${folderName}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtener asset aleatorio de una carpeta específica
+   */
+  async getRandomAssetFromFolder(folderName: string): Promise<Asset | null> {
+    const assets = await this.loadAssetsByFolderName(folderName);
+    if (assets.length === 0) return null;
+
+    const index = Math.floor(Math.random() * assets.length);
+    return assets[index];
+  }
+
+  /**
+   * Buscar assets por patrón de nombre
+   */
+  async searchAssetsByPattern(pattern: string, folderName?: string): Promise<Asset[]> {
+    const results: Asset[] = [];
+    const searchTerm = pattern.toLowerCase();
+
+    if (folderName) {
+      const folderAssets = await this.loadAssetsByFolderName(folderName);
+      results.push(...folderAssets.filter(asset => 
+        asset.id.toLowerCase().includes(searchTerm) ||
+        asset.name.toLowerCase().includes(searchTerm)
+      ));
+    } else {
+      // Buscar en todos los assets cargados
+      for (const asset of this.assets.values()) {
+        if (asset.id.toLowerCase().includes(searchTerm) ||
+            asset.name.toLowerCase().includes(searchTerm)) {
+          results.push(asset);
+        }
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Precargar assets esenciales de múltiples carpetas
+   */
+  async preloadEssentialAssetsByFolders(folderNames: string[]): Promise<void> {
+    console.log('🎨 Precargando assets dinámicos de carpetas:', folderNames);
+    
+    const promises = folderNames.map(async (folderName) => {
+      try {
+        await this.loadAssetsByFolderName(folderName);
+      } catch (error) {
+        console.warn(`Error precargando carpeta ${folderName}:`, error);
+      }
+    });
+
+    await Promise.all(promises);
+    console.log('✅ Precarga de assets dinámicos completada');
+  }
+
+  // Métodos auxiliares privados
+
+  private mapDynamicCategory(folderName: string): Asset['category'] {
+    return DYNAMIC_CATEGORY_MAPPING[folderName as keyof typeof DYNAMIC_CATEGORY_MAPPING] || 'decorations';
+  }
+
+  private categorizeAssetsByFolder(assets: Asset[], folderName: string) {
+    // Categorizar por nombre de carpeta
+    if (!this.categorizedAssets[folderName]) {
+      this.categorizedAssets[folderName] = [];
+    }
+    this.categorizedAssets[folderName].push(...assets);
+
+    // También categorizar por category
+    assets.forEach(asset => {
+      if (!this.categorizedAssets[asset.category]) {
+        this.categorizedAssets[asset.category] = [];
+      }
+      this.categorizedAssets[asset.category].push(asset);
+    });
   }
 
   private initializeCategories() {
@@ -381,11 +517,14 @@ export class AssetManager {
   }
 
   /**
-   * Obtiene estadísticas de assets cargados
+   * Obtiene estadísticas de assets cargados (incluyendo dinámicos)
    */
   getStats() {
+    const dynamicFolders = Array.from(this.dynamicAssetsLoaded);
+    
     return {
       totalLoaded: this.assets.size,
+      dynamicFoldersLoaded: dynamicFolders,
       categories: Object.keys(this.categorizedAssets).reduce(
         (acc, key) => {
           acc[key] = this.categorizedAssets[key].length;
@@ -394,6 +533,20 @@ export class AssetManager {
         {} as Record<string, number>
       )
     };
+  }
+
+  /**
+   * Obtener lista de carpetas disponibles para carga dinámica
+   */
+  async getAvailableFolders(): Promise<string[]> {
+    try {
+      // Intentar usar el sprite animation manager para obtener carpetas disponibles
+      const manifestModule = await import('../generated/asset-manifest');
+      return Object.keys(manifestModule.ASSET_MANIFEST);
+    } catch {
+      // Fallback a lista conocida
+      return ['ground', 'buildings', 'nature', 'roads', 'water', 'animations', 'activities', 'food', 'ambient'];
+    }
   }
 }
 

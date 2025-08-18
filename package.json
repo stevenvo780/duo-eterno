@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "verify-sprites": "node scripts/verify-sprites.cjs"
+    "verify-sprites": "node scripts/verify-sprites.cjs",
+    "sprite-loader": "node scripts/sprite-animation-loader.js"
   },
   "dependencies": {
     "react": "^19.1.0",

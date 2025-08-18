@@ -4,7 +4,9 @@ import { useRenderer } from '../hooks/useRenderer';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
+import { AnimatedEntity } from './AnimatedEntity';
 import { assetManager, type Asset } from '../utils/assetManager';
+import { spriteAnimationManager } from '../utils/spriteAnimationManager';
 import {
   generateAdvancedTerrain,
   type TerrainGenerationResult
