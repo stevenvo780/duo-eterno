@@ -154,8 +154,6 @@ export const logAI = {
   error: (msg: string, data?: unknown) => logger.error('ai', msg, data),
 };
 
-
-
 export const logStorage = {
   debug: (msg: string, data?: unknown) => logger.debug('storage', msg, data),
   info: (msg: string, data?: unknown) => logger.info('storage', msg, data),
