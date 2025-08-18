@@ -17,7 +17,9 @@
     "analyze-now": "node scripts/analyze-now.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "verify-sprites": "node scripts/verify-sprites.cjs",
+    "generate-sprites": "python3 scripts/create-pixel-art.py sprites all public/assets/sprites"
   },
   "dependencies": {
     "lodash": "^4.17.21",
