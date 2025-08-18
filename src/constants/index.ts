@@ -280,8 +280,8 @@ export const TRANSLATIONS = {
   
 
   ENTITIES: {
-    circle: 'Círculo',
-    square: 'Cuadrado',
+    circle: 'Isa',
+    square: 'Stev',
   },
   
 

@@ -66,15 +66,19 @@ export const getDialogueFromPoint = (startIndex: number): DialogueEntry | null =
 };
 
 export const getEmotionForActivity = (activity: string): string => {
+  // Mapeo expandido basado en las emociones presentes en el JSON real
   const emotionMap: Record<string, string[]> = {
-    'SOCIALIZING': ['LOVE', 'PLAYFUL', 'NEUTRAL'],
-    'RESTING': ['NEUTRAL', 'SADNESS'],
-    'PLAYING': ['PLAYFUL', 'LOVE'],
-    'FEEDING': ['LOVE', 'NEUTRAL'],
-    'MEDITATION': ['NEUTRAL', 'CURIOUS']
+    'SOCIALIZING': ['LOVE', 'PLAYFUL', 'NEUTRAL', 'CURIOUS'],
+    'RESTING': ['NEUTRAL', 'SADNESS', 'LOVE'], // Añadido LOVE para momentos íntimos
+    'PLAYING': ['PLAYFUL', 'LOVE', 'CURIOUS'],
+    'FEEDING': ['LOVE', 'NEUTRAL', 'PLAYFUL'],
+    'MEDITATION': ['NEUTRAL', 'CURIOUS', 'LOVE'], // Contemplación amorosa
+    'WRITING': ['CURIOUS', 'NEUTRAL', 'LOVE'],
+    'WORKING': ['NEUTRAL', 'CURIOUS', 'SADNESS'],
+    'STUDYING': ['CURIOUS', 'NEUTRAL', 'LOVE']
   };
 
-  const emotions = emotionMap[activity] || ['NEUTRAL'];
+  const emotions = emotionMap[activity] || ['NEUTRAL', 'LOVE', 'CURIOUS'];
   return emotions[Math.floor(Math.random() * emotions.length)];
 };
 

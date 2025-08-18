@@ -51,17 +51,19 @@ const GameContent: React.FC = React.memo(() => {
           color: '#f1f5f9',
           fontSize: '24px',
           fontWeight: 600,
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          fontFamily: 'serif'
         }}>
-          Dúo Eterno
+          Isa & Stev: Resonancia Cuántica
         </h1>
         <p style={{
           margin: '4px 0 0 0',
           color: '#cbd5e1',
           fontSize: '14px',
-          opacity: 0.8
+          opacity: 0.8,
+          fontStyle: 'italic'
         }}>
-          Un Tamagotchi del Vínculo
+          Un Experimento en la Física del Amor Eterno
         </p>
       </div>
 

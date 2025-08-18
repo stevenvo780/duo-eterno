@@ -110,7 +110,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         
         dispatch({ type: 'UPDATE_RESONANCE', payload: newResonance });
 
-        setToast({ message: 'Vínculo nutrido (+resonancia)', type: 'success' });
+        setToast({ message: 'Resonancia cuántica amplificada ∞', type: 'success' });
         
         const message = getRandomDialogue('post-nutrition');
         dynamicsLogger.logDialogue(undefined, message, 'post-nutrition');
@@ -127,13 +127,13 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   };
 
   const resetGame = async () => {
-    if (confirm('¿Estás seguro de que quieres reiniciar el juego?')) {
+    if (confirm('¿Deseas reiniciar el experimento cuántico? La configuración actual se perderá en el espacio-tiempo.')) {
       setLoading(true);
       try {
         await new Promise(r => setTimeout(r, 300));
         dispatch({ type: 'RESET_GAME' });
         onEntitySelect?.(null);
-        setToast({ message: 'Juego reiniciado', type: 'info' });
+        setToast({ message: 'Universo reiniciado: Nueva dimensión iniciada', type: 'info' });
       } finally {
         setLoading(false);
       }
@@ -187,8 +187,8 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             marginBottom: '12px'
           }}>
             <span style={{ fontSize: '16px' }}>📊</span>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-              Estadísticas Globales
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', fontFamily: 'serif' }}>
+              Métricas Cuánticas del Sistema
             </h3>
             <button
               onClick={() => setShowStats(false)}
@@ -205,25 +205,25 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
             </button>
           </div>
 
-          <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
+          <div style={{ fontSize: '14px', lineHeight: '1.5', fontStyle: 'italic' }}>
             <div style={{ marginBottom: '8px' }}>
-              <strong>Ciclos:</strong> {gameState.cycles}
+              <strong>Ciclos Temporales:</strong> {gameState.cycles}
             </div>
             <div style={{ marginBottom: '8px' }}>
-              <strong>Tiempo Juntos:</strong> {Math.round(gameState.togetherTime / 1000)}s
+              <strong>Cronometría del Entanglement:</strong> {Math.round(gameState.togetherTime / 1000)}s
             </div>
             <div>
-              <strong>Estado del Vínculo:</strong>
+              <strong>Coherencia Cuántica:</strong>
               <span style={{ 
                 color: gameState.resonance > 70 ? '#10b981' : 
                       gameState.resonance > 30 ? '#f59e0b' : '#ef4444',
                 marginLeft: '8px',
                 fontWeight: '600'
               }}>
-                {gameState.resonance > 80 ? 'Próspero' :
-                 gameState.resonance > 60 ? 'Fuerte' :
+                {gameState.resonance > 80 ? 'Trascendente' :
+                 gameState.resonance > 60 ? 'Armónica' :
                  gameState.resonance > 40 ? 'Estable' :
-                 gameState.resonance > 20 ? 'Frágil' : 'Crítico'}
+                 gameState.resonance > 20 ? 'Fluctuante' : 'Decoherente'}
               </span>
             </div>
           </div>
