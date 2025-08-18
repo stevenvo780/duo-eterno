@@ -1,19 +1,13 @@
 /**
- * 🎨 SISTEMA AVANZADO DE GESTIÓN DE ASSETS
- *
- * Sistema híbrido que combina:
- * 1. Assets tradicionales (tiles) para compatibilidad
- * 2. Sistema dinámico basado en manifest generado automáticamente
- * 3. Carga automática por nombre de carpeta
+ * 🎨 SISTEMA SIMPLIFICADO DE GESTIÓN DE ASSETS
+ * 
+ * Sistema que carga dinámicamente assets desde carpetas
  */
-
-import { spriteAnimationManager } from './spriteAnimationManager';
 
 export interface Asset {
   id: string;
   name: string;
-  category: 'terrain_tiles' | 'structures' | 'building' | 'furniture_objects' | 'natural_elements' | 'infrastructure' | 'water' | 'environmental_objects' | 'animated_entities' | 'ui_icons' | 'consumable_items' | 'dialogs';
-  subtype?: string;
+  category: string;
   image: HTMLImageElement;
   size: number;
   path: string;
@@ -23,119 +17,19 @@ export interface AssetCategory {
   [key: string]: Asset[];
 }
 
-// Mapeo de categorías dinámicas a tipos estáticos
-const DYNAMIC_CATEGORY_MAPPING = {
-  'terrain_tiles': 'terrain_tiles',
-  'structures': 'structures',
-  'building': 'building',
-  'natural_elements': 'natural_elements',
-  'infrastructure': 'infrastructure',
-  'water': 'water',
-  'animated_entities': 'animated_entities',
-  'ui_icons': 'environmental_objects',
-  'consumable_items': 'environmental_objects',
-  'environmental_objects': 'environmental_objects',
-  'furniture_objects': 'furniture_objects',
-  'dialogs': 'dialogs'
-} as const;
+// Carpetas disponibles para carga dinámica
+const ASSET_FOLDERS = [
+  'terrain_tiles', 'structures', 'building', 'furniture_objects', 
+  'natural_elements', 'infrastructure', 'water', 'environmental_objects',
+  'animated_entities', 'ui_icons', 'consumable_items', 'dialogs'
+];
 
-// Importar análisis dinámico de assets existentes
-let assetAnalysis: any = null;
-
-// Función para cargar el análisis de assets
-async function loadAssetAnalysis() {
-  if (!assetAnalysis) {
-    try {
-      const analysis = await import('../generated/asset-analysis.json');
-      assetAnalysis = analysis.default || analysis;
-    } catch (error) {
-      console.warn('No se pudo cargar el análisis de assets, usando fallback');
-      assetAnalysis = await generateFallbackAssetCategories();
-    }
-  }
-  return assetAnalysis;
-}
-
-// Categorías basadas únicamente en assets que sabemos que existen (fallback)
-async function generateFallbackAssetCategories() {
-  return {
-    categories: {
-      TERRAIN_TILES: {
-        grass: [
-          'Grass_Middle', 'TexturedGrass', 'cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5',
-          'cesped6', 'cesped7', 'cesped8', 'cesped9', 'cesped10', 'cesped11', 'cesped12', 'cesped13',
-          'cesped14', 'cesped15', 'cesped16', 'cesped17', 'cesped18', 'cesped19', 'cesped20',
-          'cesped21', 'cesped22', 'cesped23', 'cesped24', 'cesped25', 'cesped26', 'cesped27',
-          'cesped28', 'cesped29', 'cesped30', 'cesped31'
-        ],
-        textured: ['TexturedGrass']
-      },
-      STRUCTURES: {
-        houses: ['House', 'House_Hay_1', 'House_Hay_2', 'House_Hay_3', 'House_Hay_4_Purple'],
-        walls: ['CityWall_Gate_1', 'muros1', 'muros2', 'muros3'],
-        fences: ['Fences'],
-        wells: ['Well_Hay_1'],
-        glass: ['vidrio']
-      },
-      NATURAL_ELEMENTS: {
-        trees: ['Oak_Tree', 'Tree_Emerald_1', 'Tree_Emerald_2', 'Tree_Emerald_3', 'Tree_Emerald_4'],
-        bushes: ['Bush_Emerald_1', 'Bush_Emerald_2', 'Bush_Emerald_3', 'Bush_Emerald_4', 'Bush_Emerald_5', 'Bush_Emerald_6', 'Bush_Emerald_7'],
-        rocks: ['Rock_Brown_1', 'Rock_Brown_2', 'Rock_Brown_4', 'Rock_Brown_6', 'Rock_Brown_9'],
-        cliffs: ['Cliff_001_001', 'Cliff_001_002'],
-        logs: ['troncos1', 'troncos2', 'troncos3']
-      },
-      INFRASTRUCTURE: {
-        paths: ['FarmLand_Tile', 'Path_Middle']
-      },
-      WATER: {
-        tiles: ['Water_Middle', 'tile_0198', 'tile_0230']
-      },
-      ENVIRONMENTAL_OBJECTS: {
-        furniture: ['Bench_1', 'Bench_3', 'Table_Medium_1', 'silla', 'sillas_de_calle1', 'sillas_de_calle2', 'sillas_de_calle3', 'sillas_de_calle4'],
-        lighting: ['LampPost_3', 'lamparas1', 'lamparas2', 'lamparas3'],
-        signs: ['Sign_1', 'Sign_2', 'Signs_001', 'Signs_002', 'Signs_003', 'Signs_004', 'StreetSigns_001', 'StreetSigns_002', 'StreetSigns_003', 'StreetSigns_004', 'StreetSigns_005'],
-        decorations: ['Banner_Stick_1_Purple', 'Plant_2'],
-        street_items: ['poste1', 'poste2', 'poste3', 'poste4', 'ropas_tendidas1', 'ropas_tendidas2', 'ropas_tendidas3', 'sombrilla1', 'sombrilla2', 'sombrilla3'],
-        waste: ['basuras1', 'basuras_calle1'],
-        containers: ['botellas1', 'cajas1']
-      },
-      FURNITURE_OBJECTS: {
-        all: [
-          'Barrel_Small_Empty', 'Basket_Empty', 'Chest', 'Chests_001', 'Chests_002',
-          'Crate_Large_Empty', 'Crate_Medium_Closed', 'basuras2', 'basuras3', 'basuras4',
-          'basuras_calle2', 'basuras_calle3', 'basuras_calle4', 'basuras_calle5', 'basuras_calle6',
-          'botellas2', 'botellas3', 'cajas2', 'cajas3', 'ventana1', 'ventana2', 'ventana3',
-          'ventana4', 'ventana5', 'ventana6', 'ventana7', 'ventana8', 'ventana9', 'ventana10',
-          'ventana11', 'ventana12', 'ventana13'
-        ]
-      }
-    }
-  };
-}
-
-// Assets dinámicos - se cargan del análisis
-export const ASSET_CATEGORIES = new Proxy({}, {
-  get: function(_target: any, prop: string) {
-    if (!assetAnalysis) {
-      // Retornar promesa que resuelve cuando se cargue
-      return loadAssetAnalysis().then(analysis => analysis.categories[prop]);
-    }
-    return assetAnalysis.categories[prop];
-  }
-});
 
 export class AssetManager {
   private assets: Map<string, Asset> = new Map();
   private categorizedAssets: AssetCategory = {};
   private loadingPromises: Map<string, Promise<Asset>> = new Map();
   private dynamicAssetsLoaded: Set<string> = new Set();
-
-  constructor() {
-    // Inicializar categorías de forma asíncrona
-    this.initializeCategories().catch(error => {
-      console.warn('Error en inicialización asíncrona de categorías:', error);
-    });
-  }
 
   /**
    * Cargar assets dinámicamente por nombre de carpeta
@@ -145,31 +39,25 @@ export class AssetManager {
       return this.getAssetsByType(folderName);
     }
 
-    try {
-      // Usar el sprite animation manager para obtener assets de la carpeta
-      const folderAssets = await spriteAnimationManager.loadAssetsByFolder(folderName);
-      const assets: Asset[] = [];
+    const assets: Asset[] = [];
+    const basePath = `/assets/${folderName}/`;
 
-      // Convertir sprites estáticos a assets
-      for (const sprite of folderAssets.sprites) {
-        const asset: Asset = {
-          id: sprite.asset.id,
-          name: sprite.asset.name,
-          category: this.mapDynamicCategory(folderName),
-          image: sprite.image,
-          size: 32, // tamaño por defecto
-          path: sprite.asset.path
-        };
-        
-        this.assets.set(asset.id, asset);
-        assets.push(asset);
+    try {
+      // Intentar cargar archivos comunes de la carpeta
+      const commonFiles = await this.scanFolderForAssets(basePath);
+      
+      for (const fileName of commonFiles) {
+        const asset = await this.createAssetFromFile(fileName, folderName, basePath);
+        if (asset) {
+          this.assets.set(asset.id, asset);
+          assets.push(asset);
+        }
       }
 
-      // Categorizar los assets cargados
       this.categorizeAssetsByFolder(assets, folderName);
       this.dynamicAssetsLoaded.add(folderName);
 
-      console.log(`✅ Cargados ${assets.length} assets dinámicos de la carpeta: ${folderName}`);
+      console.log(`✅ Cargados ${assets.length} assets de la carpeta: ${folderName}`);
       return assets;
     } catch (error) {
       console.warn(`⚠️ Error cargando assets de la carpeta ${folderName}:`, error);
@@ -215,10 +103,51 @@ export class AssetManager {
   }
 
   /**
+   * Buscar archivos de assets en una carpeta
+   */
+  private async scanFolderForAssets(basePath: string): Promise<string[]> {
+    // Lista estática de archivos conocidos por carpeta
+    const knownFiles: Record<string, string[]> = {
+      'terrain_tiles': ['Grass_Middle', 'TexturedGrass', 'cesped1', 'cesped2', 'cesped3'],
+      'structures': ['House', 'House_Hay_1', 'CityWall_Gate_1', 'Well_Hay_1', 'Fences'],
+      'natural_elements': ['Oak_Tree', 'Tree_Emerald_1', 'Bush_Emerald_1', 'Rock_Brown_1'],
+      'water': ['Water_Middle'],
+      'infrastructure': ['Path_Middle', 'FarmLand_Tile']
+    };
+    
+    const folderName = basePath.split('/').filter(Boolean)[1];
+    return knownFiles[folderName] || [];
+  }
+
+  /**
+   * Crear un asset desde un archivo
+   */
+  private async createAssetFromFile(fileName: string, folderName: string, basePath: string): Promise<Asset | null> {
+    return new Promise((resolve) => {
+      const image = new Image();
+      const path = basePath + fileName + '.png';
+      
+      image.onload = () => {
+        resolve({
+          id: fileName,
+          name: fileName.replace(/_/g, ' '),
+          category: folderName,
+          image,
+          size: 32,
+          path
+        });
+      };
+      
+      image.onerror = () => resolve(null);
+      image.src = path;
+    });
+  }
+
+  /**
    * Precargar assets esenciales de múltiples carpetas
    */
   async preloadEssentialAssetsByFolders(folderNames: string[]): Promise<void> {
-    console.log('🎨 Precargando assets dinámicos de carpetas:', folderNames);
+    console.log('🎨 Precargando assets de carpetas:', folderNames);
     
     const promises = folderNames.map(async (folderName) => {
       try {
@@ -229,14 +158,9 @@ export class AssetManager {
     });
 
     await Promise.all(promises);
-    console.log('✅ Precarga de assets dinámicos completada');
+    console.log('✅ Precarga completada');
   }
 
-  // Métodos auxiliares privados
-
-  private mapDynamicCategory(folderName: string): Asset['category'] {
-    return DYNAMIC_CATEGORY_MAPPING[folderName as keyof typeof DYNAMIC_CATEGORY_MAPPING] || 'environmental_objects';
-  }
 
   private categorizeAssetsByFolder(assets: Asset[], folderName: string) {
     // Categorizar por nombre de carpeta
@@ -254,31 +178,6 @@ export class AssetManager {
     });
   }
 
-  private async initializeCategories() {
-    try {
-      const analysis = await loadAssetAnalysis();
-      const categories = analysis.categories || {};
-      
-      Object.entries(categories).forEach(([category, subtypes]) => {
-        this.categorizedAssets[category.toLowerCase()] = [];
-
-        if (subtypes && typeof subtypes === 'object') {
-          Object.entries(subtypes as Record<string, any>).forEach(([subtype]) => {
-            if (!this.categorizedAssets[subtype]) {
-              this.categorizedAssets[subtype] = [];
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.warn('Error inicializando categorías, usando categorías básicas:', error);
-      // Inicializar categorías básicas
-      const basicCategories = ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects'];
-      basicCategories.forEach(category => {
-        this.categorizedAssets[category] = [];
-      });
-    }
-  }
 
   /**
    * Carga un asset individual
@@ -312,34 +211,15 @@ export class AssetManager {
     return new Promise((resolve, reject) => {
       const image = new Image();
       const category = this.detectCategory(assetId);
-      
-      // Mapeo directo de categorías a carpetas
-      const categoryToFolder: Record<string, string> = {
-        'terrain_tiles': 'terrain_tiles',
-        'structures': 'structures',
-        'building': 'building',
-        'furniture_objects': 'furniture_objects',
-        'natural_elements': 'natural_elements',
-        'infrastructure': 'infrastructure',
-        'water': 'water',
-        'environmental_objects': 'environmental_objects',
-        'animated_entities': 'animated_entities',
-        'consumable_items': 'consumable_items',
-        'ui_icons': 'ui_icons',
-        'dialogs': 'dialogs'
-      };
-      
-      const folderPath = '/assets/' + (categoryToFolder[category] || 'environmental_objects') + '/';
-      const path = folderPath + assetId + '.png';
+      const path = `/assets/${category}/${assetId}.png`;
 
       image.onload = () => {
         const asset: Asset = {
           id: assetId,
-          name: this.extractNameFromId(assetId),
+          name: assetId.replace(/_/g, ' '),
           category: category,
-          subtype: this.detectSubtype(assetId),
           image,
-          size: this.detectSize(assetId),
+          size: 32,
           path
         };
         resolve(asset);
