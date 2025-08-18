@@ -21,16 +21,32 @@ interface CanvasProps {
   panY?: number;
 }
 
-// Asset loading system
+// Animated sprite interfaces
+interface SpriteMetadata {
+  frame_count: number;
+  frame_size: [number, number];
+  frame_duration: number;
+  columns: number;
+  rows: number;
+}
+
+interface AnimatedSprite {
+  image: HTMLImageElement;
+  metadata: SpriteMetadata;
+  currentFrame: number;
+  frameTimer: number;
+  currentAnimation: string;
+}
+
 interface AssetsState {
   background: HTMLImageElement | null;
   props: Map<string, HTMLImageElement>;
-  entities: Map<string, HTMLImageElement>;
+  animatedSprites: Map<string, AnimatedSprite>;
   mapElements: Map<string, HTMLImageElement>;
   isLoading: boolean;
 }
 
-//  particle system with reduced count and object pooling
+// Particle system with reduced count and object pooling
 const PARTICLE_COUNT = 4; // Significantly reduced for better performance
 const PARTICLE_POOL: Array<{
   x: number;
@@ -65,40 +81,8 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
   
   // Asset loading state
   const [assetsLoaded, setAssetsLoaded] = useState(false);
-  // Interfaces para sprites animados
-  // Animated sprite interface
-  interface SpriteFrame {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }
-
-  interface SpriteMetadata {
-    frame_count: number;
-    frame_size: [number, number];
-    frame_duration: number;
-    columns: number;
-    rows: number;
-  }
-
-  interface AnimatedSprite {
-    image: HTMLImageElement;
-    metadata: SpriteMetadata;
-    currentFrame: number;
-    frameTimer: number;
-    currentAnimation: string;
-  }
-
-interface AssetsState {
-  background: HTMLImageElement | null;
-  props: Map<string, HTMLImageElement>;
-  animatedSprites: Map<string, AnimatedSprite>;
-  mapElements: Map<string, HTMLImageElement>;
-  isLoading: boolean;
-}
-
-// Estado para assets - usar Maps organizados por tipo
+  
+  // Estado para assets - usar Maps organizados por tipo
   const assetsRef = useRef<AssetsState>({
     background: null,
     props: new Map<string, HTMLImageElement>(),
@@ -157,12 +141,15 @@ interface AssetsState {
       // Load background
       const backgroundImg = new Image();
       backgroundImg.src = '/assets/backgrounds/grass/magical_grass_base.png';
-      await new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve) => {
         backgroundImg.onload = () => {
           console.log('✅ Fondo de pasto cargado');
           resolve();
         };
-        backgroundImg.onerror = reject;
+        backgroundImg.onerror = () => {
+          console.warn('⚠️ No se pudo cargar el fondo');
+          resolve(); // Continue even if background fails
+        };
       });
       assetsRef.current.background = backgroundImg;
       
@@ -230,7 +217,7 @@ interface AssetsState {
       for (const asset of propAssets) {
         const propImg = new Image();
         propImg.src = asset.path;
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
           propImg.onload = () => resolve();
           propImg.onerror = () => {
             console.warn(`⚠️ No se pudo cargar prop: ${asset.key}`);
@@ -252,7 +239,7 @@ interface AssetsState {
       for (const asset of mapAssets) {
         const mapImg = new Image();
         mapImg.src = asset.path;
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
           mapImg.onload = () => resolve();
           mapImg.onerror = () => {
             console.warn(`⚠️ No se pudo cargar elemento de mapa: ${asset.key}`);
@@ -280,12 +267,13 @@ interface AssetsState {
 
   // Load assets once on mount
   useEffect(() => {
+    const currentAssetsRef = assetsRef.current; // Copy ref to avoid issues
     loadAssets();
     
     // Cleanup function to reset loading state on unmount (StrictMode compatibility)
     return () => {
-      if (assetsRef.current) {
-        assetsRef.current.isLoading = false;
+      if (currentAssetsRef) {
+        currentAssetsRef.isLoading = false;
       }
     };
   }, [loadAssets]);
@@ -590,10 +578,6 @@ interface AssetsState {
         animatedSprite.currentFrame = 0;
         animatedSprite.frameTimer = 0;
       }
-      
-      // Get emotion based on entity state and mood
-      const emotion = entity.mood || 'happy';
-      const animationKey = `${entity.id}_${emotion}_anim`;
       
       ctx.globalAlpha = opacity;
       
@@ -914,10 +898,11 @@ interface AssetsState {
             );
             spriteDrawn = true;
           }
-        } else if (element.type === 'decoration') {
-          // Use path sprites for decorative elements
-        const pathH = mapAssets?.get('path-stone-h');
-        const pathV = mapAssets?.get('path-stone-v');          if (pathH && element.size.width > element.size.height) {
+        } else {
+          // Use path sprites for other elements
+          const pathH = mapAssets?.get('path-stone-h');
+          const pathV = mapAssets?.get('path-stone-v');
+          if (pathH && element.size.width > element.size.height) {
             ctx.drawImage(pathH, element.position.x, element.position.y, element.size.width, element.size.height);
             spriteDrawn = true;
           } else if (pathV && element.size.height > element.size.width) {
