@@ -3,15 +3,7 @@ import { useGame } from '../hooks/useGame';
 
 const DialogOverlay: React.FC = () => {
   const { dialogueState, dispatch } = useGame();
-  const [dialogSprite, setDialogSprite] = useState<HTMLImageElement | null>(null);
-
-  // Load dialog overlay sprite
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => setDialogSprite(img);
-    img.onerror = () => console.error('Failed to load dialog sprite');
-    img.src = '/assets/sprites/dialogo_overlay.png';
-  }, []);
+  // Removed obsolete sprite loading - using CSS styling instead
 
   useEffect(() => {
     if (dialogueState.visible) {
@@ -29,7 +21,7 @@ const DialogOverlay: React.FC = () => {
   const progress = elapsed / dialogueState.duration;
   const opacity = progress < 0.9 ? 1 : 1 - ((progress - 0.9) / 0.1);
 
-  if (dialogSprite && dialogSprite.complete) {
+  if (false) { // Removed sprite dependency
     return (
       <div
         style={{
@@ -47,7 +39,7 @@ const DialogOverlay: React.FC = () => {
           position: 'relative',
           width: '320px',
           height: '120px',
-          backgroundImage: `url(/assets/sprites/dialogo_overlay.png)`,
+          background: 'linear-gradient(135deg, #2d5a27 0%, #1a3d1a 100%)',
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',

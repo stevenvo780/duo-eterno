@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import Canvas from './components/Canvas';
+import ProfessionalTopDownCanvas from './components/ProfessionalTopDownCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import { useGameLoop } from './hooks/useGameLoop';
@@ -73,9 +73,10 @@ const GameContent: React.FC = React.memo(() => {
         padding: '20px',
         position: 'relative'
       }}>
-        <Canvas 
+        <ProfessionalTopDownCanvas 
           width={1000} 
           height={600}
+          onEntityClick={handleEntitySelect}
         />
         <DialogOverlay />
       </div>
