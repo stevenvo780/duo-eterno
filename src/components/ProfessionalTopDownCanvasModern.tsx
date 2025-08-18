@@ -6,7 +6,6 @@ import { DayNightClock } from './DayNightClock';
 import { mapRenderer, type Viewport, type SceneData } from '../utils/rendering/MapRenderer';
 import { assetManager } from '../utils/modernAssetManager';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
-import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { Entity } from '../types';
 
 interface Props {
@@ -26,7 +25,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   panY,
   onEntityClick
 }) => {
-  const { gameState, dispatch } = useGame();
+  const { gameState } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const fpsCounter = useRef({ frames: 0, lastTime: 0, fps: 60 });
@@ -39,9 +38,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [rendererInitialized, setRendererInitialized] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
-  const initializationStarted = useRef(false);
 
-  // Datos de la escena - estabilizados para evitar re-renders constantes
+  // Datos de la escena
   const sceneData: SceneData = useMemo(() => ({
     terrainMap: {
       width: 100,
@@ -63,17 +61,14 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     zoom
   }), [panX, panY, width, height, zoom]);
 
-  // Cargar assets (SOLO UNA VEZ)
+  // Cargar assets y inicializar renderer
   useEffect(() => {
-    if (initializationStarted.current) return; // Ya está en proceso
-    initializationStarted.current = true;
-    
     let isMounted = true;
     
-    const loadAssets = async () => {
+    const initialize = async () => {
       try {
         setLoadingProgress(10);
-        console.log('🎨 Iniciando carga de assets...');
+        console.log('🎨 Iniciando sistema de renderizado profesional...');
 
         // Precargar carpetas esenciales de assets
         await assetManager.preloadEssentialAssetsByFolders([
@@ -85,82 +80,40 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           'environmental_objects'
         ]);
         
+        if (!isMounted) return;
         setLoadingProgress(60);
-        console.log('🎯 Assets por carpetas completados, iniciando precarga adicional...');
 
         // Precargar assets esenciales adicionales
         await assetManager.preloadEssentialAssets();
         
+        if (!isMounted) return;
         setLoadingProgress(80);
-        console.log('🎯 Precarga adicional completada, obteniendo stats...');
 
-        console.log('✅ Assets cargados:', assetManager.getStats());
+        // Inicializar el renderer con datos de la escena
+        await mapRenderer.initialize(sceneData);
+        
+        if (!isMounted) return;
+        setLoadingProgress(95);
+
+        console.log('✅ Sistema de renderizado profesional inicializado:', assetManager.getStats());
         setLoadingProgress(100);
-        console.log('🎯 Marcando assets como cargados...');
         setAssetsLoaded(true);
+        setRendererInitialized(true);
         
       } catch (error) {
-        console.error('❌ Error cargando assets:', error);
-        setAssetsLoaded(true); // Continuar con modo fallback
+        console.error('❌ Error inicializando sistema de renderizado:', error);
+        if (isMounted) {
+          setAssetsLoaded(true); // Continuar con modo fallback
+        }
       }
     };
 
-    loadAssets();
+    initialize();
     
     return () => {
       isMounted = false;
     };
-  }, []); // Solo ejecutar una vez al montar el componente
-
-  // Inicializar renderer cuando los assets estén listos
-  useEffect(() => {
-    if (!assetsLoaded || rendererInitialized) return;
-    
-    const initializeRenderer = async () => {
-      try {
-        console.log('🎬 Inicializando renderer...');
-        
-        // Generar zonas si no existen al momento de la inicialización
-        let zones = gameState.zones;
-        let mapElements = gameState.mapElements;
-        
-        if (zones.length === 0) {
-          console.log('🏗️ Generando zonas por defecto...');
-          zones = createDefaultZones();
-          mapElements = createDefaultMapElements();
-          
-          // Actualizar el gameState con las nuevas zonas (de manera asíncrona)
-          setTimeout(() => {
-            dispatch({ type: 'GENERATE_NEW_MAP', payload: { seed: gameState.mapSeed } });
-          }, 100);
-        }
-        
-        // Crear datos para el renderer con zonas reales
-        const initialData: SceneData = {
-          terrainMap: {
-            width: 1000,
-            height: 800,
-            tileSize: 64,
-            tiles: []
-          },
-          zones,
-          mapElements,
-          entities: gameState.entities
-        };
-        
-        // Inicializar el renderer
-        await mapRenderer.initialize(initialData);
-        
-        setRendererInitialized(true);
-        console.log('✅ Renderer inicializado');
-        
-      } catch (error) {
-        console.error('❌ Error inicializando renderer:', error);
-      }
-    };
-
-    initializeRenderer();
-  }, [assetsLoaded, rendererInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sceneData]);
 
   // Función de renderizado principal usando el nuevo sistema
   const renderScene = useCallback(

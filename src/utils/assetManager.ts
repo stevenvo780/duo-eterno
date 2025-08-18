@@ -5,12 +5,13 @@
  */
 
 export interface Asset {
-  id: string;
-  name: string;
-  category: string;
-  image: HTMLImageElement;
+  id?: string;
+  name?: string;
+  category?: string;
+  image: HTMLImageElement | null;
   size: number;
   path: string;
+  type: string;
 }
 
 export interface AssetCategory {
@@ -363,6 +364,13 @@ export class AssetManager {
     await this.preloadEssentialAssetsByFolders(essentialFolders);
     
     console.log('✅ Precarga completada');
+  }
+
+  /**
+   * Obtener asset por path específico
+   */
+  getAssetByPath(path: string): Asset | null {
+    return this.assets.get(path) || null;
   }
 
   /**

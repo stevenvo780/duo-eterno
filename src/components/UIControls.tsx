@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect } from '../utils/interactions';
 import { getDialogueForInteraction } from '../utils/dialogueSelector';
@@ -30,6 +30,16 @@ const UIControls: React.FC<UIControlsProps> = ({
     type: 'success' | 'info' | 'warning' | 'error';
   } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Auto-hide toast after 4 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const selectedEntity = selectedEntityId
     ? gameState.entities.find(e => e.id === selectedEntityId)
