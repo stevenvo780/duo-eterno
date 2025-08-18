@@ -23,14 +23,14 @@ export const NavigableGameCanvas: React.FC<NavigableGameCanvasProps> = ({
 }) => {
   // Sistema de navegación mejorado
   const navigation = useMapNavigation({
-    initialX: 500, // Centrar en el mapa más grande
-    initialY: 400,
+    initialX: 1000, // Centrar en el mapa más grande
+    initialY: 750,
     initialZoom: 1,
-    minZoom: 0.3,
-    maxZoom: 3,
-    mapWidth: 2000,
-    mapHeight: 1500,
-    panSpeed: 8
+    minZoom: 0.2,
+    maxZoom: 4,
+    mapWidth: 4000, // Mapa mucho más grande
+    mapHeight: 3000,
+    panSpeed: 12
   });
 
   return (
