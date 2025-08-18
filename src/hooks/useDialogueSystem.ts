@@ -27,7 +27,7 @@ export const useDialogueSystem = () => {
   const canConverse = (entityId: string): boolean => {
     const entity = entities.find(e => e.id === entityId);
     if (!entity) return false;
-    return !entity.isDead && entity.activity !== 'SLEEPING' && entity.activity !== 'WORKING';
+    return !entity.isDead && entity.activity !== 'WORKING';
   };
 
   const initiateConversation = useCallback(() => {
@@ -143,7 +143,7 @@ export const useDialogueSystem = () => {
     const { type: interactionType, entityId } = gameState.connectionAnimation;
 
     // The INTERACT action should have the entityId in its payload
-    const targetEntityId = entityId || 'circle'; // Fallback for safety
+    const targetEntityId = (entityId as 'circle' | 'square') || 'circle'; // Fallback for safety
 
     const dialogue = getDialogueForInteraction(interactionType, targetEntityId);
 

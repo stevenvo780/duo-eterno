@@ -622,9 +622,6 @@ export class AdvancedTerrainGenerator {
     const rotation = config.rotationVariation ? Math.random() * 360 : 0;
     const flipX = Math.random() < 0.5;
 
-    // Mapear tipo a asset real
-    const _assetType = this.mapObjectTypeToAsset(config.type);
-
     return {
       id: `natural_${config.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: this.mapObjectTypeToMapElementType(config.type),
@@ -791,26 +788,6 @@ export class AdvancedTerrainGenerator {
           b: parseInt(result[3], 16)
         }
       : null;
-  }
-
-  private mapObjectTypeToAsset(type: string): string {
-    const mapping: Record<string, string> = {
-      tree_large: 'tile_furniture_tree_large',
-      tree_medium: 'tile_furniture_tree_medium',
-      wildflower: 'tile_decoration_flower',
-      small_bush: 'tile_nature_bush',
-      grass_tuft: 'tile_nature_grass',
-      fern: 'tile_nature_fern',
-      mushroom: 'tile_nature_mushroom',
-      flower_bed: 'tile_decoration_flower_bed',
-      hedge: 'tile_furniture_hedge',
-      garden_stone: 'tile_decoration_stone',
-      rock_large: 'tile_nature_rock_large',
-      rock_medium: 'tile_nature_rock_medium',
-      pebbles: 'tile_decoration_pebbles'
-    };
-
-    return mapping[type] || 'tile_decoration_default';
   }
 
   private mapObjectTypeToMapElementType(type: string): MapElement['type'] {

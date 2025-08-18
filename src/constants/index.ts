@@ -215,7 +215,8 @@ export const NEED_TO_ZONE_MAPPING = {
   sleepiness: 'rest',
   boredom: 'play',
   loneliness: 'social',
-  health: 'rest'
+  health: 'rest',
+  money: 'work'
 } as const;
 
 export const RESONANCE_THRESHOLDS = {
@@ -223,6 +224,16 @@ export const RESONANCE_THRESHOLDS = {
   MEDIUM: 0.6,
   HIGH: 0.8,
   CRITICAL: 0.95
+} as const;
+
+export const MOVEMENT_CONFIG = {
+  BASE_SPEED: PHYSICS.BASE_MOVEMENT_SPEED,
+  MAX_SPEED: PHYSICS.MAX_SPEED,
+  PERSONAL_SPACE: PHYSICS.PERSONAL_SPACE,
+  ENTITY_SIZE: PHYSICS.ENTITY_RADIUS,
+  MIN_DISTANCE_BETWEEN_ENTITIES: PHYSICS.PERSONAL_SPACE,
+  REPULSION_FORCE: 2.0,
+  COMPANION_SEEK_DISTANCE: 200
 } as const;
 
 // Alias de constantes no usados removidos
@@ -313,16 +324,6 @@ export const TRANSLATIONS = {
     bored: 'Aburrido',
     lonely: 'Solo'
   }
-} as const;
-
-export const MOVEMENT_CONFIG = {
-  BASE_SPEED: PHYSICS.BASE_MOVEMENT_SPEED,
-  MAX_SPEED: PHYSICS.MAX_SPEED,
-  PERSONAL_SPACE: PHYSICS.PERSONAL_SPACE,
-  ENTITY_SIZE: PHYSICS.ENTITY_RADIUS,
-  MIN_DISTANCE_BETWEEN_ENTITIES: PHYSICS.PERSONAL_SPACE,
-  REPULSION_FORCE: 2.0,
-  COMPANION_SEEK_DISTANCE: 200
 } as const;
 
 export const ENTITY_PHYSICS = {
