@@ -4,6 +4,7 @@ import { useRenderer } from '../hooks/useRenderer';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { assetManager, type Asset } from '../utils/assetManager';
+import { AnimatedEntity } from './AnimatedEntity';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import type { Entity, Zone, MapElement } from '../types';
 
@@ -40,7 +41,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 }) => {
   const { gameState } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | undefined>(undefined);
+  const animationRef = useRef<number>();
   
   const { shouldRender } = useRenderer();
   const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
@@ -296,10 +297,14 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           display: 'block',
           imageRendering: 'pixelated'
         }}
-        onClick={(_e) => {
-          // Click handler para futuras implementaciones
+        onClick={(e) => {
           if (onEntityClick) {
-            // Implementar detección de entidades en futuras versiones
+            const rect = canvasRef.current?.getBoundingClientRect();
+            if (rect) {
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              // Aquí puedes implementar la lógica para detectar clicks en entidades
+            }
           }
         }}
       />

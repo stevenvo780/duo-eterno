@@ -12,11 +12,9 @@ interface GameObject {
   asset: Asset;
   x: number;
   y: number;
-  shadow?: Asset;
   metadata?: {
     rotation?: number;
     flipX?: boolean;
-    weathering?: number;
     naturalVariation?: boolean;
   };
 }
@@ -56,8 +54,11 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
   // Cargar assets esenciales
   useEffect(() => {
+    let isMounted = true;
+    
     const loadAssets = async () => {
       try {
+        if (!isMounted) return;
         setLoadingProgress(10);
         console.log('🎨 Iniciando carga de assets...');
 
@@ -72,10 +73,14 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           'furniture_objects',
           'ui_icons'
         ]);
+        
+        if (!isMounted) return;
         setLoadingProgress(60);
 
         // Precargar assets esenciales
         await assetManager.preloadEssentialAssets();
+        
+        if (!isMounted) return;
         setLoadingProgress(80);
 
         console.log('✅ Assets cargados:', assetManager.getStats());
@@ -83,11 +88,17 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         setAssetsLoaded(true);
       } catch (error) {
         console.error('❌ Error cargando assets:', error);
-        setAssetsLoaded(true);
+        if (isMounted) {
+          setAssetsLoaded(true);
+        }
       }
     };
 
     loadAssets();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Generar objetos del juego
@@ -138,7 +149,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       if (asset) {
         objects.push({
           id: `obj_${objectId++}`,
-          asset,
+          asset: asset,
           x: element.position.x,
           y: element.position.y,
           metadata: {

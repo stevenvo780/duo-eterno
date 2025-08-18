@@ -106,13 +106,52 @@ export class AssetManager {
    * Buscar archivos de assets en una carpeta
    */
   private async scanFolderForAssets(basePath: string): Promise<string[]> {
-    // Lista estática de archivos conocidos por carpeta
+    // Lista completa de archivos conocidos por carpeta
     const knownFiles: Record<string, string[]> = {
-      'terrain_tiles': ['Grass_Middle', 'TexturedGrass', 'cesped1', 'cesped2', 'cesped3'],
-      'structures': ['House', 'House_Hay_1', 'CityWall_Gate_1', 'Well_Hay_1', 'Fences'],
-      'natural_elements': ['Oak_Tree', 'Tree_Emerald_1', 'Bush_Emerald_1', 'Rock_Brown_1'],
+      'terrain_tiles': [
+        'Grass_Middle', 'TexturedGrass', 
+        'cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5',
+        'cesped6', 'cesped7', 'cesped8', 'cesped9', 'cesped10',
+        'cesped11', 'cesped12', 'cesped13', 'cesped14', 'cesped15',
+        'cesped16', 'cesped17', 'cesped18', 'cesped19', 'cesped20',
+        'cesped21', 'cesped22', 'cesped23', 'cesped24', 'cesped25',
+        'cesped26', 'cesped27', 'cesped28', 'cesped29', 'cesped30', 'cesped31'
+      ],
+      'structures': [
+        'House', 'House_Hay_1', 'House_Hay_2', 'House_Hay_3', 'House_Hay_4_Purple',
+        'CityWall_Gate_1', 'Well_Hay_1', 'Fences',
+        'Assets_source_002_001', 'Assets_source_002_002', 'Assets_source_002_003',
+        'Assets_source_002_004', 'Assets_source_002_005', 'Assets_source_002_006',
+        'Assets_source_002_007', 'Assets_source_002_008', 'Assets_source_002_009',
+        'Assets_source_002_010', 'Assets_source_002_011'
+      ],
+      'natural_elements': [
+        'Oak_Tree', 'Tree_Emerald_1', 'Tree_Emerald_2', 'Tree_Emerald_3', 'Tree_Emerald_4',
+        'Bush_Emerald_1', 'Bush_Emerald_2', 'Bush_Emerald_3', 'Bush_Emerald_4', 'Bush_Emerald_5',
+        'Rock_Brown_1', 'Rock_Brown_2', 'Rock_Brown_4', 'Rock_Brown_6', 'Rock_Brown_9',
+        'Rock1_1', 'Rock1_2', 'Rock1_3', 'Rock1_4', 'Rock1_5',
+        'Rock2_1', 'Rock2_2', 'Rock2_3', 'Rock2_4', 'Rock2_5',
+        'Mega_tree1', 'Mega_tree2', 'Luminous_tree1', 'Luminous_tree2', 'Luminous_tree3',
+        'Curved_tree1', 'Curved_tree2', 'Curved_tree3', 'Willow1', 'Willow2', 'Willow3',
+        'Blue-green_balls_tree1', 'Blue-green_balls_tree2', 'Blue-green_balls_tree3',
+        'White_tree1', 'White_tree2', 'Light_balls_tree1', 'Light_balls_tree2', 'Light_balls_tree3',
+        'Swirling tree1', 'Swirling tree2', 'Swirling tree3',
+        'Beige_green_mushroom1', 'Beige_green_mushroom2', 'Beige_green_mushroom3',
+        'White-red_mushroom1', 'White-red_mushroom2', 'White-red_mushroom3',
+        'Chanterelles1', 'Chanterelles2', 'Chanterelles3',
+        'troncos1', 'troncos2', 'troncos3', 'Ent_man', 'Ent_woman'
+      ],
+      'building': [
+        '1', '2', '3', '4', '5', '6', 'muro', 'muros1', 'muros2', 'muros3', 'piso', 'vidrio'
+      ],
       'water': ['Water_Middle'],
-      'infrastructure': ['Path_Middle', 'FarmLand_Tile']
+      'infrastructure': ['Path_Middle', 'FarmLand_Tile'],
+      'furniture_objects': [],
+      'environmental_objects': [],
+      'animated_entities': [],
+      'ui_icons': [],
+      'consumable_items': [],
+      'dialogs': []
     };
     
     const folderName = basePath.split('/').filter(Boolean)[1];

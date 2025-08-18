@@ -7,7 +7,7 @@ import type {
   DialogueEntry,
   ConversationState
 } from '../types';
-import { generateOrganicProceduralMap } from '../utils/organicMapGeneration';
+import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
@@ -330,7 +330,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
     case 'RESET_GAME': {
       const newSeed = Date.now().toString(36);
-      const { zones, mapElements } = generateOrganicProceduralMap(newSeed, {});
+      // Generar mapa usando el sistema básico por ahora
+      const zones = createDefaultZones();
+      const mapElements = createDefaultMapElements();
       return {
         ...initialGameState,
         cycles: 0,
@@ -342,7 +344,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
     case 'GENERATE_NEW_MAP': {
       const newSeed = action.payload?.seed || Date.now().toString(36);
-      const { zones, mapElements } = generateOrganicProceduralMap(newSeed, {});
+      // Generar mapa usando el sistema básico por ahora
+      const zones = createDefaultZones();
+      const mapElements = createDefaultMapElements();
       return {
         ...state,
         mapSeed: newSeed,
