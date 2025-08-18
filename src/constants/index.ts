@@ -233,7 +233,15 @@ export const RESONANCE_THRESHOLDS = {
 export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'outdoor';
 
 // Tipos para actividades y estados de entidades
-export type ActivityType = 'reading' | 'gaming' | 'cooking' | 'sleeping' | 'working' | 'exercising' | 'socializing' | 'relaxing';
+export type ActivityType =
+  | 'reading'
+  | 'gaming'
+  | 'cooking'
+  | 'sleeping'
+  | 'working'
+  | 'exercising'
+  | 'socializing'
+  | 'relaxing';
 export type EntityStateType = 'idle' | 'moving' | 'interacting' | 'resting' | 'seeking';
 
 // Alias de constantes no usados removidos
@@ -247,9 +255,6 @@ export const {
   BREATHING_CYCLE_MS,
   ATTENTION_SPAN_MS
 } = TIMING;
-
-
-
 
 // TRANSLATIONS para UI del juego
 export const TRANSLATIONS = {
@@ -289,7 +294,5 @@ export const TRANSLATIONS = {
 // ENTITY_PHYSICS eliminado por no usarse
 
 // PATHFINDING_CONFIG removido por no usarse
-
-
 
 // Función de validación no usada removida

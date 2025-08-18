@@ -1,10 +1,7 @@
 {
   "name": "sparkle",
   "frame_count": 20,
-  "frame_size": [
-    32,
-    32
-  ],
+  "frame_size": [32, 32],
   "columns": 8,
   "rows": 3,
   "total_duration": 2400,

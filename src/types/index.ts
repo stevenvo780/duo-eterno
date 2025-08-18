@@ -1,9 +1,43 @@
 import type { ACTIVITY_TYPES } from '../constants';
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
-export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'office' | 'gym' | 'library' | 'social' | 'recreation' | 'food' | 'rest' | 'play' | 'comfort' | 'work' | 'energy';
-export type EntityStateType = 'alive' | 'resting' | 'dead' | 'fading' | 'DEAD' | 'FADING' | 'LOW_RESONANCE' | 'SEEKING' | 'IDLE';
-export type MoodType = 'HAPPY' | 'SAD' | 'ANGRY' | 'CALM' | 'EXCITED' | 'BORED' | 'LONELY' | 'CONTENT' | 'ANXIOUS' | 'TIRED';
+export type ZoneType =
+  | 'kitchen'
+  | 'bedroom'
+  | 'living'
+  | 'bathroom'
+  | 'office'
+  | 'gym'
+  | 'library'
+  | 'social'
+  | 'recreation'
+  | 'food'
+  | 'rest'
+  | 'play'
+  | 'comfort'
+  | 'work'
+  | 'energy';
+export type EntityStateType =
+  | 'alive'
+  | 'resting'
+  | 'dead'
+  | 'fading'
+  | 'DEAD'
+  | 'FADING'
+  | 'LOW_RESONANCE'
+  | 'SEEKING'
+  | 'IDLE';
+export type MoodType =
+  | 'HAPPY'
+  | 'SAD'
+  | 'ANGRY'
+  | 'CALM'
+  | 'EXCITED'
+  | 'BORED'
+  | 'LONELY'
+  | 'CONTENT'
+  | 'ANXIOUS'
+  | 'TIRED';
 
 export interface Position {
   x: number;

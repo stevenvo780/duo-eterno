@@ -1,12 +1,16 @@
 /**
  * 🎬 COMPONENTE DE SPRITE ANIMADO
- * 
+ *
  * Componente React que renderiza sprites animados usando el sistema
  * de animaciones generado automáticamente
  */
 
 import React, { useRef, useEffect, useCallback } from 'react';
-import { spriteAnimationManager, type LoadedAnimation, type AnimationState } from '../utils/spriteAnimationManager';
+import {
+  spriteAnimationManager,
+  type LoadedAnimation,
+  type AnimationState
+} from '../utils/spriteAnimationManager';
 
 interface AnimatedSpriteProps {
   animationId: string;
@@ -45,7 +49,8 @@ export const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
   useEffect(() => {
     let mounted = true;
 
-    spriteAnimationManager.loadAnimation(animationId, folder)
+    spriteAnimationManager
+      .loadAnimation(animationId, folder)
       .then(animation => {
         if (mounted) {
           animationRef.current = animation;
@@ -56,7 +61,7 @@ export const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
             loop,
             onComplete
           };
-          
+
           // Configurar el canvas con el tamaño correcto
           if (canvasRef.current) {
             const canvas = canvasRef.current;

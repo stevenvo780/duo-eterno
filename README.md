@@ -5,8 +5,8 @@
 > Cada línea de código, cada latido de estas pequeñas entidades, es una metáfora de cómo el amor nutre la homeostasis de nuestros cuerpos y almas.  
 > Recorre el repositorio como quien lee una carta infinita: encontrarás mensajes dispersos, zonas de refugio y ecuaciones que cantan al cuidado mutuo.
 
-> *"Dos entidades autónomas emergen, co-evolucionan y resuenan en un universo de complejidad matemática.*  
-> *Su existencia depende no solo del cuidado externo, sino de la calidad de su vínculo mutuo."*
+> _"Dos entidades autónomas emergen, co-evolucionan y resuenan en un universo de complejidad matemática._  
+> _Su existencia depende no solo del cuidado externo, sino de la calidad de su vínculo mutuo."_
 
 ---
 
@@ -15,15 +15,16 @@
 **Dúo Eterno NO es un tamagotchi tradicional**. Es un **experimento filosófico interactivo** que explora:
 
 - **🧬 Autopoiesis**: Sistemas que se auto-mantienen y auto-organizan
-- **🌊 Emergencia**: Comportamientos complejos que surgen de reglas simples  
+- **🌊 Emergencia**: Comportamientos complejos que surgen de reglas simples
 - **💫 Resonancia**: Interdependencia existencial entre entidades
 - **🔄 Co-evolución**: Adaptación mutua y aprendizaje dinámico
 - **⚡ Complejidad**: Dinámicas no-lineales con múltiples feedback loops
 
 ### **Conceptos Implementados**
+
 - **Personalidades diferenciadas** (circle: social/intuitivo, square: persistente/eficiente)
 - **Activity inertia** y flow states realistas
-- **Hybrid decay** que modela desgaste diferencial por actividad  
+- **Hybrid decay** que modela desgaste diferencial por actividad
 - **Zona crowding effects** y competencia por recursos
 - **Sistema de logging** para investigación empírica de emergencia
 - **Death by disconnection**: pérdida de vínculo → fading → muerte
@@ -36,6 +37,7 @@
 Este proyecto incluye un **sistema de mejoras de supervivencia** que mantiene la posibilidad de muerte pero proporciona un ciclo de vida mínimo más estable:
 
 ### **Características Principales**
+
 - **🚨 Alertas Tempranas**: Notificaciones cuando las entidades están en peligro
 - **🛡️ Período de Gracia**: Decay reducido cuando la salud está crítica (< 10)
 - **⚖️ Balance Mejorado**: Umbrales más tolerantes y costos de supervivencia suavizados
@@ -43,6 +45,7 @@ Este proyecto incluye un **sistema de mejoras de supervivencia** que mantiene la
 - **📊 Panel de Control**: Monitoreo en tiempo real y configuración de opciones
 
 ### **Mejoras Implementadas**
+
 - **Umbrales críticos**: De < 5 a < 3 (más tiempo de reacción)
 - **Decay de salud**: Reducido 50% (de 0.1 a 0.05 por stat crítica)
 - **Recuperación**: Aumentada 60% (de 0.05 a 0.08)
@@ -54,6 +57,7 @@ Para más detalles, consulta: [`docs/MEJORAS_SUPERVIVENCIA.md`](docs/MEJORAS_SUP
 ---
 
 ## 📊 **Tabla de Contenidos**
+
 1. [Arquitectura Filosófica](#1-arquitectura-filosófica)
 2. [Instalación y Comandos](#2-instalación-y-comandos)
 3. [Arquitectura de Carpetas](#3-arquitectura-de-carpetas)
@@ -68,21 +72,26 @@ Para más detalles, consulta: [`docs/MEJORAS_SUPERVIVENCIA.md`](docs/MEJORAS_SUP
 ## 1. **Arquitectura Filosófica**
 
 ### **Entidades como Agentes Autónomos**
+
 Cada entidad ("●" Circle, "■" Square) posee:
+
 - **8 dimensiones de estado** (hunger, sleepiness, loneliness, happiness, energy, boredom, money, health)
 - **Personalidad matemática** que afecta decision-making
 - **Memory de actividades** (reinforcement learning básico)
 - **Estados existenciales** (IDLE, SEEKING, LOW_RESONANCE, FADING, DEAD)
 
 ### **Resonancia como Vínculo Existencial**
+
 La **resonancia** (0-100) no es solo un score - es la medida de la calidad del vínculo entre entidades:
-- **Resonancia = 0** → Las entidades entran en estado FADING  
+
+- **Resonancia = 0** → Las entidades entran en estado FADING
 - **Sin recuperación** → Muerte por desconexión existencial
 - **Emergencia de codependencia** → Supervivencia mutua requerida
 
 ---
 
 ## Tabla de Contenidos
+
 1. Visión General
 2. Instalación y Comandos
 3. Arquitectura de Carpetas
@@ -100,18 +109,20 @@ La **resonancia** (0-100) no es solo un score - es la medida de la calidad del v
 ---
 
 ## 1. Visión General
-Dúo Eterno es una *experiencia-tamagotchi* con dos entidades (“●” y “■”). El objetivo es mantener viva la **resonancia** (0-100) entre ellas equilibrando **necesidades** (hunger, sleepiness, etc.) a través de movimiento autónomo, zonas de mapa y acciones del jugador.
 
-- **Framework**   React 19 + TypeScript
-- **Motor**       Canvas 2D + hooks optimizados
+Dúo Eterno es una _experiencia-tamagotchi_ con dos entidades (“●” y “■”). El objetivo es mantener viva la **resonancia** (0-100) entre ellas equilibrando **necesidades** (hunger, sleepiness, etc.) a través de movimiento autónomo, zonas de mapa y acciones del jugador.
+
+- **Framework** React 19 + TypeScript
+- **Motor** Canvas 2D + hooks optimizados
 - **Persistencia** localStorage (`duoEternoState`)
-- **Servidor**     Express opcional para exportar logs
+- **Servidor** Express opcional para exportar logs
 
 ---
 
 ## 2. **Instalación y Comandos**
 
 ### **Setup Básico**
+
 ```bash
 # Instalación
 npm install
@@ -130,6 +141,7 @@ npm run lint && npm run format
 ```
 
 ### **Comandos de Investigación**
+
 ```bash
 # Iniciar logging server (puerto 3002)
 npm run server
@@ -179,6 +191,7 @@ backend/
 ## 4. **Matemáticas de la Emergencia**
 
 ### **4.1 Autopoiesis: Sistema de Decay Híbrido**
+
 ```typescript
 
 ∆stat = baseRate × activityMultiplier × decayMultiplier × dt
@@ -193,8 +206,8 @@ ACTIVITY_DECAY_MULTIPLIERS = {
 ```
 
 ### **4.2 Personalidades Emergentes**
-```typescript
 
+```typescript
 ENTITY_PERSONALITIES = {
   circle: {
     socialPreference: 0.7,
@@ -208,10 +221,11 @@ ENTITY_PERSONALITIES = {
     riskTolerance: 0.6,
     energyEfficiency: 0.7
   }
-}
+};
 ```
 
 ### **4.3 Dinámicas de Zona con Crowding Effects**
+
 ```typescript
 
 needLevel = 100 - avg(relevant_stats)
@@ -222,6 +236,7 @@ finalEffectiveness = baseEff × crowdPenalty × globalMultiplier
 ```
 
 ### **4.4 Resonancia como Sistema Dinámico**
+
 ```typescript
 
 closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))
@@ -238,20 +253,21 @@ dResonance/dt = gain - separation - stress
 ```
 
 ### **4.5 Activity Inertia & Flow States**
+
 ```typescript
 
 calculateActivityInertia(entity, currentTime) {
   const session = activitySessions.get(entity.id);
   let inertia = personality.activityPersistence;
-  
+
   if (session.effectiveness > 0.7) {
     inertia += 0.2;
   }
-  
+
   if (session.interruptions > 2) {
     inertia -= 0.3;
   }
-  
+
   return inertia;
 }
 ```
@@ -261,15 +277,18 @@ calculateActivityInertia(entity, currentTime) {
 ## 5. **Sistema de Investigación**
 
 ### **5.1 Logging Granular para Emergencia**
+
 El sistema captura **automáticamente**:
+
 - **Activity changes** con effectiveness tracking
 - **Mood transitions** y sus triggers
-- **Proximity events** y resonance dynamics  
+- **Proximity events** y resonance dynamics
 - **Decision-making** patterns de la IA
 - **Zone utilization** y crowding effects
 - **Critical events** (near-death, recovery, etc.)
 
 ### **5.2 Métricas de Emergencia Detectadas**
+
 ```json
 {
   "sessionId": "session_1751919358910",
@@ -285,6 +304,7 @@ El sistema captura **automáticamente**:
 ```
 
 ### **5.3 Data Export para Análisis**
+
 ```bash
 # Exportar datos de investigación
 npm run analyze-session  # → JSON con patterns detectados
@@ -297,12 +317,13 @@ npm run analyze-now      # → Análisis en tiempo real
 ## 6. **Configuración Avanzada**
 
 ### **6.1 Variables de Investigación**
+
 ```bash
 # Velocidades de simulación
 VITE_GAME_SPEED_MULTIPLIER=5.0      # 5x speed para estudios long-term
 VITE_BASE_DECAY_MULTIPLIER=1.0      # Decay más lento para observar patterns
 
-# Influencias comportamentales  
+# Influencias comportamentales
 VITE_AI_PERSONALITY_INFLUENCE=0.8   # Personalidades más marcadas
 VITE_AI_SOFTMAX_TAU=0.5            # Decisiones menos aleatorias
 VITE_MOOD_INFLUENCE_STRENGTH=0.8    # Estados emocionales más impactantes
@@ -317,8 +338,8 @@ VITE_LOG_SERVER_URL=http://localhost:3002
 ```
 
 ### **6.2 Controles de Simulación**
-```javascript
 
+```javascript
 window.setGameSpeed(10);
 window.speedPresets['Turbo (5x)'];
 window.logConfig();
@@ -329,7 +350,9 @@ window.logConfig();
 ## 7. **Análisis de Logs**
 
 ### **7.1 Estructura de Logs**
+
 Cada archivo contiene:
+
 ```json
 {
   "timestamp": "2025-07-08T04:10:31.073Z",
@@ -337,18 +360,27 @@ Cada archivo contiene:
   "gameState": {
     "resonance": 45,
     "cycles": 39599,
-    "entities": [/* estado completo */],
-    "emergentBehaviors": [/* patterns detectados */]
+    "entities": [
+      /* estado completo */
+    ],
+    "emergentBehaviors": [
+      /* patterns detectados */
+    ]
   },
   "analysis": {
     "loveStats": { "avgResonance": 45, "resonanceChanges": 102 },
-    "behaviorPatterns": [/* co-evolution data */],
-    "criticalEvents": [/* near-death experiences */]
+    "behaviorPatterns": [
+      /* co-evolution data */
+    ],
+    "criticalEvents": [
+      /* near-death experiences */
+    ]
   }
 }
 ```
 
 ### **7.2 Research Insights Típicos**
+
 - **Co-evolución observable**: Entidades adaptan rutinas mutualmente
 - **Emergencia de roles**: Una entidad se vuelve "provider", otra "nurturer"
 - **Cycles emergentes**: Patterns de sleep-wake auto-organizados
@@ -359,6 +391,7 @@ Cada archivo contiene:
 ## 8. **Research Capabilities**
 
 ### **8.1 Estudios Posibles**
+
 1. **Autopoiesis**: ¿Cómo emergen patterns de auto-mantenimiento?
 2. **Co-dependencia**: ¿Cuándo se vuelve crítica la resonancia mutua?
 3. **Adaptation**: ¿Cómo aprenden las entidades de experience?
@@ -366,6 +399,7 @@ Cada archivo contiene:
 5. **Crisis management**: ¿Cómo responden a near-death scenarios?
 
 ### **8.2 Herramientas de Análisis**
+
 - **Real-time monitoring** con DynamicsDebugPanel
 - **Historical analysis** con exported JSON data
 - **Pattern detection** automático en logs
@@ -373,7 +407,9 @@ Cada archivo contiene:
 - **Visualization** de trajectories comportamentales
 
 ### **8.3 Export para Python/R**
+
 Los logs JSON son compatibles con:
+
 ```python
 import pandas as pd
 import json
@@ -392,24 +428,28 @@ df.plot(x='timestamp', y=['resonance', 'avgHealth'])
 ## 9. **Road-map de Investigación**
 
 ### **Fase 1: Optimización Técnica** ⚡
+
 - [ ] Fix memory leaks en logging system
-- [ ] Implementar log rotation automática  
+- [ ] Implementar log rotation automática
 - [ ] Optimizar performance del game loop
 - [ ] Batching de state updates
 
 ### **Fase 2: Enhanced Research Tools** 🔬
+
 - [ ] Pattern detection algorithms avanzados
-- [ ] Real-time visualization de emergent behaviors  
+- [ ] Real-time visualization de emergent behaviors
 - [ ] Export directo a Python/R notebooks
 - [ ] Machine learning para predecir critical events
 
 ### **Fase 3: Experimentos Avanzados** 🧬
+
 - [ ] Multiple entity populations (3-5 entidades)
 - [ ] Evolutionary pressure scenarios
 - [ ] Environmental changes dinámicos
 - [ ] Cross-session learning persistence
 
 ### **Fase 4: Academic Publication** 📚
+
 - [ ] Paper sobre emergent behavior patterns
 - [ ] Dataset público para research community
 - [ ] Interactive demos para conferences
@@ -420,13 +460,15 @@ df.plot(x='timestamp', y=['resonance', 'avgHealth'])
 ## 🔬 **Para Investigadores**
 
 Este proyecto implementa conceptos de:
+
 - **Sistemas adaptativos complejos** (Holland, Kauffman)
-- **Autopoiesis** (Maturana & Varela)  
+- **Autopoiesis** (Maturana & Varela)
 - **Emergencia** (Steven Johnson, Mitchell)
 - **Teoría de redes** (Barabási)
 - **Behavioral economics** (Kahneman)
 
 Los logs generados son **data empírica real** sobre:
+
 - Decision-making en sistemas autónomos
 - Co-evolution en ambientes constrained
 - Emergence de cooperation vs competition
@@ -437,23 +479,28 @@ Los logs generados son **data empírica real** sobre:
 **Licencia** MIT — Creado con amor y curiosidad filosófica por Steven Vallejo Ortiz 💙
 
 ## 4. Matemáticas del Juego
+
 ### 4.1 Estadísticas & Decaimiento
+
 Cada entidad posee un vector `stats` con rango `[0,100]` (excepto `money ≥ 0`).
 
 ```
 ∆stat = baseRate × activityMultiplier × decayMultiplier × dt
 ```
-- **baseRate** ver `HYBRID_DECAY_RATES` (ej: hunger = −0.3/s)  
-- **activityMultiplier** tabla `ACTIVITY_DECAY_MULTIPLIERS` (RESTING 0.4 – WORKING 1.6)  
-- **decayMultiplier** `gameConfig.baseDecayMultiplier` (env var)  
+
+- **baseRate** ver `HYBRID_DECAY_RATES` (ej: hunger = −0.3/s)
+- **activityMultiplier** tabla `ACTIVITY_DECAY_MULTIPLIERS` (RESTING 0.4 – WORKING 1.6)
+- **decayMultiplier** `gameConfig.baseDecayMultiplier` (env var)
 - **dt** segundos reales × `gameSpeedMultiplier`
 
 Clampeo final `max(0, min(100, newValue))`.
 
 ### 4.2 Zonas & Efectividad
+
 Cada zona `Z` tiene `effects` (Δ por segundo) y un **attractiveness** `α ∈ [0,1]`.
 
 Efectividad real:
+
 ```
 needLevel   = 100 - avg(stat_i, …)
 baseEff     = 1 + needLevel / 50
@@ -461,10 +508,13 @@ crowd       = 1 / (1 + λ * max(0, occupancy - 1))   (λ ≈ 0.4)
 EFF(Z)      = baseEff × gameConfig.zoneEffectivenessMultiplier × crowd
 finalChange = effectBase * EFF(Z) * 0.03 * dt
 ```
+
 Cuando `avgStat < criticalThreshold` se marca **criticalNeed** y se muestra diálogo.
 
 ### 4.3 Resonancia (Vínculo)
+
 Modelo unificado y saturante con cercanía, humor, sinergia y estrés:
+
 ```
 closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))
 
@@ -475,58 +525,66 @@ stress = STRESS_DECAY_PER_SEC * stressCount * (R/100)
 dR/dt  = gain - sep - stress
 R(t+dt)= clamp01(R + dR*dt)
 ```
+
 - homeostasis implícita por saturación (1 - R/100).
 - sinergia: misma actividad social/descanso y misma zona social/confort.
 - estrés: cuenta de stats críticas (hambre/sueño/soledad/energía < 15).
 
 ### 4.4 Costes de Supervivencia
+
 Dinero cae a razón de `LIVING_COST = 2` por minuto.
 Si `money < 20` se activan penalizaciones:
+
 ```
 ∆hunger   = −5 * desperation * minutes
 ∆happiness= −3 * desperation * minutes
 ```
+
 con `desperation = (20-money)/20`.
 
 ---
 
 ## 5. Interacción del Jugador
-| Acción      | Resultado                                                                             |
-|-------------|----------------------------------------------------------------------------------------|
-| **NOURISH** | +happiness, +energy, resonancia con atenuación por repetición y nivel actual           |
-| **FEED**    | +hunger, +happiness, levemente −sleepiness                                             |
-| **PLAY**    | −boredom, +happiness, −energy                                                         |
-| **COMFORT** | −loneliness, +happiness                                                               |
-| **WAKE_UP** | −sleepiness, +energy                                                                  |
-| **LET_SLEEP**| +sleepiness, +energy (si están en zona de descanso)                                   |
+
+| Acción        | Resultado                                                                    |
+| ------------- | ---------------------------------------------------------------------------- |
+| **NOURISH**   | +happiness, +energy, resonancia con atenuación por repetición y nivel actual |
+| **FEED**      | +hunger, +happiness, levemente −sleepiness                                   |
+| **PLAY**      | −boredom, +happiness, −energy                                                |
+| **COMFORT**   | −loneliness, +happiness                                                      |
+| **WAKE_UP**   | −sleepiness, +energy                                                         |
+| **LET_SLEEP** | +sleepiness, +energy (si están en zona de descanso)                          |
 
 Acciones invocan `applyInteractionEffect` (ver `utils/interactions.ts`).
 
 ---
 
 ## 6. Configuración & Variables de Entorno
-| Clave                          | Descripción                                       | Defecto |
-|--------------------------------|---------------------------------------------------|---------|
-| `VITE_GAME_SPEED_MULTIPLIER`   | Acelera todo el juego                             | `1.0`   |
-| `VITE_BASE_DECAY_MULTIPLIER`   | Escala global de decaimiento de stats             | `2.5`   |
-| `VITE_ZONE_EFFECTIVENESS_MULTIPLIER` | Escala global de zonas                    | `1.2`   |
-| `VITE_AI_PERSONALITY_INFLUENCE`| Peso de la personalidad en IA                     | `0.3`   |
-| `VITE_AI_SOFTMAX_TAU`          | Temperatura del softmax en selección de actividad | `0.9`   |
-| `VITE_ACTIVITY_INERTIA_BONUS`  | Aumenta persistencia en actividad                 | `15.0`  |
-| `VITE_MOOD_INFLUENCE_STRENGTH` | Cuánto afecta el humor a decisiones               | `0.5`   |
+
+| Clave                                | Descripción                                       | Defecto |
+| ------------------------------------ | ------------------------------------------------- | ------- |
+| `VITE_GAME_SPEED_MULTIPLIER`         | Acelera todo el juego                             | `1.0`   |
+| `VITE_BASE_DECAY_MULTIPLIER`         | Escala global de decaimiento de stats             | `2.5`   |
+| `VITE_ZONE_EFFECTIVENESS_MULTIPLIER` | Escala global de zonas                            | `1.2`   |
+| `VITE_AI_PERSONALITY_INFLUENCE`      | Peso de la personalidad en IA                     | `0.3`   |
+| `VITE_AI_SOFTMAX_TAU`                | Temperatura del softmax en selección de actividad | `0.9`   |
+| `VITE_ACTIVITY_INERTIA_BONUS`        | Aumenta persistencia en actividad                 | `15.0`  |
+| `VITE_MOOD_INFLUENCE_STRENGTH`       | Cuánto afecta el humor a decisiones               | `0.5`   |
 
 `window.setGameSpeed(n)` modifica `gameConfig.gameSpeedMultiplier` en caliente.
 
 ---
 
 ## 7. Logs & Debug
+
 Sistema central `utils/logger.ts` con **sistemas**:
 `autopoiesis, movement, zones, ai, render, storage, general`.
 
-- Solo `warn/error` se registran en producción.  
+- Solo `warn/error` se registran en producción.
 - En modo debug (`VITE_DEBUG_MODE=true`) se muestran grupos colapsables en la consola.
 
 ### Ejemplo
+
 ```ts
 logZones.debug('Zone effects', { entity: id, effects, eff });
 ```
@@ -534,6 +592,7 @@ logZones.debug('Zone effects', { entity: id, effects, eff });
 ---
 
 ## 8. Flujo de Persistencia
+
 1. Cada `20 ticks` ⇒ `saveGameState` → localStorage (`~4 KB`).
 2. Al montar la app ⇒ `loadGameState` y validación estricta (`utils/storage.ts`).
 3. Migración pendiente si cambia `CURRENT_VERSION`.
@@ -541,8 +600,9 @@ logZones.debug('Zone effects', { entity: id, effects, eff });
 ---
 
 ## 9. Road-map Sugerido
-- ✏️ Modo *sandbox* configurable (crear zonas desde UI).  
-- 📊 Exportar CSV de métricas para análisis.  
+
+- ✏️ Modo _sandbox_ configurable (crear zonas desde UI).
+- 📊 Exportar CSV de métricas para análisis.
 - 🎧 Audio reactivo a la resonancia.
 
 ---

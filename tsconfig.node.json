@@ -6,7 +6,6 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
@@ -16,7 +15,6 @@
     "paths": {
       "@/*": ["src/*"]
     },
-
 
     "strict": true,
     "noUnusedLocals": true,

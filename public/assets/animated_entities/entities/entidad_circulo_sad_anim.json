@@ -1,10 +1,7 @@
 {
   "name": "floating",
   "frame_count": 16,
-  "frame_size": [
-    32,
-    34
-  ],
+  "frame_size": [32, 34],
   "columns": 8,
   "rows": 2,
   "total_duration": 1600,

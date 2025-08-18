@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-
 // Exponer temporizadores reales (sobrescribibles) para permitir spy/mocks finos.
 Object.defineProperty(global, 'setInterval', {
   value: setInterval,
@@ -26,7 +25,6 @@ Object.defineProperty(global, 'clearTimeout', {
   writable: true
 });
 
-
 // Mock de `window` mínimo viable para componentes que leen propiedades comunes.
 const mockWindow = {
   setInterval: setInterval,
@@ -42,12 +40,10 @@ const mockWindow = {
   }
 };
 
-
 Object.defineProperty(globalThis, 'window', {
   value: mockWindow,
   writable: true
 });
-
 
 // Shim de `performance.now()` para cronometría en tests deterministas.
 Object.defineProperty(global, 'performance', {

@@ -2,9 +2,9 @@
 
 /**
  * 🔍 ANALIZADOR AVANZADO DE CÓDIGO NO UTILIZADO v2.0
- * 
+ *
  * Script mejorado que combina múltiples técnicas para detectar código realmente no utilizado:
- * 
+ *
  * 1) ts-prune: Detecta exports no referenciados en el grafo TypeScript
  * 2) Análisis AST: Parsea imports/exports reales usando regex avanzado
  * 3) Verificación cruzada: Valida uso real en todos los archivos fuente
@@ -13,7 +13,7 @@
  *
  * Mejoras vs versión anterior:
  * - Detecta re-exports (export { X } from './module')
- * - Analiza import destructuring ({ X, Y } from 'module')  
+ * - Analiza import destructuring ({ X, Y } from 'module')
  * - Maneja importaciones dinámicas (import('./module'))
  * - Detecta uso en strings de template y JSX
  * - Valida contra falsos positivos comunes
@@ -39,13 +39,13 @@ class AdvancedUsageAnalyzer {
     this.sourceFiles = this.getAllSourceFiles();
     this.exports = new Map(); // file -> [exports]
     this.imports = new Map(); // file -> [imports]
-    this.usages = new Map();  // exportName -> [usageLocations]
+    this.usages = new Map(); // exportName -> [usageLocations]
     this.reExports = new Map(); // re-export mappings
   }
 
   getAllSourceFiles() {
     const files = [];
-    const scan = (dir) => {
+    const scan = dir => {
       if (!fs.existsSync(dir)) return;
       const items = fs.readdirSync(dir);
       for (const item of items) {
@@ -53,7 +53,11 @@ class AdvancedUsageAnalyzer {
         const stat = fs.statSync(fullPath);
         if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
           scan(fullPath);
-        } else if (item.match(/\.(ts|tsx|js|jsx)$/) && !item.includes('.test.') && !item.includes('.spec.')) {
+        } else if (
+          item.match(/\.(ts|tsx|js|jsx)$/) &&
+          !item.includes('.test.') &&
+          !item.includes('.spec.')
+        ) {
           files.push(fullPath);
         }
       }
@@ -79,7 +83,7 @@ class AdvancedUsageAnalyzer {
       /export\s+const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
       // export function X() {...}
       /export\s+function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
-      // export class X {...}  
+      // export class X {...}
       /export\s+class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
       // export interface X {...}
       /export\s+interface\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
@@ -100,22 +104,27 @@ class AdvancedUsageAnalyzer {
           // Handle destructured exports: export { X, Y, Z as W }
           const exportList = match[1];
           const moduleSpecifier = match[2]; // For re-exports
-          
-          const items = exportList.split(',').map(item => {
-            const cleaned = item.trim();
-            // Handle "X as Y" -> export name is Y, imported is X
-            const asMatch = cleaned.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+as\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
-            const exportName = asMatch ? asMatch[2] : cleaned;
-            const importedName = asMatch ? asMatch[1] : cleaned;
-            
-            if (moduleSpecifier) {
-              // This is a re-export, track the mapping
-              this.trackReExport(filePath, exportName, importedName, moduleSpecifier);
-            }
-            
-            return exportName;
-          }).filter(item => item.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/));
-          
+
+          const items = exportList
+            .split(',')
+            .map(item => {
+              const cleaned = item.trim();
+              // Handle "X as Y" -> export name is Y, imported is X
+              const asMatch = cleaned.match(
+                /^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+as\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/
+              );
+              const exportName = asMatch ? asMatch[2] : cleaned;
+              const importedName = asMatch ? asMatch[1] : cleaned;
+
+              if (moduleSpecifier) {
+                // This is a re-export, track the mapping
+                this.trackReExport(filePath, exportName, importedName, moduleSpecifier);
+              }
+
+              return exportName;
+            })
+            .filter(item => item.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/));
+
           items.forEach(item => exports.add(item));
         } else {
           exports.add(match[1]);
@@ -182,12 +191,19 @@ class AdvancedUsageAnalyzer {
         if (pattern.source.includes('{')) {
           // Destructured import
           const importList = match[1];
-          const items = importList.split(',').map(item => {
-            const cleaned = item.trim();
-            const asMatch = cleaned.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+as\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
-            return asMatch ? { imported: asMatch[1], local: asMatch[2] } : { imported: cleaned, local: cleaned };
-          }).filter(item => item.imported.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/));
-          
+          const items = importList
+            .split(',')
+            .map(item => {
+              const cleaned = item.trim();
+              const asMatch = cleaned.match(
+                /^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+as\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/
+              );
+              return asMatch
+                ? { imported: asMatch[1], local: asMatch[2] }
+                : { imported: cleaned, local: cleaned };
+            })
+            .filter(item => item.imported.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/));
+
           items.forEach(item => {
             imports.add(`${item.imported}:${moduleSpecifier}`);
             usage.add(item.local);
@@ -203,7 +219,7 @@ class AdvancedUsageAnalyzer {
     const usagePatterns = [
       // Constantes/Variables en mayúsculas
       /\b([A-Z_][A-Z0-9_]*)\b/g,
-      // Funciones/clases mixtas  
+      // Funciones/clases mixtas
       /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*[\(\.<]/g,
       // En template literals
       /\$\{[^}]*\b([a-zA-Z_$][a-zA-Z0-9_$]*)\b[^}]*\}/g,
@@ -217,7 +233,8 @@ class AdvancedUsageAnalyzer {
       let usageMatch;
       while ((usageMatch = pattern.exec(content)) !== null) {
         const identifier = usageMatch[1];
-        if (identifier && identifier.length > 1) { // Filter out single letters
+        if (identifier && identifier.length > 1) {
+          // Filter out single letters
           usage.add(identifier);
         }
       }
@@ -233,7 +250,7 @@ class AdvancedUsageAnalyzer {
    */
   analyzeAll() {
     console.log('📊 Construyendo mapa de dependencias...');
-    
+
     // Primera pasada: extraer todos los exports
     this.sourceFiles.forEach(file => {
       const exports = this.extractExports(file);
@@ -244,7 +261,7 @@ class AdvancedUsageAnalyzer {
     this.sourceFiles.forEach(file => {
       const { imports, usage } = this.extractImportsAndUsage(file);
       this.imports.set(file, imports);
-      
+
       // Mapear usage a exports
       usage.forEach(usedIdentifier => {
         if (!this.usages.has(usedIdentifier)) {
@@ -262,20 +279,20 @@ class AdvancedUsageAnalyzer {
    */
   findUnusedExports() {
     const unused = [];
-    
+
     for (const [file, exports] of this.exports) {
       exports.forEach(exportName => {
         const usageLocations = this.usages.get(exportName) || [];
-        
+
         // Filtrar auto-referencias (el archivo que lo exporta)
         const externalUsages = usageLocations.filter(usageFile => usageFile !== file);
-        
+
         // Verificar si es un re-export (estos son generalmente seguros)
         const isReExport = this.reExports.has(exportName);
-        
+
         // Verificar patrones comunes de uso indirecto
         const hasIndirectUsage = this.checkIndirectUsage(exportName, file);
-        
+
         if (externalUsages.length === 0 && !isReExport && !hasIndirectUsage) {
           unused.push({
             file: path.relative(process.cwd(), file),
@@ -286,7 +303,7 @@ class AdvancedUsageAnalyzer {
         }
       });
     }
-    
+
     return unused.sort((a, b) => b.confidence - a.confidence);
   }
 
@@ -295,10 +312,10 @@ class AdvancedUsageAnalyzer {
    */
   checkIndirectUsage(exportName, file) {
     // Verificar si es usado en archivos de configuración o tests
-    const configFiles = this.sourceFiles.filter(f => 
-      f.includes('config') || f.includes('.test.') || f.includes('.spec.')
+    const configFiles = this.sourceFiles.filter(
+      f => f.includes('config') || f.includes('.test.') || f.includes('.spec.')
     );
-    
+
     return configFiles.some(configFile => {
       try {
         const content = fs.readFileSync(configFile, 'utf8');
@@ -314,28 +331,28 @@ class AdvancedUsageAnalyzer {
    */
   calculateConfidence(exportName, file) {
     let confidence = 100;
-    
+
     // Reducir confianza para exports que parecen APIs públicas
     if (exportName.match(/^[A-Z]/) && !exportName.includes('_')) {
       confidence -= 20; // Clases/Componentes
     }
-    
+
     // Reducir confianza para constantes en mayúsculas
     if (exportName.match(/^[A-Z_]+$/)) {
       confidence -= 30; // Constantes globales
     }
-    
+
     // Aumentar confianza para tipos
     const type = this.classifyExport(file, exportName);
     if (['type', 'interface'].includes(type)) {
       confidence += 10;
     }
-    
+
     // Reducir confianza si está en archivos "principales"
     if (file.includes('index.') || file.includes('constants') || file.includes('config')) {
       confidence -= 25;
     }
-    
+
     return Math.max(0, Math.min(100, confidence));
   }
 
@@ -344,14 +361,14 @@ class AdvancedUsageAnalyzer {
    */
   classifyExport(file, exportName) {
     const content = fs.readFileSync(file, 'utf8');
-    
+
     if (content.match(new RegExp(`export\\s+type\\s+${exportName}\\b`))) return 'type';
     if (content.match(new RegExp(`export\\s+interface\\s+${exportName}\\b`))) return 'interface';
     if (content.match(new RegExp(`export\\s+enum\\s+${exportName}\\b`))) return 'enum';
     if (content.match(new RegExp(`export\\s+class\\s+${exportName}\\b`))) return 'class';
     if (content.match(new RegExp(`export\\s+function\\s+${exportName}\\b`))) return 'function';
     if (content.match(new RegExp(`export\\s+const\\s+${exportName}\\b`))) return 'const';
-    
+
     return 'unknown';
   }
 }
@@ -391,55 +408,66 @@ if (unusedExports.length === 0) {
   console.log('✅ No se encontraron exports realmente no utilizados');
 } else {
   console.log(`⚠️ Encontrados ${unusedExports.length} exports potencialmente no utilizados:`);
-  
+
   // Separar por nivel de confianza
   const highConfidence = unusedExports.filter(exp => exp.confidence >= 80);
   const mediumConfidence = unusedExports.filter(exp => exp.confidence >= 50 && exp.confidence < 80);
   const lowConfidence = unusedExports.filter(exp => exp.confidence < 50);
-  
+
   if (highConfidence.length > 0) {
     console.log('\n🟢 ALTA CONFIANZA (seguro eliminar):');
     highConfidence.forEach(exp => {
-      const tsPruneConfirms = tsPruneUnused.some(tsu => 
-        tsu.file.endsWith(exp.file) && tsu.export === exp.export
+      const tsPruneConfirms = tsPruneUnused.some(
+        tsu => tsu.file.endsWith(exp.file) && tsu.export === exp.export
       );
       const confirmIcon = tsPruneConfirms ? '✓' : '○';
-      console.log(`   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`);
+      console.log(
+        `   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`
+      );
     });
   }
-  
+
   if (mediumConfidence.length > 0) {
     console.log('\n🟡 CONFIANZA MEDIA (revisar cuidadosamente):');
     mediumConfidence.forEach(exp => {
-      const tsPruneConfirms = tsPruneUnused.some(tsu => 
-        tsu.file.endsWith(exp.file) && tsu.export === exp.export
+      const tsPruneConfirms = tsPruneUnused.some(
+        tsu => tsu.file.endsWith(exp.file) && tsu.export === exp.export
       );
       const confirmIcon = tsPruneConfirms ? '✓' : '○';
-      console.log(`   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`);
+      console.log(
+        `   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`
+      );
     });
   }
-  
+
   if (lowConfidence.length > 0) {
     console.log('\n🔴 BAJA CONFIANZA (NO eliminar sin verificación manual):');
     lowConfidence.forEach(exp => {
-      const tsPruneConfirms = tsPruneUnused.some(tsu => 
-        tsu.file.endsWith(exp.file) && tsu.export === exp.export
+      const tsPruneConfirms = tsPruneUnused.some(
+        tsu => tsu.file.endsWith(exp.file) && tsu.export === exp.export
       );
       const confirmIcon = tsPruneConfirms ? '✓' : '○';
-      console.log(`   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`);
+      console.log(
+        `   ${getSafetyIcon(exp.type)} ${exp.export} (${exp.type}) - ${exp.file} ${confirmIcon} ${exp.confidence}%`
+      );
     });
   }
 }
 
 function getSafetyIcon(type) {
-  switch(type) {
+  switch (type) {
     case 'type':
-    case 'interface': return '🔸';
-    case 'enum': return '🔹';
+    case 'interface':
+      return '🔸';
+    case 'enum':
+      return '🔹';
     case 'function':
-    case 'class': return '🔶';
-    case 'const': return '🟦';
-    default: return '❓';
+    case 'class':
+      return '🔶';
+    case 'const':
+      return '🟦';
+    default:
+      return '❓';
   }
 }
 
@@ -452,7 +480,7 @@ console.log(`   Potencialmente no utilizados: ${unusedExports.length}`);
 
 console.log('\n🔑 LEYENDA:');
 console.log('   🔸 Tipos/Interfaces - Generalmente seguros');
-console.log('   🔹 Enums - Revisar uso en strings/configs');  
+console.log('   🔹 Enums - Revisar uso en strings/configs');
 console.log('   🔶 Funciones/Clases - Verificar uso dinámico');
 console.log('   🟦 Constantes - Pueden usarse indirectamente');
 console.log('   ✓ Confirmado por ts-prune | ○ Solo análisis avanzado');

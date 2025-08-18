@@ -317,7 +317,7 @@ export const getAttractionTarget = (
 
 /**
  * 🚀 NUEVA FUNCIÓN PRINCIPAL DE GENERACIÓN DE MAPAS
- * 
+ *
  * Utiliza el sistema unificado con assets mejorados
  */
 export async function generateEnhancedMap(
@@ -334,7 +334,9 @@ export async function generateEnhancedMap(
       preloadAssets: true
     });
 
-    console.log(`✅ Mapa generado exitosamente con ${result.zones.length} zonas y ${result.mapElements.length} elementos`);
+    console.log(
+      `✅ Mapa generado exitosamente con ${result.zones.length} zonas y ${result.mapElements.length} elementos`
+    );
     console.log('📊 Stats de assets:', result.assetStats);
 
     return {

@@ -1,6 +1,6 @@
 /**
  * 🎬 SISTEMA AVANZADO DE ANIMACIONES Y SPRITES
- * 
+ *
  * Sistema centralizado que:
  * 1. Carga automáticamente sprites por carpeta
  * 2. Gestiona animaciones con metadatos JSON
@@ -78,17 +78,23 @@ export interface SpriteAnimationManager {
   // Carga de assets
   loadAnimation(id: string, folder?: string): Promise<LoadedAnimation>;
   loadSprite(id: string, folder?: string): Promise<LoadedSprite>;
-  loadAssetsByFolder(folderName: string): Promise<{ animations: LoadedAnimation[], sprites: LoadedSprite[] }>;
-  
+  loadAssetsByFolder(
+    folderName: string
+  ): Promise<{ animations: LoadedAnimation[]; sprites: LoadedSprite[] }>;
+
   // Gestión de animaciones
   createAnimationState(animationId: string, autoPlay?: boolean): AnimationState;
-  updateAnimationState(state: AnimationState, deltaTime: number, animation: LoadedAnimation): AnimationState;
-  
+  updateAnimationState(
+    state: AnimationState,
+    deltaTime: number,
+    animation: LoadedAnimation
+  ): AnimationState;
+
   // Utilidades
   getAvailableAnimations(entityType?: string): string[];
   getAvailableSprites(folder?: string): string[];
   preloadEntityAssets(entityType: string): Promise<void>;
-  
+
   // Estadísticas y debug
   getLoadedAssets(): { animations: number; sprites: number };
   getCacheStats(): { hits: number; misses: number; size: number };
@@ -98,11 +104,11 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
   private loadedAnimations = new Map<string, LoadedAnimation>();
   private loadedSprites = new Map<string, LoadedSprite>();
   private loadingPromises = new Map<string, Promise<LoadedAnimation | LoadedSprite>>();
-  
+
   // Cache y estadísticas
   private cacheHits = 0;
   private cacheMisses = 0;
-  
+
   // Manifest de assets (se carga dinámicamente)
   private assetManifest: Record<string, AssetFolder> | null = null;
 
@@ -115,16 +121,22 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       // Cargar el manifest generado dinámicamente
       const manifestModule = await import('../generated/asset-manifest');
       this.assetManifest = manifestModule.ASSET_MANIFEST;
-      console.log('✅ Asset manifest cargado:', Object.keys(this.assetManifest || {}).length, 'carpetas');
+      console.log(
+        '✅ Asset manifest cargado:',
+        Object.keys(this.assetManifest || {}).length,
+        'carpetas'
+      );
     } catch {
-      console.warn('⚠️ No se pudo cargar el asset manifest. Ejecuta npm run sprite-loader primero.');
+      console.warn(
+        '⚠️ No se pudo cargar el asset manifest. Ejecuta npm run sprite-loader primero.'
+      );
       this.assetManifest = {};
     }
   }
 
   async loadAnimation(id: string, folder?: string): Promise<LoadedAnimation> {
     const cacheKey = folder ? `${folder}/${id}` : id;
-    
+
     // Verificar cache
     if (this.loadedAnimations.has(cacheKey)) {
       this.cacheHits++;
@@ -161,7 +173,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
 
   async loadSprite(id: string, folder?: string): Promise<LoadedSprite> {
     const cacheKey = folder ? `${folder}/${id}` : id;
-    
+
     // Verificar cache
     if (this.loadedSprites.has(cacheKey)) {
       this.cacheHits++;
@@ -196,7 +208,9 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     }
   }
 
-  async loadAssetsByFolder(folderName: string): Promise<{ animations: LoadedAnimation[], sprites: LoadedSprite[] }> {
+  async loadAssetsByFolder(
+    folderName: string
+  ): Promise<{ animations: LoadedAnimation[]; sprites: LoadedSprite[] }> {
     if (!this.assetManifest) {
       await this.loadAssetManifest();
     }
@@ -207,11 +221,11 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     }
 
     // Cargar todas las animaciones y sprites en paralelo
-    const animationPromises = folder.animations.map((anim: AnimationAsset) => 
+    const animationPromises = folder.animations.map((anim: AnimationAsset) =>
       this.loadAnimation(anim.id, folderName)
     );
-    
-    const spritePromises = folder.staticSprites.map((sprite: StaticSpriteAsset) => 
+
+    const spritePromises = folder.staticSprites.map((sprite: StaticSpriteAsset) =>
       this.loadSprite(sprite.id, folderName)
     );
 
@@ -222,11 +236,15 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
 
     // Filtrar solo los exitosos y loggar errores
     const successfulAnimations = animations
-      .filter((result): result is PromiseFulfilledResult<LoadedAnimation> => result.status === 'fulfilled')
+      .filter(
+        (result): result is PromiseFulfilledResult<LoadedAnimation> => result.status === 'fulfilled'
+      )
       .map((result: PromiseFulfilledResult<LoadedAnimation>) => result.value);
 
     const successfulSprites = sprites
-      .filter((result): result is PromiseFulfilledResult<LoadedSprite> => result.status === 'fulfilled')
+      .filter(
+        (result): result is PromiseFulfilledResult<LoadedSprite> => result.status === 'fulfilled'
+      )
       .map((result: PromiseFulfilledResult<LoadedSprite>) => result.value);
 
     // Loggar errores si los hay
@@ -258,8 +276,8 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
   }
 
   updateAnimationState(
-    state: AnimationState, 
-    deltaTime: number, 
+    state: AnimationState,
+    deltaTime: number,
     animation: LoadedAnimation
   ): AnimationState {
     if (!state.isPlaying || animation.frames.length === 0) {
@@ -268,12 +286,16 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
 
     const newElapsedTime = state.elapsedTime + deltaTime;
     const currentFrame = animation.frames[state.currentFrame];
-    
+
     if (newElapsedTime >= currentFrame.duration) {
       const nextFrameIndex = (state.currentFrame + 1) % animation.frames.length;
-      
+
       // Verificar si hemos completado la animación (y no está en loop)
-      if (!state.loop && nextFrameIndex === 0 && state.currentFrame === animation.frames.length - 1) {
+      if (
+        !state.loop &&
+        nextFrameIndex === 0 &&
+        state.currentFrame === animation.frames.length - 1
+      ) {
         state.onComplete?.();
         return {
           ...state,
@@ -298,14 +320,14 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     if (!this.assetManifest) return [];
 
     const animations: string[] = [];
-    
+
     Object.values(this.assetManifest).forEach(folder => {
       folder.animations.forEach((anim: AnimationAsset) => {
         if (!entityType || anim.id.includes(entityType) || anim.name.includes(entityType)) {
           animations.push(anim.id);
         }
       });
-      
+
       // Buscar en subcarpetas
       if (folder.subfolders) {
         Object.values(folder.subfolders).forEach((subfolder: AssetFolder) => {
@@ -332,7 +354,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     const sprites: string[] = [];
     Object.values(this.assetManifest).forEach(folderData => {
       sprites.push(...folderData.staticSprites.map((s: StaticSpriteAsset) => s.id));
-      
+
       if (folderData.subfolders) {
         Object.values(folderData.subfolders).forEach((subfolder: AssetFolder) => {
           sprites.push(...subfolder.staticSprites.map((s: StaticSpriteAsset) => s.id));
@@ -345,8 +367,8 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
 
   async preloadEntityAssets(entityType: string): Promise<void> {
     const animationIds = this.getAvailableAnimations(entityType);
-    
-    const promises = animationIds.map(async (id) => {
+
+    const promises = animationIds.map(async id => {
       try {
         await this.loadAnimation(id);
       } catch (error) {
@@ -383,7 +405,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       if (folderData) {
         const found = folderData.animations.find(anim => anim.id === id);
         if (found) return found;
-        
+
         // Buscar en subcarpetas
         if (folderData.subfolders) {
           for (const subfolder of Object.values(folderData.subfolders)) {
@@ -397,7 +419,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       for (const folderData of Object.values(this.assetManifest)) {
         const found = folderData.animations.find(anim => anim.id === id);
         if (found) return found;
-        
+
         if (folderData.subfolders) {
           for (const subfolder of Object.values(folderData.subfolders)) {
             const found = subfolder.animations.find(anim => anim.id === id);
@@ -418,7 +440,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       if (folderData) {
         const found = folderData.staticSprites.find(sprite => sprite.id === id);
         if (found) return found;
-        
+
         // Buscar en subcarpetas
         if (folderData.subfolders) {
           for (const subfolder of Object.values(folderData.subfolders)) {
@@ -432,7 +454,7 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
       for (const folderData of Object.values(this.assetManifest)) {
         const found = folderData.staticSprites.find(sprite => sprite.id === id);
         if (found) return found;
-        
+
         if (folderData.subfolders) {
           for (const subfolder of Object.values(folderData.subfolders)) {
             const found = subfolder.staticSprites.find(sprite => sprite.id === id);
@@ -450,7 +472,8 @@ class AdvancedSpriteAnimationManager implements SpriteAnimationManager {
     const image = new Image();
     const imagePromise = new Promise<HTMLImageElement>((resolve, reject) => {
       image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error(`Failed to load animation sprite: ${asset.spritePath}`));
+      image.onerror = () =>
+        reject(new Error(`Failed to load animation sprite: ${asset.spritePath}`));
       image.src = `/assets/${asset.spritePath}`;
     });
 
@@ -517,7 +540,8 @@ export function useSpriteAnimation(animationId: string, folder?: string, autoPla
   React.useEffect(() => {
     let mounted = true;
 
-    spriteAnimationManager.loadAnimation(animationId, folder)
+    spriteAnimationManager
+      .loadAnimation(animationId, folder)
       .then(loadedAnimation => {
         if (mounted) {
           setAnimation(loadedAnimation);
@@ -566,15 +590,15 @@ export function useSpriteAnimation(animationId: string, folder?: string, autoPla
   }, [animation, state?.isPlaying]);
 
   const play = React.useCallback(() => {
-    setState(prev => prev ? { ...prev, isPlaying: true } : null);
+    setState(prev => (prev ? { ...prev, isPlaying: true } : null));
   }, []);
 
   const pause = React.useCallback(() => {
-    setState(prev => prev ? { ...prev, isPlaying: false } : null);
+    setState(prev => (prev ? { ...prev, isPlaying: false } : null));
   }, []);
 
   const reset = React.useCallback(() => {
-    setState(prev => prev ? { ...prev, currentFrame: 0, elapsedTime: 0 } : null);
+    setState(prev => (prev ? { ...prev, currentFrame: 0, elapsedTime: 0 } : null));
   }, []);
 
   const getCurrentFrame = React.useCallback(() => {

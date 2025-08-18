@@ -49,7 +49,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   const { gameState } = useGame();
   const { shouldRender } = useRenderer();
   const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
-  const {} = useAnimationSystem();
+  useAnimationSystem();
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -73,7 +73,12 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
         // Cargar assets dinámicos por carpetas actualizadas
         await assetManager.preloadEssentialAssetsByFolders([
-          'terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects', 'ui_icons'
+          'terrain_tiles',
+          'structures',
+          'natural_elements',
+          'water',
+          'environmental_objects',
+          'ui_icons'
         ]);
         setLoadingProgress(60);
 
@@ -82,7 +87,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           assetManager.loadAssetsByCategory('TERRAIN_TILES'),
           assetManager.loadAssetsByCategory('STRUCTURES'),
           assetManager.loadAssetsByCategory('NATURAL_ELEMENTS'),
-          assetManager.loadAssetsByCategory('INFRASTRUCTURE'),
           assetManager.loadAssetsByCategory('WATER')
         ]);
         setLoadingProgress(80);
@@ -193,12 +197,10 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
             assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'obstacle':
-          asset =
-            assetManager.getRandomAssetByType('natural_elements', 'trees');
+          asset = assetManager.getRandomAssetByType('natural_elements', 'trees');
           break;
         default:
-          asset =
-            assetManager.getRandomAssetByType('natural_elements', 'trees');
+          asset = assetManager.getRandomAssetByType('natural_elements', 'trees');
       }
 
       if (asset) {
@@ -340,15 +342,9 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
         // Para senderos y detalles, dibujar formas suaves con el color definido
         const metadata = obj.metadata as Record<string, unknown> | undefined;
-        const isPath = Boolean(
-          metadata && 
-          typeof metadata.isPath === 'boolean' && 
-          metadata.isPath
-        );
+        const isPath = Boolean(metadata && typeof metadata.isPath === 'boolean' && metadata.isPath);
         const isDetail = Boolean(
-          metadata && 
-          typeof metadata.isDetail === 'boolean' && 
-          metadata.isDetail
+          metadata && typeof metadata.isDetail === 'boolean' && metadata.isDetail
         );
 
         ctx.save();
@@ -371,7 +367,13 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         } else if (isDetail || obj.type === 'decoration') {
           // Detalle/Decoración: pequeñas motas/hojas/piedritas
           ctx.beginPath();
-          ctx.arc(obj.position.x, obj.position.y, Math.max(1.5, obj.size.width / 4), 0, 2 * Math.PI);
+          ctx.arc(
+            obj.position.x,
+            obj.position.y,
+            Math.max(1.5, obj.size.width / 4),
+            0,
+            2 * Math.PI
+          );
           ctx.fill();
         }
 
@@ -507,16 +509,18 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       />
 
       {/* Entidades animadas renderizadas como overlay */}
-      {assetsLoaded && gameState.entities && gameState.entities.map((entity: Entity) => (
-        <AnimatedEntity
-          key={entity.id}
-          entity={entity}
-          size={48} // Tamaño más grande para mejor visibilidad de las animaciones
-          showMoodIndicator={true}
-          showActivityIndicator={true}
-          onClick={() => onEntityClick?.(entity)}
-        />
-      ))}
+      {assetsLoaded &&
+        gameState.entities &&
+        gameState.entities.map((entity: Entity) => (
+          <AnimatedEntity
+            key={entity.id}
+            entity={entity}
+            size={48} // Tamaño más grande para mejor visibilidad de las animaciones
+            showMoodIndicator={true}
+            showActivityIndicator={true}
+            onClick={() => onEntityClick?.(entity)}
+          />
+        ))}
 
       {/* Loading indicator */}
       {!assetsLoaded && (
@@ -572,7 +576,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
             border: '1px solid #8B4513'
           }}
         >
-          🎨 Assets: {assetManager.getStats().totalLoaded} | 🎬 Animaciones: {spriteAnimationManager.getLoadedAssets().animations} | Objetos: {gameObjects.length}
+          🎨 Assets: {assetManager.getStats().totalLoaded} | 🎬 Animaciones:{' '}
+          {spriteAnimationManager.getLoadedAssets().animations} | Objetos: {gameObjects.length}
         </div>
       )}
 

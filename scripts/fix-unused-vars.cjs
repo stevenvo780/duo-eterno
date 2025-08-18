@@ -16,7 +16,6 @@ const path = require('path');
 
 console.log('🔧 Arreglando variables no utilizadas...');
 
-
 /**
  * Lista de correcciones a aplicar.
  * @typedef {{ line: number, old: string, new: string }} VarRename
@@ -36,9 +35,7 @@ const fixes = [
   },
   {
     file: 'src/components/DialogBubble.tsx',
-    vars: [
-      { line: 53, old: 'emotionModifiers', new: '_emotionModifiers' }
-    ]
+    vars: [{ line: 53, old: 'emotionModifiers', new: '_emotionModifiers' }]
   }
 ];
 
@@ -58,7 +55,7 @@ const fixes = [
  */
 function fixFile(filePath, vars) {
   const fullPath = path.join(process.cwd(), filePath);
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`⚠️  Archivo no encontrado: ${filePath}`);
     return;
@@ -66,21 +63,16 @@ function fixFile(filePath, vars) {
 
   let content = fs.readFileSync(fullPath, 'utf8');
   const lines = content.split('\n');
-  
 
   const sortedVars = vars.sort((a, b) => b.line - a.line);
-  
+
   for (const varInfo of sortedVars) {
     const lineIndex = varInfo.line - 1;
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const oldLine = lines[lineIndex];
-      
 
-      const newLine = oldLine.replace(
-        new RegExp(`\\b${varInfo.old}\\b`), 
-        varInfo.new
-      );
-      
+      const newLine = oldLine.replace(new RegExp(`\\b${varInfo.old}\\b`), varInfo.new);
+
       if (oldLine !== newLine) {
         lines[lineIndex] = newLine;
         console.log(`✅ ${filePath}:${varInfo.line} - ${varInfo.old} → ${varInfo.new}`);
@@ -89,14 +81,13 @@ function fixFile(filePath, vars) {
       }
     }
   }
-  
+
   const newContent = lines.join('\n');
   if (content !== newContent) {
     fs.writeFileSync(fullPath, newContent, 'utf8');
     console.log(`📝 Archivo actualizado: ${filePath}`);
   }
 }
-
 
 for (const fix of fixes) {
   fixFile(fix.file, fix.vars);

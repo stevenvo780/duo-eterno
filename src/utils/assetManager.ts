@@ -12,7 +12,7 @@ import { spriteAnimationManager } from './spriteAnimationManager';
 export interface Asset {
   id: string;
   name: string;
-  category: 'terrain_tiles' | 'structures' | 'furniture_objects' | 'natural_elements' | 'infrastructure' | 'water' | 'environmental_objects' | 'animated_entities' | 'ui_icons' | 'consumable_items' | 'dialogs';
+  category: 'terrain_tiles' | 'structures' | 'building' | 'furniture_objects' | 'natural_elements' | 'infrastructure' | 'water' | 'environmental_objects' | 'animated_entities' | 'ui_icons' | 'consumable_items' | 'dialogs';
   subtype?: string;
   image: HTMLImageElement;
   size: number;
@@ -26,7 +26,8 @@ export interface AssetCategory {
 // Mapeo de categorías dinámicas a tipos estáticos
 const DYNAMIC_CATEGORY_MAPPING = {
   'terrain_tiles': 'terrain_tiles',
-  'structures': 'structures', 
+  'structures': 'structures',
+  'building': 'building',
   'natural_elements': 'natural_elements',
   'infrastructure': 'infrastructure',
   'water': 'water',
@@ -316,6 +317,7 @@ export class AssetManager {
       const categoryToFolder: Record<string, string> = {
         'terrain_tiles': 'terrain_tiles',
         'structures': 'structures',
+        'building': 'building',
         'furniture_objects': 'furniture_objects',
         'natural_elements': 'natural_elements',
         'infrastructure': 'infrastructure',
@@ -461,9 +463,15 @@ export class AssetManager {
       return 'terrain_tiles';
     }
     
+    // Building assets (from building folder)
+    if (id === 'muros1' || id === 'muros2' || id === 'muros3' || id === 'muro' || 
+        id === 'vidrio' || id === 'piso' || /^\d+$/.test(id)) {
+      return 'building';
+    }
+    
     // Structures
-    if (id.includes('House') || id.includes('muro') || id.includes('CityWall') || 
-        id === 'vidrio' || id === 'Well_Hay_1' || id === 'Fences') {
+    if (id.includes('House') || id.includes('CityWall') || 
+        id === 'Well_Hay_1' || id === 'Fences') {
       return 'structures';
     }
     

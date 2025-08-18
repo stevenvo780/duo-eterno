@@ -11,7 +11,6 @@
 const fs = require('fs');
 const path = require('path');
 
-
 /**
  * Conjunto canónico de nombres de sprite requeridos.
  * Mantener sincronizado con la UI/escenas que los referencian.
@@ -73,7 +72,7 @@ const SPRITES_DIR = path.join(__dirname, '../public/assets/sprites');
  */
 function checkSprites() {
   console.log('🔍 Verificando sprites requeridos...\n');
-  
+
   if (!fs.existsSync(SPRITES_DIR)) {
     console.error(`❌ Directorio de sprites no encontrado: ${SPRITES_DIR}`);
     console.error('💡 Crea el directorio: mkdir -p public/assets/sprites');
@@ -97,16 +96,18 @@ function checkSprites() {
   console.log(`\n📊 Resumen:`);
   console.log(`✅ Encontrados: ${found.length}/${REQUIRED_SPRITES.length}`);
   console.log(`❌ Faltantes: ${missing.length}/${REQUIRED_SPRITES.length}`);
-  
+
   if (missing.length > 0) {
     console.log(`\n🚨 Sprites faltantes:`);
     missing.forEach(sprite => console.log(`   - ${sprite}.png`));
-    
+
     console.log(`\n💡 Para generar sprites faltantes:`);
     console.log(`   npm run generate-sprites`);
     console.log(`   # o específicos:`);
-    console.log(`   python3 scripts/create-pixel-art.py sprites "${missing.join(',')}" public/assets/sprites`);
-    
+    console.log(
+      `   python3 scripts/create-pixel-art.py sprites "${missing.join(',')}" public/assets/sprites`
+    );
+
     process.exit(1);
   }
 

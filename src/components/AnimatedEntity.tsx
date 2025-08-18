@@ -1,6 +1,6 @@
 /**
  * 🎭 SISTEMA DE ENTIDADES ANIMADAS
- * 
+ *
  * Sistema que gestiona automáticamente las animaciones de entidades
  * basándose en su estado y tipo
  */
@@ -46,7 +46,7 @@ export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
     if (entity.stats?.health !== undefined && entity.stats.health <= 10) {
       return `${entityPrefix}_dying`;
     }
-    
+
     if (entity.mood) {
       switch (entity.mood.toLowerCase()) {
         case 'happy':
@@ -61,7 +61,7 @@ export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
           return `${entityPrefix}_happy`; // default feliz
       }
     }
-    
+
     return `${entityPrefix}_happy`; // default
   }, [entity.mood, entity.stats?.health, entityPrefix]);
 
@@ -77,11 +77,10 @@ export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
   useEffect(() => {
     if (currentAnimation) {
       // Verificar que la animación existe y precargarla
-      spriteAnimationManager.loadAnimation(currentAnimation, 'animations')
-        .catch(() => {
-          console.warn(`Animación no disponible: ${currentAnimation}, usando fallback`);
-          setCurrentAnimation(`${entityPrefix}_happy`);
-        });
+      spriteAnimationManager.loadAnimation(currentAnimation, 'animations').catch(() => {
+        console.warn(`Animación no disponible: ${currentAnimation}, usando fallback`);
+        setCurrentAnimation(`${entityPrefix}_happy`);
+      });
     }
   }, [currentAnimation, entityPrefix]);
 
@@ -180,20 +179,22 @@ export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
       )}
 
       {/* Indicador de estado de ánimo (solo si no hay animación de mood) */}
-      {showMoodIndicator && entity.mood && !currentAnimation.includes(entity.mood.toLowerCase()) && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -4,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            fontSize: '10px',
-            textShadow: '1px 1px 1px rgba(0,0,0,0.5)'
-          }}
-        >
-          {getMoodEmoji(entity.mood)}
-        </div>
-      )}
+      {showMoodIndicator &&
+        entity.mood &&
+        !currentAnimation.includes(entity.mood.toLowerCase()) && (
+          <div
+            style={{
+              position: 'absolute',
+              top: -4,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '10px',
+              textShadow: '1px 1px 1px rgba(0,0,0,0.5)'
+            }}
+          >
+            {getMoodEmoji(entity.mood)}
+          </div>
+        )}
 
       {/* Barra de salud (solo si está baja) */}
       {entity.stats?.health !== undefined && entity.stats.health < 50 && (

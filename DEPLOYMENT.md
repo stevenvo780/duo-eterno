@@ -11,11 +11,13 @@
 ### Método 1: Vercel CLI (Recomendado)
 
 1. **Instalar Vercel CLI**
+
    ```bash
    npm i -g vercel
    ```
 
 2. **Login en Vercel**
+
    ```bash
    vercel login
    ```
@@ -40,16 +42,19 @@
 El archivo `vercel.json` incluido configura automáticamente:
 
 ### 🔧 Build Settings
+
 - Comando de build optimizado para producción
 - Output directory correcto (`dist`)
 - Configuración de SPA para React
 
 ### 🚄 Performance Optimizations
+
 - **Cache Headers**: Assets estáticos cacheados por 1 año
 - **Immutable Assets**: CSS/JS con cache inmutable
 - **Image Optimization**: PNG optimizadas automáticamente
 
 ### 🔄 Routing Configuration
+
 - **SPA Routing**: Todas las rutas redirigen a `index.html`
 - **Asset Serving**: Assets servidos desde `/assets/`
 
@@ -64,16 +69,19 @@ VITE_API_URL="https://api.duo-eterno.com"
 ```
 
 Y agrega las variables en el dashboard de Vercel:
+
 - Dashboard → Project → Settings → Environment Variables
 
 ## 📊 Monitoreo Post-Despliegue
 
 ### Analytics Automáticos
+
 - Vercel Web Analytics habilitado automáticamente
 - Métricas de Core Web Vitals
 - Estadísticas de tráfico en tiempo real
 
 ### Performance
+
 - **Lighthouse Score**: Objetivo 95+ en todas las métricas
 - **Bundle Size**: ~286KB gzipped (optimizado)
 - **Loading Time**: <2s en 3G rápido
@@ -81,6 +89,7 @@ Y agrega las variables en el dashboard de Vercel:
 ## 🚀 URLs de Ejemplo
 
 Después del despliegue tendrás:
+
 - **Producción**: `https://duo-eterno.vercel.app`
 - **Preview**: URLs automáticas para cada PR
 - **Development**: `http://localhost:5173`
@@ -88,6 +97,7 @@ Después del despliegue tendrás:
 ## 🔧 Troubleshooting
 
 ### Error: "Build Failed"
+
 ```bash
 # Verificar build local
 npm run build
@@ -97,10 +107,12 @@ npm run lint
 ```
 
 ### Error: "Routes not working"
+
 - ✅ `vercel.json` incluye configuración de SPA
 - ✅ Todas las rutas redirigen a `index.html`
 
 ### Assets no cargan
+
 - ✅ Verificar que `/public/assets/` esté en el repo
 - ✅ Paths son relativos (`/assets/` no `./assets/`)
 
@@ -126,16 +138,19 @@ vercel ls
 ## 🎯 Optimizaciones Incluidas
 
 ### 🖼️ Assets
+
 - Pixel art optimizado para web
 - Compresión automática de imágenes
 - Lazy loading de sprites
 
 ### ⚡ JavaScript
+
 - Tree shaking automático
 - Code splitting por rutas
 - Bundle optimization con Vite
 
 ### 🎨 CSS
+
 - Autoprefixer automático
 - Minificación en producción
 - Critical CSS inlined

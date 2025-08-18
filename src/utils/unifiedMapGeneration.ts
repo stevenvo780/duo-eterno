@@ -129,10 +129,10 @@ export class UnifiedMapGenerator {
   private async generateHybridMap(): Promise<{ zones: Zone[]; mapElements: MapElement[] }> {
     // Usar organic para estructura base
     const organicResult = this.generateOrganicMap();
-    
+
     // Usar smart para colocación de muebles detallada
     const smartResult = await this.generateIntelligentMap();
-    
+
     // Combinar resultados: zonas de organic, elementos detallados de smart
     return {
       zones: organicResult.zones,
@@ -165,7 +165,7 @@ export class UnifiedMapGenerator {
     // Precargar assets específicos por categorías
     const categoriesToPreload = [
       'terrain_tiles',
-      'structures', 
+      'structures',
       'environmental_objects',
       'natural_elements'
     ];
@@ -230,7 +230,7 @@ export class UnifiedMapGenerator {
 
     try {
       // Buscar asset apropiado
-      const asset = searchPattern 
+      const asset = searchPattern
         ? (await assetManager.searchAssetsByPattern(searchPattern, folderName))[0]
         : await assetManager.getRandomAssetFromFolder(folderName);
 
@@ -264,7 +264,7 @@ export class UnifiedMapGenerator {
   private mapThemeToOrganic(theme: string): 'MODERN' | 'RUSTIC' | 'ECOLOGICAL' | 'URBAN' {
     const mapping: Record<string, 'MODERN' | 'RUSTIC' | 'ECOLOGICAL' | 'URBAN'> = {
       modern: 'MODERN',
-      rustic: 'RUSTIC', 
+      rustic: 'RUSTIC',
       ecological: 'ECOLOGICAL',
       urban: 'URBAN'
     };
@@ -278,7 +278,7 @@ export class UnifiedMapGenerator {
     const mapping: Record<string, 'modern' | 'cozy' | 'minimal' | 'rustic'> = {
       modern: 'modern',
       rustic: 'rustic',
-      ecological: 'minimal', 
+      ecological: 'minimal',
       urban: 'cozy'
     };
     return mapping[theme] || 'modern';
@@ -288,7 +288,9 @@ export class UnifiedMapGenerator {
 /**
  * Función principal para generar mapas unificados
  */
-export async function generateUnifiedMap(config: Partial<UnifiedMapConfig> = {}): Promise<MapGenerationResult> {
+export async function generateUnifiedMap(
+  config: Partial<UnifiedMapConfig> = {}
+): Promise<MapGenerationResult> {
   const generator = new UnifiedMapGenerator(config);
   return await generator.generateMap();
 }
@@ -296,7 +298,9 @@ export async function generateUnifiedMap(config: Partial<UnifiedMapConfig> = {})
 /**
  * Función helper para generar mapas rápidos con configuración preestablecida
  */
-export async function generateQuickMap(type: 'small' | 'medium' | 'large' = 'medium'): Promise<MapGenerationResult> {
+export async function generateQuickMap(
+  type: 'small' | 'medium' | 'large' = 'medium'
+): Promise<MapGenerationResult> {
   const configs = {
     small: { width: 600, height: 400, density: 0.5, algorithm: 'smart' as const },
     medium: { width: 1000, height: 600, density: 0.7, algorithm: 'hybrid' as const },

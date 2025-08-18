@@ -2,7 +2,7 @@
 
 /**
  * 🎬 SISTEMA DE CARGA AUTOMÁTICA DE SPRITES Y ANIMACIONES
- * 
+ *
  * Este script explora dinámicamente la carpeta public/assets/ para:
  * 1. Detectar automáticamente todas las carpetas de assets
  * 2. Leer sprites de animación con sus metadatos JSON
@@ -33,14 +33,14 @@ const DETECTED_JSON_SUFFIX = '_detected.json';
  */
 function exploreDirectory(dirPath, relativePath = '') {
   const items = [];
-  
+
   try {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
       const relPath = path.join(relativePath, entry.name);
-      
+
       if (entry.isDirectory()) {
         // Recursivamente explorar subdirectorios
         items.push({
@@ -62,7 +62,7 @@ function exploreDirectory(dirPath, relativePath = '') {
   } catch (error) {
     console.warn(`⚠️ No se pudo leer el directorio: ${dirPath}`, error.message);
   }
-  
+
   return items;
 }
 
@@ -71,7 +71,7 @@ function exploreDirectory(dirPath, relativePath = '') {
  */
 function detectAnimations(items) {
   const animations = [];
-  
+
   function findAnimationsRecursive(currentItems, basePath = '') {
     // Buscar archivos que terminen en _anim.json
     const animationJsonFiles = currentItems
@@ -94,18 +94,19 @@ function detectAnimations(items) {
     // Procesar animaciones manuales (_anim.json)
     for (const jsonFile of animationJsonFiles) {
       // Buscar el PNG correspondiente
-      const pngFile = currentItems.find(item => 
-        item.type === 'file' && 
-        item.nameWithoutExt === jsonFile.nameWithoutExt &&
-        item.extension === '.png'
+      const pngFile = currentItems.find(
+        item =>
+          item.type === 'file' &&
+          item.nameWithoutExt === jsonFile.nameWithoutExt &&
+          item.extension === '.png'
       );
-      
+
       if (pngFile) {
         // Leer metadatos de la animación
         try {
           const jsonPath = path.join(ASSETS_DIR, jsonFile.path);
           const metadata = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-          
+
           animations.push({
             id: jsonFile.baseName,
             name: metadata.name || jsonFile.baseName,
@@ -124,26 +125,27 @@ function detectAnimations(items) {
       // Extraer el nombre base del archivo detectado
       // Ej: "Netflix_default_detected.json" -> baseName = "Netflix_default"
       let baseName = jsonFile.nameWithoutExt.replace('_detected', '');
-      
+
       // Si el baseName contiene "_default", intentar también sin esa parte
       let possibleNames = [baseName];
       if (baseName.includes('_default')) {
         possibleNames.push(baseName.replace('_default', ''));
       }
-      
+
       // Buscar el PNG correspondiente con cualquiera de los nombres posibles
-      const pngFile = currentItems.find(item => 
-        item.type === 'file' && 
-        possibleNames.includes(item.nameWithoutExt) &&
-        item.extension === '.png'
+      const pngFile = currentItems.find(
+        item =>
+          item.type === 'file' &&
+          possibleNames.includes(item.nameWithoutExt) &&
+          item.extension === '.png'
       );
-      
+
       if (pngFile) {
         // Leer metadatos del spritesheet detectado
         try {
           const jsonPath = path.join(ASSETS_DIR, jsonFile.path);
           const metadata = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-          
+
           animations.push({
             id: pngFile.nameWithoutExt + '_detected', // Usar el nombre del PNG + _detected para evitar duplicados
             name: metadata.name || pngFile.nameWithoutExt,
@@ -152,11 +154,14 @@ function detectAnimations(items) {
             metadata: metadata
           });
         } catch (error) {
-          console.warn(`⚠️ Error leyendo metadatos de spritesheet detectado ${jsonFile.path}:`, error.message);
+          console.warn(
+            `⚠️ Error leyendo metadatos de spritesheet detectado ${jsonFile.path}:`,
+            error.message
+          );
         }
       }
     }
-    
+
     // Buscar recursivamente en subdirectorios
     currentItems
       .filter(item => item.type === 'directory' && item.children)
@@ -164,7 +169,7 @@ function detectAnimations(items) {
         findAnimationsRecursive(dir.children, path.join(basePath, dir.name));
       });
   }
-  
+
   findAnimationsRecursive(items);
   return animations;
 }
@@ -174,13 +179,14 @@ function detectAnimations(items) {
  */
 function detectStaticSprites(items) {
   const sprites = [];
-  
+
   function findSpritesRecursive(currentItems) {
     const currentSprites = currentItems
-      .filter(item => 
-        item.type === 'file' && 
-        SUPPORTED_IMAGE_EXTENSIONS.includes(item.extension) &&
-        !item.name.includes('_anim')
+      .filter(
+        item =>
+          item.type === 'file' &&
+          SUPPORTED_IMAGE_EXTENSIONS.includes(item.extension) &&
+          !item.name.includes('_anim')
       )
       .map(item => ({
         id: item.nameWithoutExt,
@@ -188,9 +194,9 @@ function detectStaticSprites(items) {
         path: item.path,
         extension: item.extension
       }));
-    
+
     sprites.push(...currentSprites);
-    
+
     // Buscar recursivamente en subdirectorios
     currentItems
       .filter(item => item.type === 'directory' && item.children)
@@ -198,7 +204,7 @@ function detectStaticSprites(items) {
         findSpritesRecursive(dir.children);
       });
   }
-  
+
   findSpritesRecursive(items);
   return sprites;
 }
@@ -209,10 +215,10 @@ function detectStaticSprites(items) {
 function processFolderAssets(folder, basePath = '') {
   const fullPath = path.join(ASSETS_DIR, basePath, folder.name);
   const items = folder.children || [];
-  
+
   const animations = detectAnimations(items);
   const staticSprites = detectStaticSprites(items);
-  
+
   // Procesar subcarpetas recursivamente
   const subfolders = items
     .filter(item => item.type === 'directory')
@@ -221,7 +227,7 @@ function processFolderAssets(folder, basePath = '') {
       acc[subfolder.name] = processFolderAssets(subfolder, subPath);
       return acc;
     }, {});
-  
+
   return {
     name: folder.name,
     path: path.join(basePath, folder.name).replace(/\\/g, '/'),
@@ -373,19 +379,19 @@ export function getAssetStats() {
  */
 function generateAnimationTypes(assetStructure) {
   const allAnimations = [];
-  
+
   function collectAnimations(folder) {
     allAnimations.push(...folder.animations);
     if (folder.subfolders) {
       Object.values(folder.subfolders).forEach(collectAnimations);
     }
   }
-  
+
   Object.values(assetStructure).forEach(collectAnimations);
-  
+
   const animationIds = [...new Set(allAnimations.map(anim => anim.id))];
   const animationNames = [...new Set(allAnimations.map(anim => anim.name))];
-  
+
   const code = `/**
  * 🎬 TIPOS DE ANIMACIÓN GENERADOS AUTOMÁTICAMENTE
  * 
@@ -401,9 +407,9 @@ export type AnimationName = ${animationNames.map(name => `'${name}'`).join(' | '
 
 // Carpetas con animaciones
 export type AnimationFolder = ${Object.keys(assetStructure)
-  .filter(key => assetStructure[key].animations.length > 0)
-  .map(folder => `'${folder}'`)
-  .join(' | ')};
+    .filter(key => assetStructure[key].animations.length > 0)
+    .map(folder => `'${folder}'`)
+    .join(' | ')};
 
 // Entidades con animaciones (detectadas automáticamente)
 ${generateEntityTypes(allAnimations)}
@@ -417,37 +423,41 @@ ${generateAnimationStates(allAnimations)}
 
 function generateEntityTypes(animations) {
   const entities = new Set();
-  
+
   animations.forEach(anim => {
     const parts = anim.id.split('_');
     if (parts.length >= 2 && parts[0] === 'entidad') {
       entities.add(parts[1]);
     }
   });
-  
+
   if (entities.size === 0) return '// No se detectaron entidades con animaciones';
-  
-  return `export type EntityType = ${Array.from(entities).map(e => `'${e}'`).join(' | ')};`;
+
+  return `export type EntityType = ${Array.from(entities)
+    .map(e => `'${e}'`)
+    .join(' | ')};`;
 }
 
 function generateAnimationStates(animations) {
   const states = new Set();
-  
+
   animations.forEach(anim => {
     // Detectar estados comunes en los nombres
     const name = anim.name.toLowerCase();
     const id = anim.id.toLowerCase();
-    
+
     ['happy', 'sad', 'dying', 'idle', 'walk', 'run', 'jump', 'attack'].forEach(state => {
       if (name.includes(state) || id.includes(state)) {
         states.add(state);
       }
     });
   });
-  
+
   if (states.size === 0) return '// No se detectaron estados de animación comunes';
-  
-  return `export type AnimationState = ${Array.from(states).map(s => `'${s}'`).join(' | ')};`;
+
+  return `export type AnimationState = ${Array.from(states)
+    .map(s => `'${s}'`)
+    .join(' | ')};`;
 }
 
 /**
@@ -455,23 +465,23 @@ function generateAnimationStates(animations) {
  */
 function main() {
   console.log('🎬 Iniciando carga automática de sprites y animaciones...');
-  
+
   // Verificar que existe la carpeta de assets
   if (!fs.existsSync(ASSETS_DIR)) {
     console.error(`❌ No se encontró la carpeta de assets: ${ASSETS_DIR}`);
     process.exit(1);
   }
-  
+
   // Crear directorio de salida si no existe
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     console.log(`📁 Creado directorio: ${OUTPUT_DIR}`);
   }
-  
+
   // Explorar estructura de assets
   console.log('🔍 Explorando estructura de assets...');
   const rootItems = exploreDirectory(ASSETS_DIR);
-  
+
   // Procesar cada carpeta principal
   const assetStructure = {};
   rootItems
@@ -479,36 +489,36 @@ function main() {
     .forEach(folder => {
       assetStructure[folder.name] = processFolderAssets(folder);
     });
-  
+
   // Generar archivos TypeScript
   console.log('📝 Generando manifest de assets...');
   const manifestCode = generateManifest(assetStructure);
   fs.writeFileSync(MANIFEST_FILE, manifestCode, 'utf-8');
-  
+
   console.log('🎯 Generando tipos de animación...');
   const typesCode = generateAnimationTypes(assetStructure);
   fs.writeFileSync(ANIMATION_TYPES_FILE, typesCode, 'utf-8');
-  
+
   // Mostrar estadísticas
   console.log('\n📊 ESTADÍSTICAS DE ASSETS:');
   let totalAnimations = 0;
   let totalSprites = 0;
-  
+
   Object.entries(assetStructure).forEach(([folderName, folder]) => {
     console.log(`   📁 ${folderName}:`);
     console.log(`      🎬 ${folder.animations.length} animaciones`);
     console.log(`      🖼️  ${folder.staticSprites.length} sprites estáticos`);
-    
+
     if (folder.subfolders) {
       Object.entries(folder.subfolders).forEach(([subName, subfolder]) => {
         console.log(`      📁 ${subName}: ${subfolder.totalAssets} assets`);
       });
     }
-    
+
     totalAnimations += folder.animations.length;
     totalSprites += folder.staticSprites.length;
   });
-  
+
   console.log(`\n✅ RESUMEN:`);
   console.log(`   🎬 ${totalAnimations} animaciones totales`);
   console.log(`   🖼️  ${totalSprites} sprites estáticos`);
@@ -516,7 +526,7 @@ function main() {
   console.log(`   📄 Archivos generados:`);
   console.log(`      - ${MANIFEST_FILE}`);
   console.log(`      - ${ANIMATION_TYPES_FILE}`);
-  
+
   console.log('\n🎉 ¡Carga de sprites completada exitosamente!');
 }
 

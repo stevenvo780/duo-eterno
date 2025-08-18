@@ -22,10 +22,7 @@
       "Sheep3",
       "Walk"
     ],
-    "building": [
-      "muro",
-      "piso"
-    ],
+    "building": ["muro", "piso"],
     "consumable_items": [
       "01_dish",
       "02_dish_2",
@@ -222,10 +219,7 @@
       "ventana8",
       "ventana9"
     ],
-    "infrastructure": [
-      "FarmLand_Tile",
-      "Path_Middle"
-    ],
+    "infrastructure": ["cesped1", "cesped2"],
     "natural_elements": [
       "Bush_Emerald_1",
       "Bush_Emerald_2",
@@ -438,11 +432,7 @@
       "Youtube",
       "Zoom"
     ],
-    "water": [
-      "Water_Middle",
-      "tile_0198",
-      "tile_0230"
-    ]
+    "water": ["Water_Middle", "tile_0198", "tile_0230"]
   },
   "categories": {
     "ANIMATED_ENTITIES": {
@@ -470,10 +460,7 @@
       ]
     },
     "BUILDING": {
-      "all": [
-        "muro",
-        "piso"
-      ]
+      "all": ["muro", "piso"]
     },
     "CONSUMABLE_ITEMS": {
       "all": [
@@ -592,12 +579,7 @@
         "sillas_de_calle3",
         "sillas_de_calle4"
       ],
-      "lighting": [
-        "LampPost_3",
-        "lamparas1",
-        "lamparas2",
-        "lamparas3"
-      ],
+      "lighting": ["LampPost_3", "lamparas1", "lamparas2", "lamparas3"],
       "signs": [
         "Sign_1",
         "Sign_2",
@@ -611,10 +593,7 @@
         "StreetSigns_004",
         "StreetSigns_005"
       ],
-      "decorations": [
-        "Banner_Stick_1_Purple",
-        "Plant_2"
-      ],
+      "decorations": ["Banner_Stick_1_Purple", "Plant_2"],
       "street_items": [
         "poste1",
         "poste2",
@@ -627,14 +606,8 @@
         "sombrilla2",
         "sombrilla3"
       ],
-      "waste": [
-        "basuras1",
-        "basuras_calle1"
-      ],
-      "containers": [
-        "botellas1",
-        "cajas1"
-      ]
+      "waste": ["basuras1", "basuras_calle1"],
+      "containers": ["botellas1", "cajas1"]
     },
     "FURNITURE_OBJECTS": {
       "all": [
@@ -673,19 +646,10 @@
       ]
     },
     "INFRASTRUCTURE": {
-      "paths": [
-        "FarmLand_Tile",
-        "Path_Middle"
-      ]
+      "paths": ["cesped1", "cesped2"]
     },
     "NATURAL_ELEMENTS": {
-      "trees": [
-        "Oak_Tree",
-        "Tree_Emerald_1",
-        "Tree_Emerald_2",
-        "Tree_Emerald_3",
-        "Tree_Emerald_4"
-      ],
+      "trees": ["Oak_Tree", "Tree_Emerald_1", "Tree_Emerald_2", "Tree_Emerald_3", "Tree_Emerald_4"],
       "bushes": [
         "Bush_Emerald_1",
         "Bush_Emerald_2",
@@ -695,46 +659,16 @@
         "Bush_Emerald_6",
         "Bush_Emerald_7"
       ],
-      "rocks": [
-        "Rock_Brown_1",
-        "Rock_Brown_2",
-        "Rock_Brown_4",
-        "Rock_Brown_6",
-        "Rock_Brown_9"
-      ],
-      "cliffs": [
-        "Cliff_001_001",
-        "Cliff_001_002"
-      ],
-      "logs": [
-        "troncos1",
-        "troncos2",
-        "troncos3"
-      ]
+      "rocks": ["Rock_Brown_1", "Rock_Brown_2", "Rock_Brown_4", "Rock_Brown_6", "Rock_Brown_9"],
+      "cliffs": ["Cliff_001_001", "Cliff_001_002"],
+      "logs": ["troncos1", "troncos2", "troncos3"]
     },
     "STRUCTURES": {
-      "houses": [
-        "House",
-        "House_Hay_1",
-        "House_Hay_2",
-        "House_Hay_3",
-        "House_Hay_4_Purple"
-      ],
-      "walls": [
-        "CityWall_Gate_1",
-        "muros1",
-        "muros2",
-        "muros3"
-      ],
-      "fences": [
-        "Fences"
-      ],
-      "wells": [
-        "Well_Hay_1"
-      ],
-      "glass": [
-        "vidrio"
-      ]
+      "houses": ["House", "House_Hay_1", "House_Hay_2", "House_Hay_3", "House_Hay_4_Purple"],
+      "walls": ["CityWall_Gate_1", "muros1", "muros2", "muros3"],
+      "fences": ["Fences"],
+      "wells": ["Well_Hay_1"],
+      "glass": ["vidrio"]
     },
     "TERRAIN_TILES": {
       "grass": [
@@ -772,9 +706,7 @@
         "cesped8",
         "cesped9"
       ],
-      "textured": [
-        "TexturedGrass"
-      ]
+      "textured": ["TexturedGrass"]
     },
     "UI_ICONS": {
       "all": [
@@ -918,11 +850,7 @@
       ]
     },
     "WATER": {
-      "tiles": [
-        "Water_Middle",
-        "tile_0198",
-        "tile_0230"
-      ]
+      "tiles": ["Water_Middle", "tile_0198", "tile_0230"]
     }
   },
   "generatedAt": "2025-08-18T10:40:45.592Z"

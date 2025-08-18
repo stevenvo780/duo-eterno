@@ -60,7 +60,7 @@ async function getAssetsByBiomeType(biomeType: string): Promise<string[]> {
   }
 
   let assets: string[] = [];
-  
+
   try {
     switch (biomeType) {
       case 'grass': {
@@ -339,24 +339,27 @@ export class AdvancedTerrainGenerator {
    */
   private async initializeBiomeAssets(): Promise<void> {
     console.log('🎨 Inicializando assets dinámicos de biomas usando assets reales...');
-    
+
     try {
       // Cargar todos los assets de césped existentes
       const grassAssets = await getAssetsByBiomeType('grass');
       console.log(`📦 Cargados ${grassAssets.length} assets de césped`);
-      
+
       // Distribuir assets de césped entre biomas
       const grassCount = grassAssets.length;
       TERRAIN_BIOMES.GRASSLAND.textureVariants = grassAssets.slice(0, Math.min(grassCount, 12));
-      TERRAIN_BIOMES.GARDEN.textureVariants = grassAssets.slice(Math.floor(grassCount/3), Math.min(grassCount, 18));
-      TERRAIN_BIOMES.FOREST.textureVariants = grassAssets.slice(0, Math.min(grassCount/2, 8));
-      
+      TERRAIN_BIOMES.GARDEN.textureVariants = grassAssets.slice(
+        Math.floor(grassCount / 3),
+        Math.min(grassCount, 18)
+      );
+      TERRAIN_BIOMES.FOREST.textureVariants = grassAssets.slice(0, Math.min(grassCount / 2, 8));
+
       // Intentar cargar assets texturizados
       const texturedAssets = await getAssetsByBiomeType('textured');
       if (texturedAssets.length > 0) {
         TERRAIN_BIOMES.FOREST.textureVariants.push(...texturedAssets);
       }
-      
+
       // Para ROCKY, usar assets de roca si están disponibles, sino césped más oscuro
       const rockAssets = await getAssetsByBiomeType('rocks');
       if (rockAssets.length > 0) {
@@ -365,14 +368,18 @@ export class AdvancedTerrainGenerator {
       } else {
         TERRAIN_BIOMES.ROCKY.textureVariants = grassAssets.slice(-6);
       }
-      
+
       // Para SAND, usar césped claro como arena
-      TERRAIN_BIOMES.SAND.textureVariants = grassAssets.slice(Math.floor(grassCount/4), Math.floor(grassCount/2));
-      
+      TERRAIN_BIOMES.SAND.textureVariants = grassAssets.slice(
+        Math.floor(grassCount / 4),
+        Math.floor(grassCount / 2)
+      );
+
       // Cargar assets de agua
       const waterAssets = await getAssetsByBiomeType('water');
-      TERRAIN_BIOMES.WATER.textureVariants = waterAssets.length > 0 ? waterAssets : ['Water_Middle'];
-      
+      TERRAIN_BIOMES.WATER.textureVariants =
+        waterAssets.length > 0 ? waterAssets : ['Water_Middle'];
+
       console.log('✅ Assets dinámicos de biomas inicializados');
       console.log(`   GRASSLAND: ${TERRAIN_BIOMES.GRASSLAND.textureVariants.length} variantes`);
       console.log(`   GARDEN: ${TERRAIN_BIOMES.GARDEN.textureVariants.length} variantes`);
@@ -380,7 +387,6 @@ export class AdvancedTerrainGenerator {
       console.log(`   ROCKY: ${TERRAIN_BIOMES.ROCKY.textureVariants.length} variantes`);
       console.log(`   SAND: ${TERRAIN_BIOMES.SAND.textureVariants.length} variantes`);
       console.log(`   WATER: ${TERRAIN_BIOMES.WATER.textureVariants.length} variantes`);
-      
     } catch (error) {
       console.error('❌ Error inicializando assets de biomas:', error);
       // Fallback con assets básicos
@@ -583,7 +589,8 @@ export class AdvancedTerrainGenerator {
           influence = humidity * temperature * (1 - Math.abs(elevation - 0.4));
           break;
         case 'GARDEN':
-          influence = humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
+          influence =
+            humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
           break;
         case 'GRASSLAND':
           influence = (1 - humidity) * (1 - Math.abs(elevation - 0.2));
@@ -793,7 +800,11 @@ export class AdvancedTerrainGenerator {
   /**
    * Crea objeto con variaciones visuales usando assets dinámicos
    */
-  private async createVariedObject(config: BiomeObject, baseX: number, baseY: number): Promise<MapElement | null> {
+  private async createVariedObject(
+    config: BiomeObject,
+    baseX: number,
+    baseY: number
+  ): Promise<MapElement | null> {
     // Posición con dispersión natural dentro de la celda
     const offsetX = this.gaussianRandom() * this.config.tileSize * 0.3;
     const offsetY = this.gaussianRandom() * this.config.tileSize * 0.3;
@@ -858,19 +869,34 @@ export class AdvancedTerrainGenerator {
         case 'wildflower':
         case 'flower_bed': {
           // Usar decoraciones o plantas del entorno
-          const decorations = await assetManager.loadAssetsBySubtype('ENVIRONMENTAL_OBJECTS', 'decorations');
-          return decorations.length > 0 ? decorations[Math.floor(Math.random() * decorations.length)] : null;
+          const decorations = await assetManager.loadAssetsBySubtype(
+            'ENVIRONMENTAL_OBJECTS',
+            'decorations'
+          );
+          return decorations.length > 0
+            ? decorations[Math.floor(Math.random() * decorations.length)]
+            : null;
         }
         case 'hedge':
         case 'garden_stone': {
           // Usar muebles de jardín o elementos estructurales
-          const furniture = await assetManager.loadAssetsBySubtype('ENVIRONMENTAL_OBJECTS', 'furniture');
-          return furniture.length > 0 ? furniture[Math.floor(Math.random() * furniture.length)] : null;
+          const furniture = await assetManager.loadAssetsBySubtype(
+            'ENVIRONMENTAL_OBJECTS',
+            'furniture'
+          );
+          return furniture.length > 0
+            ? furniture[Math.floor(Math.random() * furniture.length)]
+            : null;
         }
         case 'pebbles': {
           // Usar contenedores pequeños como simulación de guijarros
-          const containers = await assetManager.loadAssetsBySubtype('ENVIRONMENTAL_OBJECTS', 'containers');
-          return containers.length > 0 ? containers[Math.floor(Math.random() * containers.length)] : null;
+          const containers = await assetManager.loadAssetsBySubtype(
+            'ENVIRONMENTAL_OBJECTS',
+            'containers'
+          );
+          return containers.length > 0
+            ? containers[Math.floor(Math.random() * containers.length)]
+            : null;
         }
         case 'mushroom': {
           // Usar elementos naturales variados
@@ -884,7 +910,10 @@ export class AdvancedTerrainGenerator {
         }
         default: {
           // Fallback genérico
-          const randomEnv = await assetManager.getRandomAssetsFromCategory('ENVIRONMENTAL_OBJECTS', 1);
+          const randomEnv = await assetManager.getRandomAssetsFromCategory(
+            'ENVIRONMENTAL_OBJECTS',
+            1
+          );
           return randomEnv.length > 0 ? randomEnv[0] : null;
         }
       }

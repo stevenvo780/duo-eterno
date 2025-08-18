@@ -10,9 +10,7 @@ const ASSETS_DIR = path.join(__dirname, '../public/assets');
 function getAssetsInDirectory(dirPath) {
   try {
     const files = fs.readdirSync(dirPath);
-    return files
-      .filter(file => file.endsWith('.png'))
-      .map(file => file.replace('.png', ''));
+    return files.filter(file => file.endsWith('.png')).map(file => file.replace('.png', ''));
   } catch (error) {
     console.warn(`No se pudo leer directorio: ${dirPath}`);
     return [];
@@ -21,37 +19,37 @@ function getAssetsInDirectory(dirPath) {
 
 function analyzeAssetFolders() {
   console.log('🔍 Analizando estructura de assets...\n');
-  
+
   const assetMap = {};
-  
+
   try {
-    const folders = fs.readdirSync(ASSETS_DIR, { withFileTypes: true })
+    const folders = fs
+      .readdirSync(ASSETS_DIR, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
-    
+
     folders.forEach(folder => {
       const folderPath = path.join(ASSETS_DIR, folder);
       const assets = getAssetsInDirectory(folderPath);
-      
+
       if (assets.length > 0) {
         assetMap[folder] = assets;
         console.log(`📁 ${folder}: ${assets.length} assets`);
         console.log(`   ${assets.slice(0, 5).join(', ')}${assets.length > 5 ? '...' : ''}\n`);
       }
     });
-    
   } catch (error) {
     console.error('Error analizando assets:', error);
   }
-  
+
   return assetMap;
 }
 
 function generateAssetCategories(assetMap) {
   console.log('🎨 Generando categorías dinámicas...\n');
-  
+
   const categories = {};
-  
+
   Object.entries(assetMap).forEach(([folder, assets]) => {
     switch (folder) {
       case 'terrain_tiles':
@@ -63,7 +61,7 @@ function generateAssetCategories(assetMap) {
           textured: assets.filter(asset => asset.includes('Textured'))
         };
         break;
-        
+
       case 'structures':
         categories.STRUCTURES = {
           houses: assets.filter(asset => asset.includes('House')),
@@ -73,7 +71,7 @@ function generateAssetCategories(assetMap) {
           glass: assets.filter(asset => asset.includes('vidrio') || asset.includes('glass'))
         };
         break;
-        
+
       case 'natural_elements':
         categories.NATURAL_ELEMENTS = {
           trees: assets.filter(asset => asset.includes('Tree') || asset.includes('Oak')),
@@ -83,44 +81,41 @@ function generateAssetCategories(assetMap) {
           logs: assets.filter(asset => asset.includes('tronco'))
         };
         break;
-        
+
       case 'water':
         categories.WATER = {
           tiles: assets
         };
         break;
-        
+
       case 'infrastructure':
         categories.INFRASTRUCTURE = {
           paths: assets
         };
         break;
-        
+
       case 'environmental_objects':
         categories.ENVIRONMENTAL_OBJECTS = {
-          furniture: assets.filter(asset => 
-            asset.includes('Bench') || asset.includes('Table') || asset.includes('silla')
+          furniture: assets.filter(
+            asset => asset.includes('Bench') || asset.includes('Table') || asset.includes('silla')
           ),
-          lighting: assets.filter(asset => 
-            asset.includes('Lamp') || asset.includes('lampara')
-          ),
+          lighting: assets.filter(asset => asset.includes('Lamp') || asset.includes('lampara')),
           signs: assets.filter(asset => asset.includes('Sign')),
-          decorations: assets.filter(asset => 
-            asset.includes('Banner') || asset.includes('Plant')
-          ),
-          street_items: assets.filter(asset => 
-            asset.includes('poste') || asset.includes('sombrilla') || asset.includes('ropas')
+          decorations: assets.filter(asset => asset.includes('Banner') || asset.includes('Plant')),
+          street_items: assets.filter(
+            asset =>
+              asset.includes('poste') || asset.includes('sombrilla') || asset.includes('ropas')
           ),
           waste: assets.filter(asset => asset.includes('basuras')),
           containers: assets.filter(asset => asset.includes('botellas') || asset.includes('cajas'))
         };
         break;
-        
+
       default:
         categories[folder.toUpperCase()] = { all: assets };
     }
   });
-  
+
   // Filtrar categorías vacías
   Object.keys(categories).forEach(category => {
     Object.keys(categories[category]).forEach(subcategory => {
@@ -129,7 +124,7 @@ function generateAssetCategories(assetMap) {
       }
     });
   });
-  
+
   return categories;
 }
 
