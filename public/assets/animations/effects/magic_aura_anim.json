@@ -1,0 +1,104 @@
+{
+  "name": "magic_aura",
+  "frame_count": 30,
+  "frame_size": [
+    64,
+    64
+  ],
+  "columns": 8,
+  "rows": 4,
+  "total_duration": 3000,
+  "loop": true,
+  "frames": [
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    }
+  ]
+}

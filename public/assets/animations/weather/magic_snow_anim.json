@@ -1,0 +1,104 @@
+{
+  "name": "weather_magic_snow",
+  "frame_count": 30,
+  "frame_size": [
+    256,
+    256
+  ],
+  "columns": 8,
+  "rows": 4,
+  "total_duration": 4500,
+  "loop": true,
+  "frames": [
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    },
+    {
+      "duration": 150
+    }
+  ]
+}

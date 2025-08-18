@@ -1,0 +1,50 @@
+{
+  "name": "floating",
+  "frame_count": 12,
+  "frame_size": [
+    64,
+    68
+  ],
+  "columns": 8,
+  "rows": 2,
+  "total_duration": 1200,
+  "loop": true,
+  "frames": [
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    },
+    {
+      "duration": 100
+    }
+  ]
+}

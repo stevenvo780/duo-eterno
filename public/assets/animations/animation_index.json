@@ -1,0 +1,43 @@
+{
+  "generated_at": "2025-08-17",
+  "total_animations": 26,
+  "total_frames": 473,
+  "categories": {
+    "entities": [
+      "entidad_circulo_happy_anim",
+      "entidad_circulo_sad_anim",
+      "entidad_circulo_dying_anim",
+      "entidad_square_happy_anim",
+      "entidad_square_sad_anim",
+      "entidad_square_dying_anim"
+    ],
+    "backgrounds": [
+      "grass_background_static",
+      "grass_background_animated",
+      "grass_background_small",
+      "grass_spring",
+      "grass_summer",
+      "grass_autumn",
+      "grass_winter"
+    ],
+    "effects": [
+      "magic_aura_anim",
+      "healing_sparkles_anim",
+      "magic_portal_anim",
+      "magic_rain_anim",
+      "magic_snow_anim",
+      "ambient_sparkles",
+      "arbol_mistico_sparkle"
+    ],
+    "weather": [
+      "magic_rain_anim",
+      "magic_snow_anim"
+    ]
+  },
+  "usage_notes": {
+    "backgrounds": "Use as tiled backgrounds or overlays",
+    "entities": "Character sprites with emotion states",
+    "effects": "Particle systems and magical effects",
+    "weather": "Environmental overlay effects"
+  }
+}

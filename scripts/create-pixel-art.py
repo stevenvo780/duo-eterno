@@ -13,6 +13,58 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from PIL import Image, ImageDraw
 
+# ---------- MAGICAL EFFECTS ----------
+
+def create_magical_gradient(color1, color2, width=16, height=16, direction='vertical'):
+    """Crea un degradado mágico entre dos colores"""
+    img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+    pixels = img.load()
+    
+    for x in range(width):
+        for y in range(height):
+            if direction == 'vertical':
+                ratio = y / (height - 1) if height > 1 else 0
+            elif direction == 'horizontal':
+                ratio = x / (width - 1) if width > 1 else 0
+            elif direction == 'radial':
+                center_x, center_y = width // 2, height // 2
+                max_dist = np.sqrt(center_x**2 + center_y**2)
+                dist = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+                ratio = min(dist / max_dist, 1.0) if max_dist > 0 else 0
+            else:  # diagonal
+                ratio = (x + y) / (width + height - 2) if (width + height) > 2 else 0
+            
+            # Interpolación mágica con curva suave
+            ratio = ratio ** 0.7  # Curva más suave
+            r = int(color1[0] * (1 - ratio) + color2[0] * ratio)
+            g = int(color1[1] * (1 - ratio) + color2[1] * ratio)
+            b = int(color1[2] * (1 - ratio) + color2[2] * ratio)
+            pixels[x, y] = (r, g, b, 255)
+    
+    return img
+
+def add_magical_glow(img, glow_color=(255, 226, 138), intensity=0.3):
+    """Añade un resplandor mágico a una imagen"""
+    width, height = img.size
+    glow_img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+    pixels = img.load()
+    glow_pixels = glow_img.load()
+    
+    for x in range(width):
+        for y in range(height):
+            if pixels[x, y][3] > 0:  # Si el pixel no es transparente
+                # Añadir brillo en los bordes
+                for dx in [-1, 0, 1]:
+                    for dy in [-1, 0, 1]:
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < width and 0 <= ny < height:
+                            if pixels[nx, ny][3] == 0:  # Borde
+                                glow_pixels[x, y] = (*glow_color, int(255 * intensity))
+    
+    # Combinar imagen original con resplandor
+    final_img = Image.alpha_composite(glow_img, img)
+    return final_img
+
 # ---------- RNG / Colors ----------
 
 def md5_int(s: str) -> int:
@@ -40,23 +92,51 @@ DB32 = [
 DB32 = [hex_to_rgb(x) for x in DB32]
 
 PALET = {
-    "wood_base": (139,90,43),
-    "wood_dark": (90,58,26),
-    "wood_light": (205,148,63),
-    "metal": (106,122,134),
-    "metal_light": (143,161,176),
-    "stone": (106,106,106),
-    "stone_dark": (74,74,74),
-    "fabric": (99,155,255),
-    "fabric_alt": (138,95,184),
-    "grass": (42,139,42),
-    "leaf": (136,200,72),
-    "flower": (216,73,139),
-    "dirt": (110,70,40),
-    "brick": (172,82,50),
-    "foam": (226,244,255),
-    "gold": (242,212,80),
-    "shadow": (0,0,0)
+    # Maderas mágicas con tonos dorados y violetas
+    "wood_base": (147,98,181),  # Madera mística violeta
+    "wood_dark": (98,52,147),   # Madera oscura morada
+    "wood_light": (226,176,255), # Madera brillante lila
+    
+    # Metales cristalinos
+    "metal": (138,186,255),     # Metal cristal azul
+    "metal_light": (198,226,255), # Metal plateado brillante
+    "metal_dark": (88,136,205),  # Metal azul oscuro
+    
+    # Piedras encantadas
+    "stone": (147,147,226),     # Piedra encantada azul
+    "stone_dark": (98,98,176),  # Piedra oscura mística
+    "stone_light": (197,197,255), # Piedra brillante
+    
+    # Telas mágicas
+    "fabric": (255,138,226),    # Tela rosa mágica
+    "fabric_alt": (186,98,255), # Tela violeta encantada
+    "fabric_gold": (255,206,98), # Tela dorada
+    
+    # Naturaleza fantástica
+    "grass": (98,255,138),      # Césped mágico verde brillante
+    "leaf": (138,255,98),       # Hojas encantadas
+    "flower": (255,98,186),     # Flores cristalinas rosa
+    "flower_alt": (186,255,98), # Flores verdes brillantes
+    
+    # Elementos especiales
+    "crystal": (138,226,255),   # Cristal azul brillante
+    "crystal_pink": (255,138,226), # Cristal rosa
+    "crystal_purple": (186,138,255), # Cristal violeta
+    
+    # Tierra y construcción fantástica
+    "dirt": (147,98,68),        # Tierra mística
+    "brick": (255,147,98),      # Ladrillo dorado
+    "foam": (255,255,226),      # Espuma brillante
+    
+    # Metales preciosos
+    "gold": (255,206,98),       # Oro brillante
+    "silver": (226,226,255),    # Plata cristalina
+    "copper": (255,147,98),     # Cobre encantado
+    
+    # Elementos base
+    "shadow": (48,32,68),       # Sombra violeta
+    "highlight": (255,255,255), # Brillo puro
+    "glow": (255,226,138)       # Resplandor dorado
 }
 
 # ---------- Helpers ----------
@@ -127,36 +207,95 @@ def quantize_db32(im: Image.Image) -> Image.Image:
 # ---------- Sprite Generators ----------
 
 def g_bench(tile=32, seed=1):
-    w,h = tile*2, tile
-    im = img_rgba(w,h)
-    d = ImageDraw.Draw(im)
-    legw = max(2, tile//8)
-    draw_rect(d,(4,h-6,4+legw,h-1), PALET["wood_dark"])
-    draw_rect(d,(w-4-legw,h-6,w-4,h-1), PALET["wood_dark"])
-    for i in range(3):
-        y0 = 4 + i*(tile//4)
-        draw_rect(d,(3,y0,w-3,y0+tile//8), PALET["wood_base"], outline_col=PALET["wood_dark"])
-    add_specular(im,(3,4,w-3,4+tile//8),120)
+    """Genera un banco con pixel art detallado"""
+    w, h = tile*2, tile
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "bench")
+    
+    # Base del banco con textura de madera
+    for y in range(h-8, h):
+        for x in range(4, w-4):
+            if y == h-8 or y == h-1 or x == 4 or x == w-5:
+                pixels[x, y] = PALET["wood_dark"]  # Borde
+            else:
+                # Textura de madera con vetas
+                if (x + y) % 3 == 0:
+                    pixels[x, y] = PALET["wood_light"]
+                else:
+                    pixels[x, y] = PALET["wood_base"]
+    
+    # Respaldo con detalles
+    for y in range(4, h-8):
+        for x in range(6, w-6):
+            if x == 6 or x == w-7 or y == 4:
+                pixels[x, y] = PALET["wood_dark"]  # Marco
+            elif (x + y) % 4 == 0:
+                pixels[x, y] = PALET["wood_light"]  # Vetas
+            else:
+                pixels[x, y] = PALET["wood_base"]
+    
+    # Patas del banco
+    for leg_x in [6, w-8]:
+        for y in range(h-12, h):
+            for x in range(leg_x, leg_x+2):
+                if x == leg_x or x == leg_x+1:
+                    pixels[x, y] = PALET["wood_dark"]
+    
+    # Detalles metálicos (clavos/herrajes)
+    for nail_x in [8, w//2, w-10]:
+        if 0 <= nail_x < w and h-6 < h:
+            pixels[nail_x, h-6] = PALET["metal"]
+            
     return quantize_db32(im)
 
 def g_statbar(tile=32, seed=1, value=0.75):
-    w,h = tile*2, tile//3
-    im = img_rgba(w,h)
-    d = ImageDraw.Draw(im)
-    draw_rect(d,(0,0,w-1,h-1),(30,30,30), outline_col=(0,0,0))
-    fillw = int((w-4)*value)
-    draw_rect(d,(2,2,2+fillw,h-3), PALET["gold"])
-    add_specular(im,(2,2,w-2,h-3),90)
+    """Barra de estadística con cristales mágicos"""
+    w, h = tile*2, tile//3
+    im = img_rgba(w, h)
+    pixels = im.load()
+    
+    # Marco de la barra con piedra encantada
+    for y in range(h):
+        for x in range(w):
+            if x == 0 or x == w-1 or y == 0 or y == h-1:
+                pixels[x, y] = PALET["stone_dark"]
+            elif x == 1 or x == w-2 or y == 1 or y == h-2:
+                pixels[x, y] = PALET["stone"]
+    
+    # Relleno con cristales
+    fillw = int((w-4) * value)
+    for y in range(2, h-2):
+        for x in range(2, 2+fillw):
+            if (x + y) % 3 == 0:
+                pixels[x, y] = PALET["crystal"]
+            elif (x + y) % 3 == 1:
+                pixels[x, y] = PALET["crystal_pink"]
+            else:
+                pixels[x, y] = PALET["glow"]
+    
     return quantize_db32(im)
 
 def g_canvas_base(tile=32, seed=1):
-    w,h = tile*6, tile*4
-    im = img_rgba(w,h)
-    d = ImageDraw.Draw(im)
-    for y in range(0,h,8):
-        d.line((0,y,w,y),(40,40,40,120))
-    for x in range(0,w,8):
-        d.line((x,0,x,h),(40,40,40,120))
+    """Base de canvas con patrón mágico"""
+    w, h = tile*6, tile*4
+    im = img_rgba(w, h)
+    pixels = im.load()
+    
+    # Patrón de rejilla mágica
+    for y in range(h):
+        for x in range(w):
+            if x % 8 == 0 or y % 8 == 0:
+                if (x//8 + y//8) % 2 == 0:
+                    pixels[x, y] = PALET["crystal"]
+                else:
+                    pixels[x, y] = PALET["crystal_purple"]
+            else:
+                # Fondo transparente con puntos de luz
+                if (x + y) % 16 == 0:
+                    pixels[x, y] = (*PALET["glow"], 128)
+    
+    return quantize_db32(im)
     draw_rect(d,(0,0,w-1,h-1),None,outline_col=(80,80,80))
     return im
 
@@ -272,25 +411,137 @@ def g_table_dining(tile=32, seed=1):
     return quantize_db32(im)
 
 def g_plant_small(tile=32, seed=1):
-    w,h = tile, tile
-    im = img_rgba(w,h); d=ImageDraw.Draw(im)
-    d.ellipse((w//2-6,h-10,w//2+6,h-2), PALET["wood_base"], outline=PALET["wood_dark"])
-    for i in range(5):
-        d.line((w//2, h-10, w//2-6+i*3, h-16-i*2), PALET["leaf"], width=2)
+    """Planta pequeña con hojas detalladas pixel by pixel"""
+    w, h = tile, tile
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "plant_small")
+    
+    # Maceta de barro encantado
+    pot_start_y = h - 12
+    for y in range(pot_start_y, h-2):
+        pot_width = 6 + (y - pot_start_y)
+        start_x = w//2 - pot_width//2
+        end_x = w//2 + pot_width//2
+        for x in range(start_x, end_x):
+            if x == start_x or x == end_x-1:
+                pixels[x, y] = PALET["dirt"]  # Borde de la maceta
+            else:
+                pixels[x, y] = PALET["brick"]  # Interior de la maceta
+    
+    # Tallo principal
+    for y in range(pot_start_y-8, pot_start_y+2):
+        pixels[w//2, y] = PALET["leaf"]
+        if y % 2 == 0:
+            pixels[w//2-1, y] = PALET["grass"]  # Variación en el tallo
+    
+    # Hojas con patrón detallado
+    leaf_positions = [(w//2-4, pot_start_y-6), (w//2+3, pot_start_y-4), (w//2-2, pot_start_y-10)]
+    for leaf_x, leaf_y in leaf_positions:
+        # Hoja principal
+        for dy in range(-2, 3):
+            for dx in range(-2, 3):
+                if abs(dx) + abs(dy) <= 2:
+                    x, y = leaf_x + dx, leaf_y + dy
+                    if 0 <= x < w and 0 <= y < h:
+                        if abs(dx) + abs(dy) == 2:
+                            pixels[x, y] = PALET["grass"]  # Borde de hoja
+                        else:
+                            pixels[x, y] = PALET["leaf"]  # Centro de hoja
+    
     return quantize_db32(im)
 
 def g_plant_flower(tile=32, seed=1):
-    w,h = tile, tile
-    im = img_rgba(w,h); d=ImageDraw.Draw(im)
-    d.rectangle((w//2-1,h-8,w//2+1,h-2), fill=(60,130,60))
-    d.ellipse((w//2-3,h-12,w//2+3,h-6), PALET["flower"], outline=(0,0,0))
+    """Planta con flor cristalina detallada"""
+    w, h = tile, tile
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "plant_flower")
+    
+    # Base de tierra mágica
+    for y in range(h-6, h):
+        for x in range(w//4, 3*w//4):
+            pixels[x, y] = PALET["dirt"]
+    
+    # Tallo con textura
+    for y in range(h//2, h-6):
+        pixels[w//2, y] = PALET["leaf"]
+        if y % 3 == 0:
+            pixels[w//2-1, y] = PALET["grass"]
+            pixels[w//2+1, y] = PALET["grass"]
+    
+    # Flor cristalina central
+    flower_center = (w//2, h//2-4)
+    for dy in range(-3, 4):
+        for dx in range(-3, 4):
+            dist = abs(dx) + abs(dy)
+            x, y = flower_center[0] + dx, flower_center[1] + dy
+            if 0 <= x < w and 0 <= y < h:
+                if dist <= 1:
+                    pixels[x, y] = PALET["crystal_pink"]  # Centro
+                elif dist == 2:
+                    pixels[x, y] = PALET["flower"]  # Pétalos
+                elif dist == 3 and abs(dx) != abs(dy):
+                    pixels[x, y] = PALET["flower_alt"]  # Pétalos exteriores
+    
+    # Hojas laterales
+    for side in [-1, 1]:
+        for leaf_y in [h//2+2, h//2+6]:
+            leaf_x = w//2 + side * 4
+            for dy in range(-1, 2):
+                for dx in range(-2, 3):
+                    x, y = leaf_x + dx, leaf_y + dy
+                    if 0 <= x < w and 0 <= y < h and abs(dx) + abs(dy) <= 2:
+                        pixels[x, y] = PALET["leaf"]
+    
     return quantize_db32(im)
 
 def g_tree(tile=32, seed=1):
-    w,h = tile*2, tile*3
-    im = img_rgba(w,h); d=ImageDraw.Draw(im)
-    d.rectangle((w//2-3,h-20,w//2+3,h-2), fill=PALET["wood_dark"])
-    d.ellipse((w//2-16,10,w//2+16,h-24), PALET["grass"], outline=(0,0,0))
+    """Árbol mágico con copa cristalina"""
+    w, h = tile*2, tile*3
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "tree")
+    
+    # Tronco con textura de corteza
+    trunk_width = 6
+    trunk_start_x = w//2 - trunk_width//2
+    for y in range(h//2, h-2):
+        for x in range(trunk_start_x, trunk_start_x + trunk_width):
+            if x == trunk_start_x or x == trunk_start_x + trunk_width - 1:
+                pixels[x, y] = PALET["wood_dark"]  # Borde del tronco
+            else:
+                if (x + y) % 3 == 0:
+                    pixels[x, y] = PALET["wood_light"]  # Vetas
+                else:
+                    pixels[x, y] = PALET["wood_base"]
+    
+    # Copa del árbol con hojas cristalinas
+    center_x, center_y = w//2, h//2 - 6
+    for dy in range(-8, 6):
+        for dx in range(-8, 9):
+            dist = dx*dx + dy*dy
+            x, y = center_x + dx, center_y + dy
+            if 0 <= x < w and 0 <= y < h and dist <= 64:
+                if dist <= 16:
+                    # Centro con cristales
+                    pixels[x, y] = PALET["crystal"]
+                elif dist <= 36:
+                    # Hojas normales
+                    if (x + y) % 3 == 0:
+                        pixels[x, y] = PALET["leaf"]
+                    else:
+                        pixels[x, y] = PALET["grass"]
+                elif dist <= 64 and rng.random() < 0.6:
+                    # Hojas esparcidas
+                    pixels[x, y] = PALET["leaf"]
+    
+    # Frutos cristalinos esparcidos
+    fruit_positions = [(center_x-4, center_y+2), (center_x+3, center_y-1), (center_x+1, center_y+4)]
+    for fruit_x, fruit_y in fruit_positions:
+        if 0 <= fruit_x < w and 0 <= fruit_y < h:
+            pixels[fruit_x, fruit_y] = PALET["crystal_pink"]
+    
     return quantize_db32(im)
 
 def g_rock(tile=32, seed=1):
@@ -374,31 +625,161 @@ def _face(im: Image.Image, mood: str, base=(200,220,255)):
     return quantize_db32(im)
 
 def g_entity_circle(tile=32, mood="happy", seed=1):
-    im = img_rgba(tile,tile)
-    return _face(im, mood, base=(200,220,255))
+    """Entidad circular con pixel art detallado"""
+    w, h = tile, tile
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "entity_circle")
+    
+    # Determinar colores según el estado de ánimo
+    if mood == "happy":
+        base_color = PALET["crystal"]
+        accent_color = PALET["crystal_pink"]
+        glow_color = PALET["glow"]
+    elif mood == "sad":
+        base_color = PALET["crystal_purple"]
+        accent_color = PALET["shadow"]
+        glow_color = PALET["stone"]
+    else:  # dying
+        base_color = PALET["shadow"]
+        accent_color = PALET["stone_dark"]
+        glow_color = PALET["metal_dark"]
+    
+    # Dibujar círculo pixel by pixel con gradiente
+    center_x, center_y = w//2, h//2
+    radius = min(w, h)//2 - 2
+    
+    for y in range(h):
+        for x in range(w):
+            dist = ((x - center_x)**2 + (y - center_y)**2)**0.5
+            if dist <= radius:
+                if dist <= radius * 0.3:
+                    # Centro brillante
+                    pixels[x, y] = glow_color
+                elif dist <= radius * 0.7:
+                    # Cuerpo principal con patrón
+                    if (x + y) % 3 == 0:
+                        pixels[x, y] = base_color
+                    else:
+                        pixels[x, y] = accent_color
+                else:
+                    # Borde
+                    pixels[x, y] = accent_color
+    
+    # Añadir ojos según el humor
+    eye_y = center_y - 4
+    if mood == "happy":
+        # Ojos sonrientes
+        pixels[center_x-4, eye_y] = PALET["shadow"]
+        pixels[center_x+4, eye_y] = PALET["shadow"]
+        pixels[center_x-4, eye_y+1] = PALET["shadow"]
+        pixels[center_x+4, eye_y+1] = PALET["shadow"]
+        # Sonrisa
+        for i in range(-3, 4):
+            if abs(i) <= 2:
+                pixels[center_x+i, center_y+3] = PALET["shadow"]
+    elif mood == "sad":
+        # Ojos tristes
+        pixels[center_x-4, eye_y] = PALET["shadow"]
+        pixels[center_x+4, eye_y] = PALET["shadow"]
+        # Lágrimas
+        pixels[center_x-4, eye_y+2] = PALET["crystal"]
+        pixels[center_x+4, eye_y+2] = PALET["crystal"]
+        # Boca triste
+        for i in range(-2, 3):
+            if abs(i) <= 1:
+                pixels[center_x+i, center_y+5] = PALET["shadow"]
+    else:  # dying
+        # Ojos X
+        for i in [-1, 0, 1]:
+            pixels[center_x-4+i, eye_y-1+i] = PALET["shadow"]
+            pixels[center_x-4+i, eye_y+1-i] = PALET["shadow"]
+            pixels[center_x+4+i, eye_y-1+i] = PALET["shadow"]
+            pixels[center_x+4+i, eye_y+1-i] = PALET["shadow"]
+    
+    return quantize_db32(im)
 
 def g_entity_square(tile=32, mood="happy", seed=1):
-    w=tile; h=tile; im=img_rgba(w,h); d=ImageDraw.Draw(im)
-    draw_rect(d,(2,2,w-2,h-2),(180,210,240), outline_col=(0,0,0))
-    return _face(im, mood, base=(180,210,240))
+    """Entidad cuadrada con pixel art detallado"""
+    w, h = tile, tile
+    im = img_rgba(w, h)
+    pixels = im.load()
+    rng = rng_stream(seed, "entity_square")
+    
+    # Determinar colores según el estado de ánimo
+    if mood == "happy":
+        base_color = PALET["fabric"]
+        accent_color = PALET["fabric_gold"]
+        border_color = PALET["gold"]
+    elif mood == "sad":
+        base_color = PALET["fabric_alt"]
+        accent_color = PALET["shadow"]
+        border_color = PALET["stone_dark"]
+    else:  # dying
+        base_color = PALET["shadow"]
+        accent_color = PALET["stone_dark"]
+        border_color = PALET["metal_dark"]
+    
+    # Dibujar cuadrado con borde y patrón interno
+    for y in range(2, h-2):
+        for x in range(2, w-2):
+            if x == 2 or x == w-3 or y == 2 or y == h-3:
+                # Borde
+                pixels[x, y] = border_color
+            elif x == 3 or x == w-4 or y == 3 or y == h-4:
+                # Borde interno
+                pixels[x, y] = accent_color
+            else:
+                # Interior con patrón
+                if (x + y) % 4 == 0:
+                    pixels[x, y] = base_color
+                elif (x + y) % 4 == 2:
+                    pixels[x, y] = accent_color
+                else:
+                    pixels[x, y] = base_color
+    
+    # Añadir cara
+    center_x, center_y = w//2, h//2
+    eye_y = center_y - 3
+    
+    if mood == "happy":
+        # Ojos brillantes
+        pixels[center_x-3, eye_y] = PALET["crystal"]
+        pixels[center_x+3, eye_y] = PALET["crystal"]
+        # Sonrisa
+        for i in range(-2, 3):
+            pixels[center_x+i, center_y+2] = border_color
+    elif mood == "sad":
+        # Ojos apagados
+        pixels[center_x-3, eye_y] = PALET["shadow"]
+        pixels[center_x+3, eye_y] = PALET["shadow"]
+        # Boca triste
+        for i in range(-1, 2):
+            pixels[center_x+i, center_y+3] = border_color
+    else:  # dying
+        # Ojos X
+        pixels[center_x-3, eye_y-1] = PALET["shadow"]
+        pixels[center_x-3, eye_y+1] = PALET["shadow"]
+        pixels[center_x+3, eye_y-1] = PALET["shadow"]
+        pixels[center_x+3, eye_y+1] = PALET["shadow"]
+    
+    return quantize_db32(im)
 
 # ---------- Registry ----------
 
-SPRITES = {
+# Props estáticos (no animados)
+PROPS = {
     "banco": g_bench,
-    "barra_estadistica": g_statbar,
-    "canvas_base": g_canvas_base,
-    "conexion_entidades": g_conn_overlay,
-    "deco_bookshelf": g_bookshelf,
-    "deco_clock": g_clock,
-    "deco_lamp": g_lamp_table,
-    "lampara": g_lamp_floor,
     "furniture_bed_simple": g_bed_simple,
     "furniture_bed_double": g_bed_double,
     "furniture_sofa_classic": g_sofa_classic,
     "furniture_sofa_modern": g_sofa_modern,
     "furniture_table_coffee": g_table_coffee,
     "furniture_table_dining": g_table_dining,
+    "deco_bookshelf": g_bookshelf,
+    "deco_clock": g_clock,
+    "deco_lamp": g_lamp_table,
+    "lampara": g_lamp_floor,
     "plant_small": g_plant_small,
     "plant_flower": g_plant_flower,
     "plant_tree": g_tree,
@@ -410,14 +791,10 @@ SPRITES = {
     "path_dirt_h": g_path_dirt_h,
     "path_stone_h": g_path_stone_h,
     "path_stone_v": g_path_stone_v,
-    "dialogo_overlay": g_dialog_overlay,
-    "entidad_circulo_happy": lambda tile, seed: g_entity_circle(tile,"happy",seed),
-    "entidad_circulo_sad": lambda tile, seed: g_entity_circle(tile,"sad",seed),
-    "entidad_circulo_dying": lambda tile, seed: g_entity_circle(tile,"dying",seed),
-    "entidad_square_happy": lambda tile, seed: g_entity_square(tile,"happy",seed),
-    "entidad_square_sad": lambda tile, seed: g_entity_square(tile,"sad",seed),
-    "entidad_square_dying": lambda tile, seed: g_entity_square(tile,"dying",seed),
 }
+
+# Solo props estáticos (las entidades ahora son animaciones)
+ALL_SPRITES = {**PROPS}
 
 # ---------- Simple Patterns ----------
 
@@ -476,17 +853,50 @@ PATTERNS = {
 # ---------- CLI ----------
 
 def cmd_sprites(args):
-    outdir = args.outdir
+    """Genera sprites organizados en carpetas según su tipo"""
+    base_outdir = args.outdir
     tile = args.size
-    names = list(SPRITES.keys()) if args.names == "all" else [n.strip() for n in args.names.split(",") if n.strip()]
-    for nm in names:
-        gen = SPRITES.get(nm)
-        if not gen:
+    
+    # Determinar qué generar
+    if args.names == "all":
+        generate_props = True
+        generate_sprites = True
+        generate_ui = True
+        names_to_generate = list(ALL_SPRITES.keys())
+    else:
+        names_list = [n.strip() for n in args.names.split(",") if n.strip()]
+        generate_props = any(name in PROPS for name in names_list)
+        names_to_generate = names_list
+    
+    # Crear directorios según lo que vamos a generar
+    if generate_props or "all" in args.names:
+        ensure_dir(os.path.join(base_outdir, "props"))
+    
+    print(f"🎨 Generando pixel art mágico en {base_outdir}...")
+    
+    for nm in names_to_generate:
+        # Solo generar props ahora
+        if nm in PROPS:
+            category = "props"
+            gen = PROPS[nm]
+        else:
+            print(f"⚠️  Sprite '{nm}' no encontrado en PROPS")
             continue
-        im = gen(tile, args.seed)
-        path = os.path.join(outdir, f"{nm}.png")
-        ensure_dir(os.path.dirname(path) or ".")
-        im.save(path, "PNG")
+        
+        try:
+            # Generar imagen
+            im = gen(tile, args.seed)
+            
+            # Guardar en la carpeta correspondiente
+            path = os.path.join(base_outdir, category, f"{nm}.png")
+            im.save(path, "PNG")
+            print(f"✨ {category}/{nm}.png generado")
+            
+        except Exception as e:
+            print(f"❌ Error generando {nm}: {e}")
+    
+    print(f"🌟 Generación completada! Assets guardados en {base_outdir}")
+    return True
 
 def cmd_patterns(args):
     outdir = args.outdir

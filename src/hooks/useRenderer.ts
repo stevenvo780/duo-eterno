@@ -75,7 +75,7 @@ export const useRenderer = () => {
     lastUpdate: performance.now()
   });
 
-  // Adaptive quality adjustment based on performance
+  // Adaptive quality adjustment based on performance (menos agresivo)
   const adjustQuality = useCallback(() => {
     const avgFps = fpsHistory.current.length > 0 
       ? fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length 
@@ -83,16 +83,16 @@ export const useRenderer = () => {
     
     const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
     
-    // Downgrade quality if consistently underperforming
-    if (avgFps < targetFps * 0.8 && qualityLevel !== 'low') {
+    // Downgrade quality solo si el rendimiento es crítico (más conservador)
+    if (avgFps < targetFps * 0.6 && qualityLevel !== 'low') {
       const newLevel = qualityLevel === 'high' ? 'medium' : 'low';
       setQualityLevel(newLevel);
       console.warn(`🔽 Calidad reducida a ${newLevel} (FPS promedio: ${avgFps.toFixed(1)})`);
       return;
     }
     
-    // Upgrade quality if consistently overperforming  
-    if (avgFps > targetFps * 1.2 && qualityLevel !== 'high') {
+    // Upgrade quality si el rendimiento es consistentemente bueno
+    if (avgFps > targetFps * 1.3 && qualityLevel !== 'high') {
       const newLevel = qualityLevel === 'low' ? 'medium' : 'high';
       setQualityLevel(newLevel);
       console.info(`🔼 Calidad aumentada a ${newLevel} (FPS promedio: ${avgFps.toFixed(1)})`);

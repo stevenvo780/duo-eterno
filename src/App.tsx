@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import OptimizedCanvas from './components/OptimizedCanvas';
+import Canvas from './components/Canvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import { useGameLoop } from './hooks/useGameLoop';
@@ -73,7 +73,7 @@ const GameContent: React.FC = React.memo(() => {
         padding: '20px',
         position: 'relative'
       }}>
-        <OptimizedCanvas 
+        <Canvas 
           width={1000} 
           height={600}
         />

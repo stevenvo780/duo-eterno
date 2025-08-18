@@ -1,0 +1,86 @@
+{
+  "name": "healing_sparkles",
+  "frame_count": 24,
+  "frame_size": [
+    64,
+    64
+  ],
+  "columns": 8,
+  "rows": 3,
+  "total_duration": 1920,
+  "loop": true,
+  "frames": [
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    }
+  ]
+}

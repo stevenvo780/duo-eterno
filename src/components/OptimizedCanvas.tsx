@@ -11,6 +11,8 @@ import React, { useRef, useEffect, useCallback, useContext, useState } from "rea
 import { GameContext } from "../state/GameContext";
 import type { Entity } from "../types";
 import { logRenderCompat } from "../utils/optimizedDynamicsLogger";
+import InteractiveTooltip from "./InteractiveTooltip";
+import useTooltipSystem from "../hooks/useTooltipSystem";
 
 interface OptimizedCanvasProps {
   width: number;
@@ -27,12 +29,25 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   const gameContext = useContext(GameContext);
   const [loadedImages, setLoadedImages] = useState<Record<string, HTMLImageElement>>({});
   
+  // Sistema de tooltips interactivos
+  const {
+    tooltip,
+    handleCanvasMouseMove,
+    hideTooltip,
+    registerGameZones
+  } = useTooltipSystem();
+  
   if (!gameContext) {
     throw new Error('OptimizedCanvas debe usarse dentro de GameProvider');
   }
   
   const { gameState } = gameContext;
   const { entities, zones, resonance, mapElements } = gameState;
+
+  // Registrar zonas de tooltips cuando se monte el componente
+  useEffect(() => {
+    registerGameZones();
+  }, [registerGameZones]);
 
   const drawEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
     const { position, id, stats, isDead, mood } = entity;
@@ -360,6 +375,42 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       'obstaculo_roca'
     ];
 
+    // Mapeo de assets a sus carpetas correspondientes
+    const getAssetPath = (assetName: string): string => {
+      // Props estáticos
+      const props = [
+        'banco', 'furniture_bed_simple', 'furniture_bed_double', 'furniture_sofa_classic',
+        'furniture_sofa_modern', 'furniture_table_coffee', 'furniture_table_dining',
+        'deco_bookshelf', 'deco_clock', 'deco_lamp', 'lampara', 'plant_small',
+        'plant_flower', 'plant_tree', 'obstaculo_arbol', 'obstaculo_roca',
+        'fuente_agua', 'flor_rosa', 'path_brick_h', 'path_dirt_h', 'path_stone_h', 'path_stone_v'
+      ];
+      
+      // Sprites de entidades
+      const sprites = [
+        'entidad_circulo_happy', 'entidad_circulo_sad', 'entidad_circulo_dying',
+        'entidad_square_happy', 'entidad_square_sad', 'entidad_square_dying'
+      ];
+      
+      // UI Elements y Patrones
+      const uiElements = [
+        'barra_estadistica', 'canvas_base', 'conexion_entidades', 'dialogo_overlay',
+        'pattern_bedroom', 'pattern_garden', 'pattern_kitchen', 'pattern_living',
+        'pattern_stone', 'pattern_tiles_only'
+      ];
+      
+      if (props.includes(assetName)) {
+        return `/assets/props/${assetName}.png`;
+      } else if (sprites.includes(assetName)) {
+        return `/assets/sprites/${assetName}.png`;
+      } else if (uiElements.includes(assetName)) {
+        return `/assets/animations/${assetName}.png`;
+      } else {
+        // Fallback a la carpeta sprites original para compatibilidad
+        return `/assets/sprites/${assetName}.png`;
+      }
+    };
+
     const loadImage = (assetName: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -368,7 +419,7 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
           console.warn(`Failed to load sprite: ${assetName}`);
           reject(new Error(`Could not load ${assetName}`));
         };
-        img.src = `/assets/sprites/${assetName}.png`;
+        img.src = getAssetPath(assetName);
       });
     };
 
@@ -449,16 +500,30 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   }, [render]);
 
   return (
-    <canvas 
-      ref={canvasRef}
-      width={width}
-      height={height}
-      style={{
-        border: '2px solid #ddd',
-        borderRadius: '8px',
-        backgroundColor: '#f9f9f9'
-      }}
-    />
+    <div style={{ position: 'relative' }}>
+      <canvas 
+        ref={canvasRef}
+        width={width}
+        height={height}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseLeave={hideTooltip}
+        style={{
+          border: '2px solid #ddd',
+          borderRadius: '8px',
+          backgroundColor: '#f9f9f9',
+          cursor: 'crosshair'
+        }}
+      />
+      
+      {/* Sistema de tooltips interactivos */}
+      <InteractiveTooltip
+        x={tooltip.x}
+        y={tooltip.y}
+        data={tooltip.data}
+        visible={tooltip.visible}
+        onClose={hideTooltip}
+      />
+    </div>
   );
 };
 

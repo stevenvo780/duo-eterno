@@ -21,6 +21,15 @@ interface CanvasProps {
   panY?: number;
 }
 
+// Asset loading system
+interface AssetsState {
+  background: HTMLImageElement | null;
+  props: Map<string, HTMLImageElement>;
+  entities: Map<string, HTMLImageElement>;
+  mapElements: Map<string, HTMLImageElement>;
+  isLoading: boolean;
+}
+
 //  particle system with reduced count and object pooling
 const PARTICLE_COUNT = 4; // Significantly reduced for better performance
 const PARTICLE_POOL: Array<{
@@ -54,6 +63,50 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
   const { gameState } = useGame();
   const { shouldRender, getQualityLevel } = useRenderer();
   
+  // Asset loading state
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  // Interfaces para sprites animados
+  // Animated sprite interface
+  interface SpriteFrame {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }
+
+  interface SpriteMetadata {
+    frame_count: number;
+    frame_size: [number, number];
+    frame_duration: number;
+    columns: number;
+    rows: number;
+  }
+
+  interface AnimatedSprite {
+    image: HTMLImageElement;
+    metadata: SpriteMetadata;
+    currentFrame: number;
+    frameTimer: number;
+    currentAnimation: string;
+  }
+
+interface AssetsState {
+  background: HTMLImageElement | null;
+  props: Map<string, HTMLImageElement>;
+  animatedSprites: Map<string, AnimatedSprite>;
+  mapElements: Map<string, HTMLImageElement>;
+  isLoading: boolean;
+}
+
+// Estado para assets - usar Maps organizados por tipo
+  const assetsRef = useRef<AssetsState>({
+    background: null,
+    props: new Map<string, HTMLImageElement>(),
+    animatedSprites: new Map<string, AnimatedSprite>(), 
+    mapElements: new Map<string, HTMLImageElement>(),
+    isLoading: false
+  });
+  
   // Estado para el sistema de feedback
   const [entityFeedbacks, setEntityFeedbacks] = useState<Map<string, EntityFeedback>>(new Map());
   const [contextualAnimations, setContextualAnimations] = useState<ContextualAnimation[]>([]);
@@ -72,6 +125,180 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     gradient.addColorStop(1, '#0f172a');
     return gradient;
   }, [width, height]);
+
+  // Function to load assets once
+  const loadAssets = useCallback(async () => {
+    if (assetsRef.current.isLoading || assetsLoaded) return;
+    
+    assetsRef.current.isLoading = true;
+    console.log('🚀 Iniciando carga completa de assets...');
+    
+    try {
+      // Load background
+      const backgroundImg = new Image();
+      backgroundImg.src = '/assets/backgrounds/grass/magical_grass_base.png';
+      await new Promise<void>((resolve, reject) => {
+        backgroundImg.onload = () => {
+          console.log('✅ Fondo de pasto cargado');
+          resolve();
+        };
+        backgroundImg.onerror = reject;
+      });
+      assetsRef.current.background = backgroundImg;
+      
+      // Load entity sprites for emotions
+      const entityAssets = [
+        { key: 'circle-happy', imagePath: '/assets/animations/entities/entidad_circulo_happy_anim.png', jsonPath: '/assets/animations/entities/entidad_circulo_happy_anim.json' },
+        { key: 'circle-sad', imagePath: '/assets/animations/entities/entidad_circulo_sad_anim.png', jsonPath: '/assets/animations/entities/entidad_circulo_sad_anim.json' },
+        { key: 'circle-dying', imagePath: '/assets/animations/entities/entidad_circulo_dying_anim.png', jsonPath: '/assets/animations/entities/entidad_circulo_dying_anim.json' },
+        { key: 'square-happy', imagePath: '/assets/animations/entities/entidad_square_happy_anim.png', jsonPath: '/assets/animations/entities/entidad_square_happy_anim.json' },
+        { key: 'square-sad', imagePath: '/assets/animations/entities/entidad_square_sad_anim.png', jsonPath: '/assets/animations/entities/entidad_square_sad_anim.json' },
+        { key: 'square-dying', imagePath: '/assets/animations/entities/entidad_square_dying_anim.png', jsonPath: '/assets/animations/entities/entidad_square_dying_anim.json' }
+      ];
+      
+      for (const asset of entityAssets) {
+        // Load sprite image
+        const entityImg = new Image();
+        entityImg.src = asset.imagePath;
+        await new Promise<void>((resolve) => {
+          entityImg.onload = () => resolve();
+          entityImg.onerror = () => {
+            console.warn(`⚠️ No se pudo cargar sprite de entidad: ${asset.key}`);
+            resolve(); // Continue even if some sprites fail
+          };
+        });
+
+        // Load animation metadata JSON
+        let metadata: SpriteMetadata;
+        try {
+          const response = await fetch(asset.jsonPath);
+          metadata = await response.json();
+        } catch (error) {
+          console.warn(`⚠️ No se pudo cargar JSON de animación: ${asset.key}`, error);
+          // Fallback metadata for single frame
+          metadata = {
+            frame_count: 1,
+            frame_size: [32, 32],
+            frame_duration: 80,
+            columns: 1,
+            rows: 1
+          };
+        }
+
+        assetsRef.current.animatedSprites.set(asset.key, { 
+          image: entityImg, 
+          metadata,
+          currentFrame: 0,
+          frameTimer: 0,
+          currentAnimation: 'idle'
+        });
+      }
+      
+      // Load diverse props
+      const propAssets = [
+        { key: 'banco', path: '/assets/props/banco.png' },
+        { key: 'bookshelf', path: '/assets/props/deco_bookshelf.png' },
+        { key: 'clock', path: '/assets/props/deco_clock.png' },
+        { key: 'lamp', path: '/assets/props/deco_lamp.png' },
+        { key: 'sofa', path: '/assets/props/furniture_sofa_modern.png' },
+        { key: 'table', path: '/assets/props/furniture_table_coffee.png' },
+        { key: 'flower', path: '/assets/props/flor_rosa.png' },
+        { key: 'plant-small', path: '/assets/props/plant_small.png' },
+        { key: 'plant-tree', path: '/assets/props/plant_tree.png' }
+      ];
+      
+      for (const asset of propAssets) {
+        const propImg = new Image();
+        propImg.src = asset.path;
+        await new Promise<void>((resolve, reject) => {
+          propImg.onload = () => resolve();
+          propImg.onerror = () => {
+            console.warn(`⚠️ No se pudo cargar prop: ${asset.key}`);
+            resolve(); // Continue even if some props fail
+          };
+        });
+        assetsRef.current.props.set(asset.key, propImg);
+      }
+      
+      // Load map elements 
+      const mapAssets = [
+        { key: 'fountain', path: '/assets/props/fuente_agua.png' },
+        { key: 'tree', path: '/assets/props/obstaculo_arbol.png' },
+        { key: 'rock', path: '/assets/props/obstaculo_roca.png' },
+        { key: 'path-stone-h', path: '/assets/props/path_stone_h.png' },
+        { key: 'path-stone-v', path: '/assets/props/path_stone_v.png' }
+      ];
+      
+      for (const asset of mapAssets) {
+        const mapImg = new Image();
+        mapImg.src = asset.path;
+        await new Promise<void>((resolve, reject) => {
+          mapImg.onload = () => resolve();
+          mapImg.onerror = () => {
+            console.warn(`⚠️ No se pudo cargar elemento de mapa: ${asset.key}`);
+            resolve(); // Continue even if some elements fail
+          };
+        });
+        assetsRef.current.mapElements.set(asset.key, mapImg);
+      }
+      
+            console.log('✅ Carga única de assets completada', {
+        fondo: !!assetsRef.current.background,
+        sprites: assetsRef.current.animatedSprites.size,
+        props: assetsRef.current.props.size,
+        mapas: assetsRef.current.mapElements.size
+      });
+      
+      setAssetsLoaded(true);
+    } catch (error) {
+      console.warn('⚠️ Error cargando algunos assets:', error);
+      setAssetsLoaded(true); // Continue without assets
+    }
+  }, [assetsLoaded]);
+
+  // Load assets once on mount
+  useEffect(() => {
+    loadAssets();
+  }, [loadAssets]);
+
+  // Function to update animated sprite frame
+  const updateSpriteAnimation = useCallback((sprite: AnimatedSprite, deltaTime: number) => {
+    sprite.frameTimer += deltaTime;
+    
+    if (sprite.frameTimer >= sprite.metadata.frame_duration) {
+      sprite.currentFrame = (sprite.currentFrame + 1) % sprite.metadata.frame_count;
+      sprite.frameTimer = 0;
+    }
+  }, []);
+
+  // Function to render animated sprite
+  const drawAnimatedSprite = useCallback((
+    ctx: CanvasRenderingContext2D, 
+    sprite: AnimatedSprite, 
+    x: number, 
+    y: number, 
+    width: number,
+    height: number
+  ) => {
+    if (!sprite.image || !sprite.metadata) return;
+    
+    // Update animation frame
+    updateSpriteAnimation(sprite, 16); // Approximate 60fps delta
+    
+    const { currentFrame, metadata } = sprite;
+    const { frame_size, columns } = metadata;
+    
+    // Calculate source coordinates in spritesheet
+    const frameX = (currentFrame % columns) * frame_size[0];
+    const frameY = Math.floor(currentFrame / columns) * frame_size[1];
+    
+    // Draw the specific frame from spritesheet
+    ctx.drawImage(
+      sprite.image,
+      frameX, frameY, frame_size[0], frame_size[1], // Source coordinates
+      x, y, width, height // Destination coordinates
+    );
+  }, [updateSpriteAnimation]);
 
   // Actualizar feedback de entidades cada 500ms
   useEffect(() => {
@@ -273,7 +500,7 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     }
   }, [onEntityClick, gameState.entities, zoom, panX, panY]);
 
-  //  entity drawing function with quality levels
+  //  entity drawing function with sprites and emotions
   const drawEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity, now: number, quality: 'low' | 'medium' | 'high') => {
     const { position, state, pulsePhase, colorHue, id, isDead } = entity;
 
@@ -294,20 +521,142 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
       ctx.translate(offsetX, offsetY);
     }
     
-    // Dead entities have simple rendering
+    // Determine emotion based on state and resonance
+    let emotionKey = '';
     if (isDead || state === 'DEAD') {
-      ctx.globalAlpha = 0.3;
-      ctx.fillStyle = '#64748b';
-      ctx.strokeStyle = '#374151';
-      ctx.lineWidth = 1;
+      emotionKey = `${id}-dying`;
+    } else if (state === 'LOW_RESONANCE' || safeRes < 30) {
+      emotionKey = `${id}-sad`;
+    } else {
+      emotionKey = `${id}-happy`;
+    }
+    
+    // Try to use animated sprite - with safety checks
+    const animatedSprite = assetsRef.current?.animatedSprites?.get(emotionKey);
+    let spriteDrawn = false;
+    
+    if (animatedSprite && quality !== 'low') {
+      // Draw animated sprite with emotion
+      const scale = quality === 'medium' ? 0.8 : 1.0;
+      const baseSize = 32; // Base sprite size
+      const spriteSize = baseSize * scale;
+      
+      // Calculate pulse animation for alive entities
+      const pulse = isDead || state === 'DEAD' ? 0.8 : Math.sin((now * 0.002) + pulsePhase) * 0.1 + 0.9;
+      const finalSize = spriteSize * pulse;
+      
+      // Calculate opacity based on state
+      let opacity = 1;
+      if (state === 'FADING') {
+        opacity = Math.max(0.3, gameState.resonance / 100);
+      } else if (state === 'LOW_RESONANCE') {
+        opacity = 0.7 + (pulse * 0.2);
+      } else if (isDead || state === 'DEAD') {
+        opacity = 0.4;
+      }
+      
+      // Ensure the sprite has current animation  
+      if (!animatedSprite.currentAnimation) {
+        animatedSprite.currentAnimation = 'idle';
+        animatedSprite.currentFrame = 0;
+        animatedSprite.frameTimer = 0;
+      }
+      
+      // Get emotion based on entity state and mood
+      const emotion = entity.mood || 'happy';
+      const animationKey = `${entity.id}_${emotion}_anim`;
+      
+      ctx.globalAlpha = opacity;
+      
+      // Draw animated sprite centered on entity position
+      drawAnimatedSprite(
+        ctx,
+        animatedSprite,
+        position.x - finalSize / 2,
+        position.y - finalSize / 2,
+        finalSize,
+        finalSize
+      );
+      
+      spriteDrawn = true;
+    }
+    
+    // Fallback to simple shapes if no sprite or low quality
+    if (!spriteDrawn) {
+      // Dead entities have simple rendering
+      if (isDead || state === 'DEAD') {
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#64748b';
+        ctx.strokeStyle = '#374151';
+        ctx.lineWidth = 1;
 
-      const size = 12;
+        const size = 12;
+        if (id === 'circle') {
+          ctx.beginPath();
+          ctx.arc(position.x, position.y, size / 2, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.strokeRect(
+            position.x - size / 2,
+            position.y - size / 2,
+            size,
+            size
+          );
+        }
+        
+        // Draw X mark (simplified for low quality)
+        if (quality !== 'low') {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.moveTo(position.x - 6, position.y - 6);
+          ctx.lineTo(position.x + 6, position.y + 6);
+          ctx.moveTo(position.x + 6, position.y - 6);
+          ctx.lineTo(position.x - 6, position.y + 6);
+          ctx.stroke();
+        }
+        
+        ctx.globalAlpha = 1;
+        ctx.restore();
+        return;
+      }
+      
+      // Calculate pulse animation (reduced frequency for better performance)
+      const pulseSpeed = state === 'LOW_RESONANCE' ? 0.3 : 0.6;
+      const pulse = Math.sin((now * 0.002 * pulseSpeed) + pulsePhase) * 0.2 + 0.8;
+      
+      // Calculate opacity based on state
+      let opacity = 1;
+      if (state === 'FADING') {
+        opacity = Math.max(0.1, gameState.resonance / 100);
+      } else if (state === 'LOW_RESONANCE') {
+        opacity = 0.6 + (pulse * 0.3);
+      }
+
+      // Color changes based on resonance and state - emotion-based colors
+      let finalHue = hue;
+      if (state === 'LOW_RESONANCE' || safeRes < 30) {
+        finalHue = 240; // Blue for sad
+      } else if (safeRes > 70) {
+        finalHue = 120; // Green for happy
+      }
+      
+      const saturation = Math.max(30, safeRes * 0.8);
+      const lightness = state === 'LOW_RESONANCE' ? 40 + (pulse * 15) : 60;
+      
+      ctx.globalAlpha = opacity;
+      ctx.fillStyle = `hsl(${finalHue}, ${saturation}%, ${lightness}%)`;
+
+      const size = Math.max(4, 16 * pulse);
+
       if (id === 'circle') {
+        // Draw circle entity
         ctx.beginPath();
         ctx.arc(position.x, position.y, size / 2, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.fill();
       } else {
-        ctx.strokeRect(
+        // Draw square entity
+        ctx.fillRect(
           position.x - size / 2,
           position.y - size / 2,
           size,
@@ -315,82 +664,30 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
         );
       }
       
-      // Draw X mark (simplified for low quality)
-      if (quality !== 'low') {
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.moveTo(position.x - 6, position.y - 6);
-        ctx.lineTo(position.x + 6, position.y + 6);
-        ctx.moveTo(position.x + 6, position.y - 6);
-        ctx.lineTo(position.x - 6, position.y + 6);
-        ctx.stroke();
-      }
-      
-      ctx.globalAlpha = 1;
-      ctx.restore();
-      return;
-    }
-    
-    // Calculate pulse animation (reduced frequency for better performance)
-    const pulseSpeed = state === 'LOW_RESONANCE' ? 0.3 : 0.6;
-    const pulse = Math.sin((now * 0.002 * pulseSpeed) + pulsePhase) * 0.2 + 0.8;
-    
-    // Calculate opacity based on state
-    let opacity = 1;
-    if (state === 'FADING') {
-      opacity = Math.max(0.1, gameState.resonance / 100);
-    } else if (state === 'LOW_RESONANCE') {
-      opacity = 0.6 + (pulse * 0.3);
-    }
-
-    // Color changes based on resonance and state
-    const saturation = Math.max(30, safeRes * 0.8); // Slight optimization
-    const lightness = state === 'LOW_RESONANCE' ? 40 + (pulse * 15) : 60;
-    
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-
-    const size = Math.max(4, 16 * pulse);
-
-    if (id === 'circle') {
-      // Draw circle entity
-      ctx.beginPath();
-      ctx.arc(position.x, position.y, size / 2, 0, Math.PI * 2);
-      ctx.fill();
-      } else {
-      // Draw square entity
-      ctx.fillRect(
-      position.x - size / 2,
-      position.y - size / 2,
-      size,
-      size
-      );
-      }
-      
       // Add glow effect only for medium/high quality
       if (quality !== 'low') {
-      ctx.globalAlpha = opacity * 0.2;
-      ctx.fillStyle = `hsl(${hue}, ${saturation}%, 80%)`;
-      const glowSize = size * 1.3;
-      
-      if (id === 'circle') {
-      ctx.beginPath();
-      ctx.arc(position.x, position.y, glowSize / 2, 0, Math.PI * 2);
-      ctx.fill();
-      } else {
-      ctx.fillRect(
-      position.x - glowSize / 2,
-      position.y - glowSize / 2,
-      glowSize,
-      glowSize
-      );
+        ctx.globalAlpha = opacity * 0.2;
+        ctx.fillStyle = `hsl(${finalHue}, ${saturation}%, 80%)`;
+        const glowSize = size * 1.3;
+        
+        if (id === 'circle') {
+          ctx.beginPath();
+          ctx.arc(position.x, position.y, glowSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(
+            position.x - glowSize / 2,
+            position.y - glowSize / 2,
+            glowSize,
+            glowSize
+          );
+        }
       }
-      }
-      
-      ctx.globalAlpha = 1;
-      ctx.restore();
-      }, [gameState.resonance, width, height]);
+    }
+    
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }, [gameState.resonance, width, height, drawAnimatedSprite]);
 
   //  particle update function
   const updateParticles = useCallback((now: number, quality: 'low' | 'medium' | 'high') => {
@@ -452,71 +749,198 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     }
     ctx.fillRect(-panX / zoom, -panY / zoom, width / zoom, height / zoom);
 
-    // Draw zones (simplified for low quality)
-    if (gameState.zones && quality !== 'low') {
-      for (const zone of gameState.zones) {
-        // Draw zone background
-        ctx.fillStyle = zone.color;
-        ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
-        
-        // Draw zone border only for high quality
-        if (quality === 'high') {
-          ctx.strokeStyle = setAlpha(zone.color, 0.6);
-          ctx.lineWidth = 2;
-          ctx.strokeRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
-          
-          // Draw zone name
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-          ctx.font = '12px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(
-            zone.name,
-            zone.bounds.x + zone.bounds.width / 2,
-            zone.bounds.y + 20
-          );
+    // Draw background image if loaded
+    if (assetsRef.current.background && assetsLoaded) {
+      const bg = assetsRef.current.background;
+      const tileWidth = bg.width * 0.5; // Scale down for better fit
+      const tileHeight = bg.height * 0.5;
+      
+      // Calculate tiling area based on zoom and pan
+      const startX = Math.floor((-panX / zoom) / tileWidth) * tileWidth;
+      const startY = Math.floor((-panY / zoom) / tileHeight) * tileHeight;
+      const endX = startX + (width / zoom) + tileWidth;
+      const endY = startY + (height / zoom) + tileHeight;
+      
+      for (let x = startX; x < endX; x += tileWidth) {
+        for (let y = startY; y < endY; y += tileHeight) {
+          ctx.drawImage(bg, x, y, tileWidth, tileHeight);
         }
       }
     }
 
-    // Draw map elements (simplified for low quality)
-    if (gameState.mapElements && quality !== 'low') {
-      for (const element of gameState.mapElements) {
-        ctx.fillStyle = element.color;
+    // Draw zones (simplified for low quality but always visible)
+    if (gameState.zones) {
+      for (const zone of gameState.zones) {
+        // Draw zone background with reduced opacity for low quality
+        const alpha = quality === 'low' ? 0.3 : 0.5;
+        ctx.fillStyle = setAlpha(zone.color, alpha);
+        ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         
-        if (element.type === 'obstacle') {
-          // Simple rectangles for low/medium quality
-          if (quality === 'high') {
-            ctx.beginPath();
-            ctx.roundRect(element.position.x, element.position.y, element.size.width, element.size.height, 5);
-            ctx.fill();
-          } else {
-            ctx.fillRect(element.position.x, element.position.y, element.size.width, element.size.height);
-          }
-        } else if (element.id === 'fountain' && quality === 'high') {
-          // Draw fountain as a circle with ripples (high quality only)
-          ctx.beginPath();
-          ctx.arc(
-            element.position.x + element.size.width / 2, 
-            element.position.y + element.size.height / 2, 
-            element.size.width / 2, 
-            0, 
-            Math.PI * 2
-          );
-          ctx.fill();
+        // Draw zone border only for medium/high quality
+        if (quality !== 'low') {
+          ctx.strokeStyle = setAlpha(zone.color, 0.6);
+          ctx.lineWidth = 2;
+          ctx.strokeRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
           
-          // Add ripples
-          ctx.strokeStyle = element.color;
-          ctx.lineWidth = 1;
-          for (let i = 1; i <= 2; i++) {
+          // Draw zone name only for high quality
+          if (quality === 'high') {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+              zone.name,
+              zone.bounds.x + zone.bounds.width / 2,
+              zone.bounds.y + 20
+            );
+          }
+        }
+      }
+    }
+
+    // Draw props if loaded (critical assets always visible)
+    if (assetsRef.current?.props?.size > 0 && assetsLoaded) {
+      const props = assetsRef.current.props;
+      
+      // Scale props based on quality but always render them
+      const scale = quality === 'low' ? 0.3 : quality === 'medium' ? 0.4 : 0.5;
+      
+      // Render various props in strategic positions
+      const banco = props?.get('banco');
+      if (banco) {
+        ctx.drawImage(banco, 150, 200, banco.width * scale, banco.height * scale);
+      }
+      
+      const bookshelf = props?.get('bookshelf');
+      if (bookshelf) {
+        ctx.drawImage(bookshelf, 400, 150, bookshelf.width * (scale * 0.8), bookshelf.height * (scale * 0.8));
+      }
+      
+      const clock = props?.get('clock');
+      if (clock) {
+        ctx.drawImage(clock, 250, 350, clock.width * (scale * 0.6), clock.height * (scale * 0.6));
+      }
+      
+      const sofa = props?.get('sofa');
+      if (sofa) {
+        ctx.drawImage(sofa, 50, 300, sofa.width * (scale * 0.7), sofa.height * (scale * 0.7));
+      }
+      
+      const flower = props?.get('flower');
+      if (flower) {
+        ctx.drawImage(flower, 300, 100, flower.width * (scale * 0.5), flower.height * (scale * 0.5));
+      }
+      
+      const plantSmall = props?.get('plant-small');
+      if (plantSmall) {
+        ctx.drawImage(plantSmall, 480, 280, plantSmall.width * (scale * 0.4), plantSmall.height * (scale * 0.4));
+      }
+      
+      const table = props?.get('table');
+      if (table) {
+        ctx.drawImage(table, 350, 250, table.width * (scale * 0.6), table.height * (scale * 0.6));
+      }
+    }
+
+    // Draw map elements with real sprites (simplified for low quality but always visible)
+    if (gameState.mapElements) {
+      for (const element of gameState.mapElements) {
+        const mapAssets = assetsRef.current.mapElements;
+        let spriteDrawn = false;
+        
+        // Try to use actual sprites first
+        if (element.id === 'fountain') {
+          const fountainSprite = mapAssets?.get('fountain');
+          if (fountainSprite) {
+            const scale = quality === 'low' ? 0.6 : quality === 'medium' ? 0.8 : 1.0;
+            ctx.drawImage(
+              fountainSprite, 
+              element.position.x, 
+              element.position.y, 
+              fountainSprite.width * scale, 
+              fountainSprite.height * scale
+            );
+            spriteDrawn = true;
+          }
+        } else if (element.type === 'obstacle') {
+          // Try different obstacle sprites
+        const treeSprite = mapAssets?.get('tree');
+        const rockSprite = mapAssets?.get('rock');          if (treeSprite && element.id?.includes('tree')) {
+            const scale = quality === 'low' ? 0.5 : quality === 'medium' ? 0.7 : 0.9;
+            ctx.drawImage(
+              treeSprite,
+              element.position.x,
+              element.position.y,
+              treeSprite.width * scale,
+              treeSprite.height * scale
+            );
+            spriteDrawn = true;
+          } else if (rockSprite && element.id?.includes('rock')) {
+            const scale = quality === 'low' ? 0.4 : quality === 'medium' ? 0.6 : 0.8;
+            ctx.drawImage(
+              rockSprite,
+              element.position.x,
+              element.position.y,
+              rockSprite.width * scale,
+              rockSprite.height * scale
+            );
+            spriteDrawn = true;
+          }
+        } else if (element.type === 'decoration') {
+          // Use path sprites for decorative elements
+        const pathH = mapAssets?.get('path-stone-h');
+        const pathV = mapAssets?.get('path-stone-v');          if (pathH && element.size.width > element.size.height) {
+            ctx.drawImage(pathH, element.position.x, element.position.y, element.size.width, element.size.height);
+            spriteDrawn = true;
+          } else if (pathV && element.size.height > element.size.width) {
+            ctx.drawImage(pathV, element.position.x, element.position.y, element.size.width, element.size.height);
+            spriteDrawn = true;
+          }
+        }
+        
+        // Fallback to colored shapes if no sprite available
+        if (!spriteDrawn) {
+          ctx.fillStyle = element.color || '#8B4513';
+          
+          if (element.type === 'obstacle') {
+            // Simple rectangles for low/medium quality, rounded for high
+            if (quality === 'high') {
+              ctx.beginPath();
+              ctx.roundRect(element.position.x, element.position.y, element.size.width, element.size.height, 5);
+              ctx.fill();
+            } else {
+              ctx.fillRect(element.position.x, element.position.y, element.size.width, element.size.height);
+            }
+          } else if (element.id === 'fountain') {
+            // Draw fountain as a circle (simplified for low quality)
             ctx.beginPath();
             ctx.arc(
               element.position.x + element.size.width / 2, 
               element.position.y + element.size.height / 2, 
-              (element.size.width / 2) + (i * 8), 
+              element.size.width / 2, 
               0, 
               Math.PI * 2
             );
-            ctx.stroke();
+            ctx.fill();
+            
+            // Add ripples only for high quality
+            if (quality === 'high') {
+              ctx.strokeStyle = element.color;
+              ctx.lineWidth = 1;
+              for (let i = 1; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.arc(
+                  element.position.x + element.size.width / 2, 
+                  element.position.y + element.size.height / 2, 
+                  (element.size.width / 2) + (i * 8), 
+                  0, 
+                  Math.PI * 2
+                );
+                ctx.stroke();
+              }
+            }
+          } else {
+            // Default rectangular shape
+            ctx.fillRect(element.position.x, element.position.y, element.size.width, element.size.height);
           }
         }
       }
@@ -642,7 +1066,8 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, onEntityClick, zoom = 1,
     drawEntity,
     updateParticles,
     drawEntityFeedback,
-    applyContextualAnimations
+    applyContextualAnimations,
+    assetsLoaded
   ]);
 
   useEffect(() => {

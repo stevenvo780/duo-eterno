@@ -1,0 +1,74 @@
+{
+  "pack_name": "Magical Grass Collection",
+  "version": "3.0",
+  "size": "256x256",
+  "variants": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter",
+    "base"
+  ],
+  "animated": true,
+  "usage": {
+    "base": "General purpose magical grass",
+    "spring": "Bright, vibrant grass with flowers",
+    "summer": "Rich green grass with mystical flowers",
+    "autumn": "Golden-brown grass with falling leaves",
+    "winter": "Pale grass with ice crystals",
+    "animated": "Wind-blown grass with particle effects"
+  },
+  "color_palette": {
+    "grass_magical": [
+      50,
+      205,
+      50
+    ],
+    "grass_bright": [
+      98,
+      255,
+      138
+    ],
+    "grass_deep": [
+      34,
+      139,
+      34
+    ],
+    "grass_spring": [
+      124,
+      252,
+      0
+    ],
+    "grass_summer": [
+      50,
+      205,
+      50
+    ],
+    "grass_autumn": [
+      154,
+      205,
+      50
+    ],
+    "grass_winter": [
+      143,
+      188,
+      143
+    ],
+    "grass_mystical": [
+      98,
+      255,
+      138
+    ],
+    "grass_glow": [
+      144,
+      238,
+      144
+    ]
+  },
+  "technical_specs": {
+    "format": "PNG with alpha",
+    "bit_depth": 32,
+    "compression": "lossless",
+    "tiling": "seamless"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "pulse",
+  "frame_count": 16,
+  "frame_size": [
+    64,
+    64
+  ],
+  "columns": 8,
+  "rows": 2,
+  "total_duration": 1280,
+  "loop": true,
+  "frames": [
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    },
+    {
+      "duration": 80
+    }
+  ]
+}
