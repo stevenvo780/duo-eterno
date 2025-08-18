@@ -28,7 +28,7 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
     if (visible) {
       setOpacity(1);
       setScale(1);
-      
+
       const timer = setTimeout(() => {
         setOpacity(0);
         setScale(0.8);
@@ -51,7 +51,7 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
     };
 
     const base = baseColors[speaker as keyof typeof baseColors] || baseColors.STEV;
-    
+
     return {
       background: `${base}dd`,
       border: `${base}ff`
@@ -104,7 +104,6 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
           {speaker === 'ISA' ? 'Isa' : 'Stev'}
         </div>
         {message}
-        
 
         <div
           style={{

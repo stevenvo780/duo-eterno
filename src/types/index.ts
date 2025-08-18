@@ -1,4 +1,4 @@
-import type { ZoneType, ActivityType, EntityStateType, MoodType } from "../constants";
+import type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants';
 
 export interface Position {
   x: number;
@@ -35,9 +35,9 @@ export interface Entity {
 
 export type EntityMood = MoodType;
 
-export type InteractionType = 
+export type InteractionType =
   | 'NOURISH'
-  | 'FEED' 
+  | 'FEED'
   | 'PLAY'
   | 'COMFORT'
   | 'DISTURB'
@@ -46,13 +46,27 @@ export type InteractionType =
 
 export interface MapElement {
   id: string;
-  type: 'obstacle' | 'food_zone' | 'rest_zone' | 'play_zone' | 'social_zone';
+  type:
+    | 'obstacle'
+    | 'food_zone'
+    | 'rest_zone'
+    | 'play_zone'
+    | 'social_zone'
+    | 'work_zone'
+    | 'comfort_zone'
+    | 'decoration';
   position: Position;
   size: { width: number; height: number };
   color: string;
   effect?: {
     statType: keyof EntityStats;
     modifier: number;
+  };
+  metadata?: {
+    furnitureType?: string;
+    assetId?: string;
+    rotation?: number;
+    [key: string]: unknown;
   };
 }
 
@@ -69,9 +83,14 @@ export interface Zone {
   effects?: Partial<Record<keyof EntityStats, number>>;
   color: string;
   attractiveness: number;
+  metadata?: {
+    furnitureTypes?: string[];
+    priority?: number;
+    [key: string]: unknown;
+  };
 }
 
-export type { ZoneType, ActivityType, EntityStateType, MoodType } from "../constants";
+export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants';
 
 export interface InteractionEffect {
   stats: Partial<EntityStats>;

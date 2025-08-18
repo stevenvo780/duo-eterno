@@ -21,10 +21,9 @@ const GameContent: React.FC = React.memo(() => {
     width: window.innerWidth,
     height: window.innerHeight
   });
-  
 
   useGameLoop();
-  
+
   useDialogueSystem();
   useZoneEffects();
   useEntityMovementOptimized();
@@ -59,28 +58,30 @@ const GameContent: React.FC = React.memo(() => {
   }, []);
 
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#0f1419',
-      overflow: 'hidden',
-      fontFamily: 'system-ui, sans-serif'
-    }}>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#0f1419',
+        overflow: 'hidden',
+        fontFamily: 'system-ui, sans-serif'
+      }}
+    >
       {/* Narrativa de introducción */}
-      {showIntro && (
-        <IntroNarrative onComplete={handleIntroComplete} />
-      )}
+      {showIntro && <IntroNarrative onComplete={handleIntroComplete} />}
 
-      <div style={{
-        flex: 1,
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <ProfessionalTopDownCanvas 
-          width={windowSize.width} 
+      <div
+        style={{
+          flex: 1,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <ProfessionalTopDownCanvas
+          width={windowSize.width}
           height={windowSize.height - 80}
           onEntityClick={handleEntitySelect}
         />
@@ -88,7 +89,7 @@ const GameContent: React.FC = React.memo(() => {
         <DialogOverlay />
       </div>
 
-      <UIControls 
+      <UIControls
         selectedEntityId={selectedEntityId}
         onEntitySelect={handleEntitySelectString}
         onShowIntro={() => setShowIntro(true)}

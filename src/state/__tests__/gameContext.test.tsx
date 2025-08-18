@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 
-
 const createEntity = (id: string, x: number, y: number) => ({
   id,
   position: { x, y },
@@ -30,10 +29,7 @@ const createEntity = (id: string, x: number, y: number) => ({
 });
 
 const initialGameState = {
-  entities: [
-    createEntity('circle', 100, 100),
-    createEntity('square', 200, 200)
-  ],
+  entities: [createEntity('circle', 100, 100), createEntity('square', 200, 200)],
   resonance: 80,
   togetherTime: 0,
   lastUpdate: Date.now(),
@@ -43,11 +39,10 @@ const initialGameState = {
   gameMode: 'balanced' as const
 };
 
-
 describe('GameContext reducer behavior', () => {
   it('entities have correct initial stats structure', () => {
     const circleEntity = initialGameState.entities.find(e => e.id === 'circle')!;
-    
+
     expect(circleEntity.stats.money).toBe(100);
     expect(circleEntity.stats.hunger).toBe(50);
     expect(circleEntity.stats.health).toBe(100);

@@ -1,6 +1,6 @@
 /**
  * 🎯 CONSTANTES DE ACTIVIDADES Y DINÁMICAS
- * 
+ *
  * Contiene todas las constantes relacionadas con:
  * - Efectos de actividades
  * - Duraciones óptimas
@@ -10,8 +10,6 @@
  */
 
 import type { EntityActivity } from '../types';
-
-
 
 export const ACTIVITY_OPTIMAL_DURATIONS = {
   WANDERING: 60000,
@@ -26,10 +24,8 @@ export const ACTIVITY_OPTIMAL_DURATIONS = {
   WORKING: 180000,
   SHOPPING: 30000,
   EXERCISING: 90000,
-  COOKING: 45000,
+  COOKING: 45000
 } as const;
-
-
 
 export const HYBRID_DECAY_RATES = {
   base: {
@@ -41,8 +37,6 @@ export const HYBRID_DECAY_RATES = {
     happiness: -0.5
   }
 } as const;
-
-
 
 export const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   WORKING: 1.2,
@@ -60,8 +54,6 @@ export const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   HIDING: 0.9
 } as const;
 
-
-
 export const SURVIVAL_COSTS = {
   LIVING_COST: 0.5,
   CRITICAL_MONEY: 10,
@@ -70,15 +62,11 @@ export const SURVIVAL_COSTS = {
   CRITICAL_SLEEPINESS: 20
 } as const;
 
-
-
 export const DECAY_CONFIG = {
   GENERAL_MULTIPLIER: 1.0,
   TIME_BASED_MULTIPLIER: 1.0,
   ACTIVITY_BASED_ADJUSTMENT: 1.0
 } as const;
-
-
 
 export const EFFICIENCY_FUNCTIONS = {
   WORKING: (timeSpent: number) => {
@@ -86,64 +74,62 @@ export const EFFICIENCY_FUNCTIONS = {
     if (timeSpent > 300000) return 0.6;
     return 1.0;
   },
-  
+
   RESTING: (timeSpent: number) => {
     if (timeSpent < 45000) return 0.4;
     if (timeSpent > 300000) return 0.7;
     return 1.0;
   },
-  
+
   SOCIALIZING: (timeSpent: number) => {
     if (timeSpent < 20000) return 0.5;
     return 1.0 + Math.min(0.5, timeSpent / 120000);
   },
-  
+
   DANCING: (timeSpent: number) => {
     if (timeSpent > 120000) return 0.6;
     return 1.0;
   },
-  
+
   SHOPPING: (timeSpent: number) => {
     if (timeSpent > 60000) return 0.5;
     return 1.0;
   },
-  
+
   COOKING: (timeSpent: number) => {
     if (timeSpent < 25000) return 0.3;
     if (timeSpent > 90000) return 0.7;
     return 1.0;
   },
-  
+
   EXERCISING: (timeSpent: number) => {
     if (timeSpent < 30000) return 0.4;
     if (timeSpent > 180000) return 0.5;
     return 1.0 + Math.min(0.3, timeSpent / 120000);
   },
-  
+
   MEDITATING: (timeSpent: number) => {
     if (timeSpent < 60000) return 0.3;
     return Math.min(1.5, 0.5 + timeSpent / 120000);
   },
-  
+
   WRITING: (timeSpent: number) => {
     if (timeSpent < 45000) return 0.4;
     return Math.min(1.2, 0.6 + timeSpent / 200000);
   },
-  
+
   WANDERING: () => 0.7,
-  
+
   EXPLORING: (timeSpent: number) => {
     return Math.min(1.3, 0.8 + timeSpent / 180000);
   },
-  
+
   CONTEMPLATING: (timeSpent: number) => {
     if (timeSpent < 90000) return 0.3;
     return Math.min(1.4, 0.5 + timeSpent / 180000);
   },
-  
+
   HIDING: () => 0.6
 } as const;
-
-
 
 // Eliminada función de validación no usada

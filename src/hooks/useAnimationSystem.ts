@@ -45,7 +45,7 @@ class AnimationManager {
 
   async loadAnimation(name: string, category: string): Promise<LoadedAnimation> {
     const key = `${category}/${name}`;
-    
+
     if (this.loadedAnimations.has(key)) {
       return this.loadedAnimations.get(key)!;
     }
@@ -70,14 +70,12 @@ class AnimationManager {
 
   private async loadAnimationFiles(name: string, category: string): Promise<LoadedAnimation> {
     const basePath = `/assets/animations/${category}/${name}`;
-    
 
     const metadataResponse = await fetch(`${basePath}.json`);
     if (!metadataResponse.ok) {
       throw new Error(`Failed to load animation metadata: ${basePath}.json`);
     }
     const metadata: AnimationMetadata = await metadataResponse.json();
-
 
     const image = new Image();
     const imagePromise = new Promise<HTMLImageElement>((resolve, reject) => {
@@ -87,7 +85,6 @@ class AnimationManager {
     });
 
     await imagePromise;
-
 
     const frames = this.calculateFrames(metadata);
 
@@ -105,7 +102,7 @@ class AnimationManager {
     for (let i = 0; i < metadata.frame_count; i++) {
       const col = i % metadata.columns;
       const row = Math.floor(i / metadata.columns);
-      
+
       frames.push({
         x: col * frameWidth,
         y: row * frameHeight,
@@ -154,15 +151,14 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const lastUpdateRef = useRef<number>(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const { loadAnimation } = useAnimationSystem();
 
-
   useEffect(() => {
     let mounted = true;
-    
+
     loadAnimation(name, category)
       .then(loadedAnimation => {
         if (mounted) {
@@ -182,47 +178,51 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
     };
   }, [name, category, loadAnimation]);
 
+  const updateAnimation = useCallback(
+    (timestamp: number) => {
+      if (!animation || !state.isPlaying) return;
 
-  const updateAnimation = useCallback((timestamp: number) => {
-    if (!animation || !state.isPlaying) return;
+      const deltaTime = timestamp - lastUpdateRef.current;
+      lastUpdateRef.current = timestamp;
 
-    const deltaTime = timestamp - lastUpdateRef.current;
-    lastUpdateRef.current = timestamp;
+      setState(prevState => {
+        const newElapsedTime = prevState.elapsedTime + deltaTime;
+        const currentFrame = prevState.currentFrame;
+        const frameDuration = animation.frames[currentFrame]?.duration || 100;
 
-    setState(prevState => {
-      const newElapsedTime = prevState.elapsedTime + deltaTime;
-      const currentFrame = prevState.currentFrame;
-      const frameDuration = animation.frames[currentFrame]?.duration || 100;
+        if (newElapsedTime >= frameDuration) {
+          const nextFrame = (currentFrame + 1) % animation.frames.length;
 
-      if (newElapsedTime >= frameDuration) {
-        const nextFrame = (currentFrame + 1) % animation.frames.length;
-        
+          if (
+            !animation.metadata.loop &&
+            nextFrame === 0 &&
+            currentFrame === animation.frames.length - 1
+          ) {
+            return {
+              ...prevState,
+              isPlaying: false
+            };
+          }
 
-        if (!animation.metadata.loop && nextFrame === 0 && currentFrame === animation.frames.length - 1) {
           return {
             ...prevState,
-            isPlaying: false
+            currentFrame: nextFrame,
+            elapsedTime: newElapsedTime - frameDuration
           };
         }
 
         return {
           ...prevState,
-          currentFrame: nextFrame,
-          elapsedTime: newElapsedTime - frameDuration
+          elapsedTime: newElapsedTime
         };
+      });
+
+      if (state.isPlaying) {
+        animationFrameRef.current = requestAnimationFrame(updateAnimation);
       }
-
-      return {
-        ...prevState,
-        elapsedTime: newElapsedTime
-      };
-    });
-
-    if (state.isPlaying) {
-      animationFrameRef.current = requestAnimationFrame(updateAnimation);
-    }
-  }, [animation, state.isPlaying]);
-
+    },
+    [animation, state.isPlaying]
+  );
 
   useEffect(() => {
     if (state.isPlaying && animation) {

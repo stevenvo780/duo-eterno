@@ -4,7 +4,6 @@ import { useGame } from '../hooks/useGame';
 const DialogOverlay: React.FC = () => {
   const { dialogueState, dispatch } = useGame();
 
-
   useEffect(() => {
     if (dialogueState.visible) {
       const timer = setTimeout(() => {
@@ -19,7 +18,7 @@ const DialogOverlay: React.FC = () => {
 
   const elapsed = Date.now() - dialogueState.startTime;
   const progress = elapsed / dialogueState.duration;
-  const opacity = progress < 0.9 ? 1 : 1 - ((progress - 0.9) / 0.1);
+  const opacity = progress < 0.9 ? 1 : 1 - (progress - 0.9) / 0.1;
 
   if (dialogueState.message) {
     return (
@@ -35,37 +34,40 @@ const DialogOverlay: React.FC = () => {
           zIndex: 10
         }}
       >
-        <div style={{
-          position: 'relative',
-          width: '320px',
-          height: '120px',
-          background: 'linear-gradient(135deg, #2d5a27 0%, #1a3d1a 100%)',
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          imageRendering: 'pixelated'
-        }}>
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            fontSize: '14px',
-            lineHeight: '1.5',
-            fontFamily: 'system-ui, sans-serif',
-            textAlign: 'center',
-            maxWidth: '280px',
-            textShadow: '2px 2px 0px #000',
-            fontWeight: '500'
-          }}>
+        <div
+          style={{
+            position: 'relative',
+            width: '320px',
+            height: '120px',
+            background: 'linear-gradient(135deg, #2d5a27 0%, #1a3d1a 100%)',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            imageRendering: 'pixelated'
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: 'white',
+              fontSize: '14px',
+              lineHeight: '1.5',
+              fontFamily: 'system-ui, sans-serif',
+              textAlign: 'center',
+              maxWidth: '280px',
+              textShadow: '2px 2px 0px #000',
+              fontWeight: '500'
+            }}
+          >
             {dialogueState.message}
           </div>
         </div>
       </div>
     );
   }
-
 
   return (
     <div

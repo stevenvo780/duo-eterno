@@ -1,6 +1,6 @@
 /**
  * 🎨 SISTEMA SIMPLIFICADO DE GESTIÓN DE ASSETS
- * 
+ *
  * Maneja assets individuales de la carpeta Tiles/ de forma eficiente
  * Sin extracción de sprites - cada tile es un archivo independiente
  */
@@ -28,7 +28,7 @@ export const ASSET_CATEGORIES = {
     arena: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena'],
     piedra: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra']
   },
-  
+
   // Edificios (5 assets)
   BUILDINGS: {
     principal: ['tile_0000_edificio_principal'],
@@ -39,27 +39,55 @@ export const ASSET_CATEGORIES = {
   // Muebles reales descargados (400+ assets de calidad)
   FURNITURE: {
     // Muebles de sala
-    seating: ['furniture/tile_furniture_sofa_brown', 'furniture/tile_furniture_armchair', 'furniture/tile_furniture_chair_wood'],
-    tables: ['furniture/tile_furniture_table_round', 'furniture/tile_furniture_coffee_table', 'furniture/tile_furniture_dining_table'],
-    
+    seating: [
+      'furniture/tile_furniture_sofa_brown',
+      'furniture/tile_furniture_armchair',
+      'furniture/tile_furniture_chair_wood'
+    ],
+    tables: [
+      'furniture/tile_furniture_table_round',
+      'furniture/tile_furniture_coffee_table',
+      'furniture/tile_furniture_dining_table'
+    ],
+
     // Dormitorio
-    bedroom: ['furniture/tile_furniture_bed_double', 'furniture/tile_furniture_nightstand', 'furniture/tile_furniture_dresser'],
-    
+    bedroom: [
+      'furniture/tile_furniture_bed_double',
+      'furniture/tile_furniture_nightstand',
+      'furniture/tile_furniture_dresser'
+    ],
+
     // Cocina
-    kitchen: ['furniture/tile_furniture_stove', 'furniture/tile_furniture_fridge', 'furniture/tile_furniture_sink'],
-    
+    kitchen: [
+      'furniture/tile_furniture_stove',
+      'furniture/tile_furniture_fridge',
+      'furniture/tile_furniture_sink'
+    ],
+
     // Oficina/Estudio
-    office: ['furniture/tile_furniture_desk', 'furniture/tile_furniture_bookshelf', 'furniture/tile_furniture_chair_fancy'],
-    
+    office: [
+      'furniture/tile_furniture_desk',
+      'furniture/tile_furniture_bookshelf',
+      'furniture/tile_furniture_chair_fancy'
+    ],
+
     // Baño
-    bathroom: ['furniture/tile_furniture_toilet', 'furniture/tile_furniture_bathtub', 'furniture/tile_furniture_mirror'],
-    
+    bathroom: [
+      'furniture/tile_furniture_toilet',
+      'furniture/tile_furniture_bathtub',
+      'furniture/tile_furniture_mirror'
+    ],
+
     // Entretenimiento
-    entertainment: ['furniture/tile_furniture_tv_stand', 'furniture/tile_furniture_piano', 'furniture/tile_furniture_fireplace'],
-    
+    entertainment: [
+      'furniture/tile_furniture_tv_stand',
+      'furniture/tile_furniture_piano',
+      'furniture/tile_furniture_fireplace'
+    ],
+
     // Almacenamiento
     storage: ['furniture/tile_furniture_wardrobe', 'furniture/tile_furniture_cabinet'],
-    
+
     // Decoración
     decoration: ['furniture/tile_furniture_lamp']
   },
@@ -68,7 +96,7 @@ export const ASSET_CATEGORIES = {
   NATURE: {
     arboles: ['tile_0002_arbol_grande', 'tile_0033_arbol_pequeño', 'tile_0034_arbol_frondoso']
   },
-  
+
   // Carreteras (4 assets completos para conectividad)
   ROADS: {
     horizontal: ['tile_0001_carretera_horizontal'],
@@ -76,7 +104,7 @@ export const ASSET_CATEGORIES = {
     curva: ['tile_0154_carretera_curva'],
     cruce: ['tile_0191_carretera_cruce']
   },
-  
+
   // Agua (1 asset esencial)
   WATER: {
     deep: ['tile_0149_agua_profunda']
@@ -95,7 +123,7 @@ export class AssetManager {
   private initializeCategories() {
     Object.entries(ASSET_CATEGORIES).forEach(([category, subtypes]) => {
       this.categorizedAssets[category.toLowerCase()] = [];
-      
+
       Object.entries(subtypes).forEach(([subtype]) => {
         if (!this.categorizedAssets[subtype]) {
           this.categorizedAssets[subtype] = [];
@@ -136,10 +164,10 @@ export class AssetManager {
     return new Promise((resolve, reject) => {
       const image = new Image();
       // Soporte para muebles en subcarpeta
-      const path = assetId.startsWith('furniture/') 
+      const path = assetId.startsWith('furniture/')
         ? `/assets/Tiles/${assetId}.png`
         : `/assets/Tiles/${assetId}.png`;
-      
+
       image.onload = () => {
         const asset: Asset = {
           id: assetId,
@@ -167,7 +195,7 @@ export class AssetManager {
   async loadAssetsByCategory(category: keyof typeof ASSET_CATEGORIES): Promise<Asset[]> {
     const categoryData = ASSET_CATEGORIES[category];
     const allAssetIds = Object.values(categoryData).flat();
-    
+
     const loadPromises = allAssetIds.map(id => this.loadAsset(id));
     return Promise.all(loadPromises);
   }
@@ -175,10 +203,13 @@ export class AssetManager {
   /**
    * Carga assets de un subtipo específico
    */
-  async loadAssetsBySubtype(category: keyof typeof ASSET_CATEGORIES, subtype: string): Promise<Asset[]> {
+  async loadAssetsBySubtype(
+    category: keyof typeof ASSET_CATEGORIES,
+    subtype: string
+  ): Promise<Asset[]> {
     const categoryData = ASSET_CATEGORIES[category] as Record<string, readonly string[]>;
     const assetIds: readonly string[] = categoryData[subtype] || [];
-    
+
     const loadPromises = Array.from(assetIds).map((id: string) => this.loadAsset(id));
     return Promise.all(loadPromises);
   }
@@ -189,9 +220,9 @@ export class AssetManager {
   getRandomAssetByType(category: string, subtype?: string): Asset | null {
     const key = subtype || category;
     const assetsOfType = this.categorizedAssets[key] || [];
-    
+
     if (assetsOfType.length === 0) return null;
-    
+
     // Selección determinista basada en timestamp
     const seed = Date.now() * 1664525 + 1013904223;
     const index = Math.abs(seed % 2147483647) % assetsOfType.length;
@@ -209,24 +240,26 @@ export class AssetManager {
   /**
    * Obtiene muebles apropiados por tipo de habitación
    */
-  getFurnitureByRoomType(roomType: 'living' | 'bedroom' | 'kitchen' | 'bathroom' | 'office' | 'storage'): Asset[] {
+  getFurnitureByRoomType(
+    roomType: 'living' | 'bedroom' | 'kitchen' | 'bathroom' | 'office' | 'storage'
+  ): Asset[] {
     const furnitureMap: Record<string, string[]> = {
       living: ['seating', 'tables', 'entertainment', 'decoration'],
-      bedroom: ['bedroom', 'storage', 'decoration'], 
+      bedroom: ['bedroom', 'storage', 'decoration'],
       kitchen: ['kitchen', 'tables'],
       bathroom: ['bathroom'],
       office: ['office', 'storage'],
       storage: ['storage']
     };
-    
+
     const furniture: Asset[] = [];
     const subtypes = furnitureMap[roomType] || [];
-    
+
     subtypes.forEach(subtype => {
       const assets = this.categorizedAssets[subtype] || [];
       furniture.push(...assets);
     });
-    
+
     return furniture;
   }
 
@@ -259,13 +292,13 @@ export class AssetManager {
   private detectSubtype(id: string): string | undefined {
     // Detecta el subtipo basado en el nombre del archivo
     const name = id.toLowerCase();
-    
+
     // Para suelos
     if (name.includes('cesped')) return 'cesped';
     if (name.includes('tierra')) return 'tierra';
     if (name.includes('arena')) return 'arena';
     if (name.includes('piedra')) return 'piedra';
-    
+
     // Para edificios
     if (name.includes('principal')) return 'principal';
     if (name.includes('comercial')) return 'comercial';
@@ -273,19 +306,19 @@ export class AssetManager {
     if (name.includes('grande')) return 'grande';
     if (name.includes('alto')) return 'alto';
     if (name.includes('tejado')) return 'tejado';
-    
+
     // Para árboles
     if (name.includes('grande')) return 'arbol_grande';
     if (name.includes('pequeño')) return 'arbol_pequeño';
     if (name.includes('frondoso')) return 'arbol_frondoso';
     if (name.includes('joven')) return 'arbol_joven';
-    
+
     // Para carreteras
     if (name.includes('horizontal')) return 'horizontal';
     if (name.includes('vertical')) return 'vertical';
     if (name.includes('curva')) return 'curva';
     if (name.includes('cruce')) return 'cruce';
-    
+
     // Para agua
     if (name.includes('profunda')) return 'profunda';
     if (name.includes('estanque')) return 'estanque';
@@ -324,27 +357,27 @@ export class AssetManager {
    */
   async preloadEssentialAssets(): Promise<void> {
     console.log('🎨 Precargando assets esenciales...');
-    
+
     const essentialAssets = [
       // Suelos básicos
       'tile_0182_suelo_cesped',
-      'tile_0144_suelo_tierra', 
+      'tile_0144_suelo_tierra',
       'tile_0143_suelo_arena',
       'tile_0145_suelo_piedra',
-      
+
       // Edificios básicos
       'tile_0000_edificio_principal',
       'tile_0003_edificio_comercial',
       'tile_0004_edificio_pequeño',
-      
+
       // Naturaleza básica
       'tile_0002_arbol_grande',
       'tile_0033_arbol_pequeño',
-      
+
       // Carreteras básicas
       'tile_0001_carretera_horizontal',
       'tile_0189_carretera_vertical',
-      
+
       // Agua básica
       'tile_0149_agua_profunda'
     ];
@@ -359,10 +392,13 @@ export class AssetManager {
   getStats() {
     return {
       totalLoaded: this.assets.size,
-      categories: Object.keys(this.categorizedAssets).reduce((acc, key) => {
-        acc[key] = this.categorizedAssets[key].length;
-        return acc;
-      }, {} as Record<string, number>)
+      categories: Object.keys(this.categorizedAssets).reduce(
+        (acc, key) => {
+          acc[key] = this.categorizedAssets[key].length;
+          return acc;
+        },
+        {} as Record<string, number>
+      )
     };
   }
 }

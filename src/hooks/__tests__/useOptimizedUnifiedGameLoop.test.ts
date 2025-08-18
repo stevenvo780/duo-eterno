@@ -5,16 +5,12 @@
 import { describe, it, expect } from 'vitest';
 
 describe('useOptimizedUnifiedGameLoop', () => {
-  
   it('should have basic functionality tests', () => {
-
     const calculateMood = (stats: { hunger: number; sleepiness: number; energy: number }) => {
-      const criticalFactors = [
-        stats.hunger < 15,
-        stats.sleepiness < 15,
-        stats.energy < 15
-      ].filter(Boolean).length;
-      
+      const criticalFactors = [stats.hunger < 15, stats.sleepiness < 15, stats.energy < 15].filter(
+        Boolean
+      ).length;
+
       if (criticalFactors >= 2) return 'ANXIOUS';
       return 'CONTENT';
     };
@@ -24,10 +20,13 @@ describe('useOptimizedUnifiedGameLoop', () => {
   });
 
   it('should calculate distance correctly', () => {
-    const calculateDistance = (entity1: { position: { x: number; y: number } }, entity2: { position: { x: number; y: number } }) => {
+    const calculateDistance = (
+      entity1: { position: { x: number; y: number } },
+      entity2: { position: { x: number; y: number } }
+    ) => {
       return Math.sqrt(
         Math.pow(entity1.position.x - entity2.position.x, 2) +
-        Math.pow(entity1.position.y - entity2.position.y, 2)
+          Math.pow(entity1.position.y - entity2.position.y, 2)
       );
     };
 

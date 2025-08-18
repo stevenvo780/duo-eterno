@@ -5,16 +5,52 @@ import type { GameState } from '../../types';
 const baseState: GameState = {
   entities: [
     {
-      id: 'circle', position: { x: 10, y: 20 }, state: 'IDLE', activity: 'WANDERING',
-      stats: { hunger: 50, sleepiness: 50, loneliness: 50, happiness: 50, energy: 50, boredom: 50, money: 10, health: 80 },
-      lastStateChange: Date.now(), lastActivityChange: Date.now(), lastInteraction: Date.now(),
-      pulsePhase: 0, colorHue: 200, mood: 'CONTENT', thoughts: [], isDead: false
+      id: 'circle',
+      position: { x: 10, y: 20 },
+      state: 'IDLE',
+      activity: 'WANDERING',
+      stats: {
+        hunger: 50,
+        sleepiness: 50,
+        loneliness: 50,
+        happiness: 50,
+        energy: 50,
+        boredom: 50,
+        money: 10,
+        health: 80
+      },
+      lastStateChange: Date.now(),
+      lastActivityChange: Date.now(),
+      lastInteraction: Date.now(),
+      pulsePhase: 0,
+      colorHue: 200,
+      mood: 'CONTENT',
+      thoughts: [],
+      isDead: false
     },
     {
-      id: 'square', position: { x: 30, y: 40 }, state: 'IDLE', activity: 'WANDERING',
-      stats: { hunger: 50, sleepiness: 50, loneliness: 50, happiness: 50, energy: 50, boredom: 50, money: 10, health: 80 },
-      lastStateChange: Date.now(), lastActivityChange: Date.now(), lastInteraction: Date.now(),
-      pulsePhase: Math.PI, colorHue: 300, mood: 'CONTENT', thoughts: [], isDead: false
+      id: 'square',
+      position: { x: 30, y: 40 },
+      state: 'IDLE',
+      activity: 'WANDERING',
+      stats: {
+        hunger: 50,
+        sleepiness: 50,
+        loneliness: 50,
+        happiness: 50,
+        energy: 50,
+        boredom: 50,
+        money: 10,
+        health: 80
+      },
+      lastStateChange: Date.now(),
+      lastActivityChange: Date.now(),
+      lastInteraction: Date.now(),
+      pulsePhase: Math.PI,
+      colorHue: 300,
+      mood: 'CONTENT',
+      thoughts: [],
+      isDead: false
     }
   ],
   resonance: 60,
@@ -30,7 +66,6 @@ describe('persistence migrator and io', () => {
   let originalLS: Storage;
 
   beforeEach(() => {
-
     originalLS = global.localStorage;
     const store = new Map<string, string>();
     global.localStorage = {

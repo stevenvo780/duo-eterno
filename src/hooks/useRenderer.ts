@@ -1,10 +1,10 @@
 /**
  * 🚀 FASE 1: Hook de Renderizado Optimizado para Performance 60 FPS
- * 
+ *
  * Características principales:
  * - ✅ Control dinámico de FPS con throttling inteligente
  * - ✅ Niveles de calidad adaptativos según rendimiento
- * - ✅ Monitoreo continuo de performance 
+ * - ✅ Monitoreo continuo de performance
  * - ✅ Detección automática de memoria disponible
  * - ✅ Rendimiento escalable según capacidad del dispositivo
  */
@@ -53,19 +53,15 @@ const QUALITY_SETTINGS: Record<QualityLevel, QualitySettings> = {
   }
 };
 
-
 export const useRenderer = () => {
-
   const [qualityLevel, setQualityLevel] = useState<QualityLevel>('high');
   const [isThrottling, setIsThrottling] = useState(false);
-  
 
   const frameCount = useRef<number>(0);
   const lastFrameTime = useRef<number>(performance.now());
   const fpsHistory = useRef<number[]>([]);
   const droppedFrames = useRef<number>(0);
   const lastRenderTime = useRef<number>(0);
-  
 
   const currentMetrics = useRef<PerformanceMetrics>({
     fps: 60,
@@ -75,14 +71,13 @@ export const useRenderer = () => {
     lastUpdate: performance.now()
   });
 
-
   const adjustQuality = useCallback(() => {
-    const avgFps = fpsHistory.current.length > 0 
-      ? fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length 
-      : 60;
-    
+    const avgFps =
+      fpsHistory.current.length > 0
+        ? fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length
+        : 60;
+
     const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
-    
 
     if (avgFps < targetFps * 0.6 && qualityLevel !== 'low') {
       const newLevel = qualityLevel === 'high' ? 'medium' : 'low';
@@ -90,7 +85,6 @@ export const useRenderer = () => {
       console.warn(`🔽 Calidad reducida a ${newLevel} (FPS promedio: ${avgFps.toFixed(1)})`);
       return;
     }
-    
 
     if (avgFps > targetFps * 1.3 && qualityLevel !== 'high') {
       const newLevel = qualityLevel === 'low' ? 'medium' : 'high';
@@ -99,13 +93,14 @@ export const useRenderer = () => {
     }
   }, [qualityLevel]);
 
-
   const getMemoryUsage = useCallback((): number => {
     try {
       if ('memory' in performance) {
-        const memInfo = (performance as typeof performance & { 
-          memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } 
-        }).memory;
+        const memInfo = (
+          performance as typeof performance & {
+            memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+          }
+        ).memory;
         return memInfo.usedJSHeapSize / (1024 * 1024);
       }
     } catch {
@@ -114,93 +109,89 @@ export const useRenderer = () => {
     return 0;
   }, []);
 
+  const updateFPS = useCallback(
+    (currentTime: number) => {
+      frameCount.current++;
+      const deltaTime = currentTime - lastFrameTime.current;
 
-  const updateFPS = useCallback((currentTime: number) => {
-    frameCount.current++;
-    const deltaTime = currentTime - lastFrameTime.current;
-    
-    if (deltaTime >= 1000) {
-      const fps = (frameCount.current * 1000) / deltaTime;
-      
+      if (deltaTime >= 1000) {
+        const fps = (frameCount.current * 1000) / deltaTime;
 
-      fpsHistory.current.push(fps);
-      if (fpsHistory.current.length > 10) {
-        fpsHistory.current.shift();
+        fpsHistory.current.push(fps);
+        if (fpsHistory.current.length > 10) {
+          fpsHistory.current.shift();
+        }
+
+        currentMetrics.current = {
+          fps,
+          frameDuration: deltaTime / frameCount.current,
+          droppedFrames: droppedFrames.current,
+          memoryUsage: getMemoryUsage(),
+          lastUpdate: currentTime
+        };
+
+        frameCount.current = 0;
+        lastFrameTime.current = currentTime;
+        droppedFrames.current = 0;
+
+        adjustQuality();
       }
-      
+    },
+    [adjustQuality, getMemoryUsage]
+  );
 
-      currentMetrics.current = {
-        fps,
-        frameDuration: deltaTime / frameCount.current,
-        droppedFrames: droppedFrames.current,
-        memoryUsage: getMemoryUsage(),
-        lastUpdate: currentTime
-      };
-      
+  const shouldRender = useCallback(
+    (currentTime: number = performance.now()): boolean => {
+      const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
+      const minFrameDuration = 1000 / targetFps;
+      const timeSinceLastRender = currentTime - lastRenderTime.current;
 
-      frameCount.current = 0;
-      lastFrameTime.current = currentTime;
-      droppedFrames.current = 0;
-      
+      if (timeSinceLastRender >= minFrameDuration) {
+        lastRenderTime.current = currentTime;
+        updateFPS(currentTime);
+        setIsThrottling(false);
+        return true;
+      }
 
-      adjustQuality();
-    }
-  }, [adjustQuality, getMemoryUsage]);
-
-
-  const shouldRender = useCallback((currentTime: number = performance.now()): boolean => {
-    const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
-    const minFrameDuration = 1000 / targetFps;
-    const timeSinceLastRender = currentTime - lastRenderTime.current;
-    
-    if (timeSinceLastRender >= minFrameDuration) {
-      lastRenderTime.current = currentTime;
-      updateFPS(currentTime);
-      setIsThrottling(false);
-      return true;
-    }
-    
-    setIsThrottling(true);
-    droppedFrames.current++;
-    return false;
-  }, [qualityLevel, updateFPS]);
-
+      setIsThrottling(true);
+      droppedFrames.current++;
+      return false;
+    },
+    [qualityLevel, updateFPS]
+  );
 
   const getFPS = useCallback((): number => {
     return currentMetrics.current.fps;
   }, []);
 
-
   const getQualityLevel = useCallback((): QualityLevel => {
     return qualityLevel;
   }, [qualityLevel]);
-
 
   const getMetrics = useCallback((): PerformanceMetrics => {
     return { ...currentMetrics.current };
   }, []);
 
-
   const getQualitySettings = useCallback((): QualitySettings => {
     return QUALITY_SETTINGS[qualityLevel];
   }, [qualityLevel]);
-
 
   const setQuality = useCallback((level: QualityLevel) => {
     setQualityLevel(level);
     console.info(`🎚️ Calidad manual establecida: ${level}`);
   }, []);
 
-
   useEffect(() => {
     const checkPerformance = () => {
       const metrics = currentMetrics.current;
       const memoryLimit = 200;
-      
+
       if (metrics.memoryUsage > memoryLimit) {
-        console.warn(`⚠️ Uso de memoria alto: ${metrics.memoryUsage.toFixed(1)}MB (límite: ${memoryLimit}MB)`);
+        console.warn(
+          `⚠️ Uso de memoria alto: ${metrics.memoryUsage.toFixed(1)}MB (límite: ${memoryLimit}MB)`
+        );
       }
-      
+
       if (metrics.fps < 20) {
         console.error(`🚨 FPS crítico: ${metrics.fps.toFixed(1)} FPS`);
       }
@@ -210,17 +201,16 @@ export const useRenderer = () => {
     return () => clearInterval(interval);
   }, []);
 
-
   useEffect(() => {
     const startTime = performance.now();
     lastFrameTime.current = startTime;
     lastRenderTime.current = startTime;
-    
+
     console.info('🎮 Sistema de renderizado optimizado iniciado', {
       initialQuality: qualityLevel,
       targetFPS: QUALITY_SETTINGS[qualityLevel].targetFps
     });
-    
+
     return () => {
       console.info('🏁 Sistema de renderizado finalizado', {
         totalFrames: frameCount.current,
@@ -231,18 +221,14 @@ export const useRenderer = () => {
   }, [qualityLevel]);
 
   return {
-
     shouldRender,
-    
 
     getFPS,
     getMetrics,
-    
 
     getQualityLevel,
     getQualitySettings,
     setQuality,
-    
 
     isThrottling,
     qualityLevel

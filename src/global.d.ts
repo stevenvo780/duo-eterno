@@ -1,5 +1,3 @@
-
-
 import type { GameConfig } from './config/gameConfig';
 
 declare global {

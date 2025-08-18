@@ -59,19 +59,15 @@ export class VoronoiGenerator {
    * Generar células de Voronoi con distribución orgánica
    */
   generateCells(): VoronoiCell[] {
-
     const seedPoints = this.generateOrganicSeedPoints();
-    
 
     const relaxedPoints = this.lloydRelaxation(seedPoints);
-    
 
     this.cells = this.createVoronoiCells(relaxedPoints);
-    
 
     this.calculateNeighbors();
     this.assignCellTypes();
-    
+
     return this.cells;
   }
 
@@ -82,12 +78,11 @@ export class VoronoiGenerator {
   private generateOrganicSeedPoints(): Point[] {
     const points: Point[] = [];
     const { width, height, numCells, minCellDistance, boundaryPadding } = this.config;
-    
 
     const cellSize = minCellDistance / Math.sqrt(2);
     const gridWidth = Math.ceil(width / cellSize);
     const gridHeight = Math.ceil(height / cellSize);
-    const grid: Point[][] = Array.from({ length: gridHeight }, () => 
+    const grid: Point[][] = Array.from({ length: gridHeight }, () =>
       Array.from({ length: gridWidth }, () => ({ x: -1, y: -1 }))
     );
 
@@ -97,15 +92,11 @@ export class VoronoiGenerator {
       return seedValue / 233280;
     };
 
-
     for (let attempts = 0; attempts < numCells * 10 && points.length < numCells; attempts++) {
-
       const candidate = this.generateCandidatePoint(seededRandom);
-      
 
       if (this.isValidPoint(candidate, grid, cellSize, gridWidth, gridHeight)) {
         points.push(candidate);
-        
 
         const gridX = Math.floor(candidate.x / cellSize);
         const gridY = Math.floor(candidate.y / cellSize);
@@ -115,13 +106,12 @@ export class VoronoiGenerator {
       }
     }
 
-
     while (points.length < Math.max(4, numCells * 0.7)) {
       const fallbackPoint = {
         x: boundaryPadding + seededRandom() * (width - 2 * boundaryPadding),
         y: boundaryPadding + seededRandom() * (height - 2 * boundaryPadding)
       };
-      
+
       if (this.isValidPoint(fallbackPoint, grid, cellSize, gridWidth, gridHeight)) {
         points.push(fallbackPoint);
       }
@@ -136,41 +126,34 @@ export class VoronoiGenerator {
    */
   private generateCandidatePoint(seededRandom: () => number): Point {
     const { width, height, boundaryPadding } = this.config;
-    
 
     let bestPoint = { x: 0, y: 0 };
     let bestScore = -Infinity;
-    
+
     for (let i = 0; i < 5; i++) {
       const candidate = {
         x: boundaryPadding + seededRandom() * (width - 2 * boundaryPadding),
         y: boundaryPadding + seededRandom() * (height - 2 * boundaryPadding)
       };
-      
 
-      const habitabilityScore = this.noise.generateNoise2D(
-        candidate.x * 0.01, 
-        candidate.y * 0.01
-      );
-      
+      const habitabilityScore = this.noise.generateNoise2D(candidate.x * 0.01, candidate.y * 0.01);
 
       const centerX = width / 2;
       const centerY = height / 2;
       const distanceFromCenter = Math.sqrt(
-        Math.pow(candidate.x - centerX, 2) + 
-        Math.pow(candidate.y - centerY, 2)
+        Math.pow(candidate.x - centerX, 2) + Math.pow(candidate.y - centerY, 2)
       );
       const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
-      const centerScore = 1 - (distanceFromCenter / maxDistance);
-      
+      const centerScore = 1 - distanceFromCenter / maxDistance;
+
       const totalScore = habitabilityScore * 0.7 + centerScore * 0.3;
-      
+
       if (totalScore > bestScore) {
         bestScore = totalScore;
         bestPoint = candidate;
       }
     }
-    
+
     return bestPoint;
   }
 
@@ -186,19 +169,17 @@ export class VoronoiGenerator {
   ): boolean {
     const gridX = Math.floor(candidate.x / cellSize);
     const gridY = Math.floor(candidate.y / cellSize);
-    
 
     for (let dy = -2; dy <= 2; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const checkX = gridX + dx;
         const checkY = gridY + dy;
-        
+
         if (checkX >= 0 && checkX < gridWidth && checkY >= 0 && checkY < gridHeight) {
           const gridPoint = grid[checkY][checkX];
           if (gridPoint.x !== -1) {
             const distance = Math.sqrt(
-              Math.pow(candidate.x - gridPoint.x, 2) + 
-              Math.pow(candidate.y - gridPoint.y, 2)
+              Math.pow(candidate.x - gridPoint.x, 2) + Math.pow(candidate.y - gridPoint.y, 2)
             );
             if (distance < this.config.minCellDistance) {
               return false;
@@ -207,7 +188,7 @@ export class VoronoiGenerator {
         }
       }
     }
-    
+
     return true;
   }
 
@@ -217,19 +198,18 @@ export class VoronoiGenerator {
    */
   private lloydRelaxation(points: Point[]): Point[] {
     let currentPoints = [...points];
-    
+
     for (let iteration = 0; iteration < this.config.relaxationIterations; iteration++) {
       const newPoints: Point[] = [];
-      
-      currentPoints.forEach(point => {
 
+      currentPoints.forEach(point => {
         const centroid = this.calculateCellCentroid(point, currentPoints);
         newPoints.push(centroid);
       });
-      
+
       currentPoints = newPoints;
     }
-    
+
     return currentPoints;
   }
 
@@ -240,51 +220,48 @@ export class VoronoiGenerator {
   private calculateCellCentroid(center: Point, allPoints: Point[]): Point {
     const sampleSize = 50;
     const radius = this.config.minCellDistance;
-    
+
     let sumX = 0;
     let sumY = 0;
     let count = 0;
-    
+
     // Muestreo en círculo para calcular el centroide
     for (let i = 0; i < sampleSize; i++) {
       const angle = (i / sampleSize) * 2 * Math.PI;
       const seedValue = (this.config.seed + i * 1000 + center.x * 10 + center.y * 10) % 2147483647;
-      const normalizedSeed = (seedValue * 9301) % 233280 / 233280;
+      const normalizedSeed = ((seedValue * 9301) % 233280) / 233280;
       const distance = normalizedSeed * radius;
-      
+
       const sampleX = center.x + Math.cos(angle) * distance;
       const sampleY = center.y + Math.sin(angle) * distance;
-      
 
       let closestPoint = center;
       let minDistance = Math.sqrt(
         Math.pow(sampleX - center.x, 2) + Math.pow(sampleY - center.y, 2)
       );
-      
+
       allPoints.forEach(point => {
-        const dist = Math.sqrt(
-          Math.pow(sampleX - point.x, 2) + Math.pow(sampleY - point.y, 2)
-        );
+        const dist = Math.sqrt(Math.pow(sampleX - point.x, 2) + Math.pow(sampleY - point.y, 2));
         if (dist < minDistance) {
           minDistance = dist;
           closestPoint = point;
         }
       });
-      
+
       if (closestPoint === center) {
         sumX += sampleX;
         sumY += sampleY;
         count++;
       }
     }
-    
+
     if (count > 0) {
       return {
         x: sumX / count,
         y: sumY / count
       };
     }
-    
+
     return center;
   }
 
@@ -293,11 +270,11 @@ export class VoronoiGenerator {
    */
   private createVoronoiCells(points: Point[]): VoronoiCell[] {
     const cells: VoronoiCell[] = [];
-    
+
     points.forEach((point, index) => {
       const vertices = this.calculateCellVertices(point, points);
       const bounds = this.calculateBounds(vertices);
-      
+
       const cell: VoronoiCell = {
         id: `voronoi_cell_${index}`,
         center: point,
@@ -308,10 +285,10 @@ export class VoronoiGenerator {
         bounds,
         density: this.calculateCellDensity(point)
       };
-      
+
       cells.push(cell);
     });
-    
+
     return cells;
   }
 
@@ -323,38 +300,34 @@ export class VoronoiGenerator {
     const vertices: Point[] = [];
     const numVertices = 8;
     const radius = this.config.minCellDistance * 0.7;
-    
+
     for (let i = 0; i < numVertices; i++) {
       const angle = (i / numVertices) * 2 * Math.PI;
       let vertex = {
         x: center.x + Math.cos(angle) * radius,
         y: center.y + Math.sin(angle) * radius
       };
-      
 
       allPoints.forEach(otherPoint => {
         if (otherPoint !== center) {
           const distToOther = Math.sqrt(
-            Math.pow(vertex.x - otherPoint.x, 2) + 
-            Math.pow(vertex.y - otherPoint.y, 2)
+            Math.pow(vertex.x - otherPoint.x, 2) + Math.pow(vertex.y - otherPoint.y, 2)
           );
           const distToCenter = Math.sqrt(
-            Math.pow(vertex.x - center.x, 2) + 
-            Math.pow(vertex.y - center.y, 2)
+            Math.pow(vertex.x - center.x, 2) + Math.pow(vertex.y - center.y, 2)
           );
-          
-          if (distToOther < distToCenter) {
 
+          if (distToOther < distToCenter) {
             const midX = (center.x + otherPoint.x) / 2;
             const midY = (center.y + otherPoint.y) / 2;
             vertex = { x: midX, y: midY };
           }
         }
       });
-      
+
       vertices.push(vertex);
     }
-    
+
     return vertices;
   }
 
@@ -362,16 +335,18 @@ export class VoronoiGenerator {
    * Calcular bounds de una célula
    */
   private calculateBounds(vertices: Point[]): VoronoiCell['bounds'] {
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-    
+    let minX = Infinity,
+      maxX = -Infinity;
+    let minY = Infinity,
+      maxY = -Infinity;
+
     vertices.forEach(vertex => {
       minX = Math.min(minX, vertex.x);
       maxX = Math.max(maxX, vertex.x);
       minY = Math.min(minY, vertex.y);
       maxY = Math.max(maxY, vertex.y);
     });
-    
+
     return { minX, maxX, minY, maxY };
   }
 
@@ -380,14 +355,14 @@ export class VoronoiGenerator {
    */
   private calculateCellArea(vertices: Point[]): number {
     if (vertices.length < 3) return 0;
-    
+
     let area = 0;
     for (let i = 0; i < vertices.length; i++) {
       const j = (i + 1) % vertices.length;
       area += vertices[i].x * vertices[j].y;
       area -= vertices[j].x * vertices[i].y;
     }
-    
+
     return Math.abs(area) / 2;
   }
 
@@ -406,12 +381,12 @@ export class VoronoiGenerator {
     this.cells.forEach(cell => {
       cell.neighbors = this.cells.filter(otherCell => {
         if (otherCell === cell) return false;
-        
+
         const distance = Math.sqrt(
-          Math.pow(cell.center.x - otherCell.center.x, 2) + 
-          Math.pow(cell.center.y - otherCell.center.y, 2)
+          Math.pow(cell.center.x - otherCell.center.x, 2) +
+            Math.pow(cell.center.y - otherCell.center.y, 2)
         );
-        
+
         return distance < this.config.minCellDistance * 1.5;
       });
     });
@@ -424,20 +399,15 @@ export class VoronoiGenerator {
     this.cells.forEach(cell => {
       const centerX = this.config.width / 2;
       const centerY = this.config.height / 2;
-      
+
       const distanceFromCenter = Math.sqrt(
-        Math.pow(cell.center.x - centerX, 2) + 
-        Math.pow(cell.center.y - centerY, 2)
+        Math.pow(cell.center.x - centerX, 2) + Math.pow(cell.center.y - centerY, 2)
       );
       const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
       const centerNormalized = distanceFromCenter / maxDistance;
-      
 
-      const typeNoise = this.noise.generateNoise2D(
-        cell.center.x * 0.005, 
-        cell.center.y * 0.005
-      );
-      
+      const typeNoise = this.noise.generateNoise2D(cell.center.x * 0.005, cell.center.y * 0.005);
+
       if (centerNormalized < 0.3 && typeNoise > 0.3) {
         cell.type = 'commercial';
       } else if (centerNormalized < 0.2) {
@@ -458,19 +428,18 @@ export class VoronoiGenerator {
   getContainingCell(point: Point): VoronoiCell | null {
     let closestCell: VoronoiCell | null = null;
     let minDistance = Infinity;
-    
+
     this.cells.forEach(cell => {
       const distance = Math.sqrt(
-        Math.pow(point.x - cell.center.x, 2) + 
-        Math.pow(point.y - cell.center.y, 2)
+        Math.pow(point.x - cell.center.x, 2) + Math.pow(point.y - cell.center.y, 2)
       );
-      
+
       if (distance < minDistance) {
         minDistance = distance;
         closestCell = cell;
       }
     });
-    
+
     return closestCell;
   }
 
@@ -480,8 +449,7 @@ export class VoronoiGenerator {
   getCellsInRadius(center: Point, radius: number): VoronoiCell[] {
     return this.cells.filter(cell => {
       const distance = Math.sqrt(
-        Math.pow(center.x - cell.center.x, 2) + 
-        Math.pow(center.y - cell.center.y, 2)
+        Math.pow(center.x - cell.center.x, 2) + Math.pow(center.y - cell.center.y, 2)
       );
       return distance <= radius;
     });
@@ -496,13 +464,13 @@ export class VoronoiGenerator {
  * Crear configuración de Voronoi con valores predeterminados
  */
 export function createVoronoiConfig(
-  width: number, 
-  height: number, 
+  width: number,
+  height: number,
   overrides: Partial<VoronoiConfig> = {}
 ): VoronoiConfig {
   const area = width * height;
   const defaultNumCells = Math.max(8, Math.min(25, Math.floor(area / 8000)));
-  
+
   return {
     width,
     height,
@@ -530,7 +498,7 @@ export function convertVoronoiCellsToZones(
 }> {
   return cells.map((cell, index) => {
     const roomType = roomTypes[index % roomTypes.length] || 'LIVING_ROOM';
-    
+
     return {
       id: cell.id,
       type: roomType,

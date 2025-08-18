@@ -6,11 +6,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-
-const MockUIControls = ({ 
-  selectedEntityId, 
-  onEntitySelect 
-}: { 
+const MockUIControls = ({
+  selectedEntityId,
+  onEntitySelect
+}: {
   selectedEntityId: string | null;
   onEntitySelect: (id: string | null) => void;
 }) => {
@@ -18,12 +17,8 @@ const MockUIControls = ({
     <div data-testid="ui-controls">
       <div>Tiempo Juntos: 12s</div>
       <div>Resonancia: 78%</div>
-      <button onClick={() => onEntitySelect('circle')}>
-        Círculo
-      </button>
-      <button onClick={() => onEntitySelect('square')}>
-        Cuadrado
-      </button>
+      <button onClick={() => onEntitySelect('circle')}>Círculo</button>
+      <button onClick={() => onEntitySelect('square')}>Cuadrado</button>
       <button>Impulsar Resonancia</button>
       {selectedEntityId && (
         <div data-testid="entity-stats">
@@ -36,15 +31,11 @@ const MockUIControls = ({
 };
 
 describe('UIControls', () => {
-  
   it('should render main UI elements', () => {
     const mockOnEntitySelect = vi.fn();
-    
+
     const { getByTestId, getByText } = render(
-      <MockUIControls 
-        selectedEntityId={null} 
-        onEntitySelect={mockOnEntitySelect} 
-      />
+      <MockUIControls selectedEntityId={null} onEntitySelect={mockOnEntitySelect} />
     );
 
     expect(getByTestId('ui-controls')).toBeInTheDocument();
@@ -56,12 +47,9 @@ describe('UIControls', () => {
 
   it('should handle entity selection', () => {
     const mockOnEntitySelect = vi.fn();
-    
+
     const { getByText } = render(
-      <MockUIControls 
-        selectedEntityId={null} 
-        onEntitySelect={mockOnEntitySelect} 
-      />
+      <MockUIControls selectedEntityId={null} onEntitySelect={mockOnEntitySelect} />
     );
 
     fireEvent.click(getByText('Círculo'));
@@ -70,12 +58,9 @@ describe('UIControls', () => {
 
   it('should show entity stats when selected', () => {
     const mockOnEntitySelect = vi.fn();
-    
+
     const { getByTestId } = render(
-      <MockUIControls 
-        selectedEntityId="circle" 
-        onEntitySelect={mockOnEntitySelect} 
-      />
+      <MockUIControls selectedEntityId="circle" onEntitySelect={mockOnEntitySelect} />
     );
 
     expect(getByTestId('entity-stats')).toBeInTheDocument();

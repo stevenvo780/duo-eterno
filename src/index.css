@@ -20,7 +20,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
@@ -38,8 +39,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 button {
@@ -62,14 +67,13 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-input[type="range"] {
+input[type='range'] {
   cursor: pointer;
 }
 
-input[type="range"]:hover {
+input[type='range']:hover {
   opacity: 1;
 }
-
 
 canvas {
   image-rendering: -moz-crisp-edges;
@@ -86,7 +90,6 @@ canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-
 
 .no-smooth {
   image-rendering: -moz-crisp-edges;

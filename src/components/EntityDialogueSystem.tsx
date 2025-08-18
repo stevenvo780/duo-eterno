@@ -20,16 +20,15 @@ const EntityDialogueSystem: React.FC = () => {
 
   useEffect(() => {
     if (dialogueState.visible && dialogueState.entityId) {
-
       const entity = gameState.entities.find(e => e.id === dialogueState.entityId);
-      
+
       if (entity) {
         const speaker = getSpeakerForEntity(entity.id);
 
         // Ahora el canvas ocupa toda la pantalla, usar coordenadas directamente
         const cssX = entity.position.x;
         const cssY = entity.position.y;
-        
+
         const newDialogue: ActiveDialogue = {
           id: `${entity.id}-${Date.now()}`,
           entityId: entity.id,

@@ -1,17 +1,15 @@
-
-
 :root {
   --color-zone: #4a90e2;
   --color-entity: #7b68ee;
   --color-furniture: #32cd32;
   --color-default: #666;
-  
+
   --tooltip-bg: rgba(16, 12, 28, 0.95);
   --tooltip-border: rgba(186, 85, 211, 0.6);
   --tooltip-text: #e8e6f0;
   --tooltip-title: #ffffff;
   --tooltip-accent: #ba55d3;
-  
+
   --tooltip-shadow: 0 8px 32px rgba(186, 85, 211, 0.3);
   --tooltip-glow: 0 0 20px rgba(186, 85, 211, 0.2);
 }
@@ -32,9 +30,8 @@
   color: var(--tooltip-text);
   animation: tooltipFadeIn 0.3s ease-out;
   pointer-events: auto;
-  
 
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 80%, rgba(186, 85, 211, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(64, 128, 255, 0.1) 0%, transparent 50%);
 }
@@ -141,7 +138,8 @@
 }
 
 @keyframes sparkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
@@ -170,50 +168,46 @@
   border: 1px solid currentColor;
 }
 
-
-.interactive-tooltip[style*="--color-zone"] {
+.interactive-tooltip[style*='--color-zone'] {
   --tooltip-border: rgba(74, 144, 226, 0.6);
   --tooltip-accent: #4a90e2;
 }
 
-.interactive-tooltip[style*="--color-entity"] {
+.interactive-tooltip[style*='--color-entity'] {
   --tooltip-border: rgba(123, 104, 238, 0.6);
   --tooltip-accent: #7b68ee;
 }
 
-.interactive-tooltip[style*="--color-furniture"] {
+.interactive-tooltip[style*='--color-furniture'] {
   --tooltip-border: rgba(50, 205, 50, 0.6);
   --tooltip-accent: #32cd32;
 }
 
-
 .interactive-tooltip:hover {
-  box-shadow: 
-    var(--tooltip-shadow), 
+  box-shadow:
+    var(--tooltip-shadow),
     0 0 30px rgba(186, 85, 211, 0.4),
     inset 0 0 20px rgba(186, 85, 211, 0.05);
 }
-
 
 @media (max-width: 480px) {
   .interactive-tooltip {
     max-width: 280px;
     font-size: 13px;
   }
-  
+
   .tooltip-header {
     padding: 10px 12px 6px;
   }
-  
+
   .tooltip-content {
     padding: 10px 12px;
   }
-  
+
   .tooltip-title h3 {
     font-size: 15px;
   }
 }
-
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -223,7 +217,6 @@
   }
 }
 
-
 .interactive-tooltip::before {
   content: '';
   position: absolute;
@@ -231,8 +224,9 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(45deg, 
-    rgba(186, 85, 211, 0.3), 
+  background: linear-gradient(
+    45deg,
+    rgba(186, 85, 211, 0.3),
     rgba(64, 128, 255, 0.3),
     rgba(50, 205, 50, 0.3),
     rgba(255, 140, 0, 0.3)

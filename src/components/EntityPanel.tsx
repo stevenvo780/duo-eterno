@@ -5,7 +5,7 @@ import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, InteractionType } from '../types';
 import StatBar from './StatBar';
-import { TRANSLATIONS } from "../constants";
+import { TRANSLATIONS } from '../constants';
 
 interface EntityPanelProps {
   entity: Entity;
@@ -14,33 +14,37 @@ interface EntityPanelProps {
 
 const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
   const { dispatch } = useGame();
-  
+
   const handleInteraction = (type: InteractionType) => {
     if (entity.isDead) return;
 
     const result = applyInteractionEffect(entity.stats, type);
     dynamicsLogger.logUserInteraction(type, entity.id, result);
-    
-    dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: result.stats } });
+
+    dispatch({
+      type: 'UPDATE_ENTITY_STATS',
+      payload: { entityId: entity.id, stats: result.stats }
+    });
     if (result.mood) {
       dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: result.mood } });
     }
 
-
     const dialogueMap: Record<string, string> = {
-      'FEED': 'feeding',
-      'PLAY': 'playing', 
-      'COMFORT': 'comforting',
-      'DISTURB': 'disturbing'
+      FEED: 'feeding',
+      PLAY: 'playing',
+      COMFORT: 'comforting',
+      DISTURB: 'disturbing'
     };
-    
+
     if (dialogueMap[type]) {
-      const message = getRandomDialogue(dialogueMap[type] as keyof typeof import('../utils/dialogues').dialogues);
+      const message = getRandomDialogue(
+        dialogueMap[type] as keyof typeof import('../utils/dialogues').dialogues
+      );
       dynamicsLogger.logDialogue(entity.id as 'circle' | 'square', message, dialogueMap[type]);
-      
+
       dispatch({
         type: 'SHOW_DIALOGUE',
-        payload: { 
+        payload: {
           message,
           speaker: entity.id as 'circle' | 'square',
           duration: 3000
@@ -51,20 +55,26 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
 
   const handleRevive = () => {
     dynamicsLogger.logEntityRevival(entity.id, {
-      hunger: 60, sleepiness: 60, loneliness: 60, happiness: 60,
-      energy: 60, boredom: 60, money: 25, health: 50
+      hunger: 60,
+      sleepiness: 60,
+      loneliness: 60,
+      happiness: 60,
+      energy: 60,
+      boredom: 60,
+      money: 25,
+      health: 50
     });
-    
+
     dispatch({ type: 'REVIVE_ENTITY', payload: { entityId: entity.id } });
-    
+
     const message = getRandomDialogue('revival');
     dynamicsLogger.logDialogue(undefined, message, 'revival');
-    
+
     dispatch({
       type: 'SHOW_DIALOGUE',
-      payload: { 
+      payload: {
         message,
-        duration: 4000 
+        duration: 4000
       }
     });
   };
@@ -90,13 +100,13 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
 
   const getMoodColor = (mood: string): string => {
     const moodColors: Record<string, string> = {
-      'HAPPY': '#22c55e',
-      'CONTENT': '#3b82f6', 
-      'CALM': '#8b5cf6',
-      'EXCITED': '#f59e0b',
-      'SAD': '#ef4444',
-      'TIRED': '#6b7280',
-      'ANXIOUS': '#f97316'
+      HAPPY: '#22c55e',
+      CONTENT: '#3b82f6',
+      CALM: '#8b5cf6',
+      EXCITED: '#f59e0b',
+      SAD: '#ef4444',
+      TIRED: '#6b7280',
+      ANXIOUS: '#f97316'
     };
     return moodColors[mood] || '#64748b';
   };
@@ -104,91 +114,106 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
   const getOverallHealth = (): number => {
     const { stats } = entity;
     const criticalStats = ['hunger', 'sleepiness', 'loneliness', 'energy', 'health'];
-    const avgCritical = criticalStats.reduce((sum, stat) => sum + (stats[stat as keyof typeof stats] || 0), 0) / criticalStats.length;
+    const avgCritical =
+      criticalStats.reduce((sum, stat) => sum + (stats[stat as keyof typeof stats] || 0), 0) /
+      criticalStats.length;
     return Math.round(avgCritical);
   };
 
   const overallHealth = getOverallHealth();
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-      border: '2px solid #475569',
-      borderRadius: '16px',
-      padding: '20px',
-      color: '#f1f5f9',
-      minWidth: '320px',
-      maxWidth: '380px',
-      maxHeight: '80vh',
-      overflowY: 'auto',
-      backdropFilter: 'blur(12px)',
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
-      zIndex: 1000
-    }}>
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        marginBottom: '16px',
-        paddingBottom: '12px',
-        borderBottom: '2px solid #475569'
-      }}>
-        <div style={{
-          fontSize: '28px',
-          color: entity.id === 'circle' ? '#ff6b6b' : '#4ecdc4',
-          filter: entity.isDead ? 'grayscale(100%) opacity(0.5)' : 'none'
-        }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        border: '2px solid #475569',
+        borderRadius: '16px',
+        padding: '20px',
+        color: '#f1f5f9',
+        minWidth: '320px',
+        maxWidth: '380px',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+        zIndex: 1000
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px',
+          paddingBottom: '12px',
+          borderBottom: '2px solid #475569'
+        }}
+      >
+        <div
+          style={{
+            fontSize: '28px',
+            color: entity.id === 'circle' ? '#ff6b6b' : '#4ecdc4',
+            filter: entity.isDead ? 'grayscale(100%) opacity(0.5)' : 'none'
+          }}
+        >
           {getEntityIcon(entity.id)}
         </div>
-        
+
         <div style={{ flex: 1 }}>
-          <h2 style={{ 
-            margin: 0, 
-            fontSize: '18px', 
-            fontWeight: '700',
-            color: entity.isDead ? '#ef4444' : '#f1f5f9'
-          }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: '700',
+              color: entity.isDead ? '#ef4444' : '#f1f5f9'
+            }}
+          >
             {getEntityName(entity.id)}
           </h2>
-          
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginTop: '4px'
-          }}>
-            <div style={{
-              fontSize: '12px',
-              padding: '4px 8px',
-              borderRadius: '12px',
-              background: getMoodColor(entity.mood) + '20',
-              color: getMoodColor(entity.mood),
-              border: `1px solid ${getMoodColor(entity.mood)}40`,
-              fontWeight: '600'
-            }}>
-              {getMoodName(entity.mood)}
-            </div>
-            
-            {entity.isDead && (
-              <div style={{
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginTop: '4px'
+            }}
+          >
+            <div
+              style={{
                 fontSize: '12px',
                 padding: '4px 8px',
                 borderRadius: '12px',
-                background: 'rgba(239, 68, 68, 0.2)',
-                color: '#ef4444',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
+                background: getMoodColor(entity.mood) + '20',
+                color: getMoodColor(entity.mood),
+                border: `1px solid ${getMoodColor(entity.mood)}40`,
                 fontWeight: '600'
-              }}>
+              }}
+            >
+              {getMoodName(entity.mood)}
+            </div>
+
+            {entity.isDead && (
+              <div
+                style={{
+                  fontSize: '12px',
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  fontWeight: '600'
+                }}
+              >
                 💀 MUERTO
               </div>
             )}
           </div>
         </div>
-        
+
         <button
           onClick={onClose}
           style={{
@@ -205,11 +230,11 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             justifyContent: 'center',
             transition: 'all 0.2s ease'
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={e => {
             e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
             e.currentTarget.style.borderColor = '#ef4444';
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={e => {
             e.currentTarget.style.background = 'rgba(248, 250, 252, 0.1)';
             e.currentTarget.style.borderColor = '#64748b';
           }}
@@ -219,22 +244,22 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
       </div>
 
       {entity.isDead ? (
-
-        <div style={{
-          padding: '16px',
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '2px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '12px',
-          textAlign: 'center'
-        }}>
+        <div
+          style={{
+            padding: '16px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '2px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '12px',
+            textAlign: 'center'
+          }}
+        >
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>💀</div>
           <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#fca5a5' }}>
             Esta entidad ha perdido su esencia vital
           </p>
           <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#94a3b8' }}>
-            {entity.timeOfDeath && 
-              `Falleció hace ${Math.floor((Date.now() - entity.timeOfDeath) / 1000)}s`
-            }
+            {entity.timeOfDeath &&
+              `Falleció hace ${Math.floor((Date.now() - entity.timeOfDeath) / 1000)}s`}
           </p>
           <button
             onClick={handleRevive}
@@ -251,11 +276,11 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
               transition: 'all 0.2s ease',
               boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={e => {
               e.currentTarget.style.transform = 'translateY(-2px)';
               e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={e => {
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
             }}
@@ -265,24 +290,19 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
         </div>
       ) : (
         <>
-
           <div style={{ marginBottom: '20px' }}>
-            <StatBar
-              label="Estado General"
-              value={overallHealth}
-              height={28}
-              animated={true}
-            />
+            <StatBar label="Estado General" value={overallHealth} height={28} animated={true} />
           </div>
 
-
-          <div style={{
-            marginBottom: '16px',
-            padding: '12px',
-            background: 'rgba(15, 23, 42, 0.8)',
-            borderRadius: '8px',
-            border: '1px solid #334155'
-          }}>
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px',
+              background: 'rgba(15, 23, 42, 0.8)',
+              borderRadius: '8px',
+              border: '1px solid #334155'
+            }}
+          >
             <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>
               Actividad Actual
             </div>
@@ -291,12 +311,13 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             </div>
           </div>
 
-
-          <div style={{ 
-            display: 'grid', 
-            gap: '12px',
-            marginBottom: '16px'
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: '12px',
+              marginBottom: '16px'
+            }}
+          >
             {Object.entries(entity.stats).map(([stat, value]) => (
               <StatBar
                 key={stat}
@@ -309,13 +330,14 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             ))}
           </div>
 
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '8px',
-            marginBottom: '16px'
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
+              marginBottom: '16px'
+            }}
+          >
             {[
               { type: 'FEED', label: '🍽️', title: 'Alimentar', color: '#22c55e' },
               { type: 'PLAY', label: '🎮', title: 'Jugar', color: '#f59e0b' },
@@ -340,11 +362,11 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
                   transition: 'all 0.2s ease',
                   boxShadow: `0 2px 8px ${color}30`
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = `0 4px 12px ${color}40`;
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = `0 2px 8px ${color}30`;
                 }}
@@ -355,16 +377,17 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             ))}
           </div>
 
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '8px',
-            padding: '12px',
-            background: 'rgba(15, 23, 42, 0.8)',
-            borderRadius: '8px',
-            border: '1px solid #334155'
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
+              padding: '12px',
+              background: 'rgba(15, 23, 42, 0.8)',
+              borderRadius: '8px',
+              border: '1px solid #334155'
+            }}
+          >
             <div>
               <div style={{ fontSize: '10px', color: '#94a3b8' }}>Posición X</div>
               <div style={{ fontSize: '14px', color: '#f1f5f9', fontWeight: '600' }}>
@@ -379,25 +402,29 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             </div>
           </div>
 
-
           {entity.thoughts.length > 0 && (
-            <div style={{
-              marginTop: '16px',
-              padding: '12px',
-              background: 'rgba(15, 23, 42, 0.8)',
-              borderRadius: '8px',
-              border: '1px solid #334155'
-            }}>
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '12px',
+                background: 'rgba(15, 23, 42, 0.8)',
+                borderRadius: '8px',
+                border: '1px solid #334155'
+              }}
+            >
               <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>
                 💭 Pensamientos Recientes
               </div>
               {entity.thoughts.slice(-3).map((thought, index) => (
-                <div key={index} style={{
-                  fontSize: '11px',
-                  color: '#cbd5e1',
-                  marginBottom: '4px',
-                  fontStyle: 'italic'
-                }}>
+                <div
+                  key={index}
+                  style={{
+                    fontSize: '11px',
+                    color: '#cbd5e1',
+                    marginBottom: '4px',
+                    fontStyle: 'italic'
+                  }}
+                >
                   "{thought}"
                 </div>
               ))}

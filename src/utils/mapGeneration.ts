@@ -2,7 +2,6 @@ import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
   return [
-
     {
       id: 'food_complex',
       name: 'Complejo Alimentario',
@@ -16,7 +15,6 @@ export const createDefaultZones = (): Zone[] => {
         energy: 5
       }
     },
-    
 
     {
       id: 'rest_sanctuary',
@@ -31,7 +29,6 @@ export const createDefaultZones = (): Zone[] => {
         happiness: 15
       }
     },
-    
 
     {
       id: 'play_central',
@@ -47,7 +44,6 @@ export const createDefaultZones = (): Zone[] => {
         energy: -5
       }
     },
-    
 
     {
       id: 'social_plaza',
@@ -63,7 +59,6 @@ export const createDefaultZones = (): Zone[] => {
         energy: 5
       }
     },
-    
 
     {
       id: 'meditation_grove',
@@ -80,7 +75,6 @@ export const createDefaultZones = (): Zone[] => {
         energy: 10
       }
     },
-    
 
     {
       id: 'work_station',
@@ -95,7 +89,6 @@ export const createDefaultZones = (): Zone[] => {
         energy: -15
       }
     },
-    
 
     {
       id: 'energy_station',
@@ -116,7 +109,6 @@ export const createDefaultZones = (): Zone[] => {
 
 export const createDefaultMapElements = (): MapElement[] => {
   return [
-
     {
       id: 'rock_central',
       type: 'obstacle',
@@ -138,7 +130,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 25, height: 60 },
       color: '#059669'
     },
-    
 
     {
       id: 'flower_garden_1',
@@ -161,7 +152,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 8, height: 8 },
       color: '#639bff'
     },
-    
 
     {
       id: 'banco_rest_1',
@@ -177,7 +167,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 24, height: 12 },
       color: '#9e684c'
     },
-    
 
     {
       id: 'fuente_social',
@@ -200,7 +189,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 24, height: 12 },
       color: '#9e684c'
     },
-    
 
     {
       id: 'lampara_juegos_1',
@@ -216,7 +204,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 16, height: 24 },
       color: '#f2d450'
     },
-    
 
     {
       id: 'lampara_work',
@@ -225,7 +212,6 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 16, height: 24 },
       color: '#f2d450'
     },
-    
 
     {
       id: 'flower_meditation_1',
@@ -257,18 +243,18 @@ export const checkCollisionWithObstacles = (
   mapElements: MapElement[]
 ): boolean => {
   const obstacles = mapElements.filter(element => element.type === 'obstacle');
-  
+
   for (const obstacle of obstacles) {
     const distance = Math.sqrt(
       Math.pow(position.x - (obstacle.position.x + obstacle.size.width / 2), 2) +
-      Math.pow(position.y - (obstacle.position.y + obstacle.size.height / 2), 2)
+        Math.pow(position.y - (obstacle.position.y + obstacle.size.height / 2), 2)
     );
-    
+
     if (distance < entitySize + Math.min(obstacle.size.width, obstacle.size.height) / 2) {
       return true;
     }
   }
-  
+
   return false;
 };
 
@@ -299,19 +285,19 @@ export const getAttractionTarget = (
 
   for (const zone of zones) {
     let score = zone.attractiveness;
-    
+
     if (zone.effects?.hunger && entityStats.hunger < 30) score += 0.5;
     if (zone.effects?.sleepiness && entityStats.sleepiness < 30) score += 0.5;
     if (zone.effects?.loneliness && entityStats.loneliness < 30) score += 0.5;
     if (zone.effects?.boredom && entityStats.boredom < 30) score += 0.5;
     if (zone.effects?.money && entityStats.money < 40) score += 0.5;
-    
+
     const distance = Math.sqrt(
       Math.pow(currentPosition.x - (zone.bounds.x + zone.bounds.width / 2), 2) +
-      Math.pow(currentPosition.y - (zone.bounds.y + zone.bounds.height / 2), 2)
+        Math.pow(currentPosition.y - (zone.bounds.y + zone.bounds.height / 2), 2)
     );
     score -= distance / 1000;
-    
+
     if (score > bestScore) {
       bestScore = score;
       bestZone = zone;

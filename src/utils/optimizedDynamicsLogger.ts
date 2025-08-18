@@ -1,8 +1,8 @@
 /**
  * 🚀 FASE 1: Sistema de Logging Optimizado con Memory Management
- * 
+ *
  * Características implementadas según el Plan de Trabajo:
- * - ✅ Log rotation automática 
+ * - ✅ Log rotation automática
  * - ✅ Compression automática de datos históricos
  * - ✅ Memory cleanup inteligente
  * - ✅ Archiving automático de sessions antiguas
@@ -73,7 +73,6 @@ interface MemoryUsageStats {
 }
 
 export class OptimizedDynamicsLogger {
-
   private readonly config = {
     maxSessionLogs: 50,
     maxLogAge: 2 * 60 * 60 * 1000,
@@ -83,31 +82,24 @@ export class OptimizedDynamicsLogger {
     archiveIntervalMs: 15 * 60 * 1000,
     throttleMs: 1000,
     maxArchivedSessions: 10,
-    snapshotRetentionMs: 10 * 60 * 1000,
+    snapshotRetentionMs: 10 * 60 * 1000
   };
-
 
   private logs: LogEntry[] = [];
   private entitySnapshots: EntitySnapshot[] = [];
   private systemSnapshots: SystemSnapshot[] = [];
   private archivedSessions: SessionArchive[] = [];
-  
 
   private currentSessionId = `session_${Date.now()}`;
   private sessionStartTime = Date.now();
   private isEnabled = true;
   private lastCleanup = Date.now();
   private lastArchive = Date.now();
-  
 
   private lastLogTimes = new Map<string, number>();
-  
 
   private cleanupInterval: number | null = null;
   private archiveInterval: number | null = null;
-  
-
-
 
   constructor() {
     this.initializeCleanupSystems();
@@ -119,19 +111,14 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-
-  
   private initializeCleanupSystems(): void {
-
     this.cleanupInterval = window.setInterval(() => {
       this.performAutomaticCleanup();
     }, this.config.cleanupIntervalMs);
 
-
     this.archiveInterval = window.setInterval(() => {
       this.performAutomaticArchiving();
     }, this.config.archiveIntervalMs);
-
 
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeunload', () => {
@@ -140,27 +127,21 @@ export class OptimizedDynamicsLogger {
     }
   }
 
-
-  
   private performAutomaticCleanup(): void {
     const startTime = performance.now();
     const beforeStats = this.getMemoryUsageStats();
-    
 
     this.cleanupOldLogs();
-    
 
     this.cleanupOldSnapshots();
-    
 
     this.cleanupArchivedSessions();
-    
 
     this.cleanupThrottlingCache();
-    
+
     const afterStats = this.getMemoryUsageStats();
     const cleanupTime = performance.now() - startTime;
-    
+
     console.log('🧹 Cleanup automático completado:', {
       duration: `${cleanupTime.toFixed(2)}ms`,
       memoryBefore: `${beforeStats.totalMemoryMB.toFixed(2)}MB`,
@@ -170,21 +151,20 @@ export class OptimizedDynamicsLogger {
       snapshotsRemaining: this.entitySnapshots.length + this.systemSnapshots.length,
       archivedSessions: this.archivedSessions.length
     });
-    
+
     this.lastCleanup = Date.now();
   }
 
   private cleanupOldLogs(): void {
     const cutoffTime = Date.now() - this.config.maxLogAge;
     const initialCount = this.logs.length;
-    
+
     this.logs = this.logs.filter(log => log.timestamp > cutoffTime);
-    
 
     if (this.logs.length > this.config.maxSessionLogs) {
       this.logs = this.logs.slice(-this.config.maxSessionLogs);
     }
-    
+
     const removed = initialCount - this.logs.length;
     if (removed > 0) {
       console.log(`📝 Logs cleanup: eliminados ${removed} logs antiguos`);
@@ -193,18 +173,20 @@ export class OptimizedDynamicsLogger {
 
   private cleanupOldSnapshots(): void {
     const cutoffTime = Date.now() - this.config.snapshotRetentionMs;
-    
+
     const initialEntitySnapshots = this.entitySnapshots.length;
     const initialSystemSnapshots = this.systemSnapshots.length;
-    
+
     this.entitySnapshots = this.entitySnapshots.filter(s => s.timestamp > cutoffTime);
     this.systemSnapshots = this.systemSnapshots.filter(s => s.timestamp > cutoffTime);
-    
+
     const entityRemoved = initialEntitySnapshots - this.entitySnapshots.length;
     const systemRemoved = initialSystemSnapshots - this.systemSnapshots.length;
-    
+
     if (entityRemoved > 0 || systemRemoved > 0) {
-      console.log(`📸 Snapshots cleanup: eliminados ${entityRemoved} entity + ${systemRemoved} system snapshots`);
+      console.log(
+        `📸 Snapshots cleanup: eliminados ${entityRemoved} entity + ${systemRemoved} system snapshots`
+      );
     }
   }
 
@@ -215,14 +197,14 @@ export class OptimizedDynamicsLogger {
       this.archivedSessions = this.archivedSessions
         .sort((a, b) => b.endTime - a.endTime)
         .slice(0, this.config.maxArchivedSessions);
-      
+
       console.log(`🗄️ Archive cleanup: eliminadas ${toRemove} sessions archivadas antiguas`);
     }
   }
 
   private cleanupThrottlingCache(): void {
-    const cutoffTime = Date.now() - (this.config.throttleMs * 2);
-    
+    const cutoffTime = Date.now() - this.config.throttleMs * 2;
+
     for (const [key, timestamp] of this.lastLogTimes.entries()) {
       if (timestamp < cutoffTime) {
         this.lastLogTimes.delete(key);
@@ -230,21 +212,18 @@ export class OptimizedDynamicsLogger {
     }
   }
 
-
-  
   private performAutomaticArchiving(): void {
     if (!this.config.compressionEnabled) return;
-    
+
     const startTime = performance.now();
-    
 
     if (this.shouldArchiveCurrentSession()) {
       this.archiveCurrentSession();
     }
-    
+
     const archiveTime = performance.now() - startTime;
     console.log(`🗄️ Archive check completado en ${archiveTime.toFixed(2)}ms`);
-    
+
     this.lastArchive = Date.now();
   }
 
@@ -254,7 +233,7 @@ export class OptimizedDynamicsLogger {
     const hasSignificantData = this.logs.length >= 50 || this.entitySnapshots.length >= 20;
     const isOldEnough = sessionAge > this.config.maxLogAge / 2;
     const archiveIntervalReached = timeSinceLastArchive > 30000;
-    
+
     return hasSignificantData && isOldEnough && archiveIntervalReached;
   }
 
@@ -268,10 +247,9 @@ export class OptimizedDynamicsLogger {
       endTime: Date.now()
     };
 
-
     const compressedData = this.compressSessionData(sessionData);
     const metadata = this.calculateSessionMetadata(sessionData);
-    
+
     const archive: SessionArchive = {
       id: this.currentSessionId,
       startTime: this.sessionStartTime,
@@ -281,10 +259,9 @@ export class OptimizedDynamicsLogger {
     };
 
     this.archivedSessions.push(archive);
-    
 
     this.startNewSession();
-    
+
     console.log('📦 Sesión archivada:', {
       sessionId: archive.id,
       duration: `${(archive.metadata.sessionDuration / 60000).toFixed(1)}min`,
@@ -295,13 +272,11 @@ export class OptimizedDynamicsLogger {
   }
 
   private compressSessionData(sessionData: SessionData): string {
-
     const jsonString = JSON.stringify(sessionData);
-    
+
     if (!this.config.compressionEnabled) {
       return jsonString;
     }
-    
 
     const optimized = {
       i: sessionData.id,
@@ -333,51 +308,47 @@ export class OptimizedDynamicsLogger {
       st: sessionData.startTime,
       et: sessionData.endTime
     };
-    
+
     return JSON.stringify(optimized);
   }
 
   private calculateSessionMetadata(sessionData: SessionData): SessionArchive['metadata'] {
     const logs = sessionData.logs as LogEntry[];
     const systemSnapshots = sessionData.systemSnapshots as SystemSnapshot[];
-    
+
     return {
       totalLogs: logs.length,
       totalSnapshots: sessionData.entitySnapshots.length + systemSnapshots.length,
-      avgResonance: systemSnapshots.length > 0 
-        ? systemSnapshots.reduce((sum, s) => sum + s.resonance, 0) / systemSnapshots.length 
-        : 0,
+      avgResonance:
+        systemSnapshots.length > 0
+          ? systemSnapshots.reduce((sum, s) => sum + s.resonance, 0) / systemSnapshots.length
+          : 0,
       sessionDuration: sessionData.endTime - sessionData.startTime,
-      deaths: logs.filter(log => log.message.includes('murió') || log.message.includes('muerte')).length,
-      criticalEvents: logs.filter(log => 
-        log.level === 'ERROR' || 
-        log.level === 'WARNING' || 
-        log.message.includes('críticas')
+      deaths: logs.filter(log => log.message.includes('murió') || log.message.includes('muerte'))
+        .length,
+      criticalEvents: logs.filter(
+        log => log.level === 'ERROR' || log.level === 'WARNING' || log.message.includes('críticas')
       ).length
     };
   }
 
   private startNewSession(): void {
-
     this.logs = [];
     this.entitySnapshots = [];
     this.systemSnapshots = [];
-    
 
     this.currentSessionId = `session_${Date.now()}`;
     this.sessionStartTime = Date.now();
-    
+
     console.log(`🔄 Nueva sesión iniciada: ${this.currentSessionId}`);
   }
 
-
-  
   getMemoryUsageStats(): MemoryUsageStats {
-
     const logsSize = this.estimateObjectSize(this.logs);
-    const snapshotsSize = this.estimateObjectSize(this.entitySnapshots) + this.estimateObjectSize(this.systemSnapshots);
+    const snapshotsSize =
+      this.estimateObjectSize(this.entitySnapshots) + this.estimateObjectSize(this.systemSnapshots);
     const archivesSize = this.estimateObjectSize(this.archivedSessions);
-    
+
     return {
       logsMemoryMB: logsSize / (1024 * 1024),
       snapshotsMemoryMB: snapshotsSize / (1024 * 1024),
@@ -388,69 +359,65 @@ export class OptimizedDynamicsLogger {
   }
 
   private estimateObjectSize(obj: unknown): number {
-
     return JSON.stringify(obj).length * 2;
   }
 
-
-  
   private shouldThrottleLog(system: string, category: string, message: string): boolean {
     const key = `${system}:${category}:${message.substring(0, 50)}`;
     const now = Date.now();
     const lastTime = this.lastLogTimes.get(key);
-    
+
     if (!lastTime || now - lastTime > this.config.throttleMs) {
       this.lastLogTimes.set(key, now);
       return false;
     }
-    
+
     return true;
   }
 
-
-  
   private log(entry: Omit<LogEntry, 'timestamp'>): void {
     if (!this.isEnabled) return;
-    
 
     if (this.shouldThrottleLog(entry.system, entry.category, entry.message)) {
       return;
     }
-    
+
     const logEntry: LogEntry = {
       ...entry,
       timestamp: Date.now()
     };
-    
+
     this.logs.push(logEntry);
-    
 
     const memoryStats = this.getMemoryUsageStats();
     if (memoryStats.totalMemoryMB > this.config.maxMemoryMB) {
-      console.warn(`⚠️ Memory limit exceeded: ${memoryStats.totalMemoryMB.toFixed(2)}MB > ${this.config.maxMemoryMB}MB`);
+      console.warn(
+        `⚠️ Memory limit exceeded: ${memoryStats.totalMemoryMB.toFixed(2)}MB > ${this.config.maxMemoryMB}MB`
+      );
       this.performEmergencyCleanup();
     }
   }
 
   private performEmergencyCleanup(): void {
     console.log('🚨 Realizando cleanup de emergencia...');
-    
 
     this.logs = this.logs.slice(-Math.floor(this.config.maxSessionLogs * 0.5));
     this.entitySnapshots = this.entitySnapshots.slice(-50);
     this.systemSnapshots = this.systemSnapshots.slice(-50);
-    
 
     if (this.config.compressionEnabled && this.logs.length > 0) {
       this.archiveCurrentSession();
     }
-    
+
     console.log('✅ Emergency cleanup completado');
   }
 
-
-  
-  logActivityChange(entityId: string, oldActivity: EntityActivity, newActivity: EntityActivity, reason: string): void {
+  logActivityChange(
+    entityId: string,
+    oldActivity: EntityActivity,
+    newActivity: EntityActivity,
+    reason: string
+  ): void {
     this.log({
       system: 'activity',
       category: 'AUTONOMY',
@@ -461,7 +428,12 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-  logMoodChange(entityId: string, oldMood: EntityMood, newMood: EntityMood, stats: Entity['stats']): void {
+  logMoodChange(
+    entityId: string,
+    oldMood: EntityMood,
+    newMood: EntityMood,
+    stats: Entity['stats']
+  ): void {
     this.log({
       system: 'activity',
       category: 'AUTONOMY',
@@ -472,17 +444,22 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-  logResonanceChange(oldResonance: number, newResonance: number, reason: string, entities: Entity[]): void {
+  logResonanceChange(
+    oldResonance: number,
+    newResonance: number,
+    reason: string,
+    entities: Entity[]
+  ): void {
     const change = newResonance - oldResonance;
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
-    
+
     this.log({
       system: 'love',
       category: 'LOVE',
       level,
       message: `Resonancia ${change > 0 ? 'aumentó' : 'disminuyó'}: ${oldResonance.toFixed(1)} → ${newResonance.toFixed(1)}`,
-      data: { 
-        reason, 
+      data: {
+        reason,
         change: change.toFixed(2),
         distance: this.calculateDistance(entities),
         bothAlive: entities.filter(e => !e.isDead).length === 2,
@@ -491,9 +468,13 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-  logProximityEffect(entities: Entity[], distance: number, effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL'): void {
+  logProximityEffect(
+    entities: Entity[],
+    distance: number,
+    effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL'
+  ): void {
     if (effect === 'NEUTRAL') return;
-    
+
     this.log({
       system: 'love',
       category: 'LOVE',
@@ -534,7 +515,7 @@ export class OptimizedDynamicsLogger {
   logHealthChange(entityId: string, oldHealth: number, newHealth: number, factors: string[]): void {
     const change = newHealth - oldHealth;
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
-    
+
     this.log({
       system: 'survival',
       category: 'SURVIVAL',
@@ -556,8 +537,6 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-
-  
   takeEntitySnapshot(entity: Entity): void {
     const snapshot: EntitySnapshot = {
       timestamp: Date.now(),
@@ -568,11 +547,16 @@ export class OptimizedDynamicsLogger {
       position: { ...entity.position },
       isDead: entity.isDead
     };
-    
+
     this.entitySnapshots.push(snapshot);
   }
 
-  takeSystemSnapshot(resonance: number, togetherTime: number, cycles: number, entities: Entity[]): void {
+  takeSystemSnapshot(
+    resonance: number,
+    togetherTime: number,
+    cycles: number,
+    entities: Entity[]
+  ): void {
     const snapshot: SystemSnapshot = {
       timestamp: Date.now(),
       resonance,
@@ -580,30 +564,25 @@ export class OptimizedDynamicsLogger {
       cycles,
       entitiesAlive: entities.filter(e => !e.isDead).length
     };
-    
+
     this.systemSnapshots.push(snapshot);
   }
 
-
-  
   private calculateDistance(entities: Entity[]): number {
     if (entities.length < 2) return 0;
     const [e1, e2] = entities;
     return Math.sqrt(
-      Math.pow(e1.position.x - e2.position.x, 2) +
-      Math.pow(e1.position.y - e2.position.y, 2)
+      Math.pow(e1.position.x - e2.position.x, 2) + Math.pow(e1.position.y - e2.position.y, 2)
     );
   }
 
-
-  
   getRecentLogs(category?: LogEntry['category'], limit = 50): LogEntry[] {
     let filtered = this.logs;
-    
+
     if (category) {
       filtered = this.logs.filter(log => log.category === category);
     }
-    
+
     return filtered.slice(-limit);
   }
 
@@ -625,8 +604,6 @@ export class OptimizedDynamicsLogger {
     return [...this.archivedSessions];
   }
 
-
-  
   enable(): void {
     this.isEnabled = true;
   }
@@ -635,27 +612,23 @@ export class OptimizedDynamicsLogger {
     this.isEnabled = false;
   }
 
-
-  
   private performFinalCleanup(): void {
     console.log('🏁 Realizando cleanup final...');
-    
 
     if (this.logs.length > 0 && this.config.compressionEnabled) {
       this.archiveCurrentSession();
     }
-    
 
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
-    
+
     if (this.archiveInterval) {
       clearInterval(this.archiveInterval);
       this.archiveInterval = null;
     }
-    
+
     console.log('✅ Cleanup final completado');
   }
 
@@ -664,41 +637,41 @@ export class OptimizedDynamicsLogger {
   }
 }
 
-
 export const optimizedDynamicsLogger = new OptimizedDynamicsLogger();
 
-
 if (typeof window !== 'undefined') {
-  (window as typeof window & { 
-    optimizedDynamicsLogger: OptimizedDynamicsLogger;
-    loggerCommands: {
-      getMemoryStats: () => MemoryUsageStats;
-      forceCleanup: () => void;
-      forceArchive: () => void;
-      getArchives: () => SessionArchive[];
-      getRecentLogs: (category?: LogEntry['category'], limit?: number) => LogEntry[];
-    };
-  }).optimizedDynamicsLogger = optimizedDynamicsLogger;
-  
+  (
+    window as typeof window & {
+      optimizedDynamicsLogger: OptimizedDynamicsLogger;
+      loggerCommands: {
+        getMemoryStats: () => MemoryUsageStats;
+        forceCleanup: () => void;
+        forceArchive: () => void;
+        getArchives: () => SessionArchive[];
+        getRecentLogs: (category?: LogEntry['category'], limit?: number) => LogEntry[];
+      };
+    }
+  ).optimizedDynamicsLogger = optimizedDynamicsLogger;
 
-  (window as typeof window & { 
-    loggerCommands: {
-      getMemoryStats: () => MemoryUsageStats;
-      forceCleanup: () => void;
-      forceArchive: () => void;
-      getArchives: () => SessionArchive[];
-      getRecentLogs: (category?: LogEntry['category'], limit?: number) => LogEntry[];
-    };
-  }).loggerCommands = {
+  (
+    window as typeof window & {
+      loggerCommands: {
+        getMemoryStats: () => MemoryUsageStats;
+        forceCleanup: () => void;
+        forceArchive: () => void;
+        getArchives: () => SessionArchive[];
+        getRecentLogs: (category?: LogEntry['category'], limit?: number) => LogEntry[];
+      };
+    }
+  ).loggerCommands = {
     getMemoryStats: () => optimizedDynamicsLogger.getCurrentMemoryStats(),
     forceCleanup: () => optimizedDynamicsLogger.forceCleanup(),
     forceArchive: () => optimizedDynamicsLogger.forceArchive(),
     getArchives: () => optimizedDynamicsLogger.getArchivedSessions(),
-    getRecentLogs: (category?: LogEntry['category'], limit?: number) => optimizedDynamicsLogger.getRecentLogs(category, limit)
+    getRecentLogs: (category?: LogEntry['category'], limit?: number) =>
+      optimizedDynamicsLogger.getRecentLogs(category, limit)
   };
 }
-
-
 
 export const logGeneral = {
   info: (message: string, data?: unknown) => {
@@ -718,8 +691,6 @@ export const logGeneral = {
     optimizedDynamicsLogger.logUserInteraction('DEBUG', undefined, { message, data });
   }
 };
-
-
 
 export const logGeneralCompat = (message: string, data?: unknown) => {
   console.log(`📋 [GENERAL] ${message}`, data);

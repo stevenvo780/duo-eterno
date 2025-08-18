@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useGame } from './useGame';
 import { getRandomDialogue } from '../utils/dialogues';
-import { 
-  loadDialogueData, 
-  getNextDialogue, 
-  getSpeakerForEntity, 
-  getEmotionForActivity 
+import {
+  loadDialogueData,
+  getNextDialogue,
+  getSpeakerForEntity,
+  getEmotionForActivity
 } from '../utils/dialogueSelector';
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
   const [dialoguesLoaded, setDialoguesLoaded] = useState(false);
-
 
   useEffect(() => {
     loadDialogueData().then(() => {
@@ -19,32 +18,28 @@ export const useDialogueSystem = () => {
     });
   }, []);
 
-
   useEffect(() => {
     if (!dialoguesLoaded) return;
-
 
     if (gameState.connectionAnimation.active) {
       const animationAge = Date.now() - gameState.connectionAnimation.startTime;
       if (animationAge < 100) {
         const isFading = gameState.entities.some(entity => entity.state === 'FADING');
-        
-        if (isFading) {
 
+        if (isFading) {
           dispatch({
             type: 'SHOW_DIALOGUE',
-            payload: { 
+            payload: {
               message: getRandomDialogue('revival'),
               duration: 4000
             }
           });
         } else {
-
           const dialogue = getNextDialogue(undefined, 'LOVE', 'SOCIALIZING');
           if (dialogue) {
             dispatch({
               type: 'SHOW_DIALOGUE',
-              payload: { 
+              payload: {
                 message: dialogue.text,
                 duration: 3000,
                 speaker: dialogue.speaker === 'ISA' ? 'circle' : 'square'
@@ -56,26 +51,23 @@ export const useDialogueSystem = () => {
     }
   }, [gameState.connectionAnimation, gameState.entities, dispatch, dialoguesLoaded]);
 
-
   useEffect(() => {
     if (!dialoguesLoaded) return;
 
     const interval = setInterval(() => {
-      // CORRIGIDO: Eliminar Math.random() para hacer el comportamiento más predecible
       if (!gameState.connectionAnimation.active) {
-        gameState.entities.forEach((entity) => {
-          // CORRIGIDO: Usar índice y tiempo para determinismo en lugar de Math.random()
+        gameState.entities.forEach(entity => {
           const timeBasedTrigger = (Date.now() + entity.id.charCodeAt(0) * 1000) % 20000 < 1000;
-          
+
           if (timeBasedTrigger && !entity.isDead) {
             const speaker = getSpeakerForEntity(entity.id);
             const emotion = getEmotionForActivity(entity.activity);
             const dialogue = getNextDialogue(speaker, emotion, entity.activity);
-            
+
             if (dialogue) {
               dispatch({
                 type: 'SHOW_DIALOGUE',
-                payload: { 
+                payload: {
                   message: dialogue.text,
                   duration: 2500,
                   speaker: entity.id,

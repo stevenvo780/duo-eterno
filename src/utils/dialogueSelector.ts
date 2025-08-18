@@ -27,20 +27,17 @@ export const getNextDialogue = (
 ): DialogueEntry | null => {
   if (dialogueData.length === 0) return null;
 
-
   let attempts = 0;
   const maxAttempts = Math.min(100, dialogueData.length);
-  
+
   while (attempts < maxAttempts) {
     const dialogue = dialogueData[currentIndex];
     currentIndex = (currentIndex + 1) % dialogueData.length;
     attempts++;
 
-
     if (!preferredSpeaker && !preferredEmotion && !preferredActivity) {
       return dialogue;
     }
-
 
     const speakerMatch = !preferredSpeaker || dialogue.speaker === preferredSpeaker;
     const emotionMatch = !preferredEmotion || dialogue.emotion === preferredEmotion;
@@ -55,27 +52,27 @@ export const getNextDialogue = (
   return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];
 };
 
-
 export const getEmotionForActivity = (activity: string): string => {
   const emotionMap: Record<string, string[]> = {
-    'SOCIALIZING': ['LOVE', 'PLAYFUL', 'NEUTRAL', 'CURIOUS'],
-    'RESTING': ['NEUTRAL', 'SADNESS', 'LOVE'], // Añadido LOVE para momentos íntimos
-    'PLAYING': ['PLAYFUL', 'LOVE', 'CURIOUS'],
-    'FEEDING': ['LOVE', 'NEUTRAL', 'PLAYFUL'],
-    'MEDITATION': ['NEUTRAL', 'CURIOUS', 'LOVE'], // Contemplación amorosa
-    'WRITING': ['CURIOUS', 'NEUTRAL', 'LOVE'],
-    'WORKING': ['NEUTRAL', 'CURIOUS', 'SADNESS'],
-    'STUDYING': ['CURIOUS', 'NEUTRAL', 'LOVE']
+    SOCIALIZING: ['LOVE', 'PLAYFUL', 'NEUTRAL', 'CURIOUS'],
+    RESTING: ['NEUTRAL', 'SADNESS', 'LOVE'], // Añadido LOVE para momentos íntimos
+    PLAYING: ['PLAYFUL', 'LOVE', 'CURIOUS'],
+    FEEDING: ['LOVE', 'NEUTRAL', 'PLAYFUL'],
+    MEDITATION: ['NEUTRAL', 'CURIOUS', 'LOVE'], // Contemplación amorosa
+    WRITING: ['CURIOUS', 'NEUTRAL', 'LOVE'],
+    WORKING: ['NEUTRAL', 'CURIOUS', 'SADNESS'],
+    STUDYING: ['CURIOUS', 'NEUTRAL', 'LOVE']
   };
 
   const emotions = emotionMap[activity] || ['NEUTRAL', 'LOVE', 'CURIOUS'];
-  const activityHash = activity.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
+  const activityHash = activity
+    .split('')
+    .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
   const emotionIndex = Math.abs(activityHash) % emotions.length;
   return emotions[emotionIndex];
 };
 
 export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
-
   return entityId === 'circle' ? 'ISA' : 'STEV';
 };
 // Mapeo de tipos de interacción a emociones/actividades del chat
@@ -86,40 +83,43 @@ export const getDialogueForInteraction = (
   if (dialogueData.length === 0) return null;
 
   const speaker = getSpeakerForEntity(entityId);
-  
+
   // Mapeo expandido de interacciones a emociones y contextos del chat
-  const interactionMap: Record<string, { emotions: string[], activities: string[], priority?: string[] }> = {
-    'FEED': {
+  const interactionMap: Record<
+    string,
+    { emotions: string[]; activities: string[]; priority?: string[] }
+  > = {
+    FEED: {
       emotions: ['LOVE', 'PLAYFUL', 'NEUTRAL'],
       activities: ['SOCIALIZING'],
       priority: ['LOVE'] // Priorizar expresiones de amor al alimentar
     },
-    'PLAY': {
+    PLAY: {
       emotions: ['PLAYFUL', 'LOVE', 'CURIOUS'],
       activities: ['SOCIALIZING'],
       priority: ['PLAYFUL'] // Priorizar diversión y juego
     },
-    'COMFORT': {
+    COMFORT: {
       emotions: ['LOVE', 'NEUTRAL', 'SADNESS'],
       activities: ['SOCIALIZING'],
       priority: ['LOVE'] // Priorizar expresiones de amor al consolar
     },
-    'DISTURB': {
+    DISTURB: {
       emotions: ['SADNESS', 'NEUTRAL', 'CURIOUS'],
       activities: ['SOCIALIZING'],
       priority: ['NEUTRAL'] // Respuestas más neutras a molestias
     },
-    'NOURISH': {
+    NOURISH: {
       emotions: ['LOVE', 'PLAYFUL', 'CURIOUS'],
       activities: ['SOCIALIZING'],
       priority: ['LOVE'] // Máxima prioridad al amor en nutrición mutua
     },
-    'SLEEP': {
+    SLEEP: {
       emotions: ['NEUTRAL', 'LOVE'],
       activities: ['SOCIALIZING'],
       priority: ['NEUTRAL']
     },
-    'EXERCISE': {
+    EXERCISE: {
       emotions: ['PLAYFUL', 'CURIOUS', 'NEUTRAL'],
       activities: ['SOCIALIZING'],
       priority: ['PLAYFUL']
@@ -131,9 +131,12 @@ export const getDialogueForInteraction = (
 
   // Buscar diálogos que coincidan con el contexto de la interacción
   // Priorizar emociones específicas si están definidas
-  const emotionsToTry = config.priority ? [...config.priority, ...config.emotions] : config.emotions;
-  // CORRIGIDO: Usar selección determinista basada en interactionType en lugar de Math.random()
-  const interactionHash = interactionType.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
+  const emotionsToTry = config.priority
+    ? [...config.priority, ...config.emotions]
+    : config.emotions;
+  const interactionHash = interactionType
+    .split('')
+    .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
   const activityIndex = Math.abs(interactionHash) % config.activities.length;
   const targetActivity = config.activities[activityIndex];
 

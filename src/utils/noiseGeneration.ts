@@ -66,18 +66,18 @@ export class PerlinNoise {
     if (!isFinite(seed)) {
       seed = 0;
     }
-    
+
     const rng = this.seedRandom(seed);
-    
+
     for (let i = 0; i < 256; i++) {
       this.permutation[i] = i;
     }
-    
+
     for (let i = 255; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
     }
-    
+
     for (let i = 0; i < 512; i++) {
       this.p[i] = this.permutation[i % 256];
     }
@@ -88,8 +88,8 @@ export class PerlinNoise {
     const a = 1103515245;
     const c = 12345;
     let state = Math.abs(seed) % m;
-    
-    return function() {
+
+    return function () {
       state = (a * state + c) % m;
       return state / (m - 1);
     };
@@ -106,7 +106,7 @@ export class PerlinNoise {
   private grad(hash: number, x: number, y: number): number {
     const h = hash & 15;
     const u = h < 8 ? x : y;
-    const v = h < 4 ? y : (h === 12 || h === 14) ? x : 0;
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : 0;
     return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
   }
 
@@ -114,37 +114,29 @@ export class PerlinNoise {
     if (!isFinite(x) || !isFinite(y)) {
       return 0;
     }
-    
+
     const X = Math.floor(x) & 255;
     const Y = Math.floor(y) & 255;
-    
+
     x -= Math.floor(x);
     y -= Math.floor(y);
-    
+
     const u = this.fade(x);
     const v = this.fade(y);
-    
+
     const A = this.p[X] + Y;
     const AA = this.p[A];
     const AB = this.p[A + 1];
     const B = this.p[X + 1] + Y;
     const BA = this.p[B];
     const BB = this.p[B + 1];
-    
+
     const result = this.lerp(
-      this.lerp(
-        this.grad(this.p[AA], x, y),
-        this.grad(this.p[BA], x - 1, y),
-        u
-      ),
-      this.lerp(
-        this.grad(this.p[AB], x, y - 1),
-        this.grad(this.p[BB], x - 1, y - 1),
-        u
-      ),
+      this.lerp(this.grad(this.p[AA], x, y), this.grad(this.p[BA], x - 1, y), u),
+      this.lerp(this.grad(this.p[AB], x, y - 1), this.grad(this.p[BB], x - 1, y - 1), u),
       v
     );
-    
+
     return isFinite(result) ? Math.max(-1, Math.min(1, result)) : 0;
   }
 
@@ -171,7 +163,7 @@ export class PerlinNoise {
 
   generateElevationMap(width: number, height: number, config: NoiseConfig): number[][] {
     const elevationMap: number[][] = [];
-    
+
     for (let y = 0; y < height; y++) {
       elevationMap[y] = [];
       for (let x = 0; x < width; x++) {
@@ -179,7 +171,7 @@ export class PerlinNoise {
         elevationMap[y][x] = (value + 1) / 2;
       }
     }
-    
+
     return elevationMap;
   }
 }
@@ -197,7 +189,7 @@ export function generateDensityMap(
     densityMap[y] = [];
     for (let x = 0; x < width; x++) {
       let value = noise.octaveNoise(x, y, config);
-      
+
       if (naturalClustering) {
         const clusterNoise = noise.octaveNoise(x * 0.5, y * 0.5, {
           ...config,
@@ -206,7 +198,7 @@ export function generateDensityMap(
         });
         value = (value + clusterNoise * 0.3) / 1.3;
       }
-      
+
       densityMap[y][x] = (value + 1) / 2;
     }
   }

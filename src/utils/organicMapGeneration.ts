@@ -1,6 +1,6 @@
 /**
  * 🌳 GENERACIÓN ORGÁNICA DE MAPAS PROCEDIMENTALES
- * 
+ *
  * Sistema principal que combina todos los algoritmos orgánicos para crear
  * layouts realistas similares a RPGs profesionales, eliminando la apariencia de grid
  */
@@ -8,9 +8,12 @@
 import type { Zone, MapElement } from '../types';
 import type { Point } from './noiseGeneration';
 import { PerlinNoise, NOISE_PRESETS, generateDensityMap } from './noiseGeneration';
-import { VoronoiGenerator, createVoronoiConfig, convertVoronoiCellsToZones } from './voronoiGeneration';
+import {
+  VoronoiGenerator,
+  createVoronoiConfig,
+  convertVoronoiCellsToZones
+} from './voronoiGeneration';
 import { OrganicStreetGenerator, createOrganicStreetConfig } from './organicStreetGeneration';
-
 
 export const MAP_CONFIG = {
   width: 1000,
@@ -168,11 +171,11 @@ export class PoissonDiskSampler {
     this.height = height;
     this.cellSize = radius / Math.sqrt(2);
     this.noise = new PerlinNoise(seed);
-    
+
     const gridWidth = Math.ceil(width / this.cellSize);
     const gridHeight = Math.ceil(height / this.cellSize);
-    
-    this.grid = Array.from({ length: gridHeight }, () => 
+
+    this.grid = Array.from({ length: gridHeight }, () =>
       Array.from({ length: gridWidth }, () => ({ x: -1, y: -1 }))
     );
     this.activeList = [];
@@ -183,60 +186,62 @@ export class PoissonDiskSampler {
    */
   generatePoints(densityMap?: number[][]): Point[] {
     const points: Point[] = [];
-    
 
     const initialPoint = {
-      x: this.width / 2 + (this.noise.generateNoise2D(this.width * 0.01, this.height * 0.01) * 50),
-      y: this.height / 2 + (this.noise.generateNoise2D(this.width * 0.01 + 100, this.height * 0.01 + 100) * 50)
+      x: this.width / 2 + this.noise.generateNoise2D(this.width * 0.01, this.height * 0.01) * 50,
+      y:
+        this.height / 2 +
+        this.noise.generateNoise2D(this.width * 0.01 + 100, this.height * 0.01 + 100) * 50
     };
-    
+
     this.addPoint(initialPoint, points);
-    
 
     while (this.activeList.length > 0) {
       const seed = (Date.now() * 1664525 + 1013904223) % 2147483647;
       const randomIndex = Math.abs(seed) % this.activeList.length;
       const point = this.activeList[randomIndex];
-      
+
       let foundValidPoint = false;
-      
 
       for (let i = 0; i < 30; i++) {
         const candidate = this.generateCandidate(point, densityMap);
-        
+
         if (this.isValidCandidate(candidate)) {
           this.addPoint(candidate, points);
           foundValidPoint = true;
           break;
         }
       }
-      
+
       if (!foundValidPoint) {
         this.activeList.splice(randomIndex, 1);
       }
     }
-    
+
     return points;
   }
 
   private generateCandidate(center: Point, densityMap?: number[][]): Point {
     const timeSeed = Date.now();
-    const angle = ((timeSeed * 1664525 + 1013904223) % 2147483647) / 2147483647 * 2 * Math.PI;
+    const angle = (((timeSeed * 1664525 + 1013904223) % 2147483647) / 2147483647) * 2 * Math.PI;
     const distanceSeed = ((timeSeed + 12345) * 1664525 + 1013904223) % 2147483647;
     let distance = this.radius + (distanceSeed / 2147483647) * this.radius;
-    
 
     if (densityMap) {
-      const densityX = Math.floor(center.x * densityMap[0].length / this.width);
-      const densityY = Math.floor(center.y * densityMap.length / this.height);
-      
-      if (densityX >= 0 && densityX < densityMap[0].length && 
-          densityY >= 0 && densityY < densityMap.length) {
+      const densityX = Math.floor((center.x * densityMap[0].length) / this.width);
+      const densityY = Math.floor((center.y * densityMap.length) / this.height);
+
+      if (
+        densityX >= 0 &&
+        densityX < densityMap[0].length &&
+        densityY >= 0 &&
+        densityY < densityMap.length
+      ) {
         const density = densityMap[densityY][densityX];
-        distance *= (2 - density);
+        distance *= 2 - density;
       }
     }
-    
+
     return {
       x: center.x + Math.cos(angle) * distance,
       y: center.y + Math.sin(angle) * distance
@@ -244,31 +249,36 @@ export class PoissonDiskSampler {
   }
 
   private isValidCandidate(candidate: Point): boolean {
-
-    if (candidate.x < 0 || candidate.x >= this.width || 
-        candidate.y < 0 || candidate.y >= this.height) {
+    if (
+      candidate.x < 0 ||
+      candidate.x >= this.width ||
+      candidate.y < 0 ||
+      candidate.y >= this.height
+    ) {
       return false;
     }
-    
 
     const gridX = Math.floor(candidate.x / this.cellSize);
     const gridY = Math.floor(candidate.y / this.cellSize);
-    
+
     for (let dy = -2; dy <= 2; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const checkX = gridX + dx;
         const checkY = gridY + dy;
-        
-        if (checkX >= 0 && checkX < this.grid[0].length && 
-            checkY >= 0 && checkY < this.grid.length) {
+
+        if (
+          checkX >= 0 &&
+          checkX < this.grid[0].length &&
+          checkY >= 0 &&
+          checkY < this.grid.length
+        ) {
           const gridPoint = this.grid[checkY][checkX];
-          
+
           if (gridPoint.x !== -1) {
             const distance = Math.sqrt(
-              Math.pow(candidate.x - gridPoint.x, 2) + 
-              Math.pow(candidate.y - gridPoint.y, 2)
+              Math.pow(candidate.x - gridPoint.x, 2) + Math.pow(candidate.y - gridPoint.y, 2)
             );
-            
+
             if (distance < this.radius) {
               return false;
             }
@@ -276,20 +286,18 @@ export class PoissonDiskSampler {
         }
       }
     }
-    
+
     return true;
   }
 
   private addPoint(point: Point, points: Point[]): void {
     points.push(point);
     this.activeList.push(point);
-    
 
     const gridX = Math.floor(point.x / this.cellSize);
     const gridY = Math.floor(point.y / this.cellSize);
-    
-    if (gridX >= 0 && gridX < this.grid[0].length && 
-        gridY >= 0 && gridY < this.grid.length) {
+
+    if (gridX >= 0 && gridX < this.grid[0].length && gridY >= 0 && gridY < this.grid.length) {
       this.grid[gridY][gridX] = point;
     }
   }
@@ -311,30 +319,25 @@ export class OrganicMapGenerator {
    * Generar mapa completo usando algoritmos orgánicos
    */
   generateOrganicMap(): { zones: Zone[]; mapElements: MapElement[] } {
-
     let zones: Zone[];
-    
+
     if (this.config.useVoronoi) {
       zones = this.generateVoronoiBasedZones();
     } else {
       zones = this.generateImprovedGridZones();
     }
 
-
     zones = this.applyOrganicVariation(zones);
-
 
     const decorations = this.generateOrganicDecorations(zones);
 
-
     let streets: MapElement[];
-    
+
     if (this.config.organicStreets) {
       streets = this.generateOrganicStreets(zones);
     } else {
       streets = this.generateImprovedStreets(zones);
     }
-
 
     const mapElements = [...decorations, ...streets];
 
@@ -345,34 +348,34 @@ export class OrganicMapGenerator {
    * Generar zonas usando células de Voronoi
    */
   private generateVoronoiBasedZones(): Zone[] {
-    const voronoiConfig = createVoronoiConfig(
-      MAP_CONFIG.width, 
-      MAP_CONFIG.height, 
-      {
-        seed: this.seedToNumber(this.config.seed),
-        numCells: Math.floor(6 + ((this.seedToNumber(this.config.seed) * 1664525 + 1013904223) % 2147483647) / 2147483647 * 8),
-        relaxationIterations: 2,
-        minCellDistance: 80
-      }
-    );
+    const voronoiConfig = createVoronoiConfig(MAP_CONFIG.width, MAP_CONFIG.height, {
+      seed: this.seedToNumber(this.config.seed),
+      numCells: Math.floor(
+        6 +
+          (((this.seedToNumber(this.config.seed) * 1664525 + 1013904223) % 2147483647) /
+            2147483647) *
+            8
+      ),
+      relaxationIterations: 2,
+      minCellDistance: 80
+    });
 
     const voronoi = new VoronoiGenerator(voronoiConfig);
     const cells = voronoi.generateCells();
 
-
     const roomTypes = this.selectRoomTypesForCells(cells.length);
     const voronoiZones = convertVoronoiCellsToZones(cells, roomTypes);
 
-
     return voronoiZones.map((voronoiZone, index) => {
       const roomTypeName = roomTypes[index];
-      
 
       if (!roomTypeName || !ROOM_TYPES[roomTypeName as keyof typeof ROOM_TYPES]) {
-        console.warn(`Tipo de habitación no válido: ${roomTypeName}, usando LIVING_ROOM por defecto`);
+        console.warn(
+          `Tipo de habitación no válido: ${roomTypeName}, usando LIVING_ROOM por defecto`
+        );
         const fallbackType = 'LIVING_ROOM';
         const roomConfig = ROOM_TYPES[fallbackType];
-        
+
         return {
           id: `organic_zone_fallback_${index}_${this.config.seed.slice(-4)}`,
           name: roomConfig.name,
@@ -383,7 +386,7 @@ export class OrganicMapGenerator {
           effects: this.getZoneEffects(roomConfig.type)
         };
       }
-      
+
       const roomType = roomTypeName as keyof typeof ROOM_TYPES;
       const roomConfig = ROOM_TYPES[roomType];
 
@@ -403,28 +406,24 @@ export class OrganicMapGenerator {
    * Generar zonas mejoradas sin Voronoi (fallback)
    */
   private generateImprovedGridZones(): Zone[] {
-
     const roomTypes = Object.keys(ROOM_TYPES).slice(0, 6) as Array<keyof typeof ROOM_TYPES>;
     const zones: Zone[] = [];
 
     roomTypes.forEach((roomType, index) => {
       const roomConfig = ROOM_TYPES[roomType];
-      
 
       let baseX = 100 + (index % 3) * 250;
       let baseY = 100 + Math.floor(index / 3) * 200;
-      
 
       const jitterX = this.noise.generateNoise2D(baseX * 0.01, baseY * 0.01) * 50;
       const jitterY = this.noise.generateNoise2D(baseX * 0.01 + 100, baseY * 0.01 + 100) * 50;
-      
+
       baseX += jitterX;
       baseY += jitterY;
-      
 
       const baseSize = roomConfig.baseSize;
       const sizeVariation = this.noise.generateNoise2D(index * 0.5, index * 0.3) * 0.3;
-      
+
       const width = Math.floor(baseSize.width * (1 + sizeVariation));
       const height = Math.floor(baseSize.height * (1 + sizeVariation));
 
@@ -454,18 +453,22 @@ export class OrganicMapGenerator {
     if (this.config.densityVariation === 0) return zones;
 
     return zones.map(zone => {
-
       const noiseX = this.noise.generateNoise2D(zone.bounds.x * 0.005, zone.bounds.y * 0.005);
-      const noiseY = this.noise.generateNoise2D(zone.bounds.x * 0.005 + 50, zone.bounds.y * 0.005 + 50);
-      
+      const noiseY = this.noise.generateNoise2D(
+        zone.bounds.x * 0.005 + 50,
+        zone.bounds.y * 0.005 + 50
+      );
+
       const variationAmount = this.config.densityVariation * 20;
       const newX = zone.bounds.x + noiseX * variationAmount;
       const newY = zone.bounds.y + noiseY * variationAmount;
 
-
       const sizeNoiseX = this.noise.generateNoise2D(zone.bounds.x * 0.008, zone.bounds.y * 0.008);
-      const sizeNoiseY = this.noise.generateNoise2D(zone.bounds.x * 0.008 + 75, zone.bounds.y * 0.008 + 75);
-      
+      const sizeNoiseY = this.noise.generateNoise2D(
+        zone.bounds.x * 0.008 + 75,
+        zone.bounds.y * 0.008 + 75
+      );
+
       const sizeVariation = this.config.densityVariation * 0.15;
       const newWidth = Math.floor(zone.bounds.width * (1 + sizeNoiseX * sizeVariation));
       const newHeight = Math.floor(zone.bounds.height * (1 + sizeNoiseY * sizeVariation));
@@ -487,17 +490,15 @@ export class OrganicMapGenerator {
    */
   private generateOrganicDecorations(zones: Zone[]): MapElement[] {
     const decorations: MapElement[] = [];
-    
 
     const densityMap = generateDensityMap(
-      MAP_CONFIG.width, 
-      MAP_CONFIG.height, 
+      MAP_CONFIG.width,
+      MAP_CONFIG.height,
       { ...NOISE_PRESETS.ORGANIC_VARIATION, seed: this.seedToNumber(this.config.seed) },
       this.config.naturalClustering
     );
 
     zones.forEach((zone, zoneIndex) => {
-
       const sampler = new PoissonDiskSampler(
         zone.bounds.width - 20,
         zone.bounds.height - 20,
@@ -505,9 +506,7 @@ export class OrganicMapGenerator {
         this.seedToNumber(this.config.seed) + zoneIndex
       );
 
-
       const decorationPoints = sampler.generatePoints(densityMap);
-      
 
       const roomType = this.mapZoneTypeToRoomType(zone.type);
       const roomConfig = ROOM_TYPES[roomType];
@@ -520,7 +519,6 @@ export class OrganicMapGenerator {
         if (pointIndex < availableDecorations.length) {
           const decorationType = availableDecorations[pointIndex % availableDecorations.length];
           const decorationSize = this.getDecorationSize(decorationType);
-          
 
           const sizeVariation = this.noise.generateNoise2D(point.x * 0.02, point.y * 0.02) * 0.2;
           const finalWidth = Math.floor(decorationSize.width * (1 + sizeVariation));
@@ -563,23 +561,20 @@ export class OrganicMapGenerator {
       streetConfig
     );
 
-
     const anchors: Point[] = zones.map(zone => ({
       x: zone.bounds.x + zone.bounds.width / 2,
       y: zone.bounds.y + zone.bounds.height / 2
     }));
 
     const streetNetwork = streetGenerator.generateStreetNetwork(anchors);
-    
 
     const streetElements: MapElement[] = [];
 
     streetNetwork.streets.forEach(street => {
-
       for (let i = 0; i < street.path.length - 1; i++) {
         const start = street.path[i];
         const end = street.path[i + 1];
-        
+
         const segmentLength = Math.sqrt(
           Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
         );
@@ -593,7 +588,6 @@ export class OrganicMapGenerator {
         });
       }
     });
-
 
     streetNetwork.intersections.forEach((intersection, index) => {
       streetElements.push({
@@ -612,35 +606,30 @@ export class OrganicMapGenerator {
    * Generar calles mejoradas (fallback)
    */
   private generateImprovedStreets(zones: Zone[]): MapElement[] {
-
     const streets: MapElement[] = [];
-    
-    zones.forEach((zone, index) => {
 
+    zones.forEach((zone, index) => {
       if (index < zones.length - 1) {
         const nextZone = zones[index + 1];
-        
+
         const start = {
           x: zone.bounds.x + zone.bounds.width / 2,
           y: zone.bounds.y + zone.bounds.height / 2
         };
-        
+
         const end = {
           x: nextZone.bounds.x + nextZone.bounds.width / 2,
           y: nextZone.bounds.y + nextZone.bounds.height / 2
         };
-
 
         const midPoint = {
           x: (start.x + end.x) / 2,
           y: (start.y + end.y) / 2
         };
 
-
         const curveOffset = this.noise.generateNoise2D(midPoint.x * 0.01, midPoint.y * 0.01) * 30;
         midPoint.x += curveOffset;
         midPoint.y += curveOffset;
-
 
         const segments = [
           { from: start, to: midPoint },
@@ -649,8 +638,7 @@ export class OrganicMapGenerator {
 
         segments.forEach((segment, segmentIndex) => {
           const length = Math.sqrt(
-            Math.pow(segment.to.x - segment.from.x, 2) + 
-            Math.pow(segment.to.y - segment.from.y, 2)
+            Math.pow(segment.to.x - segment.from.x, 2) + Math.pow(segment.to.y - segment.from.y, 2)
           );
 
           streets.push({
@@ -667,8 +655,6 @@ export class OrganicMapGenerator {
     return streets;
   }
 
-
-
   private seedToNumber(seed: string): number {
     return seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
   }
@@ -676,24 +662,21 @@ export class OrganicMapGenerator {
   private selectRoomTypesForCells(numCells: number): string[] {
     const allRoomTypes = Object.keys(ROOM_TYPES);
     const selectedTypes: string[] = [];
-    
 
     const essentialRooms = ['KITCHEN', 'LIVING_ROOM', 'BEDROOM', 'BATHROOM'];
     selectedTypes.push(...essentialRooms.slice(0, Math.min(essentialRooms.length, numCells)));
-    
 
     const optionalRooms = allRoomTypes.filter(room => !essentialRooms.includes(room));
     while (selectedTypes.length < numCells && optionalRooms.length > 0) {
       const randomIndex = Math.floor(Math.random() * optionalRooms.length);
       selectedTypes.push(optionalRooms.splice(randomIndex, 1)[0]);
     }
-    
 
     while (selectedTypes.length < numCells) {
       const randomRoomType = allRoomTypes[Math.floor(Math.random() * allRoomTypes.length)];
       selectedTypes.push(randomRoomType);
     }
-    
+
     return selectedTypes.slice(0, numCells);
   }
 
@@ -715,13 +698,13 @@ export class OrganicMapGenerator {
       library: 'STUDY',
       recreation: 'GARDEN'
     };
-    
+
     return mapping[zoneType] || 'LIVING_ROOM';
   }
 
   private getThemedRoomColor(zoneType: Zone['type']): string {
     const themeConfig = ARCHITECTURAL_THEMES[this.config.theme];
-    
+
     const colorMap: Record<Zone['type'], keyof typeof themeConfig.colors> = {
       food: 'primary',
       rest: 'secondary',
@@ -739,7 +722,7 @@ export class OrganicMapGenerator {
       library: 'secondary',
       recreation: 'accent'
     };
-    
+
     return themeConfig.colors[colorMap[zoneType] || 'primary'];
   }
 
@@ -761,7 +744,7 @@ export class OrganicMapGenerator {
       library: { happiness: 10, boredom: 30 },
       recreation: { happiness: 20, boredom: 25 }
     };
-    
+
     return effects[zoneType] || {};
   }
 
@@ -780,7 +763,7 @@ export class OrganicMapGenerator {
       deco_clock: { width: 16, height: 16 },
       deco_bookshelf: { width: 28, height: 32 }
     };
-    
+
     return sizes[type] || { width: 16, height: 16 };
   }
 
@@ -799,7 +782,7 @@ export class OrganicMapGenerator {
       deco_clock: 'play_zone',
       deco_bookshelf: 'play_zone'
     };
-    
+
     return typeMap[decorationType] || 'obstacle';
   }
 
@@ -818,9 +801,8 @@ export class OrganicMapGenerator {
       deco_clock: '#B5A642',
       deco_bookshelf: '#8B4513'
     };
-    
+
     const baseColor = baseColors[decorationType] || '#64748b';
-    
 
     switch (this.config.theme) {
       case 'MODERN':
@@ -845,7 +827,6 @@ export function generateOrganicProceduralMap(
   options: Partial<OrganicMapConfig> = {}
 ): { zones: Zone[]; mapElements: MapElement[] } {
   const mapSeed = seed || Date.now().toString(36) + Math.random().toString(36).substr(2);
-  
 
   const config: OrganicMapConfig = {
     seed: mapSeed,
@@ -856,7 +837,7 @@ export function generateOrganicProceduralMap(
     naturalClustering: true,
     ...options
   };
-  
+
   const generator = new OrganicMapGenerator(config);
   return generator.generateOrganicMap();
 }

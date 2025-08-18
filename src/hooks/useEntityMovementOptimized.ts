@@ -2,19 +2,21 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from './useGame';
 import { shouldUpdateMovement, measureExecutionTime } from '../utils/performanceOptimizer';
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
-import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
-import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from "../constants";
-import { MAP_CONFIG } from "../utils/organicMapGeneration"; // NUEVO: Import para boundaries
+import {
+  getAttractionTarget,
+  getEntityZone,
+  checkCollisionWithObstacles
+} from '../utils/mapGeneration';
+import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from '../constants';
+import { MAP_CONFIG } from '../utils/organicMapGeneration'; // NUEVO: Import para boundaries
 import type { Entity, Zone, Position } from '../types';
 import { getGameIntervals } from '../config/gameConfig';
-
 
 export const useEntityMovementOptimized = () => {
   const { gameState, dispatch } = useGame();
   const animationRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);
   const entityTargets = useRef<Map<string, Position>>(new Map());
-
 
   const getCriticalStats = useCallback((entity: Entity): (keyof typeof entity.stats)[] => {
     const critical: (keyof typeof entity.stats)[] = [];
@@ -26,66 +28,58 @@ export const useEntityMovementOptimized = () => {
     if (entity.stats.energy < 40) critical.push('energy');
     if (entity.stats.happiness < 40) critical.push('happiness');
     if (entity.stats.money < 30) critical.push('money');
-    
+
     return critical;
   }, []);
 
+  const isZoneBeneficialForEntity = useCallback(
+    (entity: Entity, zone: Zone): boolean => {
+      const criticalStats = getCriticalStats(entity);
 
-  const isZoneBeneficialForEntity = useCallback((entity: Entity, zone: Zone): boolean => {
+      for (const stat of criticalStats) {
+        if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
+          return true;
+        }
+      }
 
-    const criticalStats = getCriticalStats(entity);
-    
-    for (const stat of criticalStats) {
-
-      if (zone.effects?.[stat] && zone.effects[stat]! > 0) {
+      if (entity.stats.money < 30 && zone.effects?.money && zone.effects.money > 0) {
         return true;
       }
-    }
 
+      return false;
+    },
+    [getCriticalStats]
+  );
 
-    if (entity.stats.money < 30 && zone.effects?.money && zone.effects.money > 0) {
-      return true;
-    }
+  const findMostNeededZone = useCallback(
+    (entity: Entity, zones: Zone[]): Zone | null => {
+      const criticalStats = getCriticalStats(entity);
 
-    return false;
-  }, [getCriticalStats]);
-
-
-  const findMostNeededZone = useCallback((entity: Entity, zones: Zone[]): Zone | null => {
-    const criticalStats = getCriticalStats(entity);
-    
-
-    if (entity.stats.money < 20) {
-
-      const moneyZone = zones.find(z => z.effects?.money && z.effects.money > 0);
-      if (moneyZone) return moneyZone;
-    }
-
-
-    for (const stat of criticalStats) {
-      const zoneType = NEED_TO_ZONE_MAPPING[stat];
-      if (zoneType) {
-        const suitableZone = zones.find(z => z.type === zoneType);
-        if (suitableZone) return suitableZone;
+      if (entity.stats.money < 20) {
+        const moneyZone = zones.find(z => z.effects?.money && z.effects.money > 0);
+        if (moneyZone) return moneyZone;
       }
-    }
 
+      for (const stat of criticalStats) {
+        const zoneType = NEED_TO_ZONE_MAPPING[stat];
+        if (zoneType) {
+          const suitableZone = zones.find(z => z.type === zoneType);
+          if (suitableZone) return suitableZone;
+        }
+      }
 
-    if (entity.stats.happiness < 50) {
-      const comfortZone = zones.find(z => z.type === 'comfort');
-      if (comfortZone) return comfortZone;
-    }
+      if (entity.stats.happiness < 50) {
+        const comfortZone = zones.find(z => z.type === 'comfort');
+        if (comfortZone) return comfortZone;
+      }
 
-    return null;
-  }, [getCriticalStats]);
-
+      return null;
+    },
+    [getCriticalStats]
+  );
 
   const getEntityTarget = useCallback(
-    (
-      entity: Entity,
-      zones: Zone[],
-      companion: Entity | null
-    ): Position | undefined => {
+    (entity: Entity, zones: Zone[], companion: Entity | null): Position | undefined => {
       if (companion && !companion.isDead) {
         const distance = Math.hypot(
           entity.position.x - companion.position.x,
@@ -99,107 +93,100 @@ export const useEntityMovementOptimized = () => {
         }
       }
 
-    const currentZone = getEntityZone(entity.position, zones);
-    if (currentZone && isZoneBeneficialForEntity(entity, currentZone)) {
+      const currentZone = getEntityZone(entity.position, zones);
+      if (currentZone && isZoneBeneficialForEntity(entity, currentZone)) {
+        return {
+          x: currentZone.bounds.x + currentZone.bounds.width / 2,
+          y: currentZone.bounds.y + currentZone.bounds.height / 2
+        };
+      }
 
-      return {
-        x: currentZone.bounds.x + currentZone.bounds.width / 2,
-        y: currentZone.bounds.y + currentZone.bounds.height / 2
-      };
-    }
+      const targetZone = findMostNeededZone(entity, zones);
+      if (targetZone) {
+        return {
+          x: targetZone.bounds.x + targetZone.bounds.width / 2,
+          y: targetZone.bounds.y + targetZone.bounds.height / 2
+        };
+      }
 
+      const attractionTarget = getAttractionTarget(entity.stats, zones, entity.position);
+      return attractionTarget || undefined;
+    },
+    [findMostNeededZone, isZoneBeneficialForEntity, gameState.resonance]
+  );
 
-    const targetZone = findMostNeededZone(entity, zones);
-    if (targetZone) {
+  const calculateMovementStep = useCallback(
+    (entity: Entity, target: Position, companion: Entity | null): Position => {
+      const dx = target.x - entity.position.x;
+      const dy = target.y - entity.position.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 1e-10) {
+        // Usar epsilon pequeño en lugar de comparación exacta
+        return entity.position;
+      }
 
-      return {
-        x: targetZone.bounds.x + targetZone.bounds.width / 2,
-        y: targetZone.bounds.y + targetZone.bounds.height / 2
-      };
-    }
+      const safeDistance = Math.max(1e-10, distance);
+      const dirX = dx / safeDistance;
+      const dirY = dy / safeDistance;
 
+      const { entityMovementSpeed } = getGameIntervals();
+      let newX = entity.position.x + dirX * entityMovementSpeed;
+      let newY = entity.position.y + dirY * entityMovementSpeed;
 
-    const attractionTarget = getAttractionTarget(entity.stats, zones, entity.position);
-    return attractionTarget || undefined;
-  }, [findMostNeededZone, isZoneBeneficialForEntity, gameState.resonance]);
-
-
-  const calculateMovementStep = useCallback((
-    entity: Entity, 
-    target: Position, 
-    companion: Entity | null
-  ): Position => {
-    const dx = target.x - entity.position.x;
-    const dy = target.y - entity.position.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    // CORRIGIDO: Protección contra división por cero
-    if (distance < 1e-10) { // Usar epsilon pequeño en lugar de comparación exacta
-      return entity.position;
-    }
-
-    // CORRIGIDO: Usar Math.hypot para mejor precisión
-    const safeDistance = Math.max(1e-10, distance);
-    const dirX = dx / safeDistance;
-    const dirY = dy / safeDistance;
-    
-
-    const { entityMovementSpeed } = getGameIntervals();
-    let newX = entity.position.x + dirX * entityMovementSpeed;
-    let newY = entity.position.y + dirY * entityMovementSpeed;
-
-
-    if (companion) {
-      const companionDx = entity.position.x - companion.position.x;
-      const companionDy = entity.position.y - companion.position.y;
-      const companionDistance = Math.sqrt(companionDx * companionDx + companionDy * companionDy);
-      
-      // CORRIGIDO: Protección contra división por cero en repulsión
-      if (companionDistance > 1e-10) { // Evitar división por cero
-        if (companionDistance < MOVEMENT_CONFIG.MIN_DISTANCE_BETWEEN_ENTITIES) {
-          const repulsionForce = MOVEMENT_CONFIG.REPULSION_FORCE;
-          newX += (companionDx / companionDistance) * repulsionForce;
-          newY += (companionDy / companionDistance) * repulsionForce;
-        } else {
-          // CORRIGIDO: Mejor lógica de seguimiento con validación
-          const preferred = 80;
-          const diff = companionDistance - preferred;
-          const k = 0.02;
-          newX -= (companionDx / companionDistance) * (k * diff);
-          newY -= (companionDy / companionDistance) * (k * diff);
+      if (companion) {
+        const companionDx = entity.position.x - companion.position.x;
+        const companionDy = entity.position.y - companion.position.y;
+        const companionDistance = Math.sqrt(companionDx * companionDx + companionDy * companionDy);
+        if (companionDistance > 1e-10) {
+          // Evitar división por cero
+          if (companionDistance < MOVEMENT_CONFIG.MIN_DISTANCE_BETWEEN_ENTITIES) {
+            const repulsionForce = MOVEMENT_CONFIG.REPULSION_FORCE;
+            newX += (companionDx / companionDistance) * repulsionForce;
+            newY += (companionDy / companionDistance) * repulsionForce;
+          } else {
+            const preferred = 80;
+            const diff = companionDistance - preferred;
+            const k = 0.02;
+            newX -= (companionDx / companionDistance) * (k * diff);
+            newY -= (companionDy / companionDistance) * (k * diff);
+          }
         }
       }
-    }
 
-    // CORRIGIDO: Usar MAP_CONFIG en lugar de valores hardcodeados
-    const maxX = MAP_CONFIG.width - MOVEMENT_CONFIG.ENTITY_SIZE;
-    const maxY = MAP_CONFIG.height - MOVEMENT_CONFIG.ENTITY_SIZE;
-    newX = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxX, newX));
-    newY = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxY, newY));
+      const maxX = MAP_CONFIG.width - MOVEMENT_CONFIG.ENTITY_SIZE;
+      const maxY = MAP_CONFIG.height - MOVEMENT_CONFIG.ENTITY_SIZE;
+      newX = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxX, newX));
+      newY = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxY, newY));
 
+      const newPosition = { x: newX, y: newY };
+      if (
+        checkCollisionWithObstacles(newPosition, MOVEMENT_CONFIG.ENTITY_SIZE, gameState.mapElements)
+      ) {
+        const alternativeX = entity.position.x + dirY * entityMovementSpeed;
+        const alternativeY = entity.position.y - dirX * entityMovementSpeed;
 
-    const newPosition = { x: newX, y: newY };
-    if (checkCollisionWithObstacles(newPosition, MOVEMENT_CONFIG.ENTITY_SIZE, gameState.mapElements)) {
+        const alternativePosition = { x: alternativeX, y: alternativeY };
+        if (
+          !checkCollisionWithObstacles(
+            alternativePosition,
+            MOVEMENT_CONFIG.ENTITY_SIZE,
+            gameState.mapElements
+          )
+        ) {
+          return alternativePosition;
+        }
 
-      const alternativeX = entity.position.x + dirY * entityMovementSpeed;
-      const alternativeY = entity.position.y - dirX * entityMovementSpeed;
-      
-      const alternativePosition = { x: alternativeX, y: alternativeY };
-      if (!checkCollisionWithObstacles(alternativePosition, MOVEMENT_CONFIG.ENTITY_SIZE, gameState.mapElements)) {
-        return alternativePosition;
+        return entity.position;
       }
-      
 
-      return entity.position;
-    }
-
-    return newPosition;
-  }, [gameState.mapElements]);
+      return newPosition;
+    },
+    [gameState.mapElements]
+  );
 
   useEffect(() => {
     function updateMovement() {
       const now = performance.now();
-      
 
       if (!shouldUpdateMovement()) {
         animationRef.current = requestAnimationFrame(updateMovement);
@@ -212,31 +199,23 @@ export const useEntityMovementOptimized = () => {
         const livingEntities = gameState.entities.filter(
           e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
         );
-        
+
         for (const entity of livingEntities) {
           const companion = livingEntities.find(e2 => e2.id !== entity.id) || null;
-          
 
           if (now % 5000 < 100) {
-            const newActivity = makeIntelligentDecision(
-              entity,
-              companion,
-              now
-            );
-            
+            const newActivity = makeIntelligentDecision(entity, companion, now);
+
             if (newActivity !== entity.activity) {
               dispatch({
                 type: 'UPDATE_ENTITY_ACTIVITY',
                 payload: { entityId: entity.id, activity: newActivity }
               });
-              
 
               entityTargets.current.delete(entity.id);
             }
           }
 
-
-          // CORRIGIDO: Usar timestamp y entity ID para determinismo
           let target = entityTargets.current.get(entity.id);
           const targetRefreshCheck = (now + entity.id.charCodeAt(0) * 100) % 10000 < 100; // ~1% chance determinísticamente
           if (!target || targetRefreshCheck) {
@@ -245,15 +224,13 @@ export const useEntityMovementOptimized = () => {
               entityTargets.current.set(entity.id, target);
             }
           }
-          
-          // CORRIGIDO: Fallback determinístico en lugar de aleatorio
+
           const fallbackCheck = (now + entity.id.charCodeAt(1) * 200) % 20000 < 100; // ~0.5% chance determinísticamente
           if (!target || fallbackCheck) {
-            // CORRIGIDO: Usar seed determinista basado en entity para posición
-            const seed = entity.id.charCodeAt(0) + now % 10000;
-            const normalizedSeedX = (seed * 9301) % 233280 / 233280; // LCG determinístico
-            const normalizedSeedY = ((seed + 1000) * 9301) % 233280 / 233280;
-            
+            const seed = entity.id.charCodeAt(0) + (now % 10000);
+            const normalizedSeedX = ((seed * 9301) % 233280) / 233280; // LCG determinístico
+            const normalizedSeedY = (((seed + 1000) * 9301) % 233280) / 233280;
+
             target = {
               x: normalizedSeedX * (MAP_CONFIG.width - 200) + 100,
               y: normalizedSeedY * (MAP_CONFIG.height - 200) + 100
@@ -261,14 +238,13 @@ export const useEntityMovementOptimized = () => {
             entityTargets.current.set(entity.id, target);
           }
 
-
           if (target) {
             const newPosition = calculateMovementStep(entity, target, companion);
-            
 
-            const moved = Math.abs(newPosition.x - entity.position.x) > 0.5 || 
-                         Math.abs(newPosition.y - entity.position.y) > 0.5;
-            
+            const moved =
+              Math.abs(newPosition.x - entity.position.x) > 0.5 ||
+              Math.abs(newPosition.y - entity.position.y) > 0.5;
+
             if (moved) {
               dispatch({
                 type: 'UPDATE_ENTITY_POSITION',
@@ -277,10 +253,8 @@ export const useEntityMovementOptimized = () => {
             }
           }
 
-
           const currentZone = getEntityZone(entity.position, gameState.zones);
           if (currentZone) {
-
             if (entity.state === 'SEEKING') {
               dispatch({
                 type: 'UPDATE_ENTITY_STATE',
@@ -288,7 +262,6 @@ export const useEntityMovementOptimized = () => {
               });
             }
           } else {
-
             if (entity.state === 'IDLE') {
               dispatch({
                 type: 'UPDATE_ENTITY_STATE',
@@ -309,5 +282,13 @@ export const useEntityMovementOptimized = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gameState.entities, gameState.zones, gameState.resonance, gameState.mapElements, dispatch, calculateMovementStep, getEntityTarget]);
+  }, [
+    gameState.entities,
+    gameState.zones,
+    gameState.resonance,
+    gameState.mapElements,
+    dispatch,
+    calculateMovementStep,
+    getEntityTarget
+  ]);
 };

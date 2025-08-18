@@ -1,6 +1,6 @@
 /**
  * 🛣️ GENERACIÓN ORGÁNICA DE CALLES Y CAMINOS
- * 
+ *
  * Sistemas de pathfinding y generación de redes de transporte naturales
  * basados en algoritmos utilizados en RPGs y city builders profesionales
  */
@@ -46,19 +46,13 @@ export class OrganicStreetGenerator {
   private streets: OrganicStreet[] = [];
   private occupancyGrid!: boolean[][];
 
-  constructor(
-    width: number, 
-    height: number, 
-    config: StreetConfig
-  ) {
+  constructor(width: number, height: number, config: StreetConfig) {
     this.width = width;
     this.height = height;
     this.config = config;
     this.noise = new PerlinNoise(config.seed);
-    
 
     this.generateElevationMap();
-    
 
     this.initializeOccupancyGrid();
   }
@@ -68,7 +62,6 @@ export class OrganicStreetGenerator {
    */
   generateStreetNetwork(anchors: Point[]): StreetNetwork {
     this.streets = [];
-    
 
     const mainStreet = this.generateMainStreet(anchors);
     if (mainStreet) {
@@ -76,13 +69,11 @@ export class OrganicStreetGenerator {
       this.markStreetOccupied(mainStreet);
     }
 
-
     const secondaryStreets = this.generateSecondaryStreets(mainStreet);
     secondaryStreets.forEach(street => {
       this.streets.push(street);
       this.markStreetOccupied(street);
     });
-
 
     const connectionPaths = this.generateConnectionPaths(anchors);
     connectionPaths.forEach(path => {
@@ -90,9 +81,7 @@ export class OrganicStreetGenerator {
       this.markStreetOccupied(path);
     });
 
-
     const intersections = this.calculateIntersections();
-
 
     const connectivity = this.buildConnectivityMap();
 
@@ -107,23 +96,19 @@ export class OrganicStreetGenerator {
    * Generar mapa de elevación usando ruido
    */
   private generateElevationMap(): void {
-    const noiseConfig = { 
-      ...NOISE_PRESETS.TERRAIN, 
-      seed: this.config.seed 
+    const noiseConfig = {
+      ...NOISE_PRESETS.TERRAIN,
+      seed: this.config.seed
     };
-    
-    this.elevationMap = this.noise.generateElevationMap(
-      this.width, 
-      this.height, 
-      noiseConfig
-    );
+
+    this.elevationMap = this.noise.generateElevationMap(this.width, this.height, noiseConfig);
   }
 
   /**
    * Inicializar grid de ocupación
    */
   private initializeOccupancyGrid(): void {
-    this.occupancyGrid = Array.from({ length: this.height }, () => 
+    this.occupancyGrid = Array.from({ length: this.height }, () =>
       Array.from({ length: this.width }, () => false)
     );
   }
@@ -133,7 +118,6 @@ export class OrganicStreetGenerator {
    */
   private generateMainStreet(anchors: Point[]): OrganicStreet | null {
     if (anchors.length < 2) return null;
-
 
     let maxDistance = 0;
     let startPoint = anchors[0];
@@ -150,11 +134,9 @@ export class OrganicStreetGenerator {
       }
     }
 
-
     const path = this.findOrganicPath(startPoint, endPoint, 'main');
-    
-    if (!path || path.length < 2) return null;
 
+    if (!path || path.length < 2) return null;
 
     const smoothPath = this.smoothPath(path, this.config.curvatureAmount);
 
@@ -178,16 +160,15 @@ export class OrganicStreetGenerator {
     const branchPoints = this.selectBranchPoints(mainStreet.path);
 
     branchPoints.forEach((branchPoint, index) => {
-
       const direction = this.calculatePerpendicularDirection(branchPoint, mainStreet.path);
       const branchEnd = this.findBranchEndpoint(branchPoint, direction);
 
       if (branchEnd) {
         const branchPath = this.findOrganicPath(branchPoint, branchEnd, 'secondary');
-        
+
         if (branchPath && branchPath.length > 3) {
           const smoothBranch = this.smoothPath(branchPath, this.config.curvatureAmount * 0.7);
-          
+
           secondaryStreets.push({
             id: `secondary_street_${index}_${Date.now()}`,
             path: smoothBranch,
@@ -208,20 +189,21 @@ export class OrganicStreetGenerator {
    */
   private generateConnectionPaths(anchors: Point[]): OrganicStreet[] {
     const connectionPaths: OrganicStreet[] = [];
-    
+
     anchors.forEach((anchor, index) => {
-
       if (!this.isPointConnectedToNetwork(anchor)) {
-
         const nearestStreet = this.findNearestStreet(anchor);
-        
+
         if (nearestStreet) {
           const connectionPoint = this.findClosestPointOnPath(anchor, nearestStreet.path);
           const connectionPath = this.findOrganicPath(anchor, connectionPoint, 'connection');
-          
+
           if (connectionPath && connectionPath.length > 1) {
-            const smoothConnection = this.smoothPath(connectionPath, this.config.curvatureAmount * 0.5);
-            
+            const smoothConnection = this.smoothPath(
+              connectionPath,
+              this.config.curvatureAmount * 0.5
+            );
+
             connectionPaths.push({
               id: `connection_${index}_${Date.now()}`,
               path: smoothConnection,
@@ -264,34 +246,28 @@ export class OrganicStreetGenerator {
     gScores.set(startKey, 0);
 
     while (openSet.length > 0) {
-
       openSet.sort((a, b) => a.fScore - b.fScore);
       const current = openSet.shift()!;
       const currentKey = `${Math.floor(current.point.x)},${Math.floor(current.point.y)}`;
 
       if (this.calculateDistance(current.point, end) < 5) {
-
         return this.reconstructPath(current.point, parents);
       }
 
       closedSet.add(currentKey);
 
-
       const neighbors = this.getNeighbors(current.point, streetType);
-      
+
       for (const neighbor of neighbors) {
         const neighborKey = `${Math.floor(neighbor.x)},${Math.floor(neighbor.y)}`;
-        
+
         if (closedSet.has(neighborKey)) continue;
 
-        const tentativeGScore = current.gScore + this.calculateMovementCost(
-          current.point, 
-          neighbor, 
-          streetType
-        );
+        const tentativeGScore =
+          current.gScore + this.calculateMovementCost(current.point, neighbor, streetType);
 
         const existingGScore = gScores.get(neighborKey) ?? Infinity;
-        
+
         if (tentativeGScore < existingGScore) {
           parents.set(neighborKey, current.point);
           gScores.set(neighborKey, tentativeGScore);
@@ -299,10 +275,10 @@ export class OrganicStreetGenerator {
           const heuristicScore = this.calculateDistance(neighbor, end);
           const fScore = tentativeGScore + heuristicScore;
 
-
-          const existingIndex = openSet.findIndex(item => 
-            Math.floor(item.point.x) === Math.floor(neighbor.x) && 
-            Math.floor(item.point.y) === Math.floor(neighbor.y)
+          const existingIndex = openSet.findIndex(
+            item =>
+              Math.floor(item.point.x) === Math.floor(neighbor.x) &&
+              Math.floor(item.point.y) === Math.floor(neighbor.y)
           );
 
           if (existingIndex === -1) {
@@ -333,27 +309,22 @@ export class OrganicStreetGenerator {
    */
   private calculateMovementCost(from: Point, to: Point, streetType: string): number {
     const distance = this.calculateDistance(from, to);
-    
 
     let cost = distance;
-
 
     const fromElevation = this.getElevationAt(from);
     const toElevation = this.getElevationAt(to);
     const elevationDiff = Math.abs(toElevation - fromElevation);
     const elevationCost = elevationDiff * this.config.elevationInfluence;
-    
-    cost += elevationCost;
 
+    cost += elevationCost;
 
     if (this.isPointOccupied(to)) {
       cost += distance * 2;
     }
 
-
     const gradientBonus = this.calculateGradientBonus(from, to);
     cost -= gradientBonus;
-
 
     switch (streetType) {
       case 'main':
@@ -377,10 +348,15 @@ export class OrganicStreetGenerator {
     const neighbors: Point[] = [];
     const stepSize = streetType === 'main' ? 8 : 6;
 
-
     const directions = [
-      { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
-      { x: 1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: -1, y: 1 }
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: -1 },
+      { x: 1, y: 1 },
+      { x: -1, y: -1 },
+      { x: 1, y: -1 },
+      { x: -1, y: 1 }
     ];
 
     directions.forEach(dir => {
@@ -389,9 +365,12 @@ export class OrganicStreetGenerator {
         y: point.y + dir.y * stepSize
       };
 
-
-      if (neighbor.x >= 0 && neighbor.x < this.width && 
-          neighbor.y >= 0 && neighbor.y < this.height) {
+      if (
+        neighbor.x >= 0 &&
+        neighbor.x < this.width &&
+        neighbor.y >= 0 &&
+        neighbor.y < this.height
+      ) {
         neighbors.push(neighbor);
       }
     });
@@ -413,24 +392,19 @@ export class OrganicStreetGenerator {
       const current = path[i];
       const next = path[i + 1];
 
-
       const controlPoint = this.calculateBezierControl(prev, current, next, curvatureAmount);
-      
 
       const segments = 3;
       for (let t = 0; t <= segments; t++) {
         const tNorm = t / segments;
         const interpolated = this.interpolateBezier(prev, controlPoint, next, tNorm);
-        
 
-        const variation = this.noise.generateNoise2D(
-          interpolated.x * 0.02, 
-          interpolated.y * 0.02
-        ) * 3;
-        
+        const variation =
+          this.noise.generateNoise2D(interpolated.x * 0.02, interpolated.y * 0.02) * 3;
+
         interpolated.x += variation;
         interpolated.y += variation;
-        
+
         smoothed.push(interpolated);
       }
     }
@@ -444,14 +418,12 @@ export class OrganicStreetGenerator {
    * Calcular punto de control para curva de Bézier
    */
   private calculateBezierControl(prev: Point, current: Point, next: Point, amount: number): Point {
-
     const dirX = (next.x - prev.x) * 0.5;
     const dirY = (next.y - prev.y) * 0.5;
-    
 
     const perpX = -dirY * amount;
     const perpY = dirX * amount;
-    
+
     return {
       x: current.x + perpX,
       y: current.y + perpY
@@ -463,18 +435,12 @@ export class OrganicStreetGenerator {
    */
   private interpolateBezier(start: Point, control: Point, end: Point, t: number): Point {
     const oneMinusT = 1 - t;
-    
+
     return {
-      x: oneMinusT * oneMinusT * start.x + 
-         2 * oneMinusT * t * control.x + 
-         t * t * end.x,
-      y: oneMinusT * oneMinusT * start.y + 
-         2 * oneMinusT * t * control.y + 
-         t * t * end.y
+      x: oneMinusT * oneMinusT * start.x + 2 * oneMinusT * t * control.x + t * t * end.x,
+      y: oneMinusT * oneMinusT * start.y + 2 * oneMinusT * t * control.y + t * t * end.y
     };
   }
-
-
 
   private calculateDistance(a: Point, b: Point): number {
     return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
@@ -504,7 +470,6 @@ export class OrganicStreetGenerator {
   }
 
   private calculateGradientBonus(from: Point, to: Point): number {
-
     const fromElev = this.getElevationAt(from);
     const toElev = this.getElevationAt(to);
     const gradientAlignment = Math.abs(fromElev - toElev);
@@ -514,46 +479,42 @@ export class OrganicStreetGenerator {
   private selectBranchPoints(path: Point[]): Point[] {
     const branchPoints: Point[] = [];
     const minDistance = 50;
-    
+
     for (let i = minDistance; i < path.length - minDistance; i += minDistance) {
       const positionSeed = (i * 1664525 + 1013904223) % 2147483647;
-      const deterministicValue = (positionSeed / 2147483647);
+      const deterministicValue = positionSeed / 2147483647;
       if (deterministicValue < this.config.branchingProbability) {
         branchPoints.push(path[i]);
       }
     }
-    
+
     return branchPoints;
   }
 
   private calculatePerpendicularDirection(point: Point, path: Point[]): Point {
+    const pathIndex = path.findIndex(p => this.calculateDistance(p, point) < 10);
 
-    const pathIndex = path.findIndex(p => 
-      this.calculateDistance(p, point) < 10
-    );
-    
     if (pathIndex > 0 && pathIndex < path.length - 1) {
       const dirX = path[pathIndex + 1].x - path[pathIndex - 1].x;
       const dirY = path[pathIndex + 1].y - path[pathIndex - 1].y;
-      
 
       return { x: -dirY, y: dirX };
     }
-    
+
     return { x: 1, y: 0 };
   }
 
   private findBranchEndpoint(start: Point, direction: Point): Point | null {
     const distance = this.config.maxStreetLength * 0.6;
     const magnitude = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
-    
+
     if (magnitude === 0) return null;
-    
+
     const normalizedDir = {
       x: direction.x / magnitude,
       y: direction.y / magnitude
     };
-    
+
     return {
       x: start.x + normalizedDir.x * distance,
       y: start.y + normalizedDir.y * distance
@@ -561,34 +522,32 @@ export class OrganicStreetGenerator {
   }
 
   private isPointConnectedToNetwork(point: Point): boolean {
-    return this.streets.some(street => 
-      street.path.some(pathPoint => 
-        this.calculateDistance(point, pathPoint) < 20
-      )
+    return this.streets.some(street =>
+      street.path.some(pathPoint => this.calculateDistance(point, pathPoint) < 20)
     );
   }
 
   private findNearestStreet(point: Point): OrganicStreet | null {
     let nearestStreet: OrganicStreet | null = null;
     let minDistance = Infinity;
-    
+
     this.streets.forEach(street => {
       const closestPoint = this.findClosestPointOnPath(point, street.path);
       const distance = this.calculateDistance(point, closestPoint);
-      
+
       if (distance < minDistance) {
         minDistance = distance;
         nearestStreet = street;
       }
     });
-    
+
     return nearestStreet;
   }
 
   private findClosestPointOnPath(point: Point, path: Point[]): Point {
     let closestPoint = path[0];
     let minDistance = this.calculateDistance(point, path[0]);
-    
+
     path.forEach(pathPoint => {
       const distance = this.calculateDistance(point, pathPoint);
       if (distance < minDistance) {
@@ -596,14 +555,14 @@ export class OrganicStreetGenerator {
         closestPoint = pathPoint;
       }
     });
-    
+
     return closestPoint;
   }
 
   private reconstructPath(endPoint: Point, parents: Map<string, Point>): Point[] {
     const path: Point[] = [endPoint];
     let current = endPoint;
-    
+
     while (current) {
       const currentKey = `${Math.floor(current.x)},${Math.floor(current.y)}`;
       const parent = parents.get(currentKey);
@@ -614,25 +573,22 @@ export class OrganicStreetGenerator {
         break;
       }
     }
-    
+
     return path;
   }
 
   private calculateIntersections(): Point[] {
     const intersections: Point[] = [];
-    
+
     for (let i = 0; i < this.streets.length; i++) {
       for (let j = i + 1; j < this.streets.length; j++) {
-        const intersection = this.findPathIntersection(
-          this.streets[i].path, 
-          this.streets[j].path
-        );
+        const intersection = this.findPathIntersection(this.streets[i].path, this.streets[j].path);
         if (intersection) {
           intersections.push(intersection);
         }
       }
     }
-    
+
     return intersections;
   }
 
@@ -652,24 +608,23 @@ export class OrganicStreetGenerator {
 
   private buildConnectivityMap(): Map<string, string[]> {
     const connectivity = new Map<string, string[]>();
-    
+
     this.streets.forEach(street => {
       connectivity.set(street.id, []);
     });
-    
 
     for (let i = 0; i < this.streets.length; i++) {
       for (let j = i + 1; j < this.streets.length; j++) {
         const street1 = this.streets[i];
         const street2 = this.streets[j];
-        
+
         if (this.findPathIntersection(street1.path, street2.path)) {
           connectivity.get(street1.id)?.push(street2.id);
           connectivity.get(street2.id)?.push(street1.id);
         }
       }
     }
-    
+
     return connectivity;
   }
 }

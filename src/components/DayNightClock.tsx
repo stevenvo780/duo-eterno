@@ -7,10 +7,10 @@ interface DayNightClockProps {
   showPhase?: boolean;
 }
 
-export const DayNightClock: React.FC<DayNightClockProps> = ({ 
+export const DayNightClock: React.FC<DayNightClockProps> = ({
   position = 'top-right',
   size = 'medium',
-  showPhase = true 
+  showPhase = true
 }) => {
   const { currentTime, getTimeString, getSkyColor, getLightIntensity, phase } = useDayNightCycle();
 
@@ -29,21 +29,31 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
 
   const getCurrentIcon = () => {
     switch (phase) {
-      case 'dawn': return '🌅';
-      case 'day': return '☀️';
-      case 'dusk': return '🌇';
-      case 'night': return '🌙';
-      default: return '🌙';
+      case 'dawn':
+        return '🌅';
+      case 'day':
+        return '☀️';
+      case 'dusk':
+        return '🌇';
+      case 'night':
+        return '🌙';
+      default:
+        return '🌙';
     }
   };
 
   const getPhaseText = () => {
     switch (phase) {
-      case 'dawn': return 'Amanecer';
-      case 'day': return 'Día';
-      case 'dusk': return 'Atardecer';
-      case 'night': return 'Noche';
-      default: return 'Noche';
+      case 'dawn':
+        return 'Amanecer';
+      case 'day':
+        return 'Día';
+      case 'dusk':
+        return 'Atardecer';
+      case 'night':
+        return 'Noche';
+      default:
+        return 'Noche';
     }
   };
 
@@ -51,15 +61,15 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
   const clockRadius = parseInt(clockSize.width) / 2 - 10;
 
   // Calcular posición de las manecillas
-  const hourAngle = (currentTime.hour % 12) * 30 + (currentTime.minute * 0.5) - 90;
+  const hourAngle = (currentTime.hour % 12) * 30 + currentTime.minute * 0.5 - 90;
   const minuteAngle = currentTime.minute * 6 - 90;
-  
+
   const hourHandLength = clockRadius * 0.5;
   const minuteHandLength = clockRadius * 0.7;
-  
+
   const hourX = Math.cos((hourAngle * Math.PI) / 180) * hourHandLength;
   const hourY = Math.sin((hourAngle * Math.PI) / 180) * hourHandLength;
-  
+
   const minuteX = Math.cos((minuteAngle * Math.PI) / 180) * minuteHandLength;
   const minuteY = Math.sin((minuteAngle * Math.PI) / 180) * minuteHandLength;
 
@@ -100,7 +110,7 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
           stroke="rgba(255,255,255,0.3)"
           strokeWidth="1"
         />
-        
+
         {/* Marcas de las horas */}
         {[...Array(12)].map((_, i) => {
           const angle = (i * 30 - 90) * (Math.PI / 180);
@@ -110,7 +120,7 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
           const startY = clockRadius + Math.sin(angle) * startRadius;
           const endX = clockRadius + Math.cos(angle) * endRadius;
           const endY = clockRadius + Math.sin(angle) * endRadius;
-          
+
           return (
             <line
               key={i}
@@ -123,7 +133,7 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
             />
           );
         })}
-        
+
         {/* Manecilla de las horas */}
         <line
           x1={clockRadius}
@@ -134,7 +144,7 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
           strokeWidth="3"
           strokeLinecap="round"
         />
-        
+
         {/* Manecilla de los minutos */}
         <line
           x1={clockRadius}
@@ -145,14 +155,9 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
           strokeWidth="2"
           strokeLinecap="round"
         />
-        
+
         {/* Centro del reloj */}
-        <circle
-          cx={clockRadius}
-          cy={clockRadius}
-          r="3"
-          fill="rgba(255,255,255,0.9)"
-        />
+        <circle cx={clockRadius} cy={clockRadius} r="3" fill="rgba(255,255,255,0.9)" />
       </svg>
 
       {/* Información digital */}
@@ -165,14 +170,14 @@ export const DayNightClock: React.FC<DayNightClockProps> = ({
           lineHeight: '1.2'
         }}
       >
-        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-          {getTimeString()}
-        </div>
+        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{getTimeString()}</div>
         {showPhase && (
-          <div style={{ 
-            fontSize: `${parseInt(clockSize.fontSize) - 2}px`,
-            opacity: 0.8
-          }}>
+          <div
+            style={{
+              fontSize: `${parseInt(clockSize.fontSize) - 2}px`,
+              opacity: 0.8
+            }}
+          >
             {getCurrentIcon()} {getPhaseText()}
           </div>
         )}
