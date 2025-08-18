@@ -56,7 +56,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Pradera',
     baseColor: '#4A7C59',
     secondaryColor: '#5E8B6B',
-    textureVariants: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped'],
+    textureVariants: ['cesped1', 'cesped2', 'cesped3', 'Grass_Middle'],
     objectDensity: 0.25,
     preferredObjects: [
       {
@@ -88,7 +88,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Bosque',
     baseColor: '#2D4A32',
     secondaryColor: '#3A5C3F',
-    textureVariants: ['tile_0182_suelo_cesped', 'tile_0144_suelo_tierra'],
+    textureVariants: ['cesped1', 'cesped2', 'TexturedGrass'],
     objectDensity: 0.5,
     preferredObjects: [
       {
@@ -127,7 +127,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Jardín',
     baseColor: '#5A8B47',
     secondaryColor: '#6B9B58',
-    textureVariants: ['tile_0210_suelo_cesped'],
+    textureVariants: ['cesped4', 'cesped5', 'Grass_Middle'],
     objectDensity: 0.4,
     preferredObjects: [
       {
@@ -160,7 +160,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Terreno Rocoso',
     baseColor: '#6B6B6B',
     secondaryColor: '#7A7A7A',
-    textureVariants: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra'],
+    textureVariants: ['tile_0533_suelo_piedra', 'tile_0545_suelo_piedra'],
     objectDensity: 0.25,
     preferredObjects: [
       {
@@ -192,7 +192,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Arenal',
     baseColor: '#C9B26B',
     secondaryColor: '#D7C27B',
-    textureVariants: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena'],
+    textureVariants: ['tile_0547_suelo_arena'],
     objectDensity: 0.08,
     preferredObjects: [
       {
@@ -210,7 +210,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Agua',
     baseColor: '#3A6EA5',
     secondaryColor: '#2B5D8C',
-    textureVariants: ['tile_0149_agua_profunda'],
+    textureVariants: ['Water_Middle', 'tile_0198', 'tile_0230'],
     objectDensity: 0.0,
     preferredObjects: [],
     transitionSoftness: 0.9

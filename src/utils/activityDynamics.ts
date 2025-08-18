@@ -1,5 +1,4 @@
-import type { EntityStats, EntityActivity } from '../types';
-import type { ActivityType, ZoneType } from '../constants';
+import type { EntityStats, EntityActivity, ActivityType, ZoneType } from '../types';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
 import {

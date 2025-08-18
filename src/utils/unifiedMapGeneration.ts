@@ -84,10 +84,14 @@ export class UnifiedMapGenerator {
       mapElements = await this.applyRealAssets(mapElements);
     }
 
+    const stats = assetManager.getStats();
     return {
       zones,
       mapElements,
-      assetStats: assetManager.getStats()
+      assetStats: {
+        loaded: stats.totalLoaded,
+        categories: stats.categories
+      }
     };
   }
 
@@ -233,7 +237,10 @@ export class UnifiedMapGenerator {
       if (asset) {
         return {
           ...element,
-          assetId: asset.id,
+          metadata: {
+            ...element.metadata,
+            assetId: asset.id
+          },
           size: { width: asset.size, height: asset.size }
         };
       }

@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useGame } from '../hooks/useGame';
 import { useRenderer } from '../hooks/useRenderer';
-import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
-import { AnimatedEntity } from './AnimatedEntity';
 import { assetManager, type Asset } from '../utils/assetManager';
 import { spriteAnimationManager } from '../utils/spriteAnimationManager';
+import AnimatedEntity from './AnimatedEntity';
+import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import {
   generateAdvancedTerrain,
   type TerrainGenerationResult
@@ -48,8 +48,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   const animationRef = useRef<number | undefined>(undefined);
   const { gameState } = useGame();
   const { shouldRender } = useRenderer();
-  const { preloadAnimations } = useAnimationSystem();
   const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
+  const {} = useAnimationSystem();
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -71,18 +71,18 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         await assetManager.preloadEssentialAssets();
         setLoadingProgress(30);
 
-        // Cargar assets dinámicos por carpetas
+        // Cargar assets dinámicos por carpetas actualizadas
         await assetManager.preloadEssentialAssetsByFolders([
-          'ground', 'buildings', 'nature', 'roads', 'water', 'ambient', 'activities'
+          'terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects', 'ui_icons'
         ]);
         setLoadingProgress(60);
 
-        // Cargar assets adicionales por categorías tradicionales
+        // Cargar assets adicionales por categorías actualizadas
         await Promise.all([
-          assetManager.loadAssetsByCategory('GROUND'),
-          assetManager.loadAssetsByCategory('BUILDINGS'),
-          assetManager.loadAssetsByCategory('NATURE'),
-          assetManager.loadAssetsByCategory('ROADS'),
+          assetManager.loadAssetsByCategory('TERRAIN_TILES'),
+          assetManager.loadAssetsByCategory('STRUCTURES'),
+          assetManager.loadAssetsByCategory('NATURAL_ELEMENTS'),
+          assetManager.loadAssetsByCategory('INFRASTRUCTURE'),
           assetManager.loadAssetsByCategory('WATER')
         ]);
         setLoadingProgress(80);
@@ -100,15 +100,14 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         setLoadingProgress(100);
         setAssetsLoaded(true);
 
-        // Precargar animaciones adicionales
-        await preloadAnimations([{ name: 'idle', category: 'entities' }]);
+        // Assets cargados exitosamente
       } catch (error) {
         console.error('❌ Error cargando assets:', error);
       }
     };
 
     loadAssets();
-  }, [preloadAnimations]);
+  }, []);
 
   // El mapa ya se genera en el GameContext, no necesitamos regenerarlo aquí
 
@@ -144,7 +143,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
     // Intentar cargar muebles reales primero
     try {
-      await assetManager.loadAssetsByCategory('FURNITURE');
+      await assetManager.loadAssetsByCategory('FURNITURE_OBJECTS');
     } catch {
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
@@ -158,13 +157,13 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           // Intentar usar muebles de cocina primero
           asset =
             assetManager.getRandomAssetByType('kitchen') ||
-            assetManager.getRandomAssetByType('buildings', 'pequeño');
+            assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'rest_zone':
           // Usar muebles de dormitorio
           asset =
             assetManager.getRandomAssetByType('bedroom') ||
-            assetManager.getRandomAssetByType('buildings', 'comercial');
+            assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'play_zone':
         case 'decoration':
@@ -172,36 +171,34 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           asset =
             assetManager.getRandomAssetByType('entertainment') ||
             assetManager.getRandomAssetByType('decoration') ||
-            assetManager.getRandomAssetByType('roads', 'horizontal');
+            assetManager.getRandomAssetByType('infrastructure', 'paths');
           break;
         case 'social_zone':
           // Usar muebles de sala
           asset =
             assetManager.getRandomAssetByType('seating') ||
             assetManager.getRandomAssetByType('tables') ||
-            assetManager.getRandomAssetByType('buildings', 'grande');
+            assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'work_zone':
           // Usar muebles de oficina
           asset =
             assetManager.getRandomAssetByType('office') ||
-            assetManager.getRandomAssetByType('buildings', 'comercial');
+            assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'comfort_zone':
           // Usar muebles de baño
           asset =
             assetManager.getRandomAssetByType('bathroom') ||
-            assetManager.getRandomAssetByType('buildings', 'pequeño');
+            assetManager.getRandomAssetByType('structures', 'houses');
           break;
         case 'obstacle':
           asset =
-            assetManager.getRandomAssetByType('nature', 'arboles') ||
-            assetManager.getRandomAssetByType('nature', 'arbol_grande');
+            assetManager.getRandomAssetByType('natural_elements', 'trees');
           break;
         default:
           asset =
-            assetManager.getRandomAssetByType('nature', 'arboles') ||
-            assetManager.getRandomAssetByType('nature', 'arbol_pequeño');
+            assetManager.getRandomAssetByType('natural_elements', 'trees');
       }
 
       if (asset) {
@@ -294,62 +291,65 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
       // Renderizar objetos del terreno (generados proceduralmente)
       terrainResult.objects.forEach(obj => {
-        // Si es un obstáculo (árbol/roca), usar assets de naturaleza
+        // Renderizar objetos con colores simples por ahora
         if (obj.type === 'obstacle') {
-          const natureAsset =
-            assetManager.getRandomAssetByType('nature', 'arboles') ||
-            assetManager.getAssetById('tile_0033_arbol_pequeño');
+          ctx.save();
 
-          if (natureAsset?.image) {
-            ctx.save();
-
-            // Aplicar variaciones si existen
-            if (obj.metadata?.rotation) {
-              ctx.translate(
-                obj.position.x + obj.size.width / 2,
-                obj.position.y + obj.size.height / 2
-              );
-              ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
-              ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
-            }
-
-            if (obj.metadata?.flipX) {
-              ctx.scale(-1, 1);
-            }
-
-            // Sombra simple bajo el obstáculo
-            ctx.globalAlpha = 0.25;
-            ctx.fillStyle = 'rgba(0,0,0,0.6)';
-            ctx.beginPath();
-            ctx.ellipse(
+          // Aplicar variaciones si existen
+          if (obj.metadata?.rotation) {
+            ctx.translate(
               obj.position.x + obj.size.width / 2,
-              obj.position.y + obj.size.height - 2,
-              obj.size.width / 2,
-              obj.size.height / 6,
-              0,
-              0,
-              2 * Math.PI
+              obj.position.y + obj.size.height / 2
             );
-            ctx.fill();
-            ctx.globalAlpha = 1.0;
-
-            // Dibujar el asset
-            ctx.drawImage(
-              natureAsset.image,
-              obj.metadata?.rotation ? 0 : obj.position.x,
-              obj.metadata?.rotation ? 0 : obj.position.y,
-              obj.size.width,
-              obj.size.height
-            );
-
-            ctx.restore();
+            ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
+            ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
           }
+
+          if (obj.metadata?.flipX) {
+            ctx.scale(-1, 1);
+          }
+
+          // Sombra simple bajo el obstáculo
+          ctx.globalAlpha = 0.25;
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.beginPath();
+          ctx.ellipse(
+            obj.position.x + obj.size.width / 2,
+            obj.position.y + obj.size.height - 2,
+            obj.size.width / 2,
+            obj.size.height / 6,
+            0,
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+
+          // Dibujar un rectángulo simple como placeholder para obstáculos
+          ctx.fillStyle = obj.color || '#8B4513';
+          ctx.fillRect(
+            obj.metadata?.rotation ? 0 : obj.position.x,
+            obj.metadata?.rotation ? 0 : obj.position.y,
+            obj.size.width,
+            obj.size.height
+          );
+
+          ctx.restore();
           return;
         }
 
         // Para senderos y detalles, dibujar formas suaves con el color definido
-        const isPath = Boolean(obj.metadata && typeof (obj.metadata as Record<string, unknown>).isPath === 'boolean' && (obj.metadata as Record<string, unknown>).isPath);
-        const isDetail = Boolean(obj.metadata && typeof (obj.metadata as Record<string, unknown>).isDetail === 'boolean' && (obj.metadata as Record<string, unknown>).isDetail);
+        const metadata = obj.metadata as Record<string, unknown> | undefined;
+        const isPath = Boolean(
+          metadata && 
+          typeof metadata.isPath === 'boolean' && 
+          metadata.isPath
+        );
+        const isDetail = Boolean(
+          metadata && 
+          typeof metadata.isDetail === 'boolean' && 
+          metadata.isDetail
+        );
 
         ctx.save();
         ctx.fillStyle = obj.color || (isPath ? '#8B7355' : '#64748b');

@@ -203,51 +203,42 @@ export const ACTIVITIES = {
 export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
 
 // Tipos exportados para compatibilidad
-export type ActivityType = (typeof ACTIVITIES.TYPES)[number];
-export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'office' | 'gym' | 'library' | 'social' | 'recreation' | 'food' | 'rest' | 'play' | 'comfort' | 'work' | 'energy';
-export type EntityStateType = 'alive' | 'resting' | 'dead' | 'fading' | 'DEAD' | 'FADING' | 'LOW_RESONANCE' | 'SEEKING' | 'IDLE';
-export type MoodType = 'HAPPY' | 'SAD' | 'ANGRY' | 'CALM' | 'EXCITED' | 'BORED' | 'LONELY' | 'CONTENT' | 'ANXIOUS' | 'TIRED';
+// Tipos se definen en src/types; no es necesario exportarlos aquí
 
-export const NEED_TO_ZONE_MAPPING = {
-  hunger: 'food',
-  energy: 'rest',
-  happiness: 'social',
-  sleepiness: 'rest',
-  boredom: 'play',
-  loneliness: 'social',
-  health: 'rest',
-  money: 'work'
+// MOVEMENT_CONFIG para sistema de movimiento
+export const MOVEMENT_CONFIG = {
+  ENTITY_SIZE: 32,
+  MIN_DISTANCE_BETWEEN_ENTITIES: 50,
+  COMPANION_SEEK_DISTANCE: 200,
+  REPULSION_FORCE: 2
 } as const;
 
+// NEED_TO_ZONE_MAPPING para comportamiento de entidades
+export const NEED_TO_ZONE_MAPPING = {
+  hunger: 'kitchen',
+  thirst: 'kitchen',
+  energy: 'bedroom',
+  social: 'living',
+  entertainment: 'living'
+} as const;
+
+// RESONANCE_THRESHOLDS para interacciones
 export const RESONANCE_THRESHOLDS = {
   LOW: 0.3,
   MEDIUM: 0.6,
-  HIGH: 0.8,
-  CRITICAL: 0.95
+  HIGH: 0.8
 } as const;
 
-export const MOVEMENT_CONFIG = {
-  BASE_SPEED: PHYSICS.BASE_MOVEMENT_SPEED,
-  MAX_SPEED: PHYSICS.MAX_SPEED,
-  PERSONAL_SPACE: PHYSICS.PERSONAL_SPACE,
-  ENTITY_SIZE: PHYSICS.ENTITY_RADIUS,
-  MIN_DISTANCE_BETWEEN_ENTITIES: PHYSICS.PERSONAL_SPACE,
-  REPULSION_FORCE: 2.0,
-  COMPANION_SEEK_DISTANCE: 200
-} as const;
+// Tipos para el sistema de zonas
+export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'outdoor';
+
+// Tipos para actividades y estados de entidades
+export type ActivityType = 'reading' | 'gaming' | 'cooking' | 'sleeping' | 'working' | 'exercising' | 'socializing' | 'relaxing';
+export type EntityStateType = 'idle' | 'moving' | 'interacting' | 'resting' | 'seeking';
 
 // Alias de constantes no usados removidos
 
-export const {
-  GOLDEN_RATIO,
-  GOLDEN_RATIO_CONJUGATE,
-  PI,
-  EULER,
-  LN_2,
-  HIGH_PRECISION_EPSILON,
-  ULTRA_PRECISION_EPSILON,
-  EFFECTIVE_ZERO
-} = MATH;
+// Re-export de MATH eliminado por no usarse
 
 export const {
   MAIN_GAME_LOGIC,
@@ -260,79 +251,42 @@ export const {
 
 
 
+// TRANSLATIONS para UI del juego
 export const TRANSLATIONS = {
-  HAPPY: 'Feliz',
-  SAD: 'Triste',
-  ANGRY: 'Enojado',
-  CALM: 'Calmado',
-  EXCITED: 'Emocionado',
-  BORED: 'Aburrido',
-  LONELY: 'Solo',
-  CONTENT: 'Contento',
-
   ENTITIES: {
-    circle: 'Isa',
-    square: 'Stev'
+    circulo: 'Círculo',
+    cuadrado: 'Cuadrado',
+    triangle: 'Triángulo'
   },
-
   ACTIVITIES: {
-    RESTING: 'Descansando',
-    SLEEPING: 'Durmiendo',
-    EATING: 'Comiendo',
-    MEDITATING: 'Meditando',
-    READING: 'Leyendo',
-    EXERCISING: 'Ejercitándose',
-    SOCIALIZING: 'Socializando',
-    WORKING: 'Trabajando',
-    PLAYING: 'Jugando',
-    WANDERING: 'Vagando',
-    WRITING: 'Escribiendo',
-    EXPLORING: 'Explorando',
-    CONTEMPLATING: 'Contemplando',
-    DANCING: 'Bailando',
-    HIDING: 'Escondiéndose',
-    SHOPPING: 'Comprando',
-    COOKING: 'Cocinando'
+    reading: 'Leyendo',
+    gaming: 'Jugando',
+    cooking: 'Cocinando',
+    sleeping: 'Durmiendo',
+    working: 'Trabajando',
+    exercising: 'Ejercitándose',
+    socializing: 'Socializando',
+    relaxing: 'Relajándose'
   },
-
-  STATS: {
-    hunger: 'Hambre',
-    energy: 'Energía',
-    happiness: 'Felicidad',
-    sleepiness: 'Sueño',
-    boredom: 'Aburrimiento',
-    loneliness: 'Soledad',
-    health: 'Salud'
-  },
-
   MOODS: {
-    HAPPY: 'Feliz',
-    SAD: 'Triste',
-    ANGRY: 'Enojado',
-    CALM: 'Calmado',
-    EXCITED: 'Emocionado',
-    BORED: 'Aburrido',
-    LONELY: 'Solo',
-    CONTENT: 'Contento',
-    ANXIOUS: 'Ansioso',
-    TIRED: 'Cansado',
     happy: 'Feliz',
     sad: 'Triste',
-    angry: 'Enojado',
-    calm: 'Calmado',
     excited: 'Emocionado',
-    bored: 'Aburrido',
-    lonely: 'Solo'
+    calm: 'Calmado',
+    angry: 'Enojado',
+    neutral: 'Neutral'
+  },
+  STATS: {
+    health: 'Salud',
+    energy: 'Energía',
+    happiness: 'Felicidad',
+    social: 'Social',
+    hunger: 'Hambre',
+    thirst: 'Sed'
   }
 } as const;
 
-export const ENTITY_PHYSICS = {
-  SIZE: 16,
-  BASE_MASS: 1.0,
-  BASE_FRICTION: 0.1,
-  ELASTICITY: MATH.GOLDEN_RATIO_CONJUGATE,
-  MOMENT_OF_INERTIA: 1.0
-} as const;
+// ENTITY_PHYSICS eliminado por no usarse
 
 // PATHFINDING_CONFIG removido por no usarse
 

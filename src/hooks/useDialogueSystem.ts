@@ -24,11 +24,11 @@ export const useDialogueSystem = () => {
     });
   }, []);
 
-  const canConverse = (entityId: string): boolean => {
+  const canConverse = useCallback((entityId: string): boolean => {
     const entity = entities.find(e => e.id === entityId);
     if (!entity) return false;
     return !entity.isDead && entity.activity !== 'WORKING';
-  };
+  }, [entities]);
 
   const initiateConversation = useCallback(() => {
     if (Math.random() > dialogueInitiationChance) return;
