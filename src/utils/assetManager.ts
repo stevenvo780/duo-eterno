@@ -39,10 +39,7 @@ export const ASSET_CATEGORIES = {
   // Muebles reales disponibles en furniture_light
   FURNITURE: {
     // Muebles de sala
-    seating: [
-      'tile_furniture_sofa_brown',
-      'tile_furniture_armchair'
-    ],
+    seating: ['tile_furniture_sofa_brown', 'tile_furniture_armchair'],
     tables: [
       'tile_furniture_table_round',
       'tile_furniture_coffee_table',
@@ -51,32 +48,19 @@ export const ASSET_CATEGORIES = {
     ],
 
     // Dormitorio
-    bedroom: [
-      'tile_furniture_bed_double',
-      'tile_furniture_nightstand',
-      'tile_furniture_dresser'
-    ],
+    bedroom: ['tile_furniture_bed_double', 'tile_furniture_nightstand', 'tile_furniture_dresser'],
 
     // Cocina
-    kitchen: [
-      'tile_furniture_stove',
-      'tile_furniture_fridge'
-    ],
+    kitchen: ['tile_furniture_stove', 'tile_furniture_fridge'],
 
     // Oficina/Estudio
-    office: [
-      'tile_furniture_desk'
-    ],
+    office: ['tile_furniture_desk'],
 
     // Baño
-    bathroom: [
-      'tile_furniture_mirror'
-    ],
+    bathroom: ['tile_furniture_mirror'],
 
     // Entretenimiento
-    entertainment: [
-      'tile_furniture_tv_stand'
-    ],
+    entertainment: ['tile_furniture_tv_stand'],
 
     // Almacenamiento
     storage: ['tile_furniture_wardrobe'],
@@ -160,8 +144,8 @@ export class AssetManager {
       const path = assetId.startsWith('furniture_light/')
         ? `/assets/Tiles/${assetId}.png`
         : assetId.startsWith('tile_furniture_')
-        ? `/assets/Tiles/furniture_light/${assetId}.png`
-        : `/assets/Tiles/${assetId}.png`;
+          ? `/assets/Tiles/furniture_light/${assetId}.png`
+          : `/assets/Tiles/${assetId}.png`;
 
       image.onload = () => {
         const asset: Asset = {
@@ -290,13 +274,20 @@ export class AssetManager {
 
     // Para muebles (prioridad alta)
     if (name.includes('furniture_')) {
-      if (name.includes('sofa') || name.includes('chair') || name.includes('armchair')) return 'seating';
-      if (name.includes('table') || name.includes('coffee_table') || name.includes('dining_table')) return 'tables';
-      if (name.includes('bed') || name.includes('nightstand') || name.includes('dresser')) return 'bedroom';
-      if (name.includes('stove') || name.includes('fridge') || name.includes('sink')) return 'kitchen';
-      if (name.includes('desk') || name.includes('bookshelf') || name.includes('chair_fancy')) return 'office';
-      if (name.includes('toilet') || name.includes('bathtub') || name.includes('mirror')) return 'bathroom';
-      if (name.includes('tv_stand') || name.includes('piano') || name.includes('fireplace')) return 'entertainment';
+      if (name.includes('sofa') || name.includes('chair') || name.includes('armchair'))
+        return 'seating';
+      if (name.includes('table') || name.includes('coffee_table') || name.includes('dining_table'))
+        return 'tables';
+      if (name.includes('bed') || name.includes('nightstand') || name.includes('dresser'))
+        return 'bedroom';
+      if (name.includes('stove') || name.includes('fridge') || name.includes('sink'))
+        return 'kitchen';
+      if (name.includes('desk') || name.includes('bookshelf') || name.includes('chair_fancy'))
+        return 'office';
+      if (name.includes('toilet') || name.includes('bathtub') || name.includes('mirror'))
+        return 'bathroom';
+      if (name.includes('tv_stand') || name.includes('piano') || name.includes('fireplace'))
+        return 'entertainment';
       if (name.includes('wardrobe') || name.includes('cabinet')) return 'storage';
       if (name.includes('lamp')) return 'decoration';
       return 'decoration'; // fallback para muebles no categorizados

@@ -68,7 +68,7 @@ export const getNextDialogue = (
   // 4. Match speaker only
   dialogue = findDialogue(preferredSpeaker, undefined, undefined);
   if (dialogue) return dialogue;
-  
+
   // 5. Fallback to any dialogue
   const fallbackIndex = (Date.now() * 1664525 + 1013904223) % 2147483647;
   return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];

@@ -106,10 +106,11 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     console.log('🗺️ Generando tilemap con fondo de césped...');
 
     // Crear mapa base COMPLETO con césped uniforme
-    const grassAsset = assetManager.getAssetById('tile_0182_suelo_cesped') || 
-                       assetManager.getAssetById('tile_0210_suelo_cesped');
+    const grassAsset =
+      assetManager.getAssetById('tile_0182_suelo_cesped') ||
+      assetManager.getAssetById('tile_0210_suelo_cesped');
     const grassTileId = grassAsset?.id || 'tile_0182_suelo_cesped';
-    
+
     for (let y = 0; y < mapHeight; y++) {
       tiles[y] = [];
       for (let x = 0; x < mapWidth; x++) {
@@ -148,44 +149,52 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       switch (element.type) {
         case 'food_zone':
           // Intentar usar muebles de cocina primero
-          asset = assetManager.getRandomAssetByType('kitchen') || 
-                 assetManager.getRandomAssetByType('buildings', 'pequeño');
+          asset =
+            assetManager.getRandomAssetByType('kitchen') ||
+            assetManager.getRandomAssetByType('buildings', 'pequeño');
           break;
         case 'rest_zone':
           // Usar muebles de dormitorio
-          asset = assetManager.getRandomAssetByType('bedroom') || 
-                 assetManager.getRandomAssetByType('buildings', 'comercial');
+          asset =
+            assetManager.getRandomAssetByType('bedroom') ||
+            assetManager.getRandomAssetByType('buildings', 'comercial');
           break;
         case 'play_zone':
         case 'decoration':
           // Usar decoraciones y entretenimiento
-          asset = assetManager.getRandomAssetByType('entertainment') || 
-                 assetManager.getRandomAssetByType('decoration') ||
-                 assetManager.getRandomAssetByType('roads', 'horizontal');
+          asset =
+            assetManager.getRandomAssetByType('entertainment') ||
+            assetManager.getRandomAssetByType('decoration') ||
+            assetManager.getRandomAssetByType('roads', 'horizontal');
           break;
         case 'social_zone':
           // Usar muebles de sala
-          asset = assetManager.getRandomAssetByType('seating') || 
-                 assetManager.getRandomAssetByType('tables') ||
-                 assetManager.getRandomAssetByType('buildings', 'grande');
+          asset =
+            assetManager.getRandomAssetByType('seating') ||
+            assetManager.getRandomAssetByType('tables') ||
+            assetManager.getRandomAssetByType('buildings', 'grande');
           break;
         case 'work_zone':
           // Usar muebles de oficina
-          asset = assetManager.getRandomAssetByType('office') || 
-                 assetManager.getRandomAssetByType('buildings', 'comercial');
+          asset =
+            assetManager.getRandomAssetByType('office') ||
+            assetManager.getRandomAssetByType('buildings', 'comercial');
           break;
         case 'comfort_zone':
           // Usar muebles de baño
-          asset = assetManager.getRandomAssetByType('bathroom') || 
-                 assetManager.getRandomAssetByType('buildings', 'pequeño');
+          asset =
+            assetManager.getRandomAssetByType('bathroom') ||
+            assetManager.getRandomAssetByType('buildings', 'pequeño');
           break;
         case 'obstacle':
-          asset = assetManager.getRandomAssetByType('nature', 'arboles') ||
-                 assetManager.getRandomAssetByType('nature', 'arbol_grande');
+          asset =
+            assetManager.getRandomAssetByType('nature', 'arboles') ||
+            assetManager.getRandomAssetByType('nature', 'arbol_grande');
           break;
         default:
-          asset = assetManager.getRandomAssetByType('nature', 'arboles') ||
-                 assetManager.getRandomAssetByType('nature', 'arbol_pequeño');
+          asset =
+            assetManager.getRandomAssetByType('nature', 'arboles') ||
+            assetManager.getRandomAssetByType('nature', 'arbol_pequeño');
       }
 
       if (asset) {
@@ -287,7 +296,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         ctx.fillStyle = zone.color;
         ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         ctx.globalAlpha = 1.0;
-        
+
         // Renderizar nombre de la zona
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.font = '12px Arial';

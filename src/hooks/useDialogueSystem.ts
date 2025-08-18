@@ -5,7 +5,7 @@ import {
   getNextDialogue,
   getSpeakerForEntity,
   getEmotionForActivity,
-  getDialogueForInteraction,
+  getDialogueForInteraction
 } from '../utils/dialogueSelector';
 
 export const useDialogueSystem = () => {
@@ -30,7 +30,10 @@ export const useDialogueSystem = () => {
     const dialogue = getNextDialogue(speaker, emotion, initiator.activity);
 
     if (dialogue) {
-      dispatch({ type: 'START_CONVERSATION', payload: { participants: gameState.entities.map(e => e.id) } });
+      dispatch({
+        type: 'START_CONVERSATION',
+        payload: { participants: gameState.entities.map(e => e.id) }
+      });
       dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: initiator.id, dialogue } });
       dispatch({
         type: 'SHOW_DIALOGUE',
@@ -40,8 +43,8 @@ export const useDialogueSystem = () => {
           speaker: initiator.id,
           entityId: initiator.id,
           emotion: dialogue.emotion,
-          position: { x: initiator.position.x, y: initiator.position.y },
-        },
+          position: { x: initiator.position.x, y: initiator.position.y }
+        }
       });
     }
   }, [gameState.entities, dispatch]);
@@ -55,11 +58,11 @@ export const useDialogueSystem = () => {
       dispatch({ type: 'END_CONVERSATION' });
       return;
     }
-    
+
     const responder = gameState.entities.find(e => e.id === responderId);
     if (!responder || responder.isDead) {
-        dispatch({ type: 'END_CONVERSATION' });
-        return;
+      dispatch({ type: 'END_CONVERSATION' });
+      return;
     }
 
     // Simple response logic: find a dialogue with a matching activity and emotion
@@ -67,7 +70,10 @@ export const useDialogueSystem = () => {
     const responseDialogue = getNextDialogue(speaker, lastDialogue.emotion, lastDialogue.activity);
 
     if (responseDialogue) {
-      dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: responderId, dialogue: responseDialogue } });
+      dispatch({
+        type: 'ADVANCE_CONVERSATION',
+        payload: { speaker: responderId, dialogue: responseDialogue }
+      });
       dispatch({
         type: 'SHOW_DIALOGUE',
         payload: {
@@ -76,15 +82,14 @@ export const useDialogueSystem = () => {
           speaker: responderId,
           entityId: responderId,
           emotion: responseDialogue.emotion,
-          position: { x: responder.position.x, y: responder.position.y },
-        },
+          position: { x: responder.position.x, y: responder.position.y }
+        }
       });
     } else {
       // End conversation if no response is found
       dispatch({ type: 'END_CONVERSATION' });
     }
   }, [currentConversation, gameState.entities, dispatch]);
-
 
   useEffect(() => {
     if (!dialoguesLoaded) return;
@@ -96,26 +101,36 @@ export const useDialogueSystem = () => {
         initiateConversation();
       } else {
         // Check for conversation timeout
-        if (Date.now() - currentConversation.startTime > 20000) { // 20 second timeout
+        if (Date.now() - currentConversation.startTime > 20000) {
+          // 20 second timeout
           dispatch({ type: 'END_CONVERSATION' });
           return;
         }
         // Only advance conversation if it's the other entity's turn
-        if(currentConversation.lastSpeaker) {
-            const lastSpeakerIndex = currentConversation.participants.indexOf(currentConversation.lastSpeaker);
-            const nextSpeakerIndex = (lastSpeakerIndex + 1) % currentConversation.participants.length;
-            const nextSpeakerId = currentConversation.participants[nextSpeakerIndex];
+        if (currentConversation.lastSpeaker) {
+          const lastSpeakerIndex = currentConversation.participants.indexOf(
+            currentConversation.lastSpeaker
+          );
+          const _nextSpeakerIndex =
+            (lastSpeakerIndex + 1) % currentConversation.participants.length;
 
-            // A simple delay before responding
-            if(Date.now() - currentConversation.startTime > 3000){
-                advanceConversation();
-            }
+          // A simple delay before responding
+          if (Date.now() - currentConversation.startTime > 3000) {
+            advanceConversation();
+          }
         }
       }
     }, 3000); // Check every 3 seconds
 
     return () => clearInterval(interval);
-  }, [dialoguesLoaded, gameState.connectionAnimation.active, currentConversation, initiateConversation, advanceConversation, dispatch]);
+  }, [
+    dialoguesLoaded,
+    gameState.connectionAnimation.active,
+    currentConversation,
+    initiateConversation,
+    advanceConversation,
+    dispatch
+  ]);
 
   // Handle dialogues from interactions
   useEffect(() => {
@@ -134,8 +149,11 @@ export const useDialogueSystem = () => {
           speaker: entityId,
           entityId: entityId,
           emotion: dialogue.emotion,
-          position: { x: gameState.entities.find(e=>e.id === entityId)!.position.x, y: gameState.entities.find(e=>e.id === entityId)!.position.y },
-        },
+          position: {
+            x: gameState.entities.find(e => e.id === entityId)!.position.x,
+            y: gameState.entities.find(e => e.id === entityId)!.position.y
+          }
+        }
       });
     }
   }, [gameState.connectionAnimation, dialoguesLoaded, dispatch, gameState.entities]);

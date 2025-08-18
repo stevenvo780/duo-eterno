@@ -29,7 +29,9 @@ export interface PersistedStateV1 {
 
 export type PersistedStateAny = PersistedStateV1;
 
-export const serializeStateV1 = (state: GameState & { hasSeenIntro?: boolean }): PersistedStateV1 => ({
+export const serializeStateV1 = (
+  state: GameState & { hasSeenIntro?: boolean }
+): PersistedStateV1 => ({
   version: VERSION,
   resonance: state.resonance,
   lastSave: Date.now(),
@@ -119,7 +121,7 @@ export const safeSave = (state: GameState): void => {
     // Obtener el estado actual para preservar hasSeenIntro
     const currentSave = safeLoad();
     const hasSeenIntro = currentSave?.hasSeenIntro ?? false;
-    
+
     const extendedState = { ...state, hasSeenIntro };
     const data = serializeStateV1(extendedState);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));

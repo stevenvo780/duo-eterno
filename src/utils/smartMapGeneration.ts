@@ -46,14 +46,8 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
   living: {
     minSize: { width: 120, height: 100 },
     maxSize: { width: 200, height: 180 },
-    requiredFurniture: [
-      'tile_furniture_sofa_brown',
-      'tile_furniture_coffee_table'
-    ],
-    optionalFurniture: [
-      'tile_furniture_tv_stand',
-      'tile_furniture_armchair'
-    ],
+    requiredFurniture: ['tile_furniture_sofa_brown', 'tile_furniture_coffee_table'],
+    optionalFurniture: ['tile_furniture_tv_stand', 'tile_furniture_armchair'],
     wallRequirements: ['tile_furniture_tv_stand'],
     centerRequirements: ['tile_furniture_coffee_table'],
     pathways: true
@@ -80,10 +74,7 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
     maxSize: { width: 140, height: 120 },
     requiredFurniture: ['tile_furniture_stove', 'tile_furniture_fridge'],
     optionalFurniture: ['tile_furniture_dining_table'],
-    wallRequirements: [
-      'tile_furniture_stove',
-      'tile_furniture_fridge'
-    ],
+    wallRequirements: ['tile_furniture_stove', 'tile_furniture_fridge'],
     centerRequirements: ['tile_furniture_dining_table'],
     pathways: true
   },
@@ -92,9 +83,7 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
     maxSize: { width: 100, height: 100 },
     requiredFurniture: [],
     optionalFurniture: ['tile_furniture_mirror'],
-    wallRequirements: [
-      'tile_furniture_mirror'
-    ],
+    wallRequirements: ['tile_furniture_mirror'],
     centerRequirements: [],
     pathways: false
   },
@@ -102,9 +91,7 @@ export const ROOM_TEMPLATES: Record<string, RoomConstraints> = {
     minSize: { width: 90, height: 80 },
     maxSize: { width: 130, height: 120 },
     requiredFurniture: ['tile_furniture_desk'],
-    optionalFurniture: [
-      'tile_furniture_stool'
-    ],
+    optionalFurniture: ['tile_furniture_stool'],
     wallRequirements: ['tile_furniture_desk'],
     centerRequirements: [],
     pathways: true

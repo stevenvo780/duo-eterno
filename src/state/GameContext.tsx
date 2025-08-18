@@ -1,5 +1,12 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import type { GameState, EntityMood, EntityStats, InteractionType, DialogueEntry, ConversationState } from '../types';
+import type {
+  GameState,
+  EntityMood,
+  EntityStats,
+  InteractionType,
+  DialogueEntry,
+  ConversationState
+} from '../types';
 import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
 import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
@@ -67,7 +74,7 @@ const initialConversationState: ConversationState = {
   participants: [],
   lastSpeaker: null,
   lastDialogue: null,
-  startTime: 0,
+  startTime: 0
 };
 
 const initialGameState: GameState = {
@@ -133,7 +140,7 @@ const initialGameState: GameState = {
   zones: [],
   mapElements: [],
   mapSeed: generateMapSeed(),
-  currentConversation: initialConversationState,
+  currentConversation: initialConversationState
 };
 
 const initialDialogueState: DialogueState = {
@@ -356,8 +363,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           participants: action.payload.participants,
           lastSpeaker: null,
           lastDialogue: null,
-          startTime: Date.now(),
-        },
+          startTime: Date.now()
+        }
       };
 
     case 'ADVANCE_CONVERSATION':
@@ -366,8 +373,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         currentConversation: {
           ...state.currentConversation,
           lastSpeaker: action.payload.speaker,
-          lastDialogue: action.payload.dialogue,
-        },
+          lastDialogue: action.payload.dialogue
+        }
       };
 
     case 'END_CONVERSATION':
@@ -378,8 +385,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           participants: [],
           lastSpeaker: null,
           lastDialogue: null,
-          startTime: 0,
-        },
+          startTime: 0
+        }
       };
 
     default:
