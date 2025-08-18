@@ -21,7 +21,7 @@ const DialogOverlay: React.FC = () => {
   const progress = elapsed / dialogueState.duration;
   const opacity = progress < 0.9 ? 1 : 1 - ((progress - 0.9) / 0.1);
 
-  if (false) { // Removed sprite dependency
+  if (dialogueState.text) { // Check if there's text to display
     return (
       <div
         style={{

@@ -124,11 +124,11 @@ export function generatePaths(zones: Zone[], _rooms: unknown[], _mapWidth: numbe
   allElements.push(...pathways);
 
   // 5. 🌳 Agregar espacios verdes y elementos urbanos
-  const urbanElements = createUrbanElements(zones, allElements, seededRandom, pathStyle);
+  const urbanElements = createUrbanElements(zones, allElements, seededRandom);
   allElements.push(...urbanElements);
 
   // 6. ✨ Crear intersecciones y detalles
-  const intersections = createIntersections(allElements, seededRandom, pathStyle);
+  const intersections = createIntersections(allElements);
   allElements.push(...intersections);
 
   return allElements;
@@ -335,8 +335,7 @@ function createZoneConnections(
 function createUrbanElements(
   zones: Zone[],
   existingElements: MapElement[],
-  seededRandom: () => number,
-  _pathStyle: typeof THEMED_PATH_STYLES[keyof typeof THEMED_PATH_STYLES]
+  seededRandom: () => number
 ): MapElement[] {
   const urbanElements: MapElement[] = [];
   
@@ -374,9 +373,7 @@ function createUrbanElements(
 
 // ✨ CREAR INTERSECCIONES
 function createIntersections(
-  allElements: MapElement[],
-  _seededRandom: () => number,
-  _pathStyle: typeof THEMED_PATH_STYLES[keyof typeof THEMED_PATH_STYLES]
+  allElements: MapElement[]
 ): MapElement[] {
   const intersections: MapElement[] = [];
   

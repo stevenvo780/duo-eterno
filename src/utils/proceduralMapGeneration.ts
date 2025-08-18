@@ -350,16 +350,16 @@ export function generateHouseLayout(seed: string): {
       rooms = generateTraditionalLLayout(selectedRooms, themeConfig, seededRandom);
       break;
     case LAYOUT_ALGORITHMS.COURTYARD:
-      rooms = generateCourtyardLayout(selectedRooms, themeConfig, seededRandom);
+      rooms = generateCourtyardLayout(selectedRooms, themeConfig);
       break;
     case LAYOUT_ALGORITHMS.LINEAR:
       rooms = generateLinearLayout(selectedRooms, themeConfig, seededRandom);
       break;
     case LAYOUT_ALGORITHMS.U_SHAPED:
-      rooms = generateUShapedLayout(selectedRooms, themeConfig, seededRandom);
+      rooms = generateUShapedLayout(selectedRooms, themeConfig);
       break;
     case LAYOUT_ALGORITHMS.COMPACT_GRID:
-      rooms = generateCompactGridLayout(selectedRooms, themeConfig, seededRandom);
+      rooms = generateCompactGridLayout(selectedRooms, themeConfig);
       break;
     default:
       rooms = generateTraditionalLLayout(selectedRooms, themeConfig, seededRandom);
@@ -478,8 +478,7 @@ function generateTraditionalLLayout(
 
 function generateCourtyardLayout(
   roomTypes: RoomType[], 
-  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
-  _seededRandom: () => number
+  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
@@ -552,8 +551,7 @@ function generateLinearLayout(
 
 function generateUShapedLayout(
   roomTypes: RoomType[], 
-  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
-  _seededRandom: () => number
+  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
@@ -613,8 +611,7 @@ function generateUShapedLayout(
 
 function generateCompactGridLayout(
   roomTypes: RoomType[], 
-  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
-  _seededRandom: () => number
+  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
@@ -684,7 +681,7 @@ function findBestPosition(
     if (hasCollision) continue;
     
     // Calcular score basado en adyacencias preferidas
-    const score = calculatePositionScore(roomType, candidate, placedBounds);
+    const score = calculatePositionScore(roomType, candidate);
     
     if (score > bestScore) {
       bestScore = score;
@@ -697,8 +694,7 @@ function findBestPosition(
 
 function calculatePositionScore(
   roomType: RoomType,
-  position: { x: number; y: number; width: number; height: number },
-  _placedBounds: Array<{ x: number; y: number; width: number; height: number }>
+  position: { x: number; y: number; width: number; height: number }
 ): number {
   // Score básico por estar dentro de límites
   let score = 1;

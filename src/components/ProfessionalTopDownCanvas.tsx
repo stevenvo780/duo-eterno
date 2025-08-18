@@ -402,7 +402,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     }
     
     ctx.restore();
-  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, width, height, zoom, panX, panY]);
+  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, width, height, zoom, panX, panY, renderTopDownEntity]);
 
   // Renderizar entidad en vista top-down (conservado del sistema original)
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
