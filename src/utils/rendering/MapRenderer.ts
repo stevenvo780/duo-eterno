@@ -5,6 +5,7 @@
 
 import { tileRenderer, type TerrainMap } from './TileRenderer';
 import { objectRenderer } from './ObjectRenderer';
+import { entityAnimationRenderer } from './EntityAnimationRenderer';
 import type { Zone, MapElement, Entity } from '../../types';
 
 export interface Viewport {
@@ -157,7 +158,7 @@ export class MapRenderer {
   }
 
   private renderEntities(ctx: CanvasRenderingContext2D, entities: Entity[], viewport: Viewport): void {
-    entities.forEach(entity => {
+    entities.forEach(async (entity) => {
       if (!entity || entity.isDead) return;
 
       const screenX = (entity.position.x - viewport.x) * viewport.zoom;
@@ -176,28 +177,15 @@ export class MapRenderer {
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.beginPath();
-        ctx.ellipse(screenX + 2, screenY + 18, 12, 6, 0, 0, 2 * Math.PI);
+        ctx.ellipse(screenX + 2, screenY + 18, 12 * viewport.zoom, 6 * viewport.zoom, 0, 0, 2 * Math.PI);
         ctx.fill();
         ctx.globalAlpha = 1;
       }
 
-      // Renderizar entidad
-      const size = 24 * viewport.zoom;
-      if (entity.id === 'circle') {
-        ctx.fillStyle = this.getEntityColor(entity);
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, size / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      } else if (entity.id === 'square') {
-        ctx.fillStyle = this.getEntityColor(entity);
-        ctx.fillRect(screenX - size / 2, screenY - size / 2, size, size);
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(screenX - size / 2, screenY - size / 2, size, size);
-      }
+      // Usar el nuevo sistema de animaciones unificado
+      const baseSize = 32;
+      const size = baseSize * viewport.zoom;
+      await entityAnimationRenderer.renderEntity(ctx, entity, screenX, screenY, size);
 
       ctx.restore();
     });
@@ -273,17 +261,6 @@ export class MapRenderer {
     ctx.textAlign = 'center';
     ctx.fillText('Inicializando sistema de renderizado...', viewport.width / 2, viewport.height / 2);
     ctx.textAlign = 'left';
-  }
-
-  private getEntityColor(entity: Entity): string {
-    const health = entity.stats.energy + entity.stats.happiness + entity.stats.health;
-    const maxHealth = 300; // 3 stats * 100 max each
-    const healthRatio = health / maxHealth;
-    
-    if (healthRatio > 0.8) return '#4CAF50'; // Verde
-    if (healthRatio > 0.6) return '#FFEB3B'; // Amarillo
-    if (healthRatio > 0.4) return '#FF9800'; // Naranja
-    return '#F44336'; // Rojo
   }
 
   /**

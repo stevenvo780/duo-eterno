@@ -5,6 +5,7 @@ import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { mapRenderer, type Viewport, type SceneData } from '../utils/rendering/MapRenderer';
 import { assetManager } from '../utils/modernAssetManager';
+import { entityAnimationRenderer } from '../utils/rendering/EntityAnimationRenderer';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { Entity } from '../types';
@@ -44,8 +45,8 @@ const GameCanvas: React.FC<Props> = ({
   // Datos de la escena - estabilizados para evitar re-renders constantes
   const sceneData: SceneData = useMemo(() => ({
     terrainMap: {
-      width: 100,
-      height: 100,
+      width: 2000, // Mapa más grande y navegable
+      height: 1500,
       tileSize: 64,
       tiles: [] // Se generará en el renderer
     },
@@ -90,7 +91,13 @@ const GameCanvas: React.FC<Props> = ({
         await assetManager.preloadEssentialAssets();
         
         setLoadingProgress(80);
-        console.log('🎯 Precarga adicional completada, obteniendo stats...');
+        console.log('🎯 Precarga adicional completada, precargando animaciones...');
+
+        // Precargar animaciones de entidades
+        await entityAnimationRenderer.preloadCommonAnimations();
+
+        setLoadingProgress(90);
+        console.log('🎭 Animaciones precargadas, obteniendo stats...');
 
         console.log('✅ Assets cargados:', assetManager.getStats());
         setLoadingProgress(100);
@@ -132,8 +139,8 @@ const GameCanvas: React.FC<Props> = ({
         // Crear datos para el renderer con zonas reales
         const initialData: SceneData = {
           terrainMap: {
-            width: 1000,
-            height: 800,
+            width: 2000, // Mapa expandido
+            height: 1500,
             tileSize: 64,
             tiles: []
           },
@@ -177,6 +184,11 @@ const GameCanvas: React.FC<Props> = ({
       }
 
       // Usar el nuevo sistema de renderizado profesional
+      // Aplicar transformaciones de navegación
+      ctx.save();
+      ctx.scale(zoom, zoom);
+      ctx.translate(-panX, -panY);
+      
       mapRenderer.render(
         ctx,
         viewport,
@@ -184,8 +196,10 @@ const GameCanvas: React.FC<Props> = ({
         getLightIntensity(),
         getSkyColor()
       );
+      
+      ctx.restore();
     },
-    [assetsLoaded, rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height]
+    [assetsLoaded, rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height, zoom, panX, panY]
   );
 
   // Contador de FPS y optimización automática

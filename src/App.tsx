@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import GameCanvas from './components/GameCanvas';
+import { NavigableGameCanvas } from './components/NavigableGameCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import EntityDialog from './components/EntityDialog';
@@ -85,12 +85,9 @@ const GameContent: React.FC = React.memo(() => {
           overflow: 'hidden'
         }}
       >
-        <GameCanvas
+        <NavigableGameCanvas
           width={windowSize.width}
           height={windowSize.height - 80}
-          zoom={1}
-          panX={0}
-          panY={0}
           onEntityClick={handleEntitySelect}
         />
         <EntityDialog />

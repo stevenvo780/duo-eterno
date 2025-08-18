@@ -35,9 +35,13 @@ export interface RenderLayer {
 }
 
 export class ObjectRenderer {
-  private static readonly STANDARD_OBJECT_SIZE = 64; // Tamaño base para objetos
-  private static readonly LARGE_OBJECT_SIZE = 128; // Para estructuras grandes
-  private static readonly SMALL_OBJECT_SIZE = 32; // Para decoraciones pequeñas
+  // Tamaños base para escala de referencia
+  private static readonly BASE_RESOLUTION = 64; // Resolución de referencia
+  private static readonly MIN_SIZE = 24; // Tamaño mínimo
+  private static readonly MAX_SIZE = 192; // Tamaño máximo
+  
+  // Cache de resoluciones detectadas
+  private resolutionCache: Map<string, { width: number; height: number }> = new Map();
 
   private renderLayers: Map<string, RenderLayer> = new Map();
   private structureAssets: Asset[] = [];
@@ -47,6 +51,92 @@ export class ObjectRenderer {
   constructor() {
     this.initializeLayers();
     this.initializeAssets();
+    this.preloadAssetResolutions();
+  }
+
+  /**
+   * Pre-carga las resoluciones de todos los assets para mejor performance
+   */
+  private async preloadAssetResolutions(): Promise<void> {
+    const allAssets = [...this.structureAssets, ...this.naturalAssets, ...this.furnitureAssets];
+    
+    // Cargar resoluciones en paralelo
+    const resolutionPromises = allAssets.map(asset => this.detectImageResolution(asset));
+    
+    try {
+      await Promise.all(resolutionPromises);
+      console.log(`🎯 ObjectRenderer: ${allAssets.length} resoluciones de assets pre-cargadas`);
+    } catch (error) {
+      console.warn('⚠️ ObjectRenderer: Error pre-cargando algunas resoluciones:', error);
+    }
+  }
+
+  /**
+   * Detecta automáticamente la resolución de una imagen y calcula el tamaño de renderizado apropiado
+   */
+  private async detectImageResolution(asset: Asset): Promise<{ width: number; height: number }> {
+    const cacheKey = asset.path;
+    
+    // Verificar cache primero
+    if (this.resolutionCache.has(cacheKey)) {
+      return this.resolutionCache.get(cacheKey)!;
+    }
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calcular tamaño basado en la resolución real
+        const naturalWidth = img.naturalWidth;
+        const naturalHeight = img.naturalHeight;
+        
+        // Escalar proporcionalmente manteniendo aspect ratio
+        const maxDimension = Math.max(naturalWidth, naturalHeight);
+        let scaleFactor = ObjectRenderer.BASE_RESOLUTION / maxDimension;
+        
+        // Aplicar límites mínimos y máximos
+        const calculatedSize = maxDimension * scaleFactor;
+        if (calculatedSize < ObjectRenderer.MIN_SIZE) {
+          scaleFactor = ObjectRenderer.MIN_SIZE / maxDimension;
+        } else if (calculatedSize > ObjectRenderer.MAX_SIZE) {
+          scaleFactor = ObjectRenderer.MAX_SIZE / maxDimension;
+        }
+        
+        const finalSize = {
+          width: Math.floor(naturalWidth * scaleFactor),
+          height: Math.floor(naturalHeight * scaleFactor)
+        };
+        
+        // Guardar en cache
+        this.resolutionCache.set(cacheKey, finalSize);
+        resolve(finalSize);
+      };
+      
+      img.onerror = () => {
+        // Fallback a tamaño base si no se puede cargar
+        const fallbackSize = { width: ObjectRenderer.BASE_RESOLUTION, height: ObjectRenderer.BASE_RESOLUTION };
+        this.resolutionCache.set(cacheKey, fallbackSize);
+        resolve(fallbackSize);
+      };
+      
+      img.src = asset.path;
+    });
+  }
+
+  /**
+   * Obtiene el tamaño apropiado para un asset de forma síncrona (usa cache)
+   */
+  private getAssetSize(asset: Asset, fallbackSize: number = ObjectRenderer.BASE_RESOLUTION): { width: number; height: number } {
+    const cached = this.resolutionCache.get(asset.path);
+    if (cached) {
+      return cached;
+    }
+    
+    // Si no está en cache, iniciar detección asíncrona para futuras llamadas
+    this.detectImageResolution(asset);
+    
+    // Devolver tamaño por defecto mientras tanto
+    return { width: fallbackSize, height: fallbackSize };
   }
 
   private initializeLayers(): void {
@@ -173,6 +263,7 @@ export class ObjectRenderer {
 
   private createStructureObject(x: number, y: number): GameObject {
     const asset = this.getRandomAsset(this.structureAssets) || this.createFallbackAsset('structure');
+    const size = this.getAssetSize(asset, 128); // Estructuras tienden a ser más grandes
     
     return {
       id: `structure_${Date.now()}_${Math.random()}`,
@@ -180,8 +271,8 @@ export class ObjectRenderer {
       asset,
       position: { x, y, z: 20 },
       scale: {
-        width: ObjectRenderer.LARGE_OBJECT_SIZE,
-        height: ObjectRenderer.LARGE_OBJECT_SIZE
+        width: size.width,
+        height: size.height
       },
       rotation: 0,
       metadata: {
@@ -195,6 +286,7 @@ export class ObjectRenderer {
 
   private createNaturalObject(x: number, y: number): GameObject {
     const asset = this.getRandomAsset(this.naturalAssets) || this.createFallbackAsset('natural');
+    const size = this.getAssetSize(asset, 64); // Tamaño estándar para elementos naturales
     
     return {
       id: `natural_${Date.now()}_${Math.random()}`,
@@ -202,10 +294,10 @@ export class ObjectRenderer {
       asset,
       position: { x, y, z: 30 },
       scale: {
-        width: ObjectRenderer.STANDARD_OBJECT_SIZE,
-        height: ObjectRenderer.STANDARD_OBJECT_SIZE
+        width: size.width,
+        height: size.height
       },
-      rotation: Math.random() * 360,
+      rotation: 0, // Sin rotación aleatoria para elementos naturales
       metadata: {
         isCollider: Math.random() > 0.3, // 70% son coliders
         isInteractable: Math.random() > 0.7, // 30% son interactuables
@@ -217,6 +309,7 @@ export class ObjectRenderer {
 
   private createFurnitureObject(x: number, y: number, _category: string): GameObject {
     const asset = this.getRandomAsset(this.furnitureAssets) || this.createFallbackAsset('furniture');
+    const size = this.getAssetSize(asset, 64); // Tamaño estándar para muebles
     
     return {
       id: `furniture_${Date.now()}_${Math.random()}`,
@@ -224,10 +317,10 @@ export class ObjectRenderer {
       asset,
       position: { x, y, z: 40 },
       scale: {
-        width: ObjectRenderer.STANDARD_OBJECT_SIZE,
-        height: ObjectRenderer.STANDARD_OBJECT_SIZE
+        width: size.width,
+        height: size.height
       },
-      rotation: [0, 90, 180, 270][Math.floor(Math.random() * 4)], // Rotaciones de 90 grados
+      rotation: 0, // Sin rotaciones aleatorias para muebles
       metadata: {
         isCollider: true,
         isInteractable: true,
@@ -239,6 +332,7 @@ export class ObjectRenderer {
 
   private createDecorationObject(x: number, y: number): GameObject {
     const asset = this.getRandomAsset([...this.naturalAssets, ...this.furnitureAssets]) || this.createFallbackAsset('decoration');
+    const size = this.getAssetSize(asset, 32); // Tamaño pequeño para decoraciones
     
     return {
       id: `decoration_${Date.now()}_${Math.random()}`,
@@ -246,8 +340,8 @@ export class ObjectRenderer {
       asset,
       position: { x, y, z: 60 },
       scale: {
-        width: ObjectRenderer.SMALL_OBJECT_SIZE,
-        height: ObjectRenderer.SMALL_OBJECT_SIZE
+        width: size.width,
+        height: size.height
       },
       rotation: Math.random() * 360,
       metadata: {
@@ -394,7 +488,7 @@ export class ObjectRenderer {
       path: `/assets/${type}/fallback.png`,
       image: new Image(), // Crear imagen vacía en lugar de null
       type: type as 'structures' | 'natural_elements' | 'furniture_objects',
-      size: ObjectRenderer.STANDARD_OBJECT_SIZE
+      size: ObjectRenderer.BASE_RESOLUTION
     };
   }
 
