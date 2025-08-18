@@ -118,7 +118,9 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       // Fallback al sistema básico
       console.log('🔄 Usando sistema de fallback...');
     }
-  }, [width, height, assetsLoaded]); // Generar objetos del juego
+  }, [width, height, assetsLoaded]);
+
+  // Generar objetos del juego
   const generateGameObjects = useCallback(async () => {
     if (!assetsLoaded || mapElements.length === 0) return;
 
@@ -128,7 +130,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     // Intentar cargar muebles reales primero
     try {
       await assetManager.loadAssetsByCategory('FURNITURE');
-    } catch (_error) {
+    } catch (_) {
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
 
@@ -319,42 +321,88 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
       // Renderizar objetos del terreno (generados proceduralmente)
       terrainResult.objects.forEach(obj => {
-        const asset =
-          assetManager.getRandomAssetByType('nature') ||
-          assetManager.getAssetById('tile_0182_suelo_cesped');
+        // Si es un obstáculo (árbol/roca), usar assets de naturaleza
+        if (obj.type === 'obstacle') {
+          const natureAsset =
+            assetManager.getRandomAssetByType('nature', 'arboles') ||
+            assetManager.getAssetById('tile_0033_arbol_pequeño');
 
-        if (asset?.image) {
-          ctx.save();
+          if (natureAsset?.image) {
+            ctx.save();
 
-          // Aplicar variaciones si existen
-          if (obj.metadata?.rotation) {
-            ctx.translate(
+            // Aplicar variaciones si existen
+            if (obj.metadata?.rotation) {
+              ctx.translate(
+                obj.position.x + obj.size.width / 2,
+                obj.position.y + obj.size.height / 2
+              );
+              ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
+              ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
+            }
+
+            if (obj.metadata?.flipX) {
+              ctx.scale(-1, 1);
+            }
+
+            // Sombra simple bajo el obstáculo
+            ctx.globalAlpha = 0.25;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.beginPath();
+            ctx.ellipse(
               obj.position.x + obj.size.width / 2,
-              obj.position.y + obj.size.height / 2
+              obj.position.y + obj.size.height - 2,
+              obj.size.width / 2,
+              obj.size.height / 6,
+              0,
+              0,
+              2 * Math.PI
             );
-            ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
-            ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // Dibujar el asset
+            ctx.drawImage(
+              natureAsset.image,
+              obj.metadata?.rotation ? 0 : obj.position.x,
+              obj.metadata?.rotation ? 0 : obj.position.y,
+              obj.size.width,
+              obj.size.height
+            );
+
+            ctx.restore();
           }
-
-          if (obj.metadata?.flipX) {
-            ctx.scale(-1, 1);
-          }
-
-          // Aplicar weathering/aging
-          if (obj.metadata?.weathering && typeof obj.metadata.weathering === 'number') {
-            ctx.globalAlpha = 1 - obj.metadata.weathering * 0.3;
-          }
-
-          ctx.drawImage(
-            asset.image,
-            obj.metadata?.rotation ? 0 : obj.position.x,
-            obj.metadata?.rotation ? 0 : obj.position.y,
-            obj.size.width,
-            obj.size.height
-          );
-
-          ctx.restore();
+          return;
         }
+
+        // Para senderos y detalles, dibujar formas suaves con el color definido
+        const isPath = Boolean(obj.metadata && typeof (obj.metadata as Record<string, unknown>).isPath === 'boolean' && (obj.metadata as Record<string, unknown>).isPath);
+        const isDetail = Boolean(obj.metadata && typeof (obj.metadata as Record<string, unknown>).isDetail === 'boolean' && (obj.metadata as Record<string, unknown>).isDetail);
+
+        ctx.save();
+        ctx.fillStyle = obj.color || (isPath ? '#8B7355' : '#64748b');
+        ctx.globalAlpha = isPath ? 0.9 : 0.85;
+
+        if (isPath) {
+          // Sendero: manchas orgánicas redondeadas
+          ctx.beginPath();
+          ctx.ellipse(
+            obj.position.x,
+            obj.position.y,
+            Math.max(3, obj.size.width / 2),
+            Math.max(2, obj.size.height / 2),
+            0,
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+        } else if (isDetail || obj.type === 'decoration') {
+          // Detalle/Decoración: pequeñas motas/hojas/piedritas
+          ctx.beginPath();
+          ctx.arc(obj.position.x, obj.position.y, Math.max(1.5, obj.size.width / 4), 0, 2 * Math.PI);
+          ctx.fill();
+        }
+
+        ctx.restore();
       });
 
       // Renderizar objetos del juego tradicionales
@@ -419,7 +467,9 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       phase,
       renderTopDownEntity
     ]
-  ); // Loop de animación
+  );
+
+  // Loop de animación
   useEffect(() => {
     if (!assetsLoaded) return;
 

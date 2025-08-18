@@ -10,7 +10,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "clean": "eslint . --config eslint.config.js --fix && node scripts/fix-unused-vars.cjs && prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "preview": "vite preview",
-    "analyze": "ts-prune --project tsconfig.app.json --error && node scripts/check-deadcode.cjs && node scripts/super-validate-unused.cjs",
+    "analyze": "node scripts/check-deadcode-improved.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",

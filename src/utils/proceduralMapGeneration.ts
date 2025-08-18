@@ -18,8 +18,6 @@ export function generateMapSeed(): string {
 export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElements: MapElement[] } {
   console.log('🧠 Usando sistema híbrido: orgánico con muebles inteligentes...');
 
-  // Por ahora mantener compatibilidad síncrona usando sistema orgánico mejorado
-  // TODO: Migrar a sistema completamente asíncrono cuando se actualice GameContext
   const result = generateOrganicProceduralMap(seed, {
     theme: 'MODERN',
     useVoronoi: true,

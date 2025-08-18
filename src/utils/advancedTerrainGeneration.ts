@@ -57,7 +57,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     baseColor: '#4A7C59',
     secondaryColor: '#5E8B6B',
     textureVariants: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped'],
-    objectDensity: 0.3,
+    objectDensity: 0.25,
     preferredObjects: [
       {
         type: 'wildflower',
@@ -88,8 +88,8 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Bosque',
     baseColor: '#2D4A32',
     secondaryColor: '#3A5C3F',
-    textureVariants: ['tile_0182_suelo_cesped'],
-    objectDensity: 0.6,
+    textureVariants: ['tile_0182_suelo_cesped', 'tile_0144_suelo_tierra'],
+    objectDensity: 0.5,
     preferredObjects: [
       {
         type: 'tree_large',
@@ -128,7 +128,7 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     baseColor: '#5A8B47',
     secondaryColor: '#6B9B58',
     textureVariants: ['tile_0210_suelo_cesped'],
-    objectDensity: 0.5,
+    objectDensity: 0.4,
     preferredObjects: [
       {
         type: 'flower_bed',
@@ -160,8 +160,8 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     name: 'Terreno Rocoso',
     baseColor: '#6B6B6B',
     secondaryColor: '#7A7A7A',
-    textureVariants: ['tile_0182_suelo_cesped'],
-    objectDensity: 0.4,
+    textureVariants: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra'],
+    objectDensity: 0.25,
     preferredObjects: [
       {
         type: 'rock_large',
@@ -186,6 +186,34 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
       }
     ],
     transitionSoftness: 0.5
+  },
+  SAND: {
+    id: 'sand',
+    name: 'Arenal',
+    baseColor: '#C9B26B',
+    secondaryColor: '#D7C27B',
+    textureVariants: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena'],
+    objectDensity: 0.08,
+    preferredObjects: [
+      {
+        type: 'pebbles',
+        spawnChance: 0.25,
+        clusterSize: { min: 1, max: 3 },
+        sizeVariation: { min: 0.6, max: 1.0 },
+        rotationVariation: true
+      }
+    ],
+    transitionSoftness: 0.6
+  },
+  WATER: {
+    id: 'water',
+    name: 'Agua',
+    baseColor: '#3A6EA5',
+    secondaryColor: '#2B5D8C',
+    textureVariants: ['tile_0149_agua_profunda'],
+    objectDensity: 0.0,
+    preferredObjects: [],
+    transitionSoftness: 0.9
   }
 };
 
@@ -363,16 +391,23 @@ export class AdvancedTerrainGenerator {
    * Determina el bioma principal basado en condiciones ambientales
    */
   private determinePrimaryBiome(elevation: number, humidity: number, temperature: number): string {
-    // Lógica para determinar bioma basado en condiciones
+    // Prioridades claras para aspectos dominantes
+    if (elevation < 0.18 && humidity > 0.4) {
+      return 'WATER';
+    }
+    if (humidity < 0.28 && temperature > 0.55) {
+      return 'SAND';
+    }
     if (elevation > 0.7) {
       return 'ROCKY';
-    } else if (humidity > 0.6 && temperature > 0.4) {
-      return 'FOREST';
-    } else if (humidity > 0.3 && temperature > 0.5) {
-      return 'GARDEN';
-    } else {
-      return 'GRASSLAND';
     }
+    if (humidity > 0.6 && temperature > 0.4) {
+      return 'FOREST';
+    }
+    if (humidity > 0.35 && temperature > 0.5) {
+      return 'GARDEN';
+    }
+    return 'GRASSLAND';
   }
 
   /**
@@ -388,8 +423,13 @@ export class AdvancedTerrainGenerator {
     for (const [biomeId, biome] of Object.entries(TERRAIN_BIOMES)) {
       let influence = 0;
 
-      // Calcular influencia basada en condiciones ideales del bioma
       switch (biomeId) {
+        case 'WATER':
+          influence = Math.max(0, (0.2 - elevation) * 5) * humidity;
+          break;
+        case 'SAND':
+          influence = (1 - humidity) * Math.max(0, temperature - 0.5) * (1 - elevation * 0.5);
+          break;
         case 'ROCKY':
           influence = Math.max(0, elevation - 0.5) * 2;
           break;
@@ -397,15 +437,13 @@ export class AdvancedTerrainGenerator {
           influence = humidity * temperature * (1 - Math.abs(elevation - 0.4));
           break;
         case 'GARDEN':
-          influence =
-            humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
+          influence = humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
           break;
         case 'GRASSLAND':
           influence = (1 - humidity) * (1 - Math.abs(elevation - 0.2));
           break;
       }
 
-      // Aplicar suavizado basado en transitionSoftness
       influence *= biome.transitionSoftness;
       this.biomeInfluenceMap.get(biomeId)![y][x] = Math.max(0, Math.min(1, influence));
     }
@@ -538,17 +576,17 @@ export class AdvancedTerrainGenerator {
     const gridWidth = Math.ceil(width / this.config.tileSize);
     const gridHeight = Math.ceil(height / this.config.tileSize);
 
-    // Generar para cada celda del grid
     for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
         const biomeId = this.biomeMap[y][x];
+        if (biomeId === 'WATER') continue; // No objetos en agua
         const biome = TERRAIN_BIOMES[biomeId];
 
         // Densidad base modificada por elevación y humedad
-        let density = biome.objectDensity;
+        let density = biome.objectDensity * 0.9; // menos clutter
+        if (biomeId === 'SAND') density *= 0.5; // más vacío en arena
         density *= this.calculateDensityModifier(x, y);
 
-        // Decidir si generar objetos en esta celda
         if (Math.random() < density) {
           const cellObjects = this.generateObjectsForCell(x, y, biome);
           objects.push(...cellObjects);
