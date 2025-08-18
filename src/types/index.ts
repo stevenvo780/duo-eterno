@@ -101,6 +101,21 @@ export interface InteractionEffect {
 
 export type EntityActivity = ActivityType;
 
+export interface DialogueEntry {
+  speaker: 'ISA' | 'STEV';
+  text: string;
+  emotion: string;
+  activity: string;
+}
+
+export interface ConversationState {
+  isActive: boolean;
+  participants: string[];
+  lastSpeaker: string | null;
+  lastDialogue: DialogueEntry | null;
+  startTime: number;
+}
+
 export interface GameState {
   entities: Entity[];
   resonance: number;
@@ -115,4 +130,5 @@ export interface GameState {
   zones: Zone[];
   mapElements: MapElement[];
   mapSeed?: string;
+  currentConversation: ConversationState;
 }

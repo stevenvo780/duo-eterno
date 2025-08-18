@@ -27,27 +27,49 @@ export const getNextDialogue = (
 ): DialogueEntry | null => {
   if (dialogueData.length === 0) return null;
 
-  let attempts = 0;
-  const maxAttempts = Math.min(100, dialogueData.length);
+  const findDialogue = (
+    speaker?: 'ISA' | 'STEV',
+    emotion?: string,
+    activity?: string
+  ): DialogueEntry | null => {
+    let attempts = 0;
+    const maxAttempts = dialogueData.length; // Search the whole array
+    let localIndex = currentIndex;
 
-  while (attempts < maxAttempts) {
-    const dialogue = dialogueData[currentIndex];
-    currentIndex = (currentIndex + 1) % dialogueData.length;
-    attempts++;
+    while (attempts < maxAttempts) {
+      const dialogue = dialogueData[localIndex];
+      localIndex = (localIndex + 1) % dialogueData.length;
+      attempts++;
 
-    if (!preferredSpeaker && !preferredEmotion && !preferredActivity) {
-      return dialogue;
+      const speakerMatch = !speaker || dialogue.speaker === speaker;
+      const emotionMatch = !emotion || dialogue.emotion === emotion;
+      const activityMatch = !activity || dialogue.activity === activity;
+
+      if (speakerMatch && emotionMatch && activityMatch) {
+        currentIndex = localIndex; // Update main index if found
+        return dialogue;
+      }
     }
+    return null;
+  };
 
-    const speakerMatch = !preferredSpeaker || dialogue.speaker === preferredSpeaker;
-    const emotionMatch = !preferredEmotion || dialogue.emotion === preferredEmotion;
-    const activityMatch = !preferredActivity || dialogue.activity === preferredActivity;
+  // 1. Perfect match
+  let dialogue = findDialogue(preferredSpeaker, preferredEmotion, preferredActivity);
+  if (dialogue) return dialogue;
 
-    if (speakerMatch && emotionMatch && activityMatch) {
-      return dialogue;
-    }
-  }
+  // 2. Match speaker and activity
+  dialogue = findDialogue(preferredSpeaker, undefined, preferredActivity);
+  if (dialogue) return dialogue;
 
+  // 3. Match speaker and emotion
+  dialogue = findDialogue(preferredSpeaker, preferredEmotion, undefined);
+  if (dialogue) return dialogue;
+
+  // 4. Match speaker only
+  dialogue = findDialogue(preferredSpeaker, undefined, undefined);
+  if (dialogue) return dialogue;
+  
+  // 5. Fallback to any dialogue
   const fallbackIndex = (Date.now() * 1664525 + 1013904223) % 2147483647;
   return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];
 };

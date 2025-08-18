@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import type { GameState, EntityMood, EntityStats, InteractionType } from '../types';
+import type { GameState, EntityMood, EntityStats, InteractionType, DialogueEntry, ConversationState } from '../types';
 import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
 import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
@@ -57,7 +57,18 @@ type GameAction =
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
   | { type: 'RESET_GAME' }
   | { type: 'GENERATE_NEW_MAP'; payload?: { seed?: string } }
-  | { type: 'LOAD_SAVED_STATE'; payload: GameState };
+  | { type: 'LOAD_SAVED_STATE'; payload: GameState }
+  | { type: 'START_CONVERSATION'; payload: { participants: string[] } }
+  | { type: 'ADVANCE_CONVERSATION'; payload: { speaker: string; dialogue: DialogueEntry } }
+  | { type: 'END_CONVERSATION' };
+
+const initialConversationState: ConversationState = {
+  isActive: false,
+  participants: [],
+  lastSpeaker: null,
+  lastDialogue: null,
+  startTime: 0,
+};
 
 const initialGameState: GameState = {
   entities: [
@@ -121,7 +132,8 @@ const initialGameState: GameState = {
   },
   zones: [],
   mapElements: [],
-  mapSeed: generateMapSeed()
+  mapSeed: generateMapSeed(),
+  currentConversation: initialConversationState,
 };
 
 const initialDialogueState: DialogueState = {
@@ -335,6 +347,40 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'LOAD_SAVED_STATE': {
       return action.payload;
     }
+
+    case 'START_CONVERSATION':
+      return {
+        ...state,
+        currentConversation: {
+          isActive: true,
+          participants: action.payload.participants,
+          lastSpeaker: null,
+          lastDialogue: null,
+          startTime: Date.now(),
+        },
+      };
+
+    case 'ADVANCE_CONVERSATION':
+      return {
+        ...state,
+        currentConversation: {
+          ...state.currentConversation,
+          lastSpeaker: action.payload.speaker,
+          lastDialogue: action.payload.dialogue,
+        },
+      };
+
+    case 'END_CONVERSATION':
+      return {
+        ...state,
+        currentConversation: {
+          isActive: false,
+          participants: [],
+          lastSpeaker: null,
+          lastDialogue: null,
+          startTime: 0,
+        },
+      };
 
     default:
       return state;

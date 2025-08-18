@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useGame } from './useGame';
 import { getRandomDialogue } from '../utils/dialogues';
 import {
   loadDialogueData,
   getNextDialogue,
   getSpeakerForEntity,
-  getEmotionForActivity
+  getEmotionForActivity,
+  getDialogueForInteraction,
 } from '../utils/dialogueSelector';
+import type { DialogueEntry } from '../types';
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
   const [dialoguesLoaded, setDialoguesLoaded] = useState(false);
+  const { currentConversation } = gameState;
 
   useEffect(() => {
     loadDialogueData().then(() => {
@@ -18,70 +21,124 @@ export const useDialogueSystem = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (!dialoguesLoaded) return;
+  const initiateConversation = useCallback(() => {
+    if (Math.random() > 0.1) return; // 10% chance to start a conversation each tick
 
-    if (gameState.connectionAnimation.active) {
-      const animationAge = Date.now() - gameState.connectionAnimation.startTime;
-      if (animationAge < 100) {
-        const isFading = gameState.entities.some(entity => entity.state === 'FADING');
+    const initiator = gameState.entities[Math.floor(Math.random() * gameState.entities.length)];
+    if (initiator.isDead) return;
 
-        if (isFading) {
-          dispatch({
-            type: 'SHOW_DIALOGUE',
-            payload: {
-              message: getRandomDialogue('revival'),
-              duration: 4000
-            }
-          });
-        } else {
-          const dialogue = getNextDialogue(undefined, 'LOVE', 'SOCIALIZING');
-          if (dialogue) {
-            dispatch({
-              type: 'SHOW_DIALOGUE',
-              payload: {
-                message: dialogue.text,
-                duration: 3000,
-                speaker: dialogue.speaker === 'ISA' ? 'circle' : 'square'
-              }
-            });
-          }
-        }
-      }
+    const speaker = getSpeakerForEntity(initiator.id);
+    const emotion = getEmotionForActivity(initiator.activity);
+    const dialogue = getNextDialogue(speaker, emotion, initiator.activity);
+
+    if (dialogue) {
+      dispatch({ type: 'START_CONVERSATION', payload: { participants: gameState.entities.map(e => e.id) } });
+      dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: initiator.id, dialogue } });
+      dispatch({
+        type: 'SHOW_DIALOGUE',
+        payload: {
+          message: dialogue.text,
+          duration: 3000,
+          speaker: initiator.id,
+          entityId: initiator.id,
+          emotion: dialogue.emotion,
+          position: { x: initiator.position.x, y: initiator.position.y },
+        },
+      });
     }
-  }, [gameState.connectionAnimation, gameState.entities, dispatch, dialoguesLoaded]);
+  }, [gameState.entities, dispatch]);
+
+  const advanceConversation = useCallback(() => {
+    const { lastSpeaker, lastDialogue } = currentConversation;
+    if (!lastSpeaker || !lastDialogue) return;
+
+    const responderId = gameState.entities.find(e => e.id !== lastSpeaker)?.id;
+    if (!responderId) {
+      dispatch({ type: 'END_CONVERSATION' });
+      return;
+    }
+    
+    const responder = gameState.entities.find(e => e.id === responderId);
+    if (!responder || responder.isDead) {
+        dispatch({ type: 'END_CONVERSATION' });
+        return;
+    }
+
+    // Simple response logic: find a dialogue with a matching activity and emotion
+    const speaker = getSpeakerForEntity(responderId);
+    const responseDialogue = getNextDialogue(speaker, lastDialogue.emotion, lastDialogue.activity);
+
+    if (responseDialogue) {
+      dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: responderId, dialogue: responseDialogue } });
+      dispatch({
+        type: 'SHOW_DIALOGUE',
+        payload: {
+          message: responseDialogue.text,
+          duration: 3000,
+          speaker: responderId,
+          entityId: responderId,
+          emotion: responseDialogue.emotion,
+          position: { x: responder.position.x, y: responder.position.y },
+        },
+      });
+    } else {
+      // End conversation if no response is found
+      dispatch({ type: 'END_CONVERSATION' });
+    }
+  }, [currentConversation, gameState.entities, dispatch]);
+
 
   useEffect(() => {
     if (!dialoguesLoaded) return;
 
     const interval = setInterval(() => {
-      if (!gameState.connectionAnimation.active) {
-        gameState.entities.forEach(entity => {
-          const timeBasedTrigger = (Date.now() + entity.id.charCodeAt(0) * 1000) % 20000 < 1000;
+      if (gameState.connectionAnimation.active) return;
 
-          if (timeBasedTrigger && !entity.isDead) {
-            const speaker = getSpeakerForEntity(entity.id);
-            const emotion = getEmotionForActivity(entity.activity);
-            const dialogue = getNextDialogue(speaker, emotion, entity.activity);
+      if (!currentConversation.isActive) {
+        initiateConversation();
+      } else {
+        // Check for conversation timeout
+        if (Date.now() - currentConversation.startTime > 20000) { // 20 second timeout
+          dispatch({ type: 'END_CONVERSATION' });
+          return;
+        }
+        // Only advance conversation if it's the other entity's turn
+        if(currentConversation.lastSpeaker) {
+            const lastSpeakerIndex = currentConversation.participants.indexOf(currentConversation.lastSpeaker);
+            const nextSpeakerIndex = (lastSpeakerIndex + 1) % currentConversation.participants.length;
+            const nextSpeakerId = currentConversation.participants[nextSpeakerIndex];
 
-            if (dialogue) {
-              dispatch({
-                type: 'SHOW_DIALOGUE',
-                payload: {
-                  message: dialogue.text,
-                  duration: 2500,
-                  speaker: entity.id,
-                  entityId: entity.id,
-                  emotion: dialogue.emotion,
-                  position: { x: entity.position.x, y: entity.position.y }
-                }
-              });
+            // A simple delay before responding
+            if(Date.now() - currentConversation.startTime > 3000){
+                advanceConversation();
             }
-          }
-        });
+        }
       }
-    }, 1000);
+    }, 3000); // Check every 3 seconds
 
     return () => clearInterval(interval);
-  }, [gameState.entities, gameState.connectionAnimation.active, dispatch, dialoguesLoaded]);
+  }, [dialoguesLoaded, gameState.connectionAnimation.active, currentConversation, initiateConversation, advanceConversation, dispatch]);
+
+  // Handle dialogues from interactions
+  useEffect(() => {
+    if (!dialoguesLoaded || !gameState.connectionAnimation.active) return;
+
+    const interaction = gameState.connectionAnimation.type;
+    const entityId = 'circle'; // For now, assume circle is the target of interaction
+    const dialogue = getDialogueForInteraction(interaction, entityId);
+
+    if (dialogue) {
+      dispatch({
+        type: 'SHOW_DIALOGUE',
+        payload: {
+          message: dialogue.text,
+          duration: 3000,
+          speaker: entityId,
+          entityId: entityId,
+          emotion: dialogue.emotion,
+          position: { x: gameState.entities.find(e=>e.id === entityId)!.position.x, y: gameState.entities.find(e=>e.id === entityId)!.position.y },
+        },
+      });
+    }
+  }, [gameState.connectionAnimation, dialoguesLoaded, dispatch, gameState.entities]);
 };
