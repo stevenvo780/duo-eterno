@@ -6,16 +6,12 @@ import {
   getSpeakerForEntity,
   getEmotionForActivity,
   getDialogueForInteraction,
-  getResponseWriter,
+  getResponseWriter
 } from '../utils/dialogueSelector';
 import { gameConfig } from '../config/gameConfig';
-import type { DialogueEntry } from '../types';
 
-const {
-  dialogueInitiationChance,
-  dialogueConversationTimeout,
-  dialogueResponseDelay,
-} = gameConfig.ui;
+const { dialogueInitiationChance, dialogueConversationTimeout, dialogueResponseDelay } =
+  gameConfig.ui;
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
@@ -55,11 +51,11 @@ export const useDialogueSystem = () => {
           speaker: initiator.id,
           entityId: initiator.id,
           emotion: dialogue.emotion,
-          position: { x: initiator.position.x, y: initiator.position.y },
-        },
+          position: { x: initiator.position.x, y: initiator.position.y }
+        }
       });
     }
-  }, [entities, dispatch]);
+  }, [entities, dispatch, canConverse]);
 
   const advanceConversation = useCallback(() => {
     const { lastSpeaker, lastDialogue } = currentConversation;
@@ -70,18 +66,21 @@ export const useDialogueSystem = () => {
       dispatch({ type: 'END_CONVERSATION' });
       return;
     }
-    
+
     const responder = entities.find(e => e.id === responderId);
     if (!responder) {
-        dispatch({ type: 'END_CONVERSATION' });
-        return;
+      dispatch({ type: 'END_CONVERSATION' });
+      return;
     }
 
     const responderSpeaker = getSpeakerForEntity(responderId);
     const responseDialogue = getResponseWriter(responderSpeaker, lastDialogue);
 
     if (responseDialogue) {
-      dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: responderId, dialogue: responseDialogue } });
+      dispatch({
+        type: 'ADVANCE_CONVERSATION',
+        payload: { speaker: responderId, dialogue: responseDialogue }
+      });
       dispatch({
         type: 'SHOW_DIALOGUE',
         payload: {
@@ -90,14 +89,13 @@ export const useDialogueSystem = () => {
           speaker: responderId,
           entityId: responderId,
           emotion: responseDialogue.emotion,
-          position: { x: responder.position.x, y: responder.position.y },
-        },
+          position: { x: responder.position.x, y: responder.position.y }
+        }
       });
     } else {
       dispatch({ type: 'END_CONVERSATION' });
     }
-  }, [currentConversation, entities, dispatch]);
-
+  }, [currentConversation, entities, dispatch, canConverse]);
 
   useEffect(() => {
     if (!dialoguesLoaded) return;
@@ -112,26 +110,38 @@ export const useDialogueSystem = () => {
           dispatch({ type: 'END_CONVERSATION' });
           return;
         }
-        
+
         if (currentConversation.lastSpeaker) {
-            const responseTimer = setTimeout(() => {
-                advanceConversation();
-            }, dialogueResponseDelay + Math.random() * 1000); // Add some randomness
-            
-            return () => clearTimeout(responseTimer);
+          const responseTimer = setTimeout(
+            () => {
+              advanceConversation();
+            },
+            dialogueResponseDelay + Math.random() * 1000
+          ); // Add some randomness
+
+          return () => {
+            clearTimeout(responseTimer);
+          };
         }
       }
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, [dialoguesLoaded, gameState.connectionAnimation.active, currentConversation, initiateConversation, advanceConversation, dispatch]);
+  }, [
+    dialoguesLoaded,
+    gameState.connectionAnimation.active,
+    currentConversation,
+    initiateConversation,
+    advanceConversation,
+    dispatch
+  ]);
 
   // Handle dialogues from interactions
   useEffect(() => {
     if (!dialoguesLoaded || !gameState.connectionAnimation.active) return;
 
     const { type: interactionType, entityId } = gameState.connectionAnimation;
-    
+
     // The INTERACT action should have the entityId in its payload
     const targetEntityId = entityId || 'circle'; // Fallback for safety
 
@@ -148,8 +158,8 @@ export const useDialogueSystem = () => {
             speaker: targetEntityId,
             entityId: targetEntityId,
             emotion: dialogue.emotion,
-            position: { x: entity.position.x, y: entity.position.y },
-          },
+            position: { x: entity.position.x, y: entity.position.y }
+          }
         });
       }
     }

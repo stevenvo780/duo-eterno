@@ -199,6 +199,32 @@ export const ACTIVITIES = {
   }
 } as const;
 
+// Alias adicionales necesarios
+export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
+
+// Tipos exportados para compatibilidad
+export type ActivityType = (typeof ACTIVITIES.TYPES)[number];
+export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'office' | 'gym' | 'library' | 'social' | 'recreation' | 'food' | 'rest' | 'play' | 'comfort' | 'work' | 'energy';
+export type EntityStateType = 'alive' | 'resting' | 'dead' | 'fading' | 'DEAD' | 'FADING' | 'LOW_RESONANCE' | 'SEEKING' | 'IDLE';
+export type MoodType = 'HAPPY' | 'SAD' | 'ANGRY' | 'CALM' | 'EXCITED' | 'BORED' | 'LONELY' | 'CONTENT' | 'ANXIOUS' | 'TIRED';
+
+export const NEED_TO_ZONE_MAPPING = {
+  hunger: 'food',
+  energy: 'rest',
+  happiness: 'social',
+  sleepiness: 'rest',
+  boredom: 'play',
+  loneliness: 'social',
+  health: 'rest'
+} as const;
+
+export const RESONANCE_THRESHOLDS = {
+  LOW: 0.3,
+  MEDIUM: 0.6,
+  HIGH: 0.8,
+  CRITICAL: 0.95
+} as const;
+
 // Alias de constantes no usados removidos
 
 export const {

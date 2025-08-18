@@ -1,4 +1,9 @@
-import type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants';
+import type { ACTIVITY_TYPES } from '../constants';
+
+export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'office' | 'gym' | 'library' | 'social' | 'recreation' | 'food' | 'rest' | 'play' | 'comfort' | 'work' | 'energy';
+export type EntityStateType = 'alive' | 'resting' | 'dead' | 'fading' | 'DEAD' | 'FADING' | 'LOW_RESONANCE' | 'SEEKING' | 'IDLE';
+export type MoodType = 'HAPPY' | 'SAD' | 'ANGRY' | 'CALM' | 'EXCITED' | 'BORED' | 'LONELY' | 'CONTENT' | 'ANXIOUS' | 'TIRED';
 
 export interface Position {
   x: number;
@@ -90,7 +95,6 @@ export interface Zone {
   };
 }
 
-
 export interface DialogueEntry {
   speaker: 'ISA' | 'STEV';
   text: string;
@@ -106,3 +110,29 @@ export interface ConversationState {
   startTime: number;
 }
 
+export interface InteractionEffect {
+  stats: Partial<EntityStats>;
+  resonance?: number;
+  mood?: EntityMood;
+  duration?: number;
+}
+
+export type EntityActivity = ActivityType;
+
+export interface GameState {
+  entities: Entity[];
+  resonance: number;
+  cycles: number;
+  lastSave: number;
+  togetherTime: number;
+  connectionAnimation: {
+    active: boolean;
+    startTime: number;
+    type: InteractionType;
+    entityId?: string;
+  };
+  zones: Zone[];
+  mapElements: MapElement[];
+  mapSeed?: string;
+  currentConversation: ConversationState;
+}

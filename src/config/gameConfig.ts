@@ -196,7 +196,7 @@ const baseConfig: GameConfig = {
     statUpdateFrequency: 500,
     dialogueInitiationChance: 0.1,
     dialogueConversationTimeout: 20000,
-    dialogueResponseDelay: 3000,
+    dialogueResponseDelay: 3000
   },
 
   performance: {

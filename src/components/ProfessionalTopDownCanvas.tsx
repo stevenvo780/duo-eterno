@@ -5,15 +5,11 @@ import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { assetManager, type Asset } from '../utils/assetManager';
-import { generateAdvancedTerrain, type TerrainGenerationResult, type TileData } from '../utils/advancedTerrainGeneration';
+import {
+  generateAdvancedTerrain,
+  type TerrainGenerationResult
+} from '../utils/advancedTerrainGeneration';
 import type { Entity, Zone, MapElement } from '../types';
-
-interface AdvancedTileMap {
-  tiles: TileData[][];
-  tileSize: number;
-  width: number;
-  height: number;
-}
 
 interface GameObject {
   id: string;
@@ -122,7 +118,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       // Fallback al sistema básico
       console.log('🔄 Usando sistema de fallback...');
     }
-  }, [width, height, assetsLoaded]);  // Generar objetos del juego
+  }, [width, height, assetsLoaded]); // Generar objetos del juego
   const generateGameObjects = useCallback(async () => {
     if (!assetsLoaded || mapElements.length === 0) return;
 
@@ -136,7 +132,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
 
-    mapElements.forEach(element => {
+    mapElements.forEach((element: MapElement) => {
       let asset: Asset | null = null;
 
       // Seleccionar asset según el tipo de elemento, priorizando muebles reales
@@ -275,20 +271,25 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
           if (asset?.image) {
             ctx.save();
-            
+
             // Aplicar transformaciones del tile
             const centerX = x * tileMap.tileSize + tileMap.tileSize / 2;
             const centerY = y * tileMap.tileSize + tileMap.tileSize / 2;
-            
+
             ctx.translate(centerX, centerY);
             if (tileData.rotation) ctx.rotate((tileData.rotation * Math.PI) / 180);
-            
+
             // Aplicar tint y variaciones de color
             ctx.fillStyle = tileData.tint;
             ctx.globalCompositeOperation = 'multiply';
-            ctx.fillRect(-tileMap.tileSize / 2, -tileMap.tileSize / 2, tileMap.tileSize, tileMap.tileSize);
+            ctx.fillRect(
+              -tileMap.tileSize / 2,
+              -tileMap.tileSize / 2,
+              tileMap.tileSize,
+              tileMap.tileSize
+            );
             ctx.globalCompositeOperation = 'source-over';
-            
+
             // Dibujar el tile
             ctx.drawImage(
               asset.image,
@@ -297,19 +298,19 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
               tileMap.tileSize,
               tileMap.tileSize
             );
-            
+
             ctx.restore();
           }
         }
       }
 
       // Renderizar zonas como fondos sutiles
-      zones.forEach((zone) => {
+      zones.forEach((zone: Zone) => {
         ctx.globalAlpha = 0.12;
         ctx.fillStyle = zone.color;
         ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         ctx.globalAlpha = 1.0;
-        
+
         // Renderizar nombre de la zona con mejor tipografía
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         ctx.font = 'bold 11px system-ui';
@@ -318,36 +319,40 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
       // Renderizar objetos del terreno (generados proceduralmente)
       terrainResult.objects.forEach(obj => {
-        const asset = assetManager.getRandomAssetByType('nature') || 
-                      assetManager.getAssetById('tile_0182_suelo_cesped');
-        
+        const asset =
+          assetManager.getRandomAssetByType('nature') ||
+          assetManager.getAssetById('tile_0182_suelo_cesped');
+
         if (asset?.image) {
           ctx.save();
-          
+
           // Aplicar variaciones si existen
           if (obj.metadata?.rotation) {
-            ctx.translate(obj.position.x + obj.size.width / 2, obj.position.y + obj.size.height / 2);
+            ctx.translate(
+              obj.position.x + obj.size.width / 2,
+              obj.position.y + obj.size.height / 2
+            );
             ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
             ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
           }
-          
+
           if (obj.metadata?.flipX) {
             ctx.scale(-1, 1);
           }
-          
+
           // Aplicar weathering/aging
           if (obj.metadata?.weathering && typeof obj.metadata.weathering === 'number') {
-            ctx.globalAlpha = 1 - (obj.metadata.weathering * 0.3);
+            ctx.globalAlpha = 1 - obj.metadata.weathering * 0.3;
           }
-          
+
           ctx.drawImage(
-            asset.image, 
-            obj.metadata?.rotation ? 0 : obj.position.x, 
-            obj.metadata?.rotation ? 0 : obj.position.y, 
-            obj.size.width, 
+            asset.image,
+            obj.metadata?.rotation ? 0 : obj.position.x,
+            obj.metadata?.rotation ? 0 : obj.position.y,
+            obj.size.width,
             obj.size.height
           );
-          
+
           ctx.restore();
         }
       });
@@ -356,7 +361,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       gameObjects.forEach(obj => {
         if (obj.asset.image) {
           ctx.save();
-          
+
           // Aplicar variaciones naturales si existen
           if (obj.metadata?.rotation) {
             ctx.translate(obj.x + obj.asset.size / 2, obj.y + obj.asset.size / 2);
@@ -366,7 +371,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
           } else {
             ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
           }
-          
+
           ctx.restore();
         }
       });
@@ -414,7 +419,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       phase,
       renderTopDownEntity
     ]
-  );  // Loop de animación
+  ); // Loop de animación
   useEffect(() => {
     if (!assetsLoaded) return;
 

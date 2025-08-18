@@ -1,6 +1,6 @@
 /**
  * 🌍 SISTEMA AVANZADO DE GENERACIÓN DE TERRENO
- * 
+ *
  * Sistema de generación procedural multi-capa que produce mapas naturales
  * y orgánicos usando técnicas modernas de game development.
  */
@@ -59,9 +59,27 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     textureVariants: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped'],
     objectDensity: 0.3,
     preferredObjects: [
-      { type: 'wildflower', spawnChance: 0.4, clusterSize: { min: 2, max: 5 }, sizeVariation: { min: 0.8, max: 1.2 }, rotationVariation: true },
-      { type: 'small_bush', spawnChance: 0.2, clusterSize: { min: 1, max: 3 }, sizeVariation: { min: 0.9, max: 1.3 }, rotationVariation: true },
-      { type: 'grass_tuft', spawnChance: 0.6, clusterSize: { min: 3, max: 8 }, sizeVariation: { min: 0.7, max: 1.1 }, rotationVariation: true }
+      {
+        type: 'wildflower',
+        spawnChance: 0.4,
+        clusterSize: { min: 2, max: 5 },
+        sizeVariation: { min: 0.8, max: 1.2 },
+        rotationVariation: true
+      },
+      {
+        type: 'small_bush',
+        spawnChance: 0.2,
+        clusterSize: { min: 1, max: 3 },
+        sizeVariation: { min: 0.9, max: 1.3 },
+        rotationVariation: true
+      },
+      {
+        type: 'grass_tuft',
+        spawnChance: 0.6,
+        clusterSize: { min: 3, max: 8 },
+        sizeVariation: { min: 0.7, max: 1.1 },
+        rotationVariation: true
+      }
     ],
     transitionSoftness: 0.7
   },
@@ -73,10 +91,34 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     textureVariants: ['tile_0182_suelo_cesped'],
     objectDensity: 0.6,
     preferredObjects: [
-      { type: 'tree_large', spawnChance: 0.3, clusterSize: { min: 1, max: 2 }, sizeVariation: { min: 0.9, max: 1.4 }, rotationVariation: true },
-      { type: 'tree_medium', spawnChance: 0.5, clusterSize: { min: 2, max: 4 }, sizeVariation: { min: 0.8, max: 1.2 }, rotationVariation: true },
-      { type: 'fern', spawnChance: 0.7, clusterSize: { min: 3, max: 6 }, sizeVariation: { min: 0.6, max: 1.0 }, rotationVariation: true },
-      { type: 'mushroom', spawnChance: 0.2, clusterSize: { min: 1, max: 3 }, sizeVariation: { min: 0.8, max: 1.1 }, rotationVariation: false }
+      {
+        type: 'tree_large',
+        spawnChance: 0.3,
+        clusterSize: { min: 1, max: 2 },
+        sizeVariation: { min: 0.9, max: 1.4 },
+        rotationVariation: true
+      },
+      {
+        type: 'tree_medium',
+        spawnChance: 0.5,
+        clusterSize: { min: 2, max: 4 },
+        sizeVariation: { min: 0.8, max: 1.2 },
+        rotationVariation: true
+      },
+      {
+        type: 'fern',
+        spawnChance: 0.7,
+        clusterSize: { min: 3, max: 6 },
+        sizeVariation: { min: 0.6, max: 1.0 },
+        rotationVariation: true
+      },
+      {
+        type: 'mushroom',
+        spawnChance: 0.2,
+        clusterSize: { min: 1, max: 3 },
+        sizeVariation: { min: 0.8, max: 1.1 },
+        rotationVariation: false
+      }
     ],
     transitionSoftness: 0.8
   },
@@ -88,9 +130,28 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     textureVariants: ['tile_0210_suelo_cesped'],
     objectDensity: 0.5,
     preferredObjects: [
-      { type: 'flower_bed', spawnChance: 0.6, clusterSize: { min: 2, max: 5 }, sizeVariation: { min: 0.9, max: 1.2 }, rotationVariation: true, colorTint: '#FF6B9D' },
-      { type: 'hedge', spawnChance: 0.3, clusterSize: { min: 1, max: 2 }, sizeVariation: { min: 1.0, max: 1.1 }, rotationVariation: false },
-      { type: 'garden_stone', spawnChance: 0.2, clusterSize: { min: 1, max: 3 }, sizeVariation: { min: 0.8, max: 1.3 }, rotationVariation: true }
+      {
+        type: 'flower_bed',
+        spawnChance: 0.6,
+        clusterSize: { min: 2, max: 5 },
+        sizeVariation: { min: 0.9, max: 1.2 },
+        rotationVariation: true,
+        colorTint: '#FF6B9D'
+      },
+      {
+        type: 'hedge',
+        spawnChance: 0.3,
+        clusterSize: { min: 1, max: 2 },
+        sizeVariation: { min: 1.0, max: 1.1 },
+        rotationVariation: false
+      },
+      {
+        type: 'garden_stone',
+        spawnChance: 0.2,
+        clusterSize: { min: 1, max: 3 },
+        sizeVariation: { min: 0.8, max: 1.3 },
+        rotationVariation: true
+      }
     ],
     transitionSoftness: 0.6
   },
@@ -102,9 +163,27 @@ export const TERRAIN_BIOMES: Record<string, Biome> = {
     textureVariants: ['tile_0182_suelo_cesped'],
     objectDensity: 0.4,
     preferredObjects: [
-      { type: 'rock_large', spawnChance: 0.4, clusterSize: { min: 1, max: 2 }, sizeVariation: { min: 0.8, max: 1.5 }, rotationVariation: true },
-      { type: 'rock_medium', spawnChance: 0.6, clusterSize: { min: 2, max: 4 }, sizeVariation: { min: 0.7, max: 1.2 }, rotationVariation: true },
-      { type: 'pebbles', spawnChance: 0.5, clusterSize: { min: 3, max: 7 }, sizeVariation: { min: 0.5, max: 0.9 }, rotationVariation: true }
+      {
+        type: 'rock_large',
+        spawnChance: 0.4,
+        clusterSize: { min: 1, max: 2 },
+        sizeVariation: { min: 0.8, max: 1.5 },
+        rotationVariation: true
+      },
+      {
+        type: 'rock_medium',
+        spawnChance: 0.6,
+        clusterSize: { min: 2, max: 4 },
+        sizeVariation: { min: 0.7, max: 1.2 },
+        rotationVariation: true
+      },
+      {
+        type: 'pebbles',
+        spawnChance: 0.5,
+        clusterSize: { min: 3, max: 7 },
+        sizeVariation: { min: 0.5, max: 0.9 },
+        rotationVariation: true
+      }
     ],
     transitionSoftness: 0.5
   }
@@ -119,7 +198,7 @@ export class AdvancedTerrainGenerator {
   private humidityNoise: PerlinNoise;
   private temperatureNoise: PerlinNoise;
   private detailNoise: PerlinNoise;
-  
+
   // Maps de propiedades del terreno
   private elevationMap: number[][];
   private humidityMap: number[][];
@@ -129,13 +208,13 @@ export class AdvancedTerrainGenerator {
 
   constructor(config: TerrainConfig) {
     this.config = config;
-    
+
     // Inicializar generadores de ruido con diferentes frecuencias
     this.elevationNoise = new PerlinNoise(config.seed);
     this.humidityNoise = new PerlinNoise(config.seed + 1000);
     this.temperatureNoise = new PerlinNoise(config.seed + 2000);
     this.detailNoise = new PerlinNoise(config.seed + 3000);
-    
+
     this.elevationMap = [];
     this.humidityMap = [];
     this.temperatureMap = [];
@@ -148,27 +227,29 @@ export class AdvancedTerrainGenerator {
    */
   public generateTerrain(): TerrainGenerationResult {
     console.log('🌍 Generando terreno avanzado multi-capa...');
-    
+
     // 1. Generar mapas base de propiedades
     this.generatePropertyMaps();
-    
+
     // 2. Determinar biomas basado en propiedades
     this.generateBiomeMap();
-    
+
     // 3. Crear mapa de tiles con blend
     const tileMap = this.generateBlendedTileMap();
-    
+
     // 4. Generar distribución orgánica de objetos
     const objects = this.generateNaturalObjects();
-    
+
     // 5. Crear senderos naturales
     const paths = this.generateOrganicPaths();
-    
+
     // 6. Añadir detalles menores
     const details = this.generateDetailElements();
-    
-    console.log(`✅ Terreno generado: ${objects.length} objetos, ${paths.length} segmentos de sendero, ${details.length} detalles`);
-    
+
+    console.log(
+      `✅ Terreno generado: ${objects.length} objetos, ${paths.length} segmentos de sendero, ${details.length} detalles`
+    );
+
     return {
       tileMap,
       objects: [...objects, ...paths, ...details],
@@ -191,18 +272,18 @@ export class AdvancedTerrainGenerator {
     const { width, height } = this.config;
     const gridWidth = Math.ceil(width / this.config.tileSize);
     const gridHeight = Math.ceil(height / this.config.tileSize);
-    
+
     for (let y = 0; y < gridHeight; y++) {
       this.elevationMap[y] = [];
       this.humidityMap[y] = [];
       this.temperatureMap[y] = [];
       this.biomeMap[y] = [];
-      
+
       for (let x = 0; x < gridWidth; x++) {
         // Coordenadas normalizadas para el ruido
         const nx = x / gridWidth;
         const ny = y / gridHeight;
-        
+
         // Generar propiedades usando múltiples octavas de ruido
         this.elevationMap[y][x] = this.generateElevation(nx, ny);
         this.humidityMap[y][x] = this.generateHumidity(nx, ny);
@@ -218,14 +299,14 @@ export class AdvancedTerrainGenerator {
     let elevation = 0;
     let amplitude = 1;
     let frequency = 0.01;
-    
+
     // Múltiples octavas para detalle
     for (let i = 0; i < 4; i++) {
       elevation += this.elevationNoise.generateNoise2D(x * frequency, y * frequency) * amplitude;
       amplitude *= 0.5;
       frequency *= 2;
     }
-    
+
     // Normalizar a [0, 1]
     return Math.max(0, Math.min(1, (elevation + 1) / 2));
   }
@@ -253,7 +334,7 @@ export class AdvancedTerrainGenerator {
     const { width, height } = this.config;
     const gridWidth = Math.ceil(width / this.config.tileSize);
     const gridHeight = Math.ceil(height / this.config.tileSize);
-    
+
     // Inicializar mapas de influencia de bioma
     for (const biomeId of Object.keys(TERRAIN_BIOMES)) {
       this.biomeInfluenceMap.set(biomeId, []);
@@ -261,17 +342,17 @@ export class AdvancedTerrainGenerator {
         this.biomeInfluenceMap.get(biomeId)![y] = [];
       }
     }
-    
+
     for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
         const elevation = this.elevationMap[y][x];
         const humidity = this.humidityMap[y][x];
         const temperature = this.temperatureMap[y][x];
-        
+
         // Determinar bioma principal basado en condiciones
         const primaryBiome = this.determinePrimaryBiome(elevation, humidity, temperature);
         this.biomeMap[y][x] = primaryBiome;
-        
+
         // Calcular influencias de biomas para blending
         this.calculateBiomeInfluences(x, y, elevation, humidity, temperature);
       }
@@ -297,10 +378,16 @@ export class AdvancedTerrainGenerator {
   /**
    * Calcula influencias de biomas para transiciones suaves
    */
-  private calculateBiomeInfluences(x: number, y: number, elevation: number, humidity: number, temperature: number): void {
+  private calculateBiomeInfluences(
+    x: number,
+    y: number,
+    elevation: number,
+    humidity: number,
+    temperature: number
+  ): void {
     for (const [biomeId, biome] of Object.entries(TERRAIN_BIOMES)) {
       let influence = 0;
-      
+
       // Calcular influencia basada en condiciones ideales del bioma
       switch (biomeId) {
         case 'ROCKY':
@@ -310,13 +397,14 @@ export class AdvancedTerrainGenerator {
           influence = humidity * temperature * (1 - Math.abs(elevation - 0.4));
           break;
         case 'GARDEN':
-          influence = humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
+          influence =
+            humidity * (1 - Math.abs(temperature - 0.7)) * (1 - Math.abs(elevation - 0.3));
           break;
         case 'GRASSLAND':
           influence = (1 - humidity) * (1 - Math.abs(elevation - 0.2));
           break;
       }
-      
+
       // Aplicar suavizado basado en transitionSoftness
       influence *= biome.transitionSoftness;
       this.biomeInfluenceMap.get(biomeId)![y][x] = Math.max(0, Math.min(1, influence));
@@ -330,24 +418,24 @@ export class AdvancedTerrainGenerator {
     const { width, height } = this.config;
     const gridWidth = Math.ceil(width / this.config.tileSize);
     const gridHeight = Math.ceil(height / this.config.tileSize);
-    
+
     const tiles: TileData[][] = [];
-    
+
     for (let y = 0; y < gridHeight; y++) {
       tiles[y] = [];
       for (let x = 0; x < gridWidth; x++) {
         const primaryBiome = this.biomeMap[y][x];
         const biomeConfig = TERRAIN_BIOMES[primaryBiome];
-        
+
         // Seleccionar textura base con variación
         const textureVariant = this.selectTextureVariant(biomeConfig, x, y);
-        
+
         // Calcular color con blending de biomas vecinos
         const blendedColor = this.calculateBlendedColor(x, y);
-        
+
         // Añadir variación de detalle
         const detailVariation = this.detailNoise.generateNoise2D(x * 0.1, y * 0.1);
-        
+
         tiles[y][x] = {
           textureId: textureVariant,
           baseColor: blendedColor,
@@ -357,7 +445,7 @@ export class AdvancedTerrainGenerator {
         };
       }
     }
-    
+
     return {
       tiles,
       tileSize: this.config.tileSize,
@@ -371,7 +459,7 @@ export class AdvancedTerrainGenerator {
    */
   private selectTextureVariant(biome: Biome, x: number, y: number): string {
     const noise = this.detailNoise.generateNoise2D(x * 0.05, y * 0.05);
-    const index = Math.floor((noise + 1) / 2 * biome.textureVariants.length);
+    const index = Math.floor(((noise + 1) / 2) * biome.textureVariants.length);
     return biome.textureVariants[Math.min(index, biome.textureVariants.length - 1)];
   }
 
@@ -380,8 +468,11 @@ export class AdvancedTerrainGenerator {
    */
   private calculateBlendedColor(x: number, y: number): string {
     const influences = this.getBiomeInfluencesAt(x, y);
-    let r = 0, g = 0, b = 0, totalInfluence = 0;
-    
+    let r = 0,
+      g = 0,
+      b = 0,
+      totalInfluence = 0;
+
     for (const [biomeId, influence] of influences) {
       if (influence > 0.1) {
         const biome = TERRAIN_BIOMES[biomeId];
@@ -394,14 +485,14 @@ export class AdvancedTerrainGenerator {
         }
       }
     }
-    
+
     if (totalInfluence > 0) {
       r = Math.round(r / totalInfluence);
       g = Math.round(g / totalInfluence);
       b = Math.round(b / totalInfluence);
       return `rgb(${r}, ${g}, ${b})`;
     }
-    
+
     return TERRAIN_BIOMES[this.biomeMap[y][x]].baseColor;
   }
 
@@ -410,12 +501,12 @@ export class AdvancedTerrainGenerator {
    */
   private getBiomeInfluencesAt(x: number, y: number): [string, number][] {
     const influences: [string, number][] = [];
-    
+
     for (const [biomeId, influenceMap] of this.biomeInfluenceMap) {
       const influence = influenceMap[y]?.[x] || 0;
       influences.push([biomeId, influence]);
     }
-    
+
     return influences.sort((a, b) => b[1] - a[1]);
   }
 
@@ -423,7 +514,7 @@ export class AdvancedTerrainGenerator {
    * Calcula tint basado en variación de detalle
    */
   private calculateTint(detailNoise: number): string {
-    const brightness = 0.95 + (detailNoise * 0.1); // ±5% variación de brillo
+    const brightness = 0.95 + detailNoise * 0.1; // ±5% variación de brillo
     const tintValue = Math.round(255 * brightness);
     return `rgb(${tintValue}, ${tintValue}, ${tintValue})`;
   }
@@ -441,22 +532,22 @@ export class AdvancedTerrainGenerator {
    */
   private generateNaturalObjects(): MapElement[] {
     console.log('🌱 Generando distribución orgánica de objetos...');
-    
+
     const objects: MapElement[] = [];
     const { width, height } = this.config;
     const gridWidth = Math.ceil(width / this.config.tileSize);
     const gridHeight = Math.ceil(height / this.config.tileSize);
-    
+
     // Generar para cada celda del grid
     for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
         const biomeId = this.biomeMap[y][x];
         const biome = TERRAIN_BIOMES[biomeId];
-        
+
         // Densidad base modificada por elevación y humedad
         let density = biome.objectDensity;
         density *= this.calculateDensityModifier(x, y);
-        
+
         // Decidir si generar objetos en esta celda
         if (Math.random() < density) {
           const cellObjects = this.generateObjectsForCell(x, y, biome);
@@ -464,7 +555,7 @@ export class AdvancedTerrainGenerator {
         }
       }
     }
-    
+
     console.log(`✅ Generados ${objects.length} objetos naturales`);
     return objects;
   }
@@ -475,16 +566,16 @@ export class AdvancedTerrainGenerator {
   private calculateDensityModifier(x: number, y: number): number {
     const elevation = this.elevationMap[y][x];
     const humidity = this.humidityMap[y][x];
-    
+
     // Reducir densidad en elevaciones extremas y muy baja humedad
     let modifier = 1.0;
-    
+
     if (elevation > 0.8) modifier *= 0.3;
     else if (elevation > 0.6) modifier *= 0.7;
-    
+
     if (humidity < 0.2) modifier *= 0.5;
     else if (humidity > 0.8) modifier *= 1.2;
-    
+
     return modifier;
   }
 
@@ -495,12 +586,15 @@ export class AdvancedTerrainGenerator {
     const objects: MapElement[] = [];
     const cellX = x * this.config.tileSize;
     const cellY = y * this.config.tileSize;
-    
+
     // Seleccionar objeto basado en probabilidades del bioma
     for (const objConfig of biome.preferredObjects) {
       if (Math.random() < objConfig.spawnChance) {
-        const clusterSize = this.randomBetween(objConfig.clusterSize.min, objConfig.clusterSize.max);
-        
+        const clusterSize = this.randomBetween(
+          objConfig.clusterSize.min,
+          objConfig.clusterSize.max
+        );
+
         // Generar cluster de objetos
         for (let i = 0; i < clusterSize; i++) {
           const obj = this.createVariedObject(objConfig, cellX, cellY);
@@ -508,7 +602,7 @@ export class AdvancedTerrainGenerator {
         }
       }
     }
-    
+
     return objects;
   }
 
@@ -519,25 +613,25 @@ export class AdvancedTerrainGenerator {
     // Posición con dispersión natural dentro de la celda
     const offsetX = this.gaussianRandom() * this.config.tileSize * 0.3;
     const offsetY = this.gaussianRandom() * this.config.tileSize * 0.3;
-    
+
     const x = baseX + this.config.tileSize / 2 + offsetX;
     const y = baseY + this.config.tileSize / 2 + offsetY;
-    
+
     // Variaciones
     const scale = this.randomBetween(config.sizeVariation.min, config.sizeVariation.max);
     const rotation = config.rotationVariation ? Math.random() * 360 : 0;
     const flipX = Math.random() < 0.5;
-    
+
     // Mapear tipo a asset real
     const _assetType = this.mapObjectTypeToAsset(config.type);
-    
+
     return {
       id: `natural_${config.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: this.mapObjectTypeToMapElementType(config.type),
       position: { x: Math.round(x), y: Math.round(y) },
-      size: { 
-        width: Math.round(32 * scale), 
-        height: Math.round(32 * scale) 
+      size: {
+        width: Math.round(32 * scale),
+        height: Math.round(32 * scale)
       },
       color: config.colorTint || this.generateObjectColor(config.type),
       metadata: {
@@ -554,21 +648,21 @@ export class AdvancedTerrainGenerator {
    */
   private generateOrganicPaths(): MapElement[] {
     console.log('🛤️ Generando senderos orgánicos...');
-    
+
     const paths: MapElement[] = [];
-    
+
     // Encontrar puntos de interés (centros de biomas diferentes)
     const interestPoints = this.findInterestPoints();
-    
+
     // Generar senderos entre puntos usando curvas naturales
     for (let i = 0; i < interestPoints.length - 1; i++) {
       const start = interestPoints[i];
       const end = interestPoints[i + 1];
-      
+
       const pathSegments = this.generateCurvedPath(start, end);
       paths.push(...pathSegments);
     }
-    
+
     console.log(`✅ Generados ${paths.length} segmentos de sendero`);
     return paths;
   }
@@ -579,39 +673,42 @@ export class AdvancedTerrainGenerator {
   private findInterestPoints(): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     const { width, height } = this.config;
-    
+
     // Añadir algunos puntos distribuidos naturalmente
     const numPoints = 4 + Math.floor(Math.random() * 3);
-    
+
     for (let i = 0; i < numPoints; i++) {
       const x = (width / numPoints) * i + Math.random() * (width / numPoints);
       const y = height * 0.2 + Math.random() * (height * 0.6);
-      
+
       points.push({ x: Math.round(x), y: Math.round(y) });
     }
-    
+
     return points;
   }
 
   /**
    * Genera sendero curvo entre dos puntos
    */
-  private generateCurvedPath(start: { x: number; y: number }, end: { x: number; y: number }): MapElement[] {
+  private generateCurvedPath(
+    start: { x: number; y: number },
+    end: { x: number; y: number }
+  ): MapElement[] {
     const segments: MapElement[] = [];
     const distance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
     const numSegments = Math.floor(distance / 20); // Segmento cada 20 píxeles
-    
+
     for (let i = 0; i <= numSegments; i++) {
       const t = i / numSegments;
-      
+
       // Interpolación con curva Bézier para naturalidad
       const curveStrength = 0.3;
       const midX = (start.x + end.x) / 2 + (Math.random() - 0.5) * distance * curveStrength;
       const midY = (start.y + end.y) / 2 + (Math.random() - 0.5) * distance * curveStrength;
-      
+
       const x = this.quadraticBezier(start.x, midX, end.x, t);
       const y = this.quadraticBezier(start.y, midY, end.y, t);
-      
+
       segments.push({
         id: `path_segment_${i}_${Date.now()}`,
         type: 'decoration',
@@ -621,7 +718,7 @@ export class AdvancedTerrainGenerator {
         metadata: { isPath: true }
       });
     }
-    
+
     return segments;
   }
 
@@ -630,19 +727,19 @@ export class AdvancedTerrainGenerator {
    */
   private generateDetailElements(): MapElement[] {
     console.log('✨ Añadiendo detalles menores...');
-    
+
     const details: MapElement[] = [];
     const { width, height } = this.config;
     const numDetails = Math.floor((width * height) / 5000); // 1 detalle cada 5000 píxeles²
-    
+
     for (let i = 0; i < numDetails; i++) {
       const x = Math.random() * width;
       const y = Math.random() * height;
-      
+
       const detail = this.createDetailElement(x, y);
       if (detail) details.push(detail);
     }
-    
+
     console.log(`✅ Añadidos ${details.length} elementos de detalle`);
     return details;
   }
@@ -653,14 +750,14 @@ export class AdvancedTerrainGenerator {
   private createDetailElement(x: number, y: number): MapElement | null {
     const detailTypes = ['small_stone', 'tiny_flower', 'grass_blade', 'twig', 'leaf'];
     const type = detailTypes[Math.floor(Math.random() * detailTypes.length)];
-    
+
     return {
       id: `detail_${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: 'decoration',
       position: { x: Math.round(x), y: Math.round(y) },
-      size: { 
-        width: 2 + Math.random() * 4, 
-        height: 2 + Math.random() * 4 
+      size: {
+        width: 2 + Math.random() * 4,
+        height: 2 + Math.random() * 4
       },
       color: this.generateDetailColor(type),
       metadata: { isDetail: true, detailType: type }
@@ -674,9 +771,10 @@ export class AdvancedTerrainGenerator {
 
   private gaussianRandom(): number {
     // Box-Muller transform para distribución gaussiana
-    let u = 0, v = 0;
-    while(u === 0) u = Math.random();
-    while(v === 0) v = Math.random();
+    let u = 0,
+      v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
   }
 
@@ -686,97 +784,99 @@ export class AdvancedTerrainGenerator {
 
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        }
+      : null;
   }
 
   private mapObjectTypeToAsset(type: string): string {
     const mapping: Record<string, string> = {
-      'tree_large': 'tile_furniture_tree_large',
-      'tree_medium': 'tile_furniture_tree_medium',
-      'wildflower': 'tile_decoration_flower',
-      'small_bush': 'tile_nature_bush',
-      'grass_tuft': 'tile_nature_grass',
-      'fern': 'tile_nature_fern',
-      'mushroom': 'tile_nature_mushroom',
-      'flower_bed': 'tile_decoration_flower_bed',
-      'hedge': 'tile_furniture_hedge',
-      'garden_stone': 'tile_decoration_stone',
-      'rock_large': 'tile_nature_rock_large',
-      'rock_medium': 'tile_nature_rock_medium',
-      'pebbles': 'tile_decoration_pebbles'
+      tree_large: 'tile_furniture_tree_large',
+      tree_medium: 'tile_furniture_tree_medium',
+      wildflower: 'tile_decoration_flower',
+      small_bush: 'tile_nature_bush',
+      grass_tuft: 'tile_nature_grass',
+      fern: 'tile_nature_fern',
+      mushroom: 'tile_nature_mushroom',
+      flower_bed: 'tile_decoration_flower_bed',
+      hedge: 'tile_furniture_hedge',
+      garden_stone: 'tile_decoration_stone',
+      rock_large: 'tile_nature_rock_large',
+      rock_medium: 'tile_nature_rock_medium',
+      pebbles: 'tile_decoration_pebbles'
     };
-    
+
     return mapping[type] || 'tile_decoration_default';
   }
 
   private mapObjectTypeToMapElementType(type: string): MapElement['type'] {
     const mapping: Record<string, MapElement['type']> = {
-      'tree_large': 'obstacle',
-      'tree_medium': 'obstacle',
-      'rock_large': 'obstacle',
-      'rock_medium': 'obstacle',
-      'wildflower': 'decoration',
-      'flower_bed': 'decoration',
-      'small_bush': 'decoration',
-      'grass_tuft': 'decoration',
-      'fern': 'decoration',
-      'mushroom': 'decoration',
-      'hedge': 'decoration',
-      'garden_stone': 'decoration',
-      'pebbles': 'decoration'
+      tree_large: 'obstacle',
+      tree_medium: 'obstacle',
+      rock_large: 'obstacle',
+      rock_medium: 'obstacle',
+      wildflower: 'decoration',
+      flower_bed: 'decoration',
+      small_bush: 'decoration',
+      grass_tuft: 'decoration',
+      fern: 'decoration',
+      mushroom: 'decoration',
+      hedge: 'decoration',
+      garden_stone: 'decoration',
+      pebbles: 'decoration'
     };
-    
+
     return mapping[type] || 'decoration';
   }
 
   private generateObjectColor(type: string): string {
     const colors: Record<string, string[]> = {
-      'tree_large': ['#2D4A32', '#3A5C3F', '#1E3A23'],
-      'tree_medium': ['#2D4A32', '#3A5C3F', '#1E3A23'],
-      'wildflower': ['#FF6B9D', '#FFD93D', '#6BCF7F', '#9B59B6'],
-      'rock_large': ['#6B6B6B', '#7A7A7A', '#5A5A5A'],
-      'rock_medium': ['#6B6B6B', '#7A7A7A', '#5A5A5A'],
-      'flower_bed': ['#FF6B9D', '#FFD93D', '#6BCF7F'],
-      'small_bush': ['#4A7C59', '#5E8B6B'],
-      'grass_tuft': ['#4A7C59', '#5E8B6B', '#3E6B4C']
+      tree_large: ['#2D4A32', '#3A5C3F', '#1E3A23'],
+      tree_medium: ['#2D4A32', '#3A5C3F', '#1E3A23'],
+      wildflower: ['#FF6B9D', '#FFD93D', '#6BCF7F', '#9B59B6'],
+      rock_large: ['#6B6B6B', '#7A7A7A', '#5A5A5A'],
+      rock_medium: ['#6B6B6B', '#7A7A7A', '#5A5A5A'],
+      flower_bed: ['#FF6B9D', '#FFD93D', '#6BCF7F'],
+      small_bush: ['#4A7C59', '#5E8B6B'],
+      grass_tuft: ['#4A7C59', '#5E8B6B', '#3E6B4C']
     };
-    
+
     const typeColors = colors[type] || ['#64748b'];
     return typeColors[Math.floor(Math.random() * typeColors.length)];
   }
 
   private generateDetailColor(type: string): string {
     const colors: Record<string, string> = {
-      'small_stone': '#8B8B8B',
-      'tiny_flower': '#FFB6C1',
-      'grass_blade': '#228B22',
-      'twig': '#8B4513',
-      'leaf': '#32CD32'
+      small_stone: '#8B8B8B',
+      tiny_flower: '#FFB6C1',
+      grass_blade: '#228B22',
+      twig: '#8B4513',
+      leaf: '#32CD32'
     };
-    
+
     return colors[type] || '#64748b';
   }
 
   private getBiomeStatistics(): Record<string, number> {
     const stats: Record<string, number> = {};
     let total = 0;
-    
+
     for (const row of this.biomeMap) {
       for (const biome of row) {
         stats[biome] = (stats[biome] || 0) + 1;
         total++;
       }
     }
-    
+
     // Convertir a porcentajes
     for (const biome in stats) {
       stats[biome] = Math.round((stats[biome] / total) * 100);
     }
-    
+
     return stats;
   }
 }
@@ -829,7 +929,7 @@ export function generateAdvancedTerrain(
     detailLevel: 1,
     ...options
   };
-  
+
   const generator = new AdvancedTerrainGenerator(config);
   return generator.generateTerrain();
 }
