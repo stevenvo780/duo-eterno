@@ -143,18 +143,29 @@ export class EntityAnimationRenderer {
   }
 
   /**
-   * Carga los archivos de animación (JSON + PNG)
+   * Carga los archivos de animación (solo PNG, sin JSON)
    */
   private async loadAnimationFiles(animationKey: string): Promise<LoadedAnimation | null> {
-    const basePath = `/assets/animated_entities/entities/${animationKey}`;
+    // Path a animated_entities donde ahora están los archivos  
+    const basePath = `/assets/animated_entities/${animationKey}`;
 
     try {
-      // Cargar metadatos JSON
-      const metadataResponse = await fetch(`${basePath}.json`);
-      if (!metadataResponse.ok) {
-        throw new Error(`Metadata not found: ${basePath}.json`);
-      }
-      const metadata: AnimationMetadata = await metadataResponse.json();
+      // Crear metadatos por defecto (sin JSON)
+      const metadata: AnimationMetadata = {
+        name: animationKey,
+        frame_count: 4,
+        frame_size: [64, 64],
+        columns: 4,
+        rows: 1,
+        total_duration: 800,
+        loop: true,
+        frames: [
+          { duration: 200 },
+          { duration: 200 },
+          { duration: 200 },
+          { duration: 200 }
+        ]
+      };
 
       // Cargar imagen PNG
       const image = new Image();

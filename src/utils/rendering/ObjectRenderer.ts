@@ -25,6 +25,7 @@ export interface GameObject {
     isInteractable?: boolean;
     shadowOffset?: { x: number; y: number };
     anchor?: { x: number; y: number }; // Punto de anclaje (0-1)
+    isAnimated?: boolean; // Si el objeto usa animaciones
   };
 }
 
@@ -47,6 +48,10 @@ export class ObjectRenderer {
   private structureAssets: Asset[] = [];
   private naturalAssets: Asset[] = [];
   private furnitureAssets: Asset[] = [];
+  
+  // Nuevos arrays para assets animados
+  private animatedAssets: Asset[] = [];
+  private animatedObjectsCache: Map<string, GameObject[]> = new Map();
 
   constructor() {
     this.initializeLayers();
@@ -132,10 +137,36 @@ export class ObjectRenderer {
       return cached;
     }
     
-    // Si no está en cache, iniciar detección asíncrona para futuras llamadas
-    this.detectImageResolution(asset);
+    // Si no está en cache, usar el tamaño de la imagen si está cargada
+    if (asset.image && asset.image.complete) {
+      const naturalWidth = asset.image.naturalWidth;
+      const naturalHeight = asset.image.naturalHeight;
+      
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        // Calcular tamaño apropiado basado en la resolución real
+        const maxDimension = Math.max(naturalWidth, naturalHeight);
+        let scaleFactor = ObjectRenderer.BASE_RESOLUTION / maxDimension;
+        
+        // Aplicar límites
+        const calculatedSize = maxDimension * scaleFactor;
+        if (calculatedSize < ObjectRenderer.MIN_SIZE) {
+          scaleFactor = ObjectRenderer.MIN_SIZE / maxDimension;
+        } else if (calculatedSize > ObjectRenderer.MAX_SIZE) {
+          scaleFactor = ObjectRenderer.MAX_SIZE / maxDimension;
+        }
+        
+        const finalSize = {
+          width: Math.floor(naturalWidth * scaleFactor),
+          height: Math.floor(naturalHeight * scaleFactor)
+        };
+        
+        // Guardar en cache
+        this.resolutionCache.set(asset.path, finalSize);
+        return finalSize;
+      }
+    }
     
-    // Devolver tamaño por defecto mientras tanto
+    // Fallback si la imagen no está cargada
     return { width: fallbackSize, height: fallbackSize };
   }
 
@@ -161,20 +192,69 @@ export class ObjectRenderer {
 
   private async initializeAssets(): Promise<void> {
     try {
-      // Cargar assets de diferentes categorías
+      // Cargar assets de TODAS las categorías disponibles
       await Promise.all([
         assetManager.loadAssetsByFolderName('structures'),
         assetManager.loadAssetsByFolderName('natural_elements'),
-        assetManager.loadAssetsByFolderName('furniture_objects')
+        assetManager.loadAssetsByFolderName('furniture_objects'),
+        assetManager.loadAssetsByFolderName('environmental_objects'), // Muchos más objetos
+        assetManager.loadAssetsByFolderName('building'),              // Elementos de construcción
+        assetManager.loadAssetsByFolderName('consumable_items')       // Objetos consumibles
       ]);
 
+      // Obtener assets cargados incluyendo las nuevas categorías
       this.structureAssets = assetManager.getAssetsByType('structures');
-      this.naturalAssets = assetManager.getAssetsByType('natural_elements');
-      this.furnitureAssets = assetManager.getAssetsByType('furniture_objects');
+      this.naturalAssets = [
+        ...assetManager.getAssetsByType('natural_elements'),
+        ...assetManager.getAssetsByType('environmental_objects')  // Combinar ambos
+      ];
+      this.furnitureAssets = [
+        ...assetManager.getAssetsByType('furniture_objects'),
+        ...assetManager.getAssetsByType('building'),             // Elementos de construcción como muebles
+        ...assetManager.getAssetsByType('consumable_items')      // Items como decoraciones
+      ];
 
-      console.log(`🏗️ ObjectRenderer: Cargados ${this.structureAssets.length} structures, ${this.naturalAssets.length} natural elements, ${this.furnitureAssets.length} furniture`);
+      // Cargar assets animados dinámicamente
+      await this.loadAnimatedAssets();
+
+      console.log(`🏗️ ObjectRenderer: Cargados ${this.structureAssets.length} structures, ${this.naturalAssets.length} natural elements, ${this.furnitureAssets.length} furniture, ${this.animatedAssets.length} animated`);
     } catch (error) {
       console.error('❌ Error cargando object assets:', error);
+    }
+  }
+
+  /**
+   * Detecta y carga automáticamente assets animados de cualquier carpeta/animated/
+   */
+  private async loadAnimatedAssets(): Promise<void> {
+    try {
+      // Cargar explícitamente las carpetas animadas que sabemos que existen
+      const animatedFolders = [
+        'animated_entities',
+        'environmental_objects/animated'
+      ];
+
+      const animatedAssets: Asset[] = [];
+
+      for (const folderPath of animatedFolders) {
+        try {
+          // Intentar cargar la carpeta animada
+          await assetManager.loadAssetsByFolderName(folderPath);
+          const assets = assetManager.getAssetsByType(folderPath);
+          
+          if (assets && assets.length > 0) {
+            animatedAssets.push(...assets);
+            console.log(`🎬 ObjectRenderer: Encontrados ${assets.length} assets animados en ${folderPath}`);
+          }
+        } catch {
+          // Silenciosamente ignora carpetas que no existen
+        }
+      }
+
+      this.animatedAssets = animatedAssets;
+      console.log(`🎭 ObjectRenderer: Total assets animados cargados: ${this.animatedAssets.length}`);
+    } catch (error) {
+      console.error('❌ Error cargando assets animados:', error);
     }
   }
 
@@ -202,7 +282,8 @@ export class ObjectRenderer {
 
   private generateZoneObjects(zone: Zone): void {
     const zoneArea = zone.bounds.width * zone.bounds.height;
-    const objectDensity = Math.max(1, Math.floor(zoneArea / 10000)); // Un objeto cada 100x100 pixels
+    // Densidad mucho mayor: 1 objeto cada 2500 píxeles (50x50) en lugar de 10000
+    const objectDensity = Math.max(3, Math.floor(zoneArea / 2500)); 
 
     for (let i = 0; i < objectDensity; i++) {
       const x = zone.bounds.x + Math.random() * zone.bounds.width;
@@ -223,8 +304,18 @@ export class ObjectRenderer {
         case 'social':
           gameObject = this.createFurnitureObject(x, y, 'social');
           break;
-        default:
-          gameObject = this.createNaturalObject(x, y);
+        default: {
+          // Más variedad de objetos para zonas generales
+          const rand = Math.random();
+          if (rand < 0.4) {
+            gameObject = this.createNaturalObject(x, y);
+          } else if (rand < 0.7) {
+            gameObject = this.createStructureObject(x, y);
+          } else {
+            gameObject = this.createDecorationObject(x, y);
+          }
+          break;
+        }
       }
 
       if (gameObject) {
@@ -331,7 +422,16 @@ export class ObjectRenderer {
   }
 
   private createDecorationObject(x: number, y: number): GameObject {
-    const asset = this.getRandomAsset([...this.naturalAssets, ...this.furnitureAssets]) || this.createFallbackAsset('decoration');
+    // 30% de probabilidad de usar un asset animado si está disponible
+    const useAnimated = Math.random() < 0.3 && this.animatedAssets.length > 0;
+    
+    let asset: Asset;
+    if (useAnimated) {
+      asset = this.getRandomAsset(this.animatedAssets) || this.createFallbackAsset('decoration');
+    } else {
+      asset = this.getRandomAsset([...this.naturalAssets, ...this.furnitureAssets]) || this.createFallbackAsset('decoration');
+    }
+    
     const size = this.getAssetSize(asset, 32); // Tamaño pequeño para decoraciones
     
     return {
@@ -348,15 +448,45 @@ export class ObjectRenderer {
         isCollider: false,
         isInteractable: false,
         shadowOffset: { x: 1, y: 1 },
-        anchor: { x: 0.5, y: 0.5 }
+        anchor: { x: 0.5, y: 0.5 },
+        isAnimated: useAnimated // Marcar si es animado
+      }
+    };
+  }
+
+  /**
+   * Crea un objeto animado específicamente
+   */
+  private createAnimatedObject(x: number, y: number): GameObject {
+    const asset = this.getRandomAsset(this.animatedAssets) || this.createFallbackAsset('animated');
+    const size = this.getAssetSize(asset, 48); // Tamaño medio para animaciones
+    
+    return {
+      id: `animated_${Date.now()}_${Math.random()}`,
+      type: 'decoration',
+      asset,
+      position: { x, y, z: 45 },
+      scale: {
+        width: size.width,
+        height: size.height
+      },
+      rotation: 0, // No rotar animaciones
+      metadata: {
+        isCollider: false,
+        isInteractable: true, // Los objetos animados pueden ser interactivos
+        shadowOffset: { x: 2, y: 2 },
+        anchor: { x: 0.5, y: 0.8 },
+        isAnimated: true
       }
     };
   }
 
   private generateRandomDecorations(zones: Zone[]): void {
-    // Generar decoraciones aleatorias en áreas vacías
+    // Generar MUCHAS más decoraciones aleatorias en áreas vacías
     zones.forEach(zone => {
-      const decorationCount = Math.floor(Math.random() * 3) + 1;
+      const zoneArea = zone.bounds.width * zone.bounds.height;
+      // Generar decoraciones en función del área - 1 decoración cada 1000 píxeles  
+      const decorationCount = Math.max(5, Math.floor(zoneArea / 1000));
       
       for (let i = 0; i < decorationCount; i++) {
         const x = zone.bounds.x + Math.random() * zone.bounds.width;
@@ -366,6 +496,40 @@ export class ObjectRenderer {
         this.addObjectToLayer(decoration);
       }
     });
+
+    // Además, generar objetos dispersos por todo el mapa (fuera de zonas)
+    const mapWidth = 4000;
+    const mapHeight = 3000;
+    const extraObjectCount = Math.floor((mapWidth * mapHeight) / 5000); // 1 objeto cada 5000 píxeles
+
+    for (let i = 0; i < extraObjectCount; i++) {
+      const x = Math.random() * mapWidth;
+      const y = Math.random() * mapHeight;
+      
+      // Verificar que no esté dentro de una zona existente
+      const inZone = zones.some(zone => 
+        x >= zone.bounds.x && x <= zone.bounds.x + zone.bounds.width &&
+        y >= zone.bounds.y && y <= zone.bounds.y + zone.bounds.height
+      );
+      
+      if (!inZone) {
+        const rand = Math.random();
+        let object: GameObject;
+        
+        if (rand < 0.4) {
+          object = this.createNaturalObject(x, y);
+        } else if (rand < 0.6) {
+          object = this.createDecorationObject(x, y);
+        } else if (rand < 0.8) {
+          object = this.createStructureObject(x, y);
+        } else {
+          // 20% de probabilidad de crear un objeto específicamente animado
+          object = this.createAnimatedObject(x, y);
+        }
+        
+        this.addObjectToLayer(object);
+      }
+    }
   }
 
   private addObjectToLayer(gameObject: GameObject): void {
