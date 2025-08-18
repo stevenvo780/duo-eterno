@@ -128,7 +128,27 @@ interface AssetsState {
 
   // Function to load assets once
   const loadAssets = useCallback(async () => {
-    if (assetsRef.current.isLoading || assetsLoaded) return;
+    const hasSprites = assetsRef.current.animatedSprites?.size > 0;
+    
+    if (assetsRef.current.isLoading && hasSprites) {
+      console.log('⏭️ Assets ya cargados correctamente...', {
+        isLoading: assetsRef.current.isLoading,
+        assetsLoaded,
+        spritesCount: assetsRef.current.animatedSprites?.size || 0
+      });
+      return;
+    }
+    
+    if (assetsLoaded && hasSprites) {
+      console.log('⏭️ Assets finalizados y presentes...');
+      return;
+    }
+    
+    // Reset loading state if we lost sprites (StrictMode unmount/remount)
+    if (assetsRef.current.isLoading && !hasSprites) {
+      console.log('🔄 Reseteando estado de carga tras pérdida de sprites...');
+      assetsRef.current.isLoading = false;
+    }
     
     assetsRef.current.isLoading = true;
     console.log('🚀 Iniciando carga completa de assets...');
@@ -249,9 +269,11 @@ interface AssetsState {
         mapas: assetsRef.current.mapElements.size
       });
       
+      assetsRef.current.isLoading = false;
       setAssetsLoaded(true);
     } catch (error) {
       console.warn('⚠️ Error cargando algunos assets:', error);
+      assetsRef.current.isLoading = false;
       setAssetsLoaded(true); // Continue without assets
     }
   }, [assetsLoaded]);
@@ -259,6 +281,13 @@ interface AssetsState {
   // Load assets once on mount
   useEffect(() => {
     loadAssets();
+    
+    // Cleanup function to reset loading state on unmount (StrictMode compatibility)
+    return () => {
+      if (assetsRef.current) {
+        assetsRef.current.isLoading = false;
+      }
+    };
   }, [loadAssets]);
 
   // Function to update animated sprite frame
