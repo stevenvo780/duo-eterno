@@ -88,6 +88,9 @@ const GameContent: React.FC = React.memo(() => {
         <ProfessionalTopDownCanvas
           width={windowSize.width}
           height={windowSize.height - 80}
+          zoom={1}
+          panX={0}
+          panY={0}
           onEntityClick={handleEntitySelect}
         />
         <EntityDialogueSystem />

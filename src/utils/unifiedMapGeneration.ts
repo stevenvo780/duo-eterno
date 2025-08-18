@@ -8,14 +8,13 @@
 import type { Zone, MapElement } from '../types';
 import { assetManager } from './assetManager';
 import { generateOrganicProceduralMap } from './organicMapGeneration';
-import { generateSmartMap } from './smartMapGeneration';
 import { createDefaultZones, createDefaultMapElements } from './mapGeneration';
 
 export interface UnifiedMapConfig {
   width: number;
   height: number;
   seed?: string;
-  algorithm: 'default' | 'organic' | 'smart' | 'hybrid';
+  algorithm: 'default' | 'organic';
   theme: 'modern' | 'rustic' | 'ecological' | 'urban';
   density: number; // 0.1 - 1.0
   useRealAssets: boolean;
@@ -42,7 +41,7 @@ export class UnifiedMapGenerator {
       width: 1000,
       height: 600,
       seed: Date.now().toString(36),
-      algorithm: 'hybrid',
+      algorithm: 'organic',
       theme: 'modern',
       density: 0.7,
       useRealAssets: true,
@@ -68,12 +67,6 @@ export class UnifiedMapGenerator {
     switch (this.config.algorithm) {
       case 'organic':
         ({ zones, mapElements } = this.generateOrganicMap());
-        break;
-      case 'smart':
-        ({ zones, mapElements } = await this.generateIntelligentMap());
-        break;
-      case 'hybrid':
-        ({ zones, mapElements } = await this.generateHybridMap());
         break;
       default:
         ({ zones, mapElements } = this.generateDefaultMap());
@@ -108,40 +101,6 @@ export class UnifiedMapGenerator {
     });
   }
 
-  /**
-   * Generar mapa inteligente usando CSP
-   */
-  private async generateIntelligentMap(): Promise<{ zones: Zone[]; mapElements: MapElement[] }> {
-    return await generateSmartMap({
-      width: this.config.width,
-      height: this.config.height,
-      seed: this.config.seed || Date.now().toString(36),
-      style: this.mapThemeToSmart(this.config.theme),
-      roomCount: Math.floor(4 + this.config.density * 4),
-      furnituredensidade: this.config.density,
-      connectivity: true
-    });
-  }
-
-  /**
-   * Generar mapa híbrido combinando algoritmos
-   */
-  private async generateHybridMap(): Promise<{ zones: Zone[]; mapElements: MapElement[] }> {
-    // Usar organic para estructura base
-    const organicResult = this.generateOrganicMap();
-
-    // Usar smart para colocación de muebles detallada
-    const smartResult = await this.generateIntelligentMap();
-
-    // Combinar resultados: zonas de organic, elementos detallados de smart
-    return {
-      zones: organicResult.zones,
-      mapElements: [
-        ...this.filterElementsByType(organicResult.mapElements, ['decoration', 'obstacle']),
-        ...smartResult.mapElements
-      ]
-    };
-  }
 
   /**
    * Generar mapa por defecto
@@ -271,18 +230,6 @@ export class UnifiedMapGenerator {
     return mapping[theme] || 'MODERN';
   }
 
-  /**
-   * Mapear tema a formato smart
-   */
-  private mapThemeToSmart(theme: string): 'modern' | 'cozy' | 'minimal' | 'rustic' {
-    const mapping: Record<string, 'modern' | 'cozy' | 'minimal' | 'rustic'> = {
-      modern: 'modern',
-      rustic: 'rustic',
-      ecological: 'minimal',
-      urban: 'cozy'
-    };
-    return mapping[theme] || 'modern';
-  }
 }
 
 /**
@@ -302,8 +249,8 @@ export async function generateQuickMap(
   type: 'small' | 'medium' | 'large' = 'medium'
 ): Promise<MapGenerationResult> {
   const configs = {
-    small: { width: 600, height: 400, density: 0.5, algorithm: 'smart' as const },
-    medium: { width: 1000, height: 600, density: 0.7, algorithm: 'hybrid' as const },
+    small: { width: 600, height: 400, density: 0.5, algorithm: 'default' as const },
+    medium: { width: 1000, height: 600, density: 0.7, algorithm: 'organic' as const },
     large: { width: 1400, height: 800, density: 0.9, algorithm: 'organic' as const }
   };
 

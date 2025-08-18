@@ -7,7 +7,7 @@ import type {
   DialogueEntry,
   ConversationState
 } from '../types';
-import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
+import { generateOrganicProceduralMap } from '../utils/organicMapGeneration';
 import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
@@ -139,7 +139,7 @@ const initialGameState: GameState = {
   },
   zones: [],
   mapElements: [],
-  mapSeed: generateMapSeed(),
+  mapSeed: Date.now().toString(36),
   currentConversation: initialConversationState
 };
 
@@ -329,8 +329,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
 
     case 'RESET_GAME': {
-      const newSeed = generateMapSeed();
-      const { zones, mapElements } = generateProceduralMap(newSeed);
+      const newSeed = Date.now().toString(36);
+      const { zones, mapElements } = generateOrganicProceduralMap(newSeed, {});
       return {
         ...initialGameState,
         cycles: 0,
@@ -341,8 +341,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
 
     case 'GENERATE_NEW_MAP': {
-      const newSeed = action.payload?.seed || generateMapSeed();
-      const { zones, mapElements } = generateProceduralMap(newSeed);
+      const newSeed = action.payload?.seed || Date.now().toString(36);
+      const { zones, mapElements } = generateOrganicProceduralMap(newSeed, {});
       return {
         ...state,
         mapSeed: newSeed,

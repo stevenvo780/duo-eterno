@@ -4,13 +4,8 @@ import { useRenderer } from '../hooks/useRenderer';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { assetManager, type Asset } from '../utils/assetManager';
-import { spriteAnimationManager } from '../utils/spriteAnimationManager';
-import AnimatedEntity from './AnimatedEntity';
+import { AnimatedEntity } from './AnimatedEntity';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
-import {
-  generateAdvancedTerrain,
-  type TerrainGenerationResult
-} from '../utils/advancedTerrainGeneration';
 import type { Entity, Zone, MapElement } from '../types';
 
 interface GameObject {
@@ -30,30 +25,30 @@ interface GameObject {
 interface Props {
   width: number;
   height: number;
-  zoom?: number;
-  panX?: number;
-  panY?: number;
+  zoom: number;
+  panX: number;
+  panY: number;
   onEntityClick?: (entity: Entity) => void;
 }
 
 const ProfessionalTopDownCanvas: React.FC<Props> = ({
   width,
   height,
-  zoom = 1,
-  panX = 0,
-  panY = 0,
+  zoom,
+  panX,
+  panY,
   onEntityClick
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | undefined>(undefined);
   const { gameState } = useGame();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+  
   const { shouldRender } = useRenderer();
   const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
   useAnimationSystem();
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [terrainResult, setTerrainResult] = useState<TerrainGenerationResult | null>(null);
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
 
   // Usar zones y mapElements directamente del GameContext
@@ -67,39 +62,27 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         setLoadingProgress(10);
         console.log('🎨 Iniciando carga de assets...');
 
-        // Precargar assets esenciales tradicionales
-        await assetManager.preloadEssentialAssets();
-        setLoadingProgress(30);
-
-        // Cargar assets dinámicos por carpetas actualizadas
+        // Precargar carpetas esenciales de assets
         await assetManager.preloadEssentialAssetsByFolders([
           'terrain_tiles',
-          'structures',
+          'structures', 
           'natural_elements',
+          'infrastructure',
           'water',
           'environmental_objects',
+          'furniture_objects',
           'ui_icons'
         ]);
         setLoadingProgress(60);
 
-        // Cargar assets adicionales por categorías actualizadas
-        await Promise.all([
-          assetManager.loadAssetsByCategory('TERRAIN_TILES'),
-          assetManager.loadAssetsByCategory('STRUCTURES'),
-          assetManager.loadAssetsByCategory('NATURAL_ELEMENTS'),
-          assetManager.loadAssetsByCategory('WATER')
-        ]);
+        // Precargar assets esenciales
+        await assetManager.preloadEssentialAssets();
         setLoadingProgress(80);
 
-        // Precargar animaciones de entidades
-        await spriteAnimationManager.preloadEntityAssets('circulo');
-        await spriteAnimationManager.preloadEntityAssets('square');
         setLoadingProgress(90);
 
         const stats = assetManager.getStats();
-        const animStats = spriteAnimationManager.getLoadedAssets();
         console.log('✅ Assets cargados:', stats);
-        console.log('✅ Animaciones cargadas:', animStats);
 
         setLoadingProgress(100);
         setAssetsLoaded(true);
@@ -113,31 +96,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     loadAssets();
   }, []);
 
-  // El mapa ya se genera en el GameContext, no necesitamos regenerarlo aquí
-
-  // Generar tilemap dinámico usando el sistema avanzado
-  const generateAdvancedTileMap = useCallback(async () => {
-    if (!assetsLoaded) return;
-
-    console.log('🌍 Generando mapa avanzado con terreno procedural...');
-
-    try {
-      // Generar terreno usando el nuevo sistema
-      const result = await generateAdvancedTerrain(width, height, Date.now(), {
-        tileSize: 32,
-        detailLevel: 1,
-        biomeBlendRadius: 3
-      });
-
-      setTerrainResult(result);
-      console.log('✅ Terreno avanzado generado:', result.metadata);
-    } catch (error) {
-      console.error('❌ Error generando terreno avanzado:', error);
-      // Fallback al sistema básico
-      console.log('🔄 Usando sistema de fallback...');
-    }
-  }, [width, height, assetsLoaded]);
-
   // Generar objetos del juego
   const generateGameObjects = useCallback(async () => {
     if (!assetsLoaded || mapElements.length === 0) return;
@@ -145,9 +103,9 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     const objects: GameObject[] = [];
     let objectId = 0;
 
-    // Intentar cargar muebles reales primero
+    // Precargar assets de muebles
     try {
-      await assetManager.loadAssetsByCategory('FURNITURE_OBJECTS');
+      await assetManager.loadAssetsByFolderName('furniture_objects');
     } catch {
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
@@ -155,72 +113,53 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     mapElements.forEach((element: MapElement) => {
       let asset: Asset | null = null;
 
-      // Seleccionar asset según el tipo de elemento, priorizando muebles reales
+      // Seleccionar asset según el tipo de elemento
       switch (element.type) {
         case 'food_zone':
-          // Intentar usar muebles de cocina primero
-          asset =
-            assetManager.getRandomAssetByType('kitchen') ||
-            assetManager.getRandomAssetByType('structures', 'houses');
+          asset = assetManager.getRandomAssetByType('furniture_objects') ||
+                  assetManager.getRandomAssetByType('structures');
           break;
         case 'rest_zone':
-          // Usar muebles de dormitorio
-          asset =
-            assetManager.getRandomAssetByType('bedroom') ||
-            assetManager.getRandomAssetByType('structures', 'houses');
+          asset = assetManager.getRandomAssetByType('furniture_objects') ||
+                  assetManager.getRandomAssetByType('structures');
           break;
         case 'play_zone':
         case 'decoration':
-          // Usar decoraciones y entretenimiento
-          asset =
-            assetManager.getRandomAssetByType('entertainment') ||
-            assetManager.getRandomAssetByType('decoration') ||
-            assetManager.getRandomAssetByType('infrastructure', 'paths');
+          asset = assetManager.getRandomAssetByType('environmental_objects') ||
+                  assetManager.getRandomAssetByType('infrastructure');
           break;
         case 'social_zone':
-          // Usar muebles de sala
-          asset =
-            assetManager.getRandomAssetByType('seating') ||
-            assetManager.getRandomAssetByType('tables') ||
-            assetManager.getRandomAssetByType('structures', 'houses');
-          break;
-        case 'work_zone':
-          // Usar muebles de oficina
-          asset =
-            assetManager.getRandomAssetByType('office') ||
-            assetManager.getRandomAssetByType('structures', 'houses');
-          break;
-        case 'comfort_zone':
-          // Usar muebles de baño
-          asset =
-            assetManager.getRandomAssetByType('bathroom') ||
-            assetManager.getRandomAssetByType('structures', 'houses');
+          asset = assetManager.getRandomAssetByType('environmental_objects') ||
+                  assetManager.getRandomAssetByType('furniture_objects');
           break;
         case 'obstacle':
-          asset = assetManager.getRandomAssetByType('natural_elements', 'trees');
+          asset = Math.random() > 0.5 
+            ? assetManager.getRandomAssetByType('natural_elements')
+            : assetManager.getRandomAssetByType('structures');
           break;
         default:
-          asset = assetManager.getRandomAssetByType('natural_elements', 'trees');
+          asset = assetManager.getRandomAssetByType('environmental_objects');
       }
 
       if (asset) {
         objects.push({
-          id: `object_${objectId++}`,
+          id: `obj_${objectId++}`,
           asset,
           x: element.position.x,
-          y: element.position.y
+          y: element.position.y,
+          metadata: {
+            rotation: Math.random() * 360,
+            flipX: Math.random() > 0.5,
+            weathering: Math.random() * 0.3,
+            naturalVariation: true
+          }
         });
       }
     });
 
     setGameObjects(objects);
-    console.log(`✅ Generados ${objects.length} objetos del juego (incluyendo muebles reales)`);
+    console.log(`✅ Generados ${objects.length} objetos del juego`);
   }, [assetsLoaded, mapElements]);
-
-  // Ejecutar generaciones cuando sea necesario
-  useEffect(() => {
-    generateAdvancedTileMap();
-  }, [generateAdvancedTileMap]);
 
   useEffect(() => {
     generateGameObjects();
@@ -229,54 +168,16 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   // Función de renderizado principal
   const renderProfessionalScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      if (!assetsLoaded || !terrainResult) return;
+      if (!assetsLoaded) return;
 
       ctx.clearRect(0, 0, width, height);
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(panX, panY);
 
-      // Renderizar tilemap avanzado con variaciones
-      const tileMap = terrainResult.tileMap;
-      for (let y = 0; y < tileMap.height; y++) {
-        for (let x = 0; x < tileMap.width; x++) {
-          const tileData = tileMap.tiles[y][x];
-          const asset = assetManager.getAssetById(tileData.textureId);
-
-          if (asset?.image) {
-            ctx.save();
-
-            // Aplicar transformaciones del tile
-            const centerX = x * tileMap.tileSize + tileMap.tileSize / 2;
-            const centerY = y * tileMap.tileSize + tileMap.tileSize / 2;
-
-            ctx.translate(centerX, centerY);
-            if (tileData.rotation) ctx.rotate((tileData.rotation * Math.PI) / 180);
-
-            // Aplicar tint y variaciones de color
-            ctx.fillStyle = tileData.tint;
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.fillRect(
-              -tileMap.tileSize / 2,
-              -tileMap.tileSize / 2,
-              tileMap.tileSize,
-              tileMap.tileSize
-            );
-            ctx.globalCompositeOperation = 'source-over';
-
-            // Dibujar el tile
-            ctx.drawImage(
-              asset.image,
-              -tileMap.tileSize / 2,
-              -tileMap.tileSize / 2,
-              tileMap.tileSize,
-              tileMap.tileSize
-            );
-
-            ctx.restore();
-          }
-        }
-      }
+      // Renderizar fondo simple
+      ctx.fillStyle = getSkyColor();
+      ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
 
       // Renderizar zonas como fondos sutiles
       zones.forEach((zone: Zone) => {
@@ -285,156 +186,51 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         ctx.globalAlpha = 1.0;
 
-        // Renderizar nombre de la zona con mejor tipografía
+        // Renderizar nombre de la zona
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         ctx.font = 'bold 11px system-ui';
         ctx.fillText(zone.name, zone.bounds.x + 8, zone.bounds.y + 18);
       });
 
-      // Renderizar objetos del terreno (generados proceduralmente)
-      terrainResult.objects.forEach(obj => {
-        // Renderizar objetos con colores simples por ahora
-        if (obj.type === 'obstacle') {
+      // Renderizar objetos del juego
+      gameObjects.forEach((obj: GameObject) => {
+        if (obj.asset?.image) {
           ctx.save();
 
-          // Aplicar variaciones si existen
+          // Aplicar transformaciones
+          ctx.translate(obj.x + obj.asset.size / 2, obj.y + obj.asset.size / 2);
           if (obj.metadata?.rotation) {
-            ctx.translate(
-              obj.position.x + obj.size.width / 2,
-              obj.position.y + obj.size.height / 2
-            );
             ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
-            ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
           }
-
           if (obj.metadata?.flipX) {
             ctx.scale(-1, 1);
           }
 
-          // Sombra simple bajo el obstáculo
-          ctx.globalAlpha = 0.25;
-          ctx.fillStyle = 'rgba(0,0,0,0.6)';
-          ctx.beginPath();
-          ctx.ellipse(
-            obj.position.x + obj.size.width / 2,
-            obj.position.y + obj.size.height - 2,
-            obj.size.width / 2,
-            obj.size.height / 6,
-            0,
-            0,
-            2 * Math.PI
+          // Dibujar el asset
+          ctx.drawImage(
+            obj.asset.image,
+            -obj.asset.size / 2,
+            -obj.asset.size / 2,
+            obj.asset.size,
+            obj.asset.size
           );
-          ctx.fill();
-          ctx.globalAlpha = 1.0;
-
-          // Dibujar un rectángulo simple como placeholder para obstáculos
-          ctx.fillStyle = obj.color || '#8B4513';
-          ctx.fillRect(
-            obj.metadata?.rotation ? 0 : obj.position.x,
-            obj.metadata?.rotation ? 0 : obj.position.y,
-            obj.size.width,
-            obj.size.height
-          );
-
-          ctx.restore();
-          return;
-        }
-
-        // Para senderos y detalles, dibujar formas suaves con el color definido
-        const metadata = obj.metadata as Record<string, unknown> | undefined;
-        const isPath = Boolean(metadata && typeof metadata.isPath === 'boolean' && metadata.isPath);
-        const isDetail = Boolean(
-          metadata && typeof metadata.isDetail === 'boolean' && metadata.isDetail
-        );
-
-        ctx.save();
-        ctx.fillStyle = obj.color || (isPath ? '#8B7355' : '#64748b');
-        ctx.globalAlpha = isPath ? 0.9 : 0.85;
-
-        if (isPath) {
-          // Sendero: manchas orgánicas redondeadas
-          ctx.beginPath();
-          ctx.ellipse(
-            obj.position.x,
-            obj.position.y,
-            Math.max(3, obj.size.width / 2),
-            Math.max(2, obj.size.height / 2),
-            0,
-            0,
-            2 * Math.PI
-          );
-          ctx.fill();
-        } else if (isDetail || obj.type === 'decoration') {
-          // Detalle/Decoración: pequeñas motas/hojas/piedritas
-          ctx.beginPath();
-          ctx.arc(
-            obj.position.x,
-            obj.position.y,
-            Math.max(1.5, obj.size.width / 4),
-            0,
-            2 * Math.PI
-          );
-          ctx.fill();
-        }
-
-        ctx.restore();
-      });
-
-      // Renderizar objetos del juego tradicionales
-      gameObjects.forEach(obj => {
-        if (obj.asset.image) {
-          ctx.save();
-
-          // Aplicar variaciones naturales si existen
-          if (obj.metadata?.rotation) {
-            ctx.translate(obj.x + obj.asset.size / 2, obj.y + obj.asset.size / 2);
-            ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
-            ctx.translate(-obj.asset.size / 2, -obj.asset.size / 2);
-            ctx.drawImage(obj.asset.image, 0, 0, obj.asset.size, obj.asset.size);
-          } else {
-            ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
-          }
 
           ctx.restore();
         }
       });
 
-      // NOTA: Las entidades ahora se renderizan como overlay animado, no en el canvas
-
-      // Aplicar efectos de día/noche
+      // Aplicar efectos de iluminación
       const lightIntensity = getLightIntensity();
-      if (lightIntensity < 1.0) {
-        // Overlay de oscuridad para la noche
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.fillStyle = `rgba(100, 150, 255, ${1 - lightIntensity})`;
+      if (lightIntensity < 1) {
+        ctx.globalAlpha = 1 - lightIntensity;
+        ctx.fillStyle = phase === 'night' || phase === 'dawn' ? 'rgba(25, 25, 70, 0.6)' : 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
-
-        // Overlay cálido para el atardecer/amanecer
-        if (phase === 'dusk' || phase === 'dawn') {
-          ctx.globalCompositeOperation = 'overlay';
-          const warmth = phase === 'dusk' ? 0.3 : 0.2;
-          ctx.fillStyle = `rgba(255, 150, 100, ${warmth})`;
-          ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
-        }
-
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
       }
 
       ctx.restore();
     },
-    [
-      assetsLoaded,
-      terrainResult,
-      gameObjects,
-      zones,
-      width,
-      height,
-      zoom,
-      panX,
-      panY,
-      getLightIntensity,
-      phase
-    ]
+    [assetsLoaded, gameObjects, zones, width, height, zoom, panX, panY, getSkyColor, getLightIntensity, phase]
   );
 
   // Loop de animación
@@ -442,16 +238,12 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     if (!assetsLoaded) return;
 
     const animate = () => {
-      if (!shouldRender || !canvasRef.current) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
+      if (shouldRender() && canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          renderProfessionalScene(ctx);
+        }
       }
-
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        renderProfessionalScene(ctx);
-      }
-
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -464,65 +256,67 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     };
   }, [assetsLoaded, shouldRender, renderProfessionalScene]);
 
-  // Manejo de clics
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!onEntityClick || !gameState.entities) return;
+  // Handle canvas click para detectar entidades
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!onEntityClick || !gameState.entities) return;
 
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      const x = (event.clientX - rect.left) / zoom - panX;
-      const y = (event.clientY - rect.top) / zoom - panY;
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / zoom - panX;
+    const y = (event.clientY - rect.top) / zoom - panY;
 
-      for (const entity of gameState.entities) {
-        if (!entity.position) continue;
+    // Buscar entidad en la posición clickeada
+    const clickedEntity = gameState.entities.find((entity: Entity) => {
+      const distance = Math.sqrt(
+        Math.pow(x - entity.position.x, 2) + Math.pow(y - entity.position.y, 2)
+      );
+      return distance < 20; // Radio de detección
+    });
 
-        const distance = Math.sqrt(
-          Math.pow(x - entity.position.x, 2) + Math.pow(y - entity.position.y, 2)
-        );
-
-        if (distance <= 24) {
-          onEntityClick(entity);
-          break;
-        }
-      }
-    },
-    [gameState.entities, onEntityClick, zoom, panX, panY]
-  );
+    if (clickedEntity) {
+      onEntityClick(clickedEntity);
+    }
+  }, [gameState.entities, onEntityClick, zoom, panX, panY]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width, height }}>
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         onClick={handleCanvasClick}
         style={{
-          cursor: onEntityClick ? 'pointer' : 'default',
-          background: getSkyColor(),
-          display: 'block',
-          width: '100%',
-          height: '100%',
-          transition: 'background-color 2s ease'
+          cursor: 'pointer',
+          imageRendering: 'pixelated'
         }}
       />
 
-      {/* Entidades animadas renderizadas como overlay */}
-      {assetsLoaded &&
-        gameState.entities &&
-        gameState.entities.map((entity: Entity) => (
+      {/* Entidades animadas superpuestas */}
+      {assetsLoaded && gameState.entities?.map((entity: Entity) => (
+        <div
+          key={entity.id}
+          style={{
+            position: 'absolute',
+            left: entity.position.x * zoom + panX - 16,
+            top: entity.position.y * zoom + panY - 16,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10,
+            pointerEvents: 'none'
+          }}
+        >
           <AnimatedEntity
-            key={entity.id}
             entity={entity}
-            size={48} // Tamaño más grande para mejor visibilidad de las animaciones
+            size={32}
             showMoodIndicator={true}
             showActivityIndicator={true}
             onClick={() => onEntityClick?.(entity)}
           />
-        ))}
+        </div>
+      ))}
 
-      {/* Loading indicator */}
+      {/* Indicador de carga */}
       {!assetsLoaded && (
         <div
           style={{
@@ -530,21 +324,21 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            background: 'rgba(0,0,0,0.8)',
-            color: 'white',
             padding: '20px',
-            borderRadius: '10px',
-            textAlign: 'center'
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            borderRadius: '8px',
+            textAlign: 'center',
+            fontFamily: 'system-ui'
           }}
         >
-          <div>Cargando assets y animaciones... {loadingProgress}%</div>
+          <div style={{ marginBottom: '10px' }}>Cargando assets...</div>
           <div
             style={{
               width: '200px',
-              height: '10px',
-              background: '#333',
-              borderRadius: '5px',
-              marginTop: '10px',
+              height: '20px',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              borderRadius: '10px',
               overflow: 'hidden'
             }}
           >
@@ -552,32 +346,31 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
               style={{
                 width: `${loadingProgress}%`,
                 height: '100%',
-                background: '#4ECDC4',
+                backgroundColor: '#4ade80',
                 transition: 'width 0.3s ease'
               }}
             />
           </div>
+          <div style={{ marginTop: '5px', fontSize: '12px' }}>{loadingProgress}%</div>
         </div>
       )}
 
-      {/* Debug info mejorado */}
+      {/* Stats de debug */}
       {assetsLoaded && (
         <div
           style={{
             position: 'absolute',
-            top: '10px',
-            left: '10px',
-            background: 'rgba(45, 90, 39, 0.8)',
-            color: '#f0f8e8',
-            padding: '8px 12px',
-            borderRadius: '5px',
-            fontSize: '12px',
+            top: 10,
+            left: 10,
+            padding: '8px',
+            backgroundColor: 'rgba(139, 69, 19, 0.9)',
+            color: 'white',
+            fontSize: '11px',
             fontFamily: 'monospace',
             border: '1px solid #8B4513'
           }}
         >
-          🎨 Assets: {assetManager.getStats().totalLoaded} | 🎬 Animaciones:{' '}
-          {spriteAnimationManager.getLoadedAssets().animations} | Objetos: {gameObjects.length}
+          🎨 Assets: {assetManager.getStats().totalLoaded} | Objetos: {gameObjects.length}
         </div>
       )}
 

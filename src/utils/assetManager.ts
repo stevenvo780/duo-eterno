@@ -233,49 +233,12 @@ export class AssetManager {
     });
   }
 
-  /**
-   * Carga múltiples assets de una categoría usando datos dinámicos
-   */
-  async loadAssetsByCategory(category: string): Promise<Asset[]> {
-    const analysis = await loadAssetAnalysis();
-    const categoryData = analysis.categories[category];
-    
-    if (!categoryData) {
-      console.warn(`Categoría ${category} no encontrada`);
-      return [];
-    }
-
-    const allAssetIds = Object.values(categoryData).flat() as string[];
-    const loadPromises = allAssetIds.map(id => this.loadAsset(id));
-    return Promise.all(loadPromises);
-  }
-
-  /**
-   * Carga assets de un subtipo específico usando datos dinámicos
-   */
-  async loadAssetsBySubtype(
-    category: string,
-    subtype: string
-  ): Promise<Asset[]> {
-    const analysis = await loadAssetAnalysis();
-    const categoryData = analysis.categories[category];
-    
-    if (!categoryData || !categoryData[subtype]) {
-      console.warn(`Subtipo ${subtype} en categoría ${category} no encontrado`);
-      return [];
-    }
-
-    const assetIds = categoryData[subtype];
-    const loadPromises = assetIds.map((id: string) => this.loadAsset(id));
-    return Promise.all(loadPromises);
-  }
 
   /**
    * Obtiene un asset aleatorio de un tipo específico
    */
-  getRandomAssetByType(category: string, subtype?: string): Asset | null {
-    const key = subtype || category;
-    const assetsOfType = this.categorizedAssets[key] || [];
+  getRandomAssetByType(category: string): Asset | null {
+    const assetsOfType = this.categorizedAssets[category] || [];
 
     if (assetsOfType.length === 0) return null;
 
@@ -288,9 +251,8 @@ export class AssetManager {
   /**
    * Obtiene todos los assets de un tipo
    */
-  getAssetsByType(category: string, subtype?: string): Asset[] {
-    const key = subtype || category;
-    return this.categorizedAssets[key] || [];
+  getAssetsByType(category: string): Asset[] {
+    return this.categorizedAssets[category] || [];
   }
 
   /**
@@ -326,176 +288,23 @@ export class AssetManager {
     return this.assets.get(id) || null;
   }
 
-  private extractNameFromId(id: string): string {
-    // Extrae el nombre legible del ID del tile
-    const parts = id.split('_');
-    if (parts.length >= 3) {
-      return parts.slice(2).join(' ').replace(/[-_]/g, ' ');
-    }
-    return id;
-  }
 
-  private detectCategory(id: string): Asset['category'] {
-    // Detección precisa basada únicamente en assets que sabemos que existen
+  private detectCategory(id: string): string {
+    if (id.includes('cesped') || id.includes('Grass') || id.includes('grass')) return 'terrain_tiles';
+    if (id.includes('House') || id.includes('Wall') || id.includes('Well') || id.includes('Fence')) return 'structures';
+    if (id.includes('Tree') || id.includes('Bush') || id.includes('Rock') || id.includes('Cliff')) return 'natural_elements';
+    if (id.includes('Water') || id.includes('water')) return 'water';
+    if (id.includes('Path') || id.includes('Farm')) return 'infrastructure';
+    if (id.includes('muro') || id.includes('vidrio') || id.includes('piso')) return 'building';
+    if (id.includes('ventana') || id.includes('Chest') || id.includes('Barrel') || id.includes('Crate')) return 'furniture_objects';
+    if (id.includes('Chicken') || id.includes('Pig') || id.includes('Sheep') || id.includes('Cow')) return 'animated_entities';
+    if (id.includes('bread') || id.includes('burger') || id.includes('pizza')) return 'consumable_items';
+    if (id.includes('Google') || id.includes('Microsoft') || id.includes('Facebook')) return 'ui_icons';
+    if (id.includes('dialog')) return 'dialogs';
     
-    // Terrain tiles
-    if (id.includes('cesped') || id === 'Grass_Middle' || id === 'TexturedGrass') {
-      return 'terrain_tiles';
-    }
-    
-    // Building assets (from building folder)
-    if (id === 'muros1' || id === 'muros2' || id === 'muros3' || id === 'muro' || 
-        id === 'vidrio' || id === 'piso' || /^\d+$/.test(id)) {
-      return 'building';
-    }
-    
-    // Structures
-    if (id.includes('House') || id.includes('CityWall') || 
-        id === 'Well_Hay_1' || id === 'Fences') {
-      return 'structures';
-    }
-    
-    // Furniture objects
-    if (id.includes('Barrel') || id.includes('Chest') || id.includes('ventana') || 
-        id.includes('basuras') || id.includes('Crate') || id.includes('Basket') ||
-        id.includes('botellas') || id.includes('cajas')) {
-      return 'furniture_objects';
-    }
-    
-    // Natural elements
-    if (id.includes('Tree') || id.includes('Bush') || id.includes('Rock') || 
-        id.includes('tronco') || id === 'Oak_Tree' || id.includes('Emerald') || 
-        id.includes('Brown') || id.includes('Cliff')) {
-      return 'natural_elements';
-    }
-    
-    // Infrastructure
-    if (id === 'Path_Middle' || id === 'FarmLand_Tile') {
-      return 'infrastructure';
-    }
-    
-    // Water
-    if (id === 'Water_Middle' || id === 'tile_0198' || id === 'tile_0230') {
-      return 'water';
-    }
-    
-    // Environmental objects
-    if (id.includes('Bench') || id.includes('Table') || id.includes('Lamp') || 
-        id.includes('Sign') || id.includes('Banner') || id.includes('Plant') || 
-        id.includes('poste') || id === 'silla' || id.includes('sillas_de_calle') ||
-        id.includes('sombrilla') || id.includes('lamparas') || id.includes('ropas_tendidas') ||
-        id.includes('Boat') || id.includes('Fireplace') || id.includes('HayStack') ||
-        id.includes('Sack') || id.includes('Tombstones') || id.includes('Chopped_Tree')) {
-      return 'environmental_objects';
-    }
-    
-    // Animated entities
-    if (id.includes('Chicken') || id.includes('Boar') || id.includes('Pig') || 
-        id.includes('Sheep') || id.includes('Cow') || id.includes('Horse') || 
-        id === 'Campfire' || id.includes('Flowers_') || id === 'Idle' || id === 'Walk' ||
-        id.includes('Marine')) {
-      return 'animated_entities';
-    }
-    
-    // Consumable items
-    if (id.includes('_dish') || id.includes('bread') || id.includes('burger') || 
-        id.includes('pizza') || id.includes('cake') || id.includes('pie') ||
-        id.includes('taco') || id.includes('waffle') || id.includes('bacon') ||
-        id.includes('curry') || id.includes('donut') || id.includes('egg') ||
-        id.includes('fries') || id.includes('hotdog') || id.includes('icecream') ||
-        id.includes('jelly') || id.includes('jam') || id.includes('meat') ||
-        id.includes('nacho') || id.includes('omlet') || id.includes('pancake') ||
-        id.includes('popcorn') || id.includes('salmon') || id.includes('sandwich') ||
-        id.includes('steak') || id.includes('sushi') || id.includes('ramen') ||
-        id.includes('spaghetti')) {
-      return 'consumable_items';
-    }
-    
-    // UI Icons
-    if (id.includes('Google') || id.includes('Microsoft') || id.includes('Facebook') || 
-        id.includes('Instagram') || id.includes('Spotify') || id.includes('Netflix') ||
-        id.includes('Amazon') || id.includes('Discord') || id.includes('Twitter') ||
-        id.includes('YouTube') || id.includes('Chrome') || id.includes('Firefox') ||
-        id.includes('Telegram') || id.includes('WhatsApp') || id.includes('Zoom') ||
-        id.includes('Slack') || id.includes('Trello') || id.includes('Steam')) {
-      return 'ui_icons';
-    }
-    
-    // Building (legacy folder)
-    if (id === 'muro' || id === 'piso') {
-      return 'structures'; // Redirigir al structures
-    }
-    
-    // Dialogs
-    if (id.includes('dialog')) {
-      return 'dialogs';
-    }
-    
-    // Fallback
     return 'environmental_objects';
   }
 
-  private detectSubtype(id: string): string | undefined {
-    // Detecta el subtipo basado en el nombre del archivo
-    const name = id.toLowerCase();
-
-    // Para muebles (prioridad alta)
-    if (name.includes('furniture_')) {
-      if (name.includes('sofa') || name.includes('chair') || name.includes('armchair'))
-        return 'seating';
-      if (name.includes('table') || name.includes('coffee_table') || name.includes('dining_table'))
-        return 'tables';
-      if (name.includes('bed') || name.includes('nightstand') || name.includes('dresser'))
-        return 'bedroom';
-      if (name.includes('stove') || name.includes('fridge') || name.includes('sink'))
-        return 'kitchen';
-      if (name.includes('desk') || name.includes('bookshelf') || name.includes('chair_fancy'))
-        return 'office';
-      if (name.includes('toilet') || name.includes('bathtub') || name.includes('mirror'))
-        return 'bathroom';
-      if (name.includes('tv_stand') || name.includes('piano') || name.includes('fireplace'))
-        return 'entertainment';
-      if (name.includes('wardrobe') || name.includes('cabinet')) return 'storage';
-      if (name.includes('lamp')) return 'decoration';
-      return 'decoration'; // fallback para muebles no categorizados
-    }
-
-    // Para terreno
-    if (name.includes('cesped') || name.includes('grass')) return 'grass';
-    if (name.includes('tierra') || name.includes('dirt')) return 'dirt';
-    if (name.includes('arena') || name.includes('sand')) return 'sand';
-    if (name.includes('piedra') || name.includes('stone')) return 'stone';
-
-    // Para estructuras
-    if (name.includes('house')) return 'houses';
-    if (name.includes('muro') || name.includes('wall')) return 'walls';
-    if (name.includes('fence')) return 'fences';
-    if (name.includes('well')) return 'wells';
-    if (name.includes('vidrio') || name.includes('glass')) return 'glass';
-
-    // Para elementos naturales
-    if (name.includes('tree')) return 'trees';
-    if (name.includes('bush')) return 'bushes';
-    if (name.includes('rock')) return 'rocks';
-    if (name.includes('cliff')) return 'cliffs';
-    if (name.includes('tronco') || name.includes('log')) return 'logs';
-
-    // Para infraestructura
-    if (name.includes('path') || name.includes('farm')) return 'paths';
-
-    // Para agua
-    if (name.includes('water') || name.includes('agua')) return 'tiles';
-
-    return undefined;
-  }
-
-  private detectSize(id: string): number {
-    // La mayoría de los tiles son 32x32, algunos especiales pueden ser diferentes
-    if (id.includes('edificio_alto') || id.includes('arbol_grande')) {
-      return 64;
-    }
-    return 32;
-  }
 
   private categorizeAsset(asset: Asset) {
     // Categorizar por category principal
@@ -503,48 +312,18 @@ export class AssetManager {
       this.categorizedAssets[asset.category] = [];
     }
     this.categorizedAssets[asset.category].push(asset);
-
-    // Categorizar por subtype si existe
-    if (asset.subtype) {
-      if (!this.categorizedAssets[asset.subtype]) {
-        this.categorizedAssets[asset.subtype] = [];
-      }
-      this.categorizedAssets[asset.subtype].push(asset);
-    }
   }
 
   /**
-   * Precargar assets esenciales basados en assets existentes
+   * Precargar assets esenciales
    */
   async preloadEssentialAssets(): Promise<void> {
-    console.log('🎨 Precargando assets esenciales dinámicos...');
-
-    const analysis = await loadAssetAnalysis();
-    const essentialAssets: string[] = [];
+    console.log('🎨 Precargando assets esenciales...');
     
-    // Seleccionar algunos assets esenciales de cada categoría
-    if (analysis.categories.TERRAIN_TILES?.grass) {
-      essentialAssets.push(...analysis.categories.TERRAIN_TILES.grass.slice(0, 5));
-    }
+    const essentialFolders = ['terrain_tiles', 'structures', 'water', 'natural_elements'];
+    await this.preloadEssentialAssetsByFolders(essentialFolders);
     
-    if (analysis.categories.STRUCTURES?.houses) {
-      essentialAssets.push(...analysis.categories.STRUCTURES.houses.slice(0, 3));
-    }
-    
-    if (analysis.categories.NATURAL_ELEMENTS?.trees) {
-      essentialAssets.push(...analysis.categories.NATURAL_ELEMENTS.trees.slice(0, 3));
-    }
-    
-    if (analysis.categories.WATER?.tiles) {
-      essentialAssets.push(...analysis.categories.WATER.tiles);
-    }
-    
-    if (analysis.categories.INFRASTRUCTURE?.paths) {
-      essentialAssets.push(...analysis.categories.INFRASTRUCTURE.paths);
-    }
-
-    await Promise.all(essentialAssets.map(id => this.loadAsset(id)));
-    console.log(`✅ Precargados ${essentialAssets.length} assets esenciales`);
+    console.log('✅ Precarga completada');
   }
 
   /**
@@ -567,90 +346,13 @@ export class AssetManager {
   }
 
   /**
-   * Obtener lista de carpetas disponibles para carga dinámica
+   * Obtener lista de carpetas disponibles
    */
-  async getAvailableFolders(): Promise<string[]> {
-    try {
-      const analysis = await loadAssetAnalysis();
-      return Object.keys(analysis.assetMap || {});
-    } catch {
-      // Fallback a lista conocida
-      return ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects', 'furniture_objects'];
-    }
+  getAvailableFolders(): string[] {
+    return ASSET_FOLDERS;
   }
 
-  /**
-   * Obtener todas las categorías disponibles dinámicamente
-   */
-  async getAvailableCategories(): Promise<string[]> {
-    try {
-      const analysis = await loadAssetAnalysis();
-      return Object.keys(analysis.categories || {});
-    } catch {
-      return ['TERRAIN_TILES', 'STRUCTURES', 'NATURAL_ELEMENTS', 'INFRASTRUCTURE', 'WATER', 'ENVIRONMENTAL_OBJECTS'];
-    }
-  }
 
-  /**
-   * Obtener assets aleatorios de una categoría específica
-   */
-  async getRandomAssetsFromCategory(category: string, count: number = 1): Promise<Asset[]> {
-    const analysis = await loadAssetAnalysis();
-    const categoryData = analysis.categories[category];
-    
-    if (!categoryData) return [];
-    
-    const allAssets = Object.values(categoryData as Record<string, string[]> || {}).flat();
-    const shuffled = allAssets.sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, count);
-    
-    // Filtrar y cargar solo assets que realmente existen
-    const validAssets: Asset[] = [];
-    for (const id of selected) {
-      try {
-        const asset = await this.loadAsset(id);
-        validAssets.push(asset);
-      } catch (error) {
-        console.warn(`⚠️ Asset ${id} no existe, omitiendo...`);
-      }
-    }
-    
-    return validAssets;
-  }
-
-  /**
-   * Validar que un asset existe antes de intentar cargarlo
-   */
-  async validateAssetExists(assetId: string): Promise<boolean> {
-    try {
-      await this.loadAsset(assetId);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Obtener lista de assets existentes de una categoría (solo IDs validados)
-   */
-  async getValidatedAssetsFromCategory(category: string): Promise<string[]> {
-    const analysis = await loadAssetAnalysis();
-    const categoryData = analysis.categories[category];
-    
-    if (!categoryData) return [];
-    
-    const allAssets = Object.values(categoryData as Record<string, string[]> || {}).flat();
-    const validatedAssets: string[] = [];
-    
-    // Validar cada asset antes de incluirlo
-    for (const assetId of allAssets) {
-      if (await this.validateAssetExists(assetId)) {
-        validatedAssets.push(assetId);
-      }
-    }
-    
-    return validatedAssets;
-  }
 }
 
 // Instancia singleton del gestor de assets
