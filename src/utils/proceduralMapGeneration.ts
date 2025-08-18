@@ -10,15 +10,7 @@
 import type { Zone, MapElement } from '../types';
 import { generateOrganicProceduralMap } from './organicMapGeneration';
 
-
-// Eliminadas constantes de layout/temas no usadas en la versión orgánica
-
-
-// Eliminada definición ROOM_TYPES no utilizada
-
-
 export function generateMapSeed(): string {
-  // CORRIGIDO: Usar generación de seed determinista en lugar de Math.random()
   const timestamp = Date.now();
   const deterministicPart = ((timestamp * 1664525 + 1013904223) % 2147483647).toString(36);
   return timestamp.toString(36) + deterministicPart;

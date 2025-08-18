@@ -248,7 +248,6 @@ export class VoronoiGenerator {
     // Muestreo en círculo para calcular el centroide
     for (let i = 0; i < sampleSize; i++) {
       const angle = (i / sampleSize) * 2 * Math.PI;
-      // CORRIGIDO: Usar generador determinista en lugar de Math.random()
       const seedValue = (this.config.seed + i * 1000 + center.x * 10 + center.y * 10) % 2147483647;
       const normalizedSeed = (seedValue * 9301) % 233280 / 233280;
       const distance = normalizedSeed * radius;

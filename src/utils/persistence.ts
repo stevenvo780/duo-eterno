@@ -116,5 +116,3 @@ export const safeSave = (state: GameState): void => {
     logStorage.error('Error during autosave', e);
   }
 };
-
-// Eliminado: clearPersisted no utilizado

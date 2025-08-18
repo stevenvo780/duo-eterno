@@ -8,7 +8,7 @@
 export interface Asset {
   id: string;
   name: string;
-  category: 'ground' | 'buildings' | 'nature' | 'roads' | 'water' | 'decorations';
+  category: 'ground' | 'buildings' | 'furniture' | 'nature' | 'roads' | 'water' | 'decorations';
   subtype?: string;
   image: HTMLImageElement;
   size: number; // Tamaño estándar del tile
@@ -19,38 +19,67 @@ export interface AssetCategory {
   [key: string]: Asset[];
 }
 
+// Assets reales disponibles después de la limpieza (21 assets esenciales + 400+ muebles)
 export const ASSET_CATEGORIES = {
+  // Terreno base (8 assets)
   GROUND: {
-    cesped: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped', 'tile_0246_suelo_cesped', 'tile_0278_suelo_cesped'],
-    tierra: ['tile_0144_suelo_tierra', 'tile_0184_suelo_tierra', 'tile_0216_suelo_tierra', 'tile_0256_suelo_tierra'],
-    arena: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena', 'tile_0219_suelo_arena', 'tile_0243_suelo_arena'],
-    piedra: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra', 'tile_0209_suelo_piedra', 'tile_0221_suelo_piedra']
+    cesped: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped'],
+    tierra: ['tile_0144_suelo_tierra', 'tile_0184_suelo_tierra'],
+    arena: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena'],
+    piedra: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra']
   },
+  
+  // Edificios (5 assets)
   BUILDINGS: {
     principal: ['tile_0000_edificio_principal'],
-    comercial: ['tile_0003_edificio_comercial', 'tile_0007_edificio_comercial', 'tile_0011_edificio_comercial'],
-    pequeño: ['tile_0004_edificio_pequeño', 'tile_0008_edificio_pequeño', 'tile_0012_edificio_pequeño'],
-    grande: ['tile_0005_edificio_grande', 'tile_0009_edificio_grande', 'tile_0013_edificio_grande'],
-    alto: ['tile_0006_edificio_alto', 'tile_0010_edificio_alto', 'tile_0014_edificio_alto'],
-    tejado: ['tile_0024_tejado', 'tile_0025_tejado', 'tile_0026_tejado', 'tile_0027_tejado']
+    comercial: ['tile_0003_edificio_comercial', 'tile_0007_edificio_comercial'],
+    residencial: ['tile_0004_edificio_pequeño', 'tile_0005_edificio_grande']
   },
+
+  // Muebles reales descargados (400+ assets de calidad)
+  FURNITURE: {
+    // Muebles de sala
+    seating: ['furniture/tile_furniture_sofa_brown', 'furniture/tile_furniture_armchair', 'furniture/tile_furniture_chair_wood'],
+    tables: ['furniture/tile_furniture_table_round', 'furniture/tile_furniture_coffee_table', 'furniture/tile_furniture_dining_table'],
+    
+    // Dormitorio
+    bedroom: ['furniture/tile_furniture_bed_double', 'furniture/tile_furniture_nightstand', 'furniture/tile_furniture_dresser'],
+    
+    // Cocina
+    kitchen: ['furniture/tile_furniture_stove', 'furniture/tile_furniture_fridge', 'furniture/tile_furniture_sink'],
+    
+    // Oficina/Estudio
+    office: ['furniture/tile_furniture_desk', 'furniture/tile_furniture_bookshelf', 'furniture/tile_furniture_chair_fancy'],
+    
+    // Baño
+    bathroom: ['furniture/tile_furniture_toilet', 'furniture/tile_furniture_bathtub', 'furniture/tile_furniture_mirror'],
+    
+    // Entretenimiento
+    entertainment: ['furniture/tile_furniture_tv_stand', 'furniture/tile_furniture_piano', 'furniture/tile_furniture_fireplace'],
+    
+    // Almacenamiento
+    storage: ['furniture/tile_furniture_wardrobe', 'furniture/tile_furniture_cabinet'],
+    
+    // Decoración
+    decoration: ['furniture/tile_furniture_lamp']
+  },
+
+  // Naturaleza (3 assets)
   NATURE: {
-    arbol_grande: ['tile_0002_arbol_grande', 'tile_0032_arbol_grande', 'tile_0036_arbol_grande', 'tile_0160_arbol_grande'],
-    arbol_pequeño: ['tile_0033_arbol_pequeño', 'tile_0069_arbol_pequeño', 'tile_0161_arbol_pequeño', 'tile_0173_arbol_pequeño'],
-    arbol_frondoso: ['tile_0034_arbol_frondoso', 'tile_0070_arbol_frondoso', 'tile_0146_arbol_frondoso', 'tile_0162_arbol_frondoso'],
-    arbol_joven: ['tile_0035_arbol_joven', 'tile_0071_arbol_joven', 'tile_0107_arbol_joven', 'tile_0147_arbol_joven']
+    arboles: ['tile_0002_arbol_grande', 'tile_0033_arbol_pequeño', 'tile_0034_arbol_frondoso']
   },
+  
+  // Carreteras (4 assets completos para conectividad)
   ROADS: {
-    horizontal: ['tile_0001_carretera_horizontal', 'tile_0192_carretera_horizontal', 'tile_0208_carretera_horizontal'],
-    vertical: ['tile_0189_carretera_vertical', 'tile_0229_carretera_vertical', 'tile_0245_carretera_vertical'],
-    curva: ['tile_0154_carretera_curva', 'tile_0190_carretera_curva', 'tile_0226_carretera_curva'],
-    cruce: ['tile_0191_carretera_cruce', 'tile_0227_carretera_cruce', 'tile_0263_carretera_cruce']
+    horizontal: ['tile_0001_carretera_horizontal'],
+    vertical: ['tile_0189_carretera_vertical'],
+    curva: ['tile_0154_carretera_curva'],
+    cruce: ['tile_0191_carretera_cruce']
   },
+  
+  // Agua (1 asset esencial)
   WATER: {
-    profunda: ['tile_0149_agua_profunda', 'tile_0157_agua_profunda', 'tile_0237_agua_profunda'],
-    estanque: ['tile_0235_agua_estanque', 'tile_0239_agua_estanque', 'tile_0271_agua_estanque'],
-    clara: ['tile_0236_agua_clara', 'tile_0240_agua_clara', 'tile_0272_agua_clara'],
-    corriente: ['tile_0238_agua_corriente', 'tile_0242_agua_corriente', 'tile_0274_agua_corriente']
+    deep: ['tile_0149_agua_profunda']
   }
 } as const;
 
@@ -106,7 +135,10 @@ export class AssetManager {
   private createLoadPromise(assetId: string): Promise<Asset> {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      const path = `/assets/Tiles/${assetId}.png`;
+      // Soporte para muebles en subcarpeta
+      const path = assetId.startsWith('furniture/') 
+        ? `/assets/Tiles/${assetId}.png`
+        : `/assets/Tiles/${assetId}.png`;
       
       image.onload = () => {
         const asset: Asset = {
@@ -175,6 +207,30 @@ export class AssetManager {
   }
 
   /**
+   * Obtiene muebles apropiados por tipo de habitación
+   */
+  getFurnitureByRoomType(roomType: 'living' | 'bedroom' | 'kitchen' | 'bathroom' | 'office' | 'storage'): Asset[] {
+    const furnitureMap: Record<string, string[]> = {
+      living: ['seating', 'tables', 'entertainment', 'decoration'],
+      bedroom: ['bedroom', 'storage', 'decoration'], 
+      kitchen: ['kitchen', 'tables'],
+      bathroom: ['bathroom'],
+      office: ['office', 'storage'],
+      storage: ['storage']
+    };
+    
+    const furniture: Asset[] = [];
+    const subtypes = furnitureMap[roomType] || [];
+    
+    subtypes.forEach(subtype => {
+      const assets = this.categorizedAssets[subtype] || [];
+      furniture.push(...assets);
+    });
+    
+    return furniture;
+  }
+
+  /**
    * Obtiene asset por ID
    */
   getAssetById(id: string): Asset | null {
@@ -191,6 +247,7 @@ export class AssetManager {
   }
 
   private detectCategory(id: string): Asset['category'] {
+    if (id.startsWith('furniture/') || id.includes('furniture_')) return 'furniture';
     if (id.includes('suelo_')) return 'ground';
     if (id.includes('edificio_') || id.includes('tejado_')) return 'buildings';
     if (id.includes('arbol_')) return 'nature';

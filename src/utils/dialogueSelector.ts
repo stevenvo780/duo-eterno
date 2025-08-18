@@ -12,8 +12,6 @@ export const loadDialogueData = async (): Promise<void> => {
   try {
     const response = await fetch('/assets/dialogs/dialogos_chat_isa.lite.censored_plus.json');
     dialogueData = await response.json();
-    
-    // CORRIGIDO: Usar hash determinista del timestamp en lugar de Math.random()
     const seed = Date.now();
     currentIndex = Math.floor((seed * 1664525 + 1013904223) % 2147483647) % dialogueData.length;
   } catch (error) {
@@ -53,14 +51,12 @@ export const getNextDialogue = (
     }
   }
 
-  // CORRIGIDO: Usar índice determinista en lugar de Math.random()
   const fallbackIndex = (Date.now() * 1664525 + 1013904223) % 2147483647;
   return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];
 };
 
 
 export const getEmotionForActivity = (activity: string): string => {
-  // Mapeo expandido basado en las emociones presentes en el JSON real
   const emotionMap: Record<string, string[]> = {
     'SOCIALIZING': ['LOVE', 'PLAYFUL', 'NEUTRAL', 'CURIOUS'],
     'RESTING': ['NEUTRAL', 'SADNESS', 'LOVE'], // Añadido LOVE para momentos íntimos
@@ -73,7 +69,6 @@ export const getEmotionForActivity = (activity: string): string => {
   };
 
   const emotions = emotionMap[activity] || ['NEUTRAL', 'LOVE', 'CURIOUS'];
-  // CORRIGIDO: Usar selección determinista basada en actividad en lugar de Math.random()
   const activityHash = activity.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
   const emotionIndex = Math.abs(activityHash) % emotions.length;
   return emotions[emotionIndex];
@@ -83,9 +78,6 @@ export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
 
   return entityId === 'circle' ? 'ISA' : 'STEV';
 };
-
-// Eliminadas utilidades no usadas: getDialogueFromPoint, getDialogueCount
-
 // Mapeo de tipos de interacción a emociones/actividades del chat
 export const getDialogueForInteraction = (
   interactionType: string,
