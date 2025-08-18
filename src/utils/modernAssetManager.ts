@@ -1,5 +1,5 @@
 /**
- * Sistema de Asset Manager moderno para el sistema de renderizado
+ * Gestor de assets basado en carpetas con caché y carga perezosa.
  */
 
 import assetAnalysis from '../generated/asset-analysis.json';

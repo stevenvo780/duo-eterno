@@ -1,9 +1,6 @@
 /**
- * 🤖 Motor de decisiones de actividades para agentes.
- *
- * Decisiones se basan en: prioridad por necesidades (calculateActivityPriority),
- * modulación por estado de ánimo y personalidad, hábitos aprendidos y selección
- * estocástica suave (softmax con temperatura).
+ * Motor de decisiones de actividades para agentes.
+ * Basado en prioridad por necesidades, estado de ánimo, personalidad y softmax (temperatura).
  */
 import type { Entity, EntityActivity, EntityMood } from '../types';
 import { ACTIVITY_TYPES } from '../constants';

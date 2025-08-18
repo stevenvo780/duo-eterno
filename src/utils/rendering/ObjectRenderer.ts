@@ -1,6 +1,5 @@
 /**
- * Sistema de renderizado de objetos profesional
- * Maneja estructuras, elementos naturales, y objetos del juego
+ * Renderizado de objetos del mapa (estructuras, naturales, mobiliario, decoración).
  */
 
 import { assetManager, type Asset } from '../modernAssetManager';
@@ -51,7 +50,6 @@ export class ObjectRenderer {
   
   // Nuevos arrays para assets animados
   private animatedAssets: Asset[] = [];
-  private animatedObjectsCache: Map<string, GameObject[]> = new Map();
 
   constructor() {
     this.initializeLayers();

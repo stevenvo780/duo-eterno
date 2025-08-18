@@ -79,6 +79,8 @@ export interface Entity {
   thoughts: string[];
   isDead: boolean;
   timeOfDeath?: number;
+  controlMode: 'autonomous' | 'manual';
+  isBeingDragged?: boolean;
 }
 
 export type EntityMood = MoodType;

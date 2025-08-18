@@ -1,11 +1,5 @@
 /**
- * 🔧 CORRECCIÓN DE MATEMÁTICAS DE PRECISIÓN
- *
- * Versión corregida de mathPrecision.ts que resuelve problemas críticos:
- * - Elimina sesgos en redondeo
- * - Usa seed determinista para ruido
- * - Corrige validaciones numéricas
- * - Mejora cálculos de coherencia
+ * Utilidades de precisión numérica: redondeo sin sesgo y comparaciones tolerantes.
  */
 
 import { MATH } from '../constants';

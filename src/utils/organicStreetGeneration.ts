@@ -1,8 +1,5 @@
 /**
- * 🛣️ GENERACIÓN ORGÁNICA DE CALLES Y CAMINOS
- *
- * Sistemas de pathfinding y generación de redes de transporte naturales
- * basados en algoritmos utilizados en RPGs y city builders profesionales
+ * Generación orgánica de calles y caminos con pathfinding y costos variables.
  */
 
 import type { Point } from './noiseGeneration';
@@ -33,10 +30,7 @@ export interface StreetConfig {
   streetSpacing: number;
 }
 
-/**
- * 🌿 GENERADOR DE CALLES ORGÁNICAS
- * Utiliza algoritmos de crecimiento natural y pathfinding con costos variables
- */
+/** Generador de calles orgánicas (crecimiento + pathfinding). */
 export class OrganicStreetGenerator {
   private noise: PerlinNoise;
   private elevationMap!: number[][];

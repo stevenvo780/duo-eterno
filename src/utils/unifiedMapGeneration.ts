@@ -1,8 +1,5 @@
 /**
- * 🗺️ SISTEMA UNIFICADO DE GENERACIÓN DE MAPAS CON TERRENO COMPLETO
- *
- * Sistema que genera mapas completos con terreno base, decoraciones y objetos
- * usando assets dinámicos de las carpetas disponibles
+ * Generación unificada de mapas con terreno, decoraciones y objetos.
  */
 
 import type { Zone, MapElement, ZoneType } from '../types';

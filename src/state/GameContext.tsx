@@ -46,6 +46,8 @@ type GameAction =
   | { type: 'BREAK_RELATIONSHIP' }
   | { type: 'TICK'; payload: number }
   | { type: 'INTERACT'; payload: { type: InteractionType; entityId?: string } }
+  | { type: 'SET_ENTITY_CONTROL_MODE'; payload: { entityId: string; controlMode: 'autonomous' | 'manual' } }
+  | { type: 'SET_ENTITY_DRAGGING'; payload: { entityId: string; isBeingDragged: boolean } }
   | {
       type: 'SHOW_DIALOGUE';
       payload: {
@@ -99,7 +101,9 @@ const initialGameState: GameState = {
       colorHue: 200,
       mood: 'CONTENT',
       thoughts: [],
-      isDead: false
+      isDead: false,
+      controlMode: 'autonomous',
+      isBeingDragged: false
     },
     {
       id: 'square',
@@ -123,7 +127,9 @@ const initialGameState: GameState = {
       colorHue: 300,
       mood: 'CONTENT',
       thoughts: [],
-      isDead: false
+      isDead: false,
+      controlMode: 'autonomous',
+      isBeingDragged: false
     }
   ],
   resonance: gameConfig.initialResonance,
@@ -308,6 +314,28 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           startTime: Date.now(),
           type: action.payload.type
         }
+      };
+    }
+
+    case 'SET_ENTITY_CONTROL_MODE': {
+      return {
+        ...state,
+        entities: state.entities.map(entity =>
+          entity.id === action.payload.entityId
+            ? { ...entity, controlMode: action.payload.controlMode }
+            : entity
+        )
+      };
+    }
+
+    case 'SET_ENTITY_DRAGGING': {
+      return {
+        ...state,
+        entities: state.entities.map(entity =>
+          entity.id === action.payload.entityId
+            ? { ...entity, isBeingDragged: action.payload.isBeingDragged }
+            : entity
+        )
       };
     }
 

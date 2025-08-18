@@ -10,7 +10,7 @@ let currentIndex = 0;
 
 export const loadDialogueData = async (): Promise<void> => {
   try {
-    const response = await fetch('/assets/dialogs/dialogos_chat_isa.lite.censored_plus.json');
+    const response = await fetch('/dialogs/dialogos_chat_isa.lite.censored_plus.json');
     dialogueData = await response.json();
     const seed = Date.now();
     currentIndex = Math.floor((seed * 1664525 + 1013904223) % 2147483647) % dialogueData.length;

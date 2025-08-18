@@ -1,13 +1,10 @@
 /**
- * 🔷 GENERACIÓN DE DIAGRAMAS DE VORONOI
- *
- * Crea regiones irregulares con distribución orgánica.
+ * Generación de diagramas de Voronoi para regiones con distribución orgánica.
  *
  * Notas científicas
  * -----------------
  * - Semillas: muestreo tipo Poisson-disk aproximado para separación mínima.
- * - Relajación de Lloyd: desplaza puntos hacia centroides aproximados para células
- *   más regulares sin perder organicidad.
+ * - Relajación de Lloyd: desplazamiento hacia centroides aproximados para células más regulares.
  * - Área: fórmula de lazo (shoelace) para polígono simple.
  * - Vecinos: aproximación por umbral de distancia entre centros.
  */
@@ -41,10 +38,7 @@ export interface VoronoiConfig {
   boundaryPadding: number;
 }
 
-/**
- * 🎯 GENERADOR DE DIAGRAMAS DE VORONOI SIMPLIFICADO
- * Implementación optimizada para tiempo real usando distance fields
- */
+/** Generador de Voronoi simplificado (distance fields para tiempo real). */
 export class VoronoiGenerator {
   private noise: PerlinNoise;
   private config: VoronoiConfig;

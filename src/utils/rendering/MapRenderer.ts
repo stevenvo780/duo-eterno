@@ -1,6 +1,5 @@
 /**
- * Sistema de renderizado principal profesional
- * Combina tile rendering, object rendering y efectos
+ * Renderizador principal: compone tiles, objetos, entidades y efectos.
  */
 
 import { tileRenderer, type TerrainMap } from './TileRenderer';

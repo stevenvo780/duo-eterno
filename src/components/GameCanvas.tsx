@@ -19,14 +19,14 @@ interface Props {
   onEntityClick?: (entity: Entity) => void;
 }
 
-const GameCanvas: React.FC<Props> = ({
+const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   width,
   height,
   zoom,
   panX,
   panY,
   onEntityClick
-}) => {
+}, ref) => {
   const { gameState, dispatch } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
@@ -42,7 +42,7 @@ const GameCanvas: React.FC<Props> = ({
   const [debugMode, setDebugMode] = useState(false);
   const initializationStarted = useRef(false);
 
-  // Datos de la escena - estabilizados para evitar re-renders constantes
+  // Datos de la escena: memo para evitar renders innecesarios
   const sceneData: SceneData = useMemo(() => ({
     terrainMap: {
       width: 2000, // Mapa más grande y navegable
@@ -55,7 +55,6 @@ const GameCanvas: React.FC<Props> = ({
     entities: gameState.entities || []
   }), [gameState.zones, gameState.mapElements, gameState.entities]);
 
-  // Viewport calculation
   const viewport: Viewport = useMemo(() => ({
     x: panX,
     y: panY,
@@ -64,9 +63,8 @@ const GameCanvas: React.FC<Props> = ({
     zoom
   }), [panX, panY, width, height, zoom]);
 
-  // Cargar assets (SOLO UNA VEZ)
   useEffect(() => {
-    if (initializationStarted.current) return; // Ya está en proceso
+    if (initializationStarted.current) return; // Evita reiniciar carga
     initializationStarted.current = true;
     
     const loadAssets = async () => {
@@ -74,7 +72,6 @@ const GameCanvas: React.FC<Props> = ({
         setLoadingProgress(10);
         console.log('🎨 Iniciando carga de assets...');
 
-        // Precargar carpetas esenciales de assets
         await assetManager.preloadEssentialAssetsByFolders([
           'terrain_tiles',
           'structures', 
@@ -87,13 +84,11 @@ const GameCanvas: React.FC<Props> = ({
         setLoadingProgress(60);
         console.log('🎯 Assets por carpetas completados, iniciando precarga adicional...');
 
-        // Precargar assets esenciales adicionales
         await assetManager.preloadEssentialAssets();
         
         setLoadingProgress(80);
         console.log('🎯 Precarga adicional completada, precargando animaciones...');
 
-        // Precargar animaciones de entidades
         await entityAnimationRenderer.preloadCommonAnimations();
 
         setLoadingProgress(90);
@@ -111,9 +106,8 @@ const GameCanvas: React.FC<Props> = ({
     };
 
     loadAssets();
-  }, []); // Solo ejecutar una vez al montar el componente
+  }, []);
 
-  // Inicializar renderer cuando los assets estén listos
   useEffect(() => {
     if (!assetsLoaded || rendererInitialized) return;
     
@@ -121,7 +115,6 @@ const GameCanvas: React.FC<Props> = ({
       try {
         console.log('🎬 Inicializando renderer...');
         
-        // Generar zonas si no existen al momento de la inicialización
         let zones = gameState.zones;
         let mapElements = gameState.mapElements;
         
@@ -130,13 +123,11 @@ const GameCanvas: React.FC<Props> = ({
           zones = createDefaultZones();
           mapElements = createDefaultMapElements();
           
-          // Actualizar el gameState con las nuevas zonas (de manera asíncrona)
           setTimeout(() => {
             dispatch({ type: 'GENERATE_NEW_MAP', payload: { seed: gameState.mapSeed } });
           }, 100);
         }
         
-        // Crear datos para el renderer con zonas reales
         const initialData: SceneData = {
           terrainMap: {
             width: 2000, // Mapa expandido
@@ -149,7 +140,6 @@ const GameCanvas: React.FC<Props> = ({
           entities: gameState.entities
         };
         
-        // Inicializar el renderer
         await mapRenderer.initialize(initialData);
         
         setRendererInitialized(true);
@@ -163,11 +153,9 @@ const GameCanvas: React.FC<Props> = ({
     initializeRenderer();
   }, [assetsLoaded, rendererInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Función de renderizado principal usando el nuevo sistema
   const renderScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       if (!assetsLoaded || !rendererInitialized) {
-        // Renderizado de fallback mientras se carga
         ctx.fillStyle = getSkyColor();
         ctx.fillRect(0, 0, width, height);
         
@@ -183,8 +171,6 @@ const GameCanvas: React.FC<Props> = ({
         return;
       }
 
-      // Usar el nuevo sistema de renderizado profesional
-      // Aplicar transformaciones de navegación
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(-panX, -panY);
@@ -202,7 +188,6 @@ const GameCanvas: React.FC<Props> = ({
     [assetsLoaded, rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height, zoom, panX, panY]
   );
 
-  // Contador de FPS y optimización automática
   const updateFPS = useCallback(() => {
     const now = performance.now();
     fpsCounter.current.frames++;
@@ -212,14 +197,12 @@ const GameCanvas: React.FC<Props> = ({
       fpsCounter.current.frames = 0;
       fpsCounter.current.lastTime = now;
       
-      // Optimización automática de calidad basada en rendimiento
       if (rendererInitialized) {
         mapRenderer.adjustQuality(fpsCounter.current.fps);
       }
     }
   }, [rendererInitialized]);
 
-  // Loop de animación mejorado
   useEffect(() => {
     const animate = () => {
       if (shouldRender() && canvasRef.current) {
@@ -244,7 +227,6 @@ const GameCanvas: React.FC<Props> = ({
     };
   }, [assetsLoaded, shouldRender, renderScene, updateFPS]);
 
-  // Manejadores de eventos
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onEntityClick || !canvasRef.current) return;
     
@@ -252,7 +234,6 @@ const GameCanvas: React.FC<Props> = ({
     const clickX = (e.clientX - rect.left) / zoom + panX;
     const clickY = (e.clientY - rect.top) / zoom + panY;
     
-    // Buscar entidad clickeada
     const clickedEntity = sceneData.entities.find(entity => {
       const distance = Math.sqrt(
         Math.pow(clickX - entity.position.x, 2) + 
@@ -271,7 +252,6 @@ const GameCanvas: React.FC<Props> = ({
     mapRenderer.toggleDebugMode();
   }, [debugMode]);
 
-  // Renderizado de pantalla de carga
   if (!assetsLoaded) {
     return (
       <div style={{ 
@@ -324,7 +304,14 @@ const GameCanvas: React.FC<Props> = ({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRef}
+        ref={(node) => {
+          canvasRef.current = node;
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+        }}
         width={width}
         height={height}
         style={{
@@ -335,7 +322,6 @@ const GameCanvas: React.FC<Props> = ({
         onClick={handleCanvasClick}
       />
       
-      {/* Overlay con información de assets y rendimiento */}
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -355,7 +341,6 @@ const GameCanvas: React.FC<Props> = ({
         <div>📍 Pos: {Math.round(panX)}, {Math.round(panY)}</div>
       </div>
 
-      {/* Controles de debug */}
       <div style={{
         position: 'absolute',
         bottom: '10px',
@@ -380,7 +365,6 @@ const GameCanvas: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* Reloj día/noche */}
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -389,7 +373,6 @@ const GameCanvas: React.FC<Props> = ({
         <DayNightClock />
       </div>
       
-      {/* Indicador de fase del día */}
       <div style={{
         position: 'absolute',
         top: '70px',
@@ -409,6 +392,8 @@ const GameCanvas: React.FC<Props> = ({
       </div>
     </div>
   );
-};
+});
+
+GameCanvas.displayName = 'GameCanvas';
 
 export default GameCanvas;

@@ -1,5 +1,5 @@
 /**
- * 🎮 Game loop principal: degrada stats con el tiempo, aplica efectos de actividad con modificadores día/noche y actualiza la resonancia.
+ * Game loop principal: degradación de stats, efectos por actividad con modificadores día/noche y actualización de resonancia.
  */
 
 import { useEffect, useRef } from 'react';

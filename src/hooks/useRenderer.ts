@@ -1,12 +1,6 @@
 /**
- * 🚀 FASE 1: Hook de Renderizado Optimizado para Performance 60 FPS
- *
- * Características principales:
- * - ✅ Control dinámico de FPS con throttling inteligente
- * - ✅ Niveles de calidad adaptativos según rendimiento
- * - ✅ Monitoreo continuo de performance
- * - ✅ Detección automática de memoria disponible
- * - ✅ Rendimiento escalable según capacidad del dispositivo
+ * Hook de renderizado con scheduler y calidad adaptativa.
+ * Gestiona throttling por FPS, métricas básicas y ajuste de calidad.
  */
 
 import { useRef, useCallback, useEffect, useState } from 'react';

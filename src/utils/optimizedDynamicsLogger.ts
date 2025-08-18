@@ -1,13 +1,6 @@
 /**
- * 🚀 FASE 1: Sistema de Logging Optimizado con Memory Management
- *
- * Características implementadas según el Plan de Trabajo:
- * - ✅ Log rotation automática
- * - ✅ Compression automática de datos históricos
- * - ✅ Memory cleanup inteligente
- * - ✅ Archiving automático de sessions antiguas
- * - ✅ Throttling de logs para reducir spam
- * - ✅ File size monitoring y management
+ * Logger de dinámica con rotación, archivado y throttling para limitar memoria.
+ * Proporciona snapshots de entidades/sistema y límites de retención.
  */
 
 import type { Entity, EntityActivity, EntityMood } from '../types';

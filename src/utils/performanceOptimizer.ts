@@ -1,13 +1,6 @@
 /**
- * 🚀 FASE 1: Utilitario de Métricas de Performance para Monitoreo Continuo
- *
- * Implementaciones según el Plan de Trabajo:
- * - ✅ Monitoreo en tiempo real de FPS, memoria y CPU
- * - ✅ Detección automática de degradación de performance
- * - ✅ Alertas proactivas para optimización
- * - ✅ Histórico de métricas para análisis de tendencias
- * - ✅ Integración con sistema de logging optimizado
- * - ✅ Exportación de reportes de performance
+ * Utilidades de métricas de performance (FPS, memoria, duración de frame) y alertas.
+ * Incluye un throttler adaptativo según el promedio de FPS.
  */
 
 import { gameConfig } from '../config/gameConfig';

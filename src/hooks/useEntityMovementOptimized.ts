@@ -201,6 +201,10 @@ export const useEntityMovementOptimized = () => {
         );
 
         for (const entity of livingEntities) {
+          // Skip movement if entity is under manual control or being dragged
+          if (entity.controlMode === 'manual' || entity.isBeingDragged) {
+            continue;
+          }
           const companion = livingEntities.find(e2 => e2.id !== entity.id) || null;
 
           if (now % 5000 < 100) {

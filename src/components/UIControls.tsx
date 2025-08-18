@@ -207,6 +207,23 @@ const UIControls: React.FC<UIControlsProps> = ({
     setToast({ message: gameConfig.debugMode ? 'Debug ON' : 'Debug OFF', type: 'info' });
   };
 
+  const toggleEntityControlMode = (entityId: string) => {
+    const entity = gameState.entities.find(e => e.id === entityId);
+    if (!entity || entity.isDead) return;
+
+    const newMode = entity.controlMode === 'autonomous' ? 'manual' : 'autonomous';
+    dispatch({ 
+      type: 'SET_ENTITY_CONTROL_MODE', 
+      payload: { entityId, controlMode: newMode } 
+    });
+
+    const entityName = getEntityName(entityId);
+    setToast({ 
+      message: `${entityName}: ${newMode === 'manual' ? 'Control manual activado' : 'Autonomía restaurada'}`, 
+      type: 'info' 
+    });
+  };
+
   return (
     <div style={{ position: 'relative' }}>
       {selectedEntity && (
@@ -377,7 +394,20 @@ const UIControls: React.FC<UIControlsProps> = ({
                 </span>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <span>{getEntityName(entity.id)}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>{getEntityName(entity.id)}</span>
+                    {!entity.isDead && (
+                      <span 
+                        style={{ 
+                          fontSize: '8px', 
+                          color: entity.controlMode === 'manual' ? '#f59e0b' : '#10b981',
+                          fontWeight: '600'
+                        }}
+                      >
+                        {entity.controlMode === 'manual' ? '🎮' : '🤖'}
+                      </span>
+                    )}
+                  </div>
                   {!entity.isDead && (
                     <div
                       style={{
@@ -399,6 +429,31 @@ const UIControls: React.FC<UIControlsProps> = ({
                 </div>
 
                 {entity.isDead && <span style={{ fontSize: '14px' }}>💀</span>}
+
+                {!entity.isDead && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEntityControlMode(entity.id);
+                    }}
+                    style={{
+                      background: entity.controlMode === 'manual' 
+                        ? 'rgba(245, 158, 11, 0.2)' 
+                        : 'rgba(16, 185, 129, 0.2)',
+                      border: `1px solid ${entity.controlMode === 'manual' ? '#f59e0b' : '#10b981'}`,
+                      borderRadius: '4px',
+                      padding: '2px 4px',
+                      color: '#f1f5f9',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      fontWeight: '500',
+                      marginLeft: 'auto'
+                    }}
+                    title={entity.controlMode === 'manual' ? 'Activar autonomía' : 'Tomar control manual'}
+                  >
+                    {entity.controlMode === 'manual' ? '🎮' : '🤖'}
+                  </button>
+                )}
 
                 {!entity.isDead && (
                   <div

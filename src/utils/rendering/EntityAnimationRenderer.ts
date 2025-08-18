@@ -1,8 +1,6 @@
 /**
- * 🎭 SISTEMA DE RENDERIZADO DE ANIMACIONES DE ENTIDADES
- * 
- * Maneja la carga, cache y renderizado de animaciones para entidades
- * Unifica el sistema para círculos, cuadrados y futuras entidades
+ * Render de animaciones de entidades: carga, caché y reproducción.
+ * Unifica el manejo para distintos tipos de entidades.
  */
 
 import type { Entity } from '../../types';

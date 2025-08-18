@@ -1,6 +1,5 @@
 /**
- * Sistema de renderizado de tiles profesional
- * Implementa estándares de la industria para juegos 2D top-down
+ * Renderizado de tiles para mapa 2D top‑down.
  */
 
 import { assetManager, type Asset } from '../modernAssetManager';

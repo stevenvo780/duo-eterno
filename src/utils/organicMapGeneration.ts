@@ -1,8 +1,5 @@
 /**
- * 🌳 GENERACIÓN ORGÁNICA DE MAPAS PROCEDIMENTALES
- *
- * Sistema principal que combina todos los algoritmos orgánicos para crear
- * layouts realistas similares a RPGs profesionales, eliminando la apariencia de grid
+ * Generación orgánica de mapas procedimentales (ruido, Voronoi, calles).
  */
 
 import type { Zone, MapElement } from '../types';
