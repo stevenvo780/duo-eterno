@@ -65,6 +65,7 @@ export const useGameLoop = () => {
       livingEntities.forEach((entity) => {
         let newStats = { ...entity.stats };
 
+        // Aplicar degradación base
         (Object.entries(SURVIVAL.DEGRADATION_RATES) as Array<[string, number]>).forEach(([statUpper, baseRate]) => {
           const statKey = statUpper.toLowerCase() as keyof EntityStats;
           const degradationAmount = baseRate * deltaSec;
@@ -77,6 +78,41 @@ export const useGameLoop = () => {
           );
         });
 
+        // Aplicar efectos de actividad con modificadores de tiempo del día
+        if (entity.activity) {
+          const timeOfDay = {
+            isNight: currentTime.isNight,
+            phase: currentTime.phase,
+            hour: currentTime.hour
+          };
+          
+          // Aplicar efectos de actividad con bonificaciones de día/noche
+          const activityModifiedStats = applyActivityEffectsWithTimeModifiers(
+            entity.activity,
+            newStats,
+            deltaMs,
+            timeOfDay
+          );
+          
+          // Solo usar los efectos modificados para stats específicos que se benefician del día/noche
+          if (entity.activity === 'RESTING' && currentTime.isNight) {
+            newStats.energy = activityModifiedStats.energy;
+            newStats.sleepiness = activityModifiedStats.sleepiness;
+            newStats.health = activityModifiedStats.health;
+            newStats.boredom = activityModifiedStats.boredom;
+          } else if (entity.activity === 'SOCIALIZING' && currentTime.isNight) {
+            newStats.happiness = activityModifiedStats.happiness;
+          } else if ((entity.activity === 'MEDITATING' || entity.activity === 'CONTEMPLATING') && 
+                    (currentTime.phase === 'night' || currentTime.phase === 'dawn')) {
+            // Aplicar efectos mejorados para meditación/contemplación durante la noche/amanecer
+            Object.keys(activityModifiedStats).forEach(statKey => {
+              const key = statKey as keyof EntityStats;
+              if (activityModifiedStats[key] > newStats[key]) {
+                newStats[key] = activityModifiedStats[key];
+              }
+            });
+          }
+        }
 
         const changed = (Object.keys(newStats) as Array<keyof EntityStats>).some((k) => {
           const a = newStats[k] as number;

@@ -350,8 +350,38 @@ export const applyActivityEffectsWithTimeModifiers = (
   deltaTimeMs: number,
   timeOfDay: TimeOfDayModifiers
 ): EntityStats => {
-  // Aplicar efectos base de la actividad
-  const newStats = applyActivityEffects(activity, currentStats, deltaTimeMs);
+  // Aplicar efectos base de la actividad (usar lógica básica)
+  const newStats = { ...currentStats };
+  const effects = ACTIVITY_EFFECTS[activity];
+  
+  if (effects) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    
+    // Aplicar efectos inmediatos
+    Object.entries(effects.immediate).forEach(([stat, value]) => {
+      const statKey = stat as keyof EntityStats;
+      if (statKey in newStats) {
+        if (statKey === 'money') {
+          newStats[statKey] = Math.max(0, newStats[statKey] + value);
+        } else {
+          newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value));
+        }
+      }
+    });
+    
+    // Aplicar efectos por minuto
+    Object.entries(effects.perMinute).forEach(([stat, value]) => {
+      const statKey = stat as keyof EntityStats;
+      if (statKey in newStats) {
+        const change = value * minutesElapsed;
+        if (statKey === 'money') {
+          newStats[statKey] = Math.max(0, newStats[statKey] + change);
+        } else {
+          newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
+        }
+      }
+    });
+  }
   
   // Obtener modificadores de tiempo del día
   const modifiers = getTimeOfDayActivityModifiers(timeOfDay);
@@ -425,7 +455,7 @@ export const applyActivityEffectsWithTimeModifiers = (
     timeOfDay: timeOfDay.phase,
     isNight: timeOfDay.isNight,
     changes: Object.fromEntries(
-      Object.entries(newStats).map(([k, v]) => [k, v - currentStats[k as keyof EntityStats]])
+      Object.entries(newStats).map(([k, v]) => [k, (v as number) - (currentStats[k as keyof EntityStats] as number)])
     )
   });
   
