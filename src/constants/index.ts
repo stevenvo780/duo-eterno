@@ -223,11 +223,7 @@ export const ACTIVITIES = {
 
 
 
-export const TIMING_CONSTANTS = TIMING;
-export const SURVIVAL_DYNAMICS = SURVIVAL;
-export const MOVEMENT_DYNAMICS = PHYSICS;
-export const ACTIVITY_DYNAMICS = ACTIVITIES;
-export const MATH_CONSTANTS = MATH;
+// Alias de constantes no usados removidos
 
 
 export const {
@@ -358,17 +354,10 @@ export const ENTITY_PHYSICS = {
   MOMENT_OF_INERTIA: 1.0
 } as const;
 
-export const PATHFINDING_CONFIG = {
-  GRID_SIZE: 20,
-  DIRECT_PATH_MAX_DISTANCE: 100,
-  MAX_PATHFINDING_NODES: 200,
-  ARRIVAL_THRESHOLD: ENTITY_PHYSICS.SIZE / 2,
-  PATH_SMOOTHING_FACTOR: 0.3
-} as const;
+// PATHFINDING_CONFIG removido por no usarse
 
 
 
-export const SURVIVAL_THRESHOLDS = SURVIVAL.CRITICAL_THRESHOLDS;
 export const NEED_TO_ZONE_MAPPING = {
   hunger: 'food',
   sleepiness: 'rest', 
@@ -389,12 +378,4 @@ export const RESONANCE_THRESHOLDS = {
 } as const;
 
 
-export const validateAllGameConstants = (): boolean => {
-  try {
-
-    return !!(MATH.GOLDEN_RATIO && MATH.PI && TIMING.MAIN_GAME_LOGIC && SURVIVAL.DEGRADATION_RATES.HUNGER);
-  } catch (error) {
-    console.error('Error validating game constants:', error);
-    return false;
-  }
-};
+// Función de validación no usada removida

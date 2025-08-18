@@ -26,126 +26,199 @@ export interface TilesetConfig {
 
 export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
   'TX Tileset Grass.png': {
-    tileSize: 32,
+    tileSize: 16,
     tilesPerRow: 16,
     tilesPerCol: 16,
     mapping: [
-
+      // Fila 0 - Grass básico y variaciones
       { id: 'grass_base', col: 0, row: 0, type: 'ground', description: 'Grass básico' },
       { id: 'grass_flower1', col: 1, row: 0, type: 'ground', description: 'Grass con flores pequeñas' },
       { id: 'grass_flower2', col: 2, row: 0, type: 'ground', description: 'Grass con flores' },
-      { id: 'grass_rocks', col: 3, row: 0, type: 'ground', description: 'Grass con rocas' },
+      { id: 'grass_rocks1', col: 3, row: 0, type: 'ground', description: 'Grass con rocas pequeñas' },
+      { id: 'grass_rocks2', col: 4, row: 0, type: 'ground', description: 'Grass con rocas' },
+      { id: 'grass_rocks3', col: 5, row: 0, type: 'ground', description: 'Grass con rocas grandes' },
+      { id: 'grass_patch1', col: 6, row: 0, type: 'ground', description: 'Parche de grass 1' },
+      { id: 'grass_patch2', col: 7, row: 0, type: 'ground', description: 'Parche de grass 2' },
       
-
-      { id: 'grass_detail1', col: 0, row: 1, type: 'ground', description: 'Grass detallado' },
-      { id: 'grass_detail2', col: 1, row: 1, type: 'ground', description: 'Grass con hierba alta' },
-      { id: 'grass_patch', col: 2, row: 1, type: 'ground', description: 'Parche de grass' },
+      // Fila 1 - Más variaciones
+      { id: 'grass_detail1', col: 0, row: 1, type: 'ground', description: 'Grass detallado 1' },
+      { id: 'grass_detail2', col: 1, row: 1, type: 'ground', description: 'Grass detallado 2' },
+      { id: 'grass_detail3', col: 2, row: 1, type: 'ground', description: 'Grass detallado 3' },
+      { id: 'grass_detail4', col: 3, row: 1, type: 'ground', description: 'Grass detallado 4' },
+      { id: 'grass_detail5', col: 4, row: 1, type: 'ground', description: 'Grass detallado 5' },
+      { id: 'grass_detail6', col: 5, row: 1, type: 'ground', description: 'Grass detallado 6' },
+      { id: 'grass_detail7', col: 6, row: 1, type: 'ground', description: 'Grass detallado 7' },
+      { id: 'grass_detail8', col: 7, row: 1, type: 'ground', description: 'Grass detallado 8' },
       
-
-      { id: 'grass_edge_top', col: 0, row: 2, type: 'edge', description: 'Borde superior' },
-      { id: 'grass_edge_bottom', col: 1, row: 2, type: 'edge', description: 'Borde inferior' },
-      { id: 'grass_edge_left', col: 2, row: 2, type: 'edge', description: 'Borde izquierdo' },
-      { id: 'grass_edge_right', col: 3, row: 2, type: 'edge', description: 'Borde derecho' }
+      // Añadir más tiles de la grilla visible
+      { id: 'grass_border1', col: 8, row: 0, type: 'ground', description: 'Borde grass 1' },
+      { id: 'grass_border2', col: 9, row: 0, type: 'ground', description: 'Borde grass 2' },
+      { id: 'grass_border3', col: 10, row: 0, type: 'ground', description: 'Borde grass 3' },
+      { id: 'grass_border4', col: 11, row: 0, type: 'ground', description: 'Borde grass 4' },
+      { id: 'grass_border5', col: 12, row: 0, type: 'ground', description: 'Borde grass 5' },
+      { id: 'grass_border6', col: 13, row: 0, type: 'ground', description: 'Borde grass 6' },
+      { id: 'grass_border7', col: 14, row: 0, type: 'ground', description: 'Borde grass 7' },
+      { id: 'grass_border8', col: 15, row: 0, type: 'ground', description: 'Borde grass 8' }
     ]
   },
   
   'TX Tileset Stone Ground.png': {
-    tileSize: 32,
-    tilesPerRow: 8,
-    tilesPerCol: 8,
+    tileSize: 64,
+    tilesPerRow: 4,
+    tilesPerCol: 4,
     mapping: [
-
-      { id: 'stone_base', col: 0, row: 0, type: 'ground', description: 'Piedra básica' },
-      { id: 'stone_cracked', col: 1, row: 0, type: 'ground', description: 'Piedra agrietada' },
-      { id: 'stone_smooth', col: 0, row: 1, type: 'ground', description: 'Piedra lisa' },
-      { id: 'stone_rough', col: 1, row: 1, type: 'ground', description: 'Piedra rugosa' }
+      // Fila 0 - Tiles principales de piedra
+      { id: 'stone_large_1', col: 0, row: 0, type: 'ground', description: 'Piedra grande 1' },
+      { id: 'stone_large_2', col: 1, row: 0, type: 'ground', description: 'Piedra grande 2' },
+      { id: 'stone_detailed', col: 2, row: 0, type: 'ground', description: 'Piedra detallada' },
+      
+      // Fila 1 - Más variaciones
+      { id: 'stone_base', col: 0, row: 1, type: 'ground', description: 'Piedra base' },
+      { id: 'stone_smooth', col: 1, row: 1, type: 'ground', description: 'Piedra lisa' },
+      
+      // Fila 2 - Tiles pequeños y detalles
+      { id: 'stone_small_1', col: 0, row: 2, type: 'ground', description: 'Piedra pequeña 1' },
+      { id: 'stone_small_2', col: 1, row: 2, type: 'ground', description: 'Piedra pequeña 2' },
+      { id: 'stone_small_3', col: 2, row: 2, type: 'ground', description: 'Piedra pequeña 3' },
+      
+      // Fila 3 - Más detalles
+      { id: 'stone_corner_1', col: 1, row: 3, type: 'ground', description: 'Esquina piedra 1' },
+      { id: 'stone_corner_2', col: 2, row: 3, type: 'ground', description: 'Esquina piedra 2' }
     ]
   },
   
   'TX Props.png': {
     tileSize: 32,
     tilesPerRow: 7,
-    tilesPerCol: 5,
+    tilesPerCol: 8,
     mapping: [
-
-      { id: 'crate_wood', col: 0, row: 0, type: 'container', description: 'Caja de madera' },
-      { id: 'barrel', col: 1, row: 0, type: 'container', description: 'Barril' },
+      // Fila 0 - Objetos principales
+      { id: 'crate_stone', col: 0, row: 0, type: 'container', description: 'Caja de piedra' },
+      { id: 'barrel_wood', col: 1, row: 0, type: 'container', description: 'Barril de madera' },
       { id: 'chest_wood', col: 2, row: 0, type: 'container', description: 'Cofre de madera' },
-      { id: 'chest_metal', col: 3, row: 0, type: 'container', description: 'Cofre de metal' },
-      { id: 'bookshelf', col: 4, row: 0, type: 'furniture', description: 'Estantería' },
-      { id: 'chair', col: 5, row: 0, type: 'furniture', description: 'Silla' },
-      { id: 'statue', col: 6, row: 0, type: 'decoration', description: 'Estatua' },
+      { id: 'pillar_stone', col: 3, row: 0, type: 'structure', description: 'Pilar de piedra' },
+      { id: 'sofa_stone', col: 4, row: 0, type: 'furniture', description: 'Sofá de piedra' },
+      { id: 'chair_stone', col: 5, row: 0, type: 'furniture', description: 'Silla de piedra' },
+      { id: 'statue_large', col: 6, row: 0, type: 'decoration', description: 'Estatua grande' },
       
-
-      { id: 'door', col: 0, row: 1, type: 'structure', description: 'Puerta' },
+      // Fila 1 - Más objetos
+      { id: 'door_wood', col: 0, row: 1, type: 'structure', description: 'Puerta de madera' },
       { id: 'crate_metal', col: 1, row: 1, type: 'container', description: 'Caja metálica' },
-      { id: 'table', col: 2, row: 1, type: 'furniture', description: 'Mesa' },
-      { id: 'pillar', col: 3, row: 1, type: 'structure', description: 'Pilar' },
-      { id: 'sofa', col: 4, row: 1, type: 'furniture', description: 'Sofá' },
-      { id: 'lamp', col: 5, row: 1, type: 'furniture', description: 'Lámpara' },
-      { id: 'bookcase_tall', col: 6, row: 1, type: 'furniture', description: 'Librería alta' },
+      { id: 'table_stone', col: 2, row: 1, type: 'furniture', description: 'Mesa de piedra' },
+      { id: 'pillar_decorated', col: 3, row: 1, type: 'structure', description: 'Pilar decorado' },
+      { id: 'sofa_decorated', col: 4, row: 1, type: 'furniture', description: 'Sofá decorado' },
+      { id: 'chair_decorated', col: 5, row: 1, type: 'furniture', description: 'Silla decorada' },
+      { id: 'bookcase', col: 6, row: 1, type: 'furniture', description: 'Librería' },
       
-
-      { id: 'fence_post', col: 0, row: 2, type: 'structure', description: 'Poste de cerca' },
-      { id: 'sign', col: 1, row: 2, type: 'decoration', description: 'Letrero' },
+      // Fila 2 - Objetos pequeños y decoraciones
+      { id: 'staff_1', col: 0, row: 2, type: 'item', description: 'Bastón 1' },
+      { id: 'staff_2', col: 1, row: 2, type: 'item', description: 'Bastón 2' },
       { id: 'barrel_small', col: 2, row: 2, type: 'container', description: 'Barril pequeño' },
-      { id: 'gravestone', col: 3, row: 2, type: 'decoration', description: 'Lápida' },
-      { id: 'altar', col: 4, row: 2, type: 'mystical', description: 'Altar' },
-      { id: 'throne', col: 5, row: 2, type: 'furniture', description: 'Trono' },
-      { id: 'pedestal', col: 6, row: 2, type: 'decoration', description: 'Pedestal' },
+      { id: 'gravestone_1', col: 3, row: 2, type: 'decoration', description: 'Lápida 1' },
+      { id: 'altar_stone', col: 4, row: 2, type: 'mystical', description: 'Altar de piedra' },
+      { id: 'throne_decorated', col: 5, row: 2, type: 'furniture', description: 'Trono decorado' },
+      { id: 'pedestal_round', col: 6, row: 2, type: 'decoration', description: 'Pedestal redondo' },
       
-
-      { id: 'staff', col: 0, row: 3, type: 'item', description: 'Bastón' },
-      { id: 'bag', col: 1, row: 3, type: 'container', description: 'Bolsa' },
+      // Fila 3 - Más objetos diversos
+      { id: 'cross_stone', col: 0, row: 3, type: 'decoration', description: 'Cruz de piedra' },
+      { id: 'bag_small', col: 1, row: 3, type: 'container', description: 'Bolsa pequeña' },
       { id: 'pot', col: 2, row: 3, type: 'container', description: 'Vasija' },
-      { id: 'cross', col: 3, row: 3, type: 'decoration', description: 'Cruz' },
+      { id: 'gravestone_2', col: 3, row: 3, type: 'decoration', description: 'Lápida 2' },
       { id: 'urn', col: 4, row: 3, type: 'decoration', description: 'Urna' },
-      { id: 'fountain_base', col: 5, row: 3, type: 'structure', description: 'Base de fuente' },
+      { id: 'fountain_decorated', col: 5, row: 3, type: 'structure', description: 'Fuente decorada' },
       
-
-      { id: 'rock', col: 0, row: 4, type: 'environment', description: 'Roca' },
-      { id: 'fountain_center', col: 4, row: 4, type: 'structure', description: 'Fuente central' }
+      // Fila 4 - Objetos finales y elementos especiales
+      { id: 'rock_large', col: 0, row: 4, type: 'environment', description: 'Roca grande' },
+      { id: 'fountain_center', col: 4, row: 4, type: 'structure', description: 'Fuente central' },
+      { id: 'fountain_spiral', col: 5, row: 4, type: 'structure', description: 'Fuente espiral' },
+      
+      // Fila 5 - Elementos decorativos finales (stones en la parte inferior)
+      { id: 'stone_deco_1', col: 0, row: 5, type: 'decoration', description: 'Piedra decorativa 1' },
+      { id: 'stone_deco_2', col: 1, row: 5, type: 'decoration', description: 'Piedra decorativa 2' },
+      { id: 'stone_deco_3', col: 2, row: 5, type: 'decoration', description: 'Piedra decorativa 3' },
+      { id: 'stone_deco_4', col: 3, row: 5, type: 'decoration', description: 'Piedra decorativa 4' },
+      { id: 'stone_deco_5', col: 4, row: 5, type: 'decoration', description: 'Piedra decorativa 5' },
+      { id: 'stone_deco_6', col: 5, row: 5, type: 'decoration', description: 'Piedra decorativa 6' }
     ]
   },
   
   'TX Plant.png': {
-    tileSize: 32,
-    tilesPerRow: 6,
+    tileSize: 64,
+    tilesPerRow: 3,
     tilesPerCol: 4,
     mapping: [
-
+      // Fila 0 - Árboles grandes
       { id: 'tree_large_1', col: 0, row: 0, type: 'tree', description: 'Árbol grande tipo 1' },
       { id: 'tree_large_2', col: 1, row: 0, type: 'tree', description: 'Árbol grande tipo 2' },
       { id: 'tree_large_3', col: 2, row: 0, type: 'tree', description: 'Árbol grande tipo 3' },
       
-
+      // Fila 1 - Arbustos medianos (32x32 dentro del grid de 64x64)
       { id: 'bush_large', col: 0, row: 1, type: 'bush', description: 'Arbusto grande' },
       { id: 'bush_medium', col: 1, row: 1, type: 'bush', description: 'Arbusto mediano' },
       { id: 'bush_small', col: 2, row: 1, type: 'bush', description: 'Arbusto pequeño' },
-      { id: 'bush_flower', col: 3, row: 1, type: 'bush', description: 'Arbusto con flores' },
-      { id: 'bush_berry', col: 4, row: 1, type: 'bush', description: 'Arbusto con bayas' },
-      { id: 'bush_dense', col: 5, row: 1, type: 'bush', description: 'Arbusto denso' }
+      
+      // Fila 2 - Más arbustos
+      { id: 'bush_flower', col: 0, row: 2, type: 'bush', description: 'Arbusto con flores' },
+      { id: 'bush_berry', col: 1, row: 2, type: 'bush', description: 'Arbusto con bayas' },
+      { id: 'bush_dense', col: 2, row: 2, type: 'bush', description: 'Arbusto denso' },
+      
+      // Fila 3 - Plantas pequeñas (reducir tamaño a 16x16 para estos)
+      { id: 'grass_tuft_1', col: 0, row: 3, type: 'grass_detail', description: 'Mata de hierba 1' },
+      { id: 'grass_tuft_2', col: 1, row: 3, type: 'grass_detail', description: 'Mata de hierba 2' },
+      { id: 'grass_tuft_3', col: 2, row: 3, type: 'grass_detail', description: 'Mata de hierba 3' }
     ]
   },
   
   'TX Shadow.png': {
     tileSize: 32,
-    tilesPerRow: 8,
+    tilesPerRow: 7,
     tilesPerCol: 8,
     mapping: [
-
-      { id: 'shadow_round_small', col: 0, row: 0, type: 'shadow', description: 'Sombra redonda pequeña' },
-      { id: 'shadow_round_medium', col: 1, row: 0, type: 'shadow', description: 'Sombra redonda mediana' },
-      { id: 'shadow_round_large', col: 2, row: 0, type: 'shadow', description: 'Sombra redonda grande' },
+      // Fila 0 - Sombras rectangulares
+      { id: 'shadow_rect_1', col: 0, row: 0, type: 'shadow', description: 'Sombra rectangular 1' },
+      { id: 'shadow_rect_2', col: 1, row: 0, type: 'shadow', description: 'Sombra rectangular 2' },
+      { id: 'shadow_rect_3', col: 2, row: 0, type: 'shadow', description: 'Sombra rectangular 3' },
+      { id: 'shadow_rect_4', col: 3, row: 0, type: 'shadow', description: 'Sombra rectangular 4' },
+      { id: 'shadow_large_1', col: 4, row: 0, type: 'shadow', description: 'Sombra grande 1' },
+      { id: 'shadow_large_2', col: 5, row: 0, type: 'shadow', description: 'Sombra grande 2' },
+      { id: 'shadow_complex', col: 6, row: 0, type: 'shadow', description: 'Sombra compleja' },
       
-
-      { id: 'shadow_oval_small', col: 0, row: 1, type: 'shadow', description: 'Sombra oval pequeña' },
-      { id: 'shadow_oval_medium', col: 1, row: 1, type: 'shadow', description: 'Sombra oval mediana' },
-      { id: 'shadow_oval_large', col: 2, row: 1, type: 'shadow', description: 'Sombra oval grande' },
+      // Fila 1 - Más sombras rectangulares
+      { id: 'shadow_rect_5', col: 0, row: 1, type: 'shadow', description: 'Sombra rectangular 5' },
+      { id: 'shadow_rect_6', col: 1, row: 1, type: 'shadow', description: 'Sombra rectangular 6' },
+      { id: 'shadow_rect_7', col: 2, row: 1, type: 'shadow', description: 'Sombra rectangular 7' },
+      { id: 'shadow_rect_8', col: 3, row: 1, type: 'shadow', description: 'Sombra rectangular 8' },
+      { id: 'shadow_large_3', col: 4, row: 1, type: 'shadow', description: 'Sombra grande 3' },
+      { id: 'shadow_large_4', col: 5, row: 1, type: 'shadow', description: 'Sombra grande 4' },
+      { id: 'shadow_small_1', col: 6, row: 1, type: 'shadow', description: 'Sombra pequeña 1' },
       
-
-      { id: 'shadow_irregular_1', col: 0, row: 2, type: 'shadow', description: 'Sombra irregular 1' },
-      { id: 'shadow_irregular_2', col: 1, row: 2, type: 'shadow', description: 'Sombra irregular 2' }
+      // Fila 2 - Sombras especiales
+      { id: 'shadow_cross_1', col: 0, row: 2, type: 'shadow', description: 'Sombra cruz 1' },
+      { id: 'shadow_round_1', col: 1, row: 2, type: 'shadow', description: 'Sombra redonda 1' },
+      { id: 'shadow_cross_2', col: 2, row: 2, type: 'shadow', description: 'Sombra cruz 2' },
+      { id: 'shadow_round_2', col: 3, row: 2, type: 'shadow', description: 'Sombra redonda 2' },
+      { id: 'shadow_rect_large', col: 4, row: 2, type: 'shadow', description: 'Sombra rectangular grande' },
+      { id: 'shadow_small_2', col: 5, row: 2, type: 'shadow', description: 'Sombra pequeña 2' },
+      { id: 'shadow_small_3', col: 6, row: 2, type: 'shadow', description: 'Sombra pequeña 3' },
+      
+      // Fila 3 - Sombras adicionales
+      { id: 'shadow_oval_1', col: 0, row: 3, type: 'shadow', description: 'Sombra oval 1' },
+      { id: 'shadow_oval_2', col: 1, row: 3, type: 'shadow', description: 'Sombra oval 2' },
+      { id: 'shadow_oval_3', col: 2, row: 3, type: 'shadow', description: 'Sombra oval 3' },
+      { id: 'shadow_cross_3', col: 3, row: 3, type: 'shadow', description: 'Sombra cruz 3' },
+      { id: 'shadow_oval_large', col: 4, row: 3, type: 'shadow', description: 'Sombra oval grande' },
+      { id: 'shadow_spiral', col: 5, row: 3, type: 'shadow', description: 'Sombra espiral' },
+      
+      // Fila 4 - Sombras de piedras decorativas
+      { id: 'shadow_rock', col: 0, row: 4, type: 'shadow', description: 'Sombra de roca' },
+      
+      // Fila 5 - Sombras pequeñas del bottom
+      { id: 'shadow_tiny_1', col: 0, row: 5, type: 'shadow', description: 'Sombra diminuta 1' },
+      { id: 'shadow_tiny_2', col: 1, row: 5, type: 'shadow', description: 'Sombra diminuta 2' },
+      { id: 'shadow_tiny_3', col: 2, row: 5, type: 'shadow', description: 'Sombra diminuta 3' },
+      { id: 'shadow_tiny_4', col: 3, row: 5, type: 'shadow', description: 'Sombra diminuta 4' },
+      { id: 'shadow_tiny_5', col: 4, row: 5, type: 'shadow', description: 'Sombra diminuta 5' },
+      { id: 'shadow_tiny_6', col: 5, row: 5, type: 'shadow', description: 'Sombra diminuta 6' }
     ]
   }
 };

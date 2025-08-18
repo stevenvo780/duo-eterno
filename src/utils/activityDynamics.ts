@@ -239,8 +239,19 @@ export const calculateActivityPriority = (
   
   let priority = 0;
 
-
-  const w = (v: number, alpha = 1.6) => 1 - Math.pow(Math.min(100, Math.max(0, v)) / 100, alpha);
+  // CORRIGIDO: Función w con validación y clamp de alpha
+  const w = (v: number, alpha = 1.6) => {
+    // CORRIGIDO: Validar inputs para evitar NaN/Infinity
+    if (!isFinite(v) || !isFinite(alpha)) return 0;
+    
+    const clampedV = Math.min(100, Math.max(0, v));
+    const clampedAlpha = Math.max(0.1, Math.min(10, alpha)); // CORRIGIDO: Clamp alpha
+    const base = clampedV / 100;
+    
+    // CORRIGIDO: Validar resultado de Math.pow
+    const result = Math.pow(base, clampedAlpha);
+    return isFinite(result) ? Math.max(0, Math.min(1, 1 - result)) : 0;
+  };
 
   if (activity === 'WORKING') {
     priority += w(currentStats.money) * 100;
@@ -280,11 +291,16 @@ export const calculateActivityPriority = (
   const efficiency = effects.efficiencyOverTime ? effects.efficiencyOverTime(timeSpentInActivity) : 0.5;
   priority *= efficiency;
 
-  if (effects.optimalDuration && timeSpentInActivity > effects.optimalDuration * 1.5) {
+  // CORRIGIDO: Validar timeSpentInActivity y optimalDuration
+  if (effects.optimalDuration && 
+      isFinite(timeSpentInActivity) && 
+      isFinite(effects.optimalDuration) && 
+      timeSpentInActivity > effects.optimalDuration * 1.5) {
     priority *= 0.5;
   }
 
-  return Math.max(0, priority);
+  // CORRIGIDO: Asegurar que el resultado final sea válido y positivo
+  return isFinite(priority) ? Math.max(0, priority) : 0;
 };
 
 export const applyHybridDecay = (
@@ -293,14 +309,21 @@ export const applyHybridDecay = (
   deltaTimeMs: number
 ): EntityStats => {
   const newStats = { ...currentStats };
-  const timeMultiplier = (deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
+  
+  // CORRIGIDO: Validar deltaTimeMs para evitar cálculos erróneos
+  if (!isFinite(deltaTimeMs) || deltaTimeMs < 0) {
+    return newStats; // No aplicar decay si el tiempo es inválido
+  }
+  
+  // CORRIGIDO: Usar división más segura y clamp el resultado
+  const safeTimeMultiplier = Math.min(10, deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
   
   const decayMultiplier = ACTIVITY_DECAY_MULTIPLIERS[activity] ?? 1.0;
 
   Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
     if (statName in newStats) {
       const finalRate = baseRate * decayMultiplier;
-      const configuredRate = finalRate * DECAY_CONFIG.GENERAL_MULTIPLIER * timeMultiplier;
+      const configuredRate = finalRate * DECAY_CONFIG.GENERAL_MULTIPLIER * safeTimeMultiplier;
       const statKey = statName as keyof EntityStats;
       
       let newValue = newStats[statKey] + configuredRate;
@@ -311,7 +334,8 @@ export const applyHybridDecay = (
         newValue = Math.max(0, Math.min(100, newValue));
       }
       
-      newStats[statKey] = newValue as EntityStats[keyof EntityStats];
+      // CORRIGIDO: Validar que el valor final sea finito
+      newStats[statKey] = isFinite(newValue) ? newValue as EntityStats[keyof EntityStats] : newStats[statKey];
     }
   });
 

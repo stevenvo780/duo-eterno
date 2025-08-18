@@ -12,8 +12,6 @@ import {
   MATH
 } from '../constants';
 
-
-
 /**
  * Redondeo de alta precisión SIN sesgo epsilon
  * CORRIGIDO: Elimina la adición de epsilon que causaba sesgo
@@ -100,13 +98,14 @@ class DeterministicNoise {
   
   /**
    * Genera tabla de permutación determinista basada en seed
+   * CORRIGIDO: Mejor manejo de overflow para seeds grandes
    */
   private generatePermutation(seed: number): number[] {
-
-    let state = seed;
+    // CORRIGIDO: Normalizar seed para evitar overflow
+    let state = Math.abs(seed) % 2147483647; // Max safe 32-bit integer
     const a = 1664525;
     const c = 1013904223;
-    const m = Math.pow(2, 32);
+    const m = 2147483647; // Usar valor más seguro
     
     const random = () => {
       state = (a * state + c) % m;
@@ -187,14 +186,19 @@ export const deterministicNoise = (x: number, y: number): number => {
 /**
  * Función de ruido híbrido que permite variabilidad controlada
  * Para casos donde se necesita balance entre determinismo y naturalidad
+ * CORRIGIDO: Ahora usa seed determinista en lugar de Math.random()
  */
-export const balancedNoise = (x: number, y: number, variabilityFactor: number = 0.3): number => {
+export const balancedNoise = (x: number, y: number, variabilityFactor: number = 0.3, seed: number = 54321): number => {
+  if (!validateNumber(x, 'balancedNoise.x') || !validateNumber(y, 'balancedNoise.y')) {
+    return 0;
+  }
+  
   const deterministicComponent = globalNoise.noise2D(x, y);
   
-
   if (variabilityFactor > 0 && variabilityFactor <= 1) {
-
-    const variableComponent = Math.random();
+    // CORRIGIDO: Usar generador determinista en lugar de Math.random()
+    const variabilityNoise = new DeterministicNoise(seed);
+    const variableComponent = (variabilityNoise.noise2D(x * 0.1, y * 0.1) + 1) * 0.5; // Normalizar a [0,1]
     return deterministicComponent * (1 - variabilityFactor) + variableComponent * variabilityFactor;
   }
   
@@ -363,7 +367,7 @@ const vectorMath = {
 
 /**
  * Validador numérico robusto
- * CORRIGIDO: Mejor detección de casos problemáticos
+ * CORRIGIDO: Logging condicional para producción
  */
 export const validateNumber = (
   value: number, 
@@ -372,31 +376,31 @@ export const validateNumber = (
     allowZero?: boolean;
     allowNegative?: boolean;
     maxAbsValue?: number;
+    silent?: boolean; // NUEVO: Para evitar spam en producción
   } = {}
 ): boolean => {
-  const { allowZero = true, allowNegative = true, maxAbsValue = 1e12 } = options;
+  const { allowZero = true, allowNegative = true, maxAbsValue = 1e12, silent = false } = options;
   
-
+  // CORRIGIDO: Solo log en desarrollo o cuando no esté en silent mode
+  const shouldLog = !silent && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test');
+  
   if (!isFinite(value)) {
-    console.error(`🔧 Valor no finito en ${context}: ${value}`);
+    if (shouldLog) console.error(`🔧 Valor no finito en ${context}: ${value}`);
     return false;
   }
   
-
   if (!allowZero && Math.abs(value) < MATH.EFFECTIVE_ZERO) {
-    console.warn(`🔧 Valor demasiado cercano a cero en ${context}: ${value}`);
+    if (shouldLog) console.warn(`🔧 Valor demasiado cercano a cero en ${context}: ${value}`);
     return false;
   }
   
-
   if (!allowNegative && value < 0) {
-    console.warn(`🔧 Valor negativo no permitido en ${context}: ${value}`);
+    if (shouldLog) console.warn(`🔧 Valor negativo no permitido en ${context}: ${value}`);
     return false;
   }
   
-
   if (Math.abs(value) > maxAbsValue) {
-    console.warn(`🔧 Valor demasiado grande en ${context}: ${value} (máximo: ${maxAbsValue})`);
+    if (shouldLog) console.warn(`🔧 Valor demasiado grande en ${context}: ${value} (máximo: ${maxAbsValue})`);
     return false;
   }
   

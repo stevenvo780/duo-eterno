@@ -146,20 +146,4 @@ export const EFFICIENCY_FUNCTIONS = {
 
 
 
-export const validateActivityConstants = (): boolean => {
-  try {
-
-    const activities = Object.keys(ACTIVITY_OPTIMAL_DURATIONS);
-    const multipliers = Object.keys(ACTIVITY_DECAY_MULTIPLIERS);
-    const efficiencyFns = Object.keys(EFFICIENCY_FUNCTIONS);
-    
-    return activities.length > 0 && 
-           multipliers.length > 0 && 
-           efficiencyFns.length > 0 &&
-           activities.length === multipliers.length &&
-           activities.length === efficiencyFns.length;
-  } catch (error) {
-    console.error('Error validating activity constants:', error);
-    return false;
-  }
-};
+// Eliminada función de validación no usada

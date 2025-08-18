@@ -294,20 +294,4 @@ export const getActivePerformanceAlerts = (): PerformanceAlert[] => {
   return performanceMonitor.getActiveAlerts();
 };
 
-export const updatePerformanceThrottlers = (fps: number): void => {
-  autopoiesisThrottler.updateFPS(fps);
-  movementThrottler.updateFPS(fps);
-};
-
-
-
-export const usePerformanceMonitoring = () => {
-  return {
-    getCurrentMetrics,
-    recordFrame,
-    recordRenderCall,
-    getAlerts: getActivePerformanceAlerts,
-    shouldUpdateAutopoiesis,
-    shouldUpdateMovement
-  };
-};
+// Eliminados exports no usados: updatePerformanceThrottlers, usePerformanceMonitoring

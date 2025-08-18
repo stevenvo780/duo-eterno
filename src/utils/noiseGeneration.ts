@@ -1,17 +1,5 @@
 /**
- * 🌊 GENERACIÓN DE RUIDO PROCEDIMENTAL
- *
- * Contiene implementaciones de Perlin y Simplex 2D para generar campos de ruido
- * coherente y variaciones fractales.
- *
- * Notas científicas
- * -----------------
- * - Perlin: usa gradientes en rejilla, interpolación quintic (fade t^3(6t^2-15t+10)),
- *   y tabla de permutación seedable. generateFractalNoise aplica fBm con
- *   `octaves`, `persistence` (amplitud decreciente) y `lacunarity` (frecuencia creciente).
- * - Simplex 2D: skew/unskew del espacio con F2=(√3-1)/2, G2=(3-√3)/6 para formar
- *   triángulos; reduce artefactos y coste O(1)/píxel. Devuelve suma ponderada de
- *   contribuciones de los 3 vértices del simplex, escalada por 70.
+ * Sistema de generación de ruido Perlin y utilidades para mapas orgánicos
  */
 
 export interface Point {
@@ -20,62 +8,101 @@ export interface Point {
 }
 
 export interface NoiseConfig {
-  seed: number;
   scale: number;
   octaves: number;
   persistence: number;
   lacunarity: number;
+  seed: number;
 }
 
-/**
- * 🎲 IMPLEMENTACIÓN DE PERLIN NOISE
- * Algoritmo estándar para generar ruido coherente y orgánico
- */
-export class PerlinNoise {
-  private permutation!: number[];
-  private gradients!: Point[];
+export const NOISE_PRESETS = {
+  SMOOTH: {
+    scale: 50,
+    octaves: 4,
+    persistence: 0.5,
+    lacunarity: 2,
+    seed: 0
+  },
+  ROUGH: {
+    scale: 25,
+    octaves: 6,
+    persistence: 0.6,
+    lacunarity: 2.5,
+    seed: 0
+  },
+  FINE: {
+    scale: 100,
+    octaves: 8,
+    persistence: 0.4,
+    lacunarity: 2,
+    seed: 0
+  },
+  ORGANIC_VARIATION: {
+    scale: 75,
+    octaves: 5,
+    persistence: 0.55,
+    lacunarity: 2.2,
+    seed: 0
+  },
+  TERRAIN: {
+    scale: 30,
+    octaves: 6,
+    persistence: 0.7,
+    lacunarity: 2.1,
+    seed: 0
+  }
+} as const;
 
-  constructor(seed: number = 12345) {
-    this.initializePermutation(seed);
-    this.initializeGradients();
+export class PerlinNoise {
+  private permutation: number[] = [];
+  private p: number[] = [];
+
+  constructor(seed: number = 0) {
+    // CORRIGIDO: Validar y normalizar seed de entrada
+    const safeSeed = isFinite(seed) ? Math.abs(seed) % 2147483647 : 0;
+    this.initializePermutation(safeSeed);
   }
 
-  private initializePermutation(seed: number): void {
-
-    this.permutation = [];
+  private initializePermutation(seed: number) {
+    // CORRIGIDO: Validar seed de entrada
+    if (!isFinite(seed)) {
+      seed = 0;
+    }
+    
+    // Generar permutación basada en la semilla
+    const rng = this.seedRandom(seed);
+    
+    // Permutación base
     for (let i = 0; i < 256; i++) {
       this.permutation[i] = i;
     }
-
-
-    let seedValue = seed;
-    const seededRandom = () => {
-      seedValue = (seedValue * 9301 + 49297) % 233280;
-      return seedValue / 233280;
-    };
-
+    
+    // Mezclar usando la semilla
     for (let i = 255; i > 0; i--) {
-      const j = Math.floor(seededRandom() * (i + 1));
+      const j = Math.floor(rng() * (i + 1));
       [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
     }
-
-
-    for (let i = 0; i < 256; i++) {
-      this.permutation[i + 256] = this.permutation[i];
+    
+    // Duplicar para evitar desbordamientos
+    for (let i = 0; i < 512; i++) {
+      this.p[i] = this.permutation[i % 256];
     }
   }
 
-  private initializeGradients(): void {
-
-    this.gradients = [
-      { x: 1, y: 1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: -1 },
-      { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }
-    ];
+  private seedRandom(seed: number) {
+    // CORRIGIDO: Usar const para valores inmutables y mejor overflow handling
+    const m = 2147483647; // Max safe 32-bit integer (más seguro que 0x80000000)
+    const a = 1103515245;
+    const c = 12345;
+    let state = Math.abs(seed) % m; // CORRIGIDO: Normalizar seed
+    
+    return function() {
+      state = (a * state + c) % m;
+      return state / (m - 1);
+    };
   }
 
-  // Interpolador quintic continuo en C2: evita artefactos en rejilla
   private fade(t: number): number {
-
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
 
@@ -84,60 +111,60 @@ export class PerlinNoise {
   }
 
   private grad(hash: number, x: number, y: number): number {
-    const gradient = this.gradients[hash & 7];
-    return gradient.x * x + gradient.y * y;
+    const h = hash & 15;
+    const u = h < 8 ? x : y;
+    const v = h < 4 ? y : (h === 12 || h === 14) ? x : 0;
+    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
   }
 
-  /**
-   * Genera ruido Perlin 2D en [x,y].
-   * Detalle: interpola gradientes de las 4 esquinas del celda con fade(u), fade(v).
-   */
-  generateNoise2D(x: number, y: number): number {
-
-    const xi = Math.floor(x) & 255;
-    const yi = Math.floor(y) & 255;
-
-
-    const xf = x - Math.floor(x);
-    const yf = y - Math.floor(y);
-
-
-    const u = this.fade(xf);
-    const v = this.fade(yf);
-
-
-    const aa = this.permutation[this.permutation[xi] + yi];
-    const ab = this.permutation[this.permutation[xi] + yi + 1];
-    const ba = this.permutation[this.permutation[xi + 1] + yi];
-    const bb = this.permutation[this.permutation[xi + 1] + yi + 1];
-
-
-    const x1 = this.lerp(
-      this.grad(aa, xf, yf),
-      this.grad(ba, xf - 1, yf),
-      u
+  noise(x: number, y: number): number {
+    // CORRIGIDO: Validar inputs para evitar NaN/Infinity
+    if (!isFinite(x) || !isFinite(y)) {
+      return 0;
+    }
+    
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    
+    x -= Math.floor(x);
+    y -= Math.floor(y);
+    
+    const u = this.fade(x);
+    const v = this.fade(y);
+    
+    const A = this.p[X] + Y;
+    const AA = this.p[A];
+    const AB = this.p[A + 1];
+    const B = this.p[X + 1] + Y;
+    const BA = this.p[B];
+    const BB = this.p[B + 1];
+    
+    const result = this.lerp(
+      this.lerp(
+        this.grad(this.p[AA], x, y),
+        this.grad(this.p[BA], x - 1, y),
+        u
+      ),
+      this.lerp(
+        this.grad(this.p[AB], x, y - 1),
+        this.grad(this.p[BB], x - 1, y - 1),
+        u
+      ),
+      v
     );
-    const x2 = this.lerp(
-      this.grad(ab, xf, yf - 1),
-      this.grad(bb, xf - 1, yf - 1),
-      u
-    );
-
-    return this.lerp(x1, x2, v);
+    
+    // CORRIGIDO: Asegurar que el resultado esté en rango válido
+    return isFinite(result) ? Math.max(-1, Math.min(1, result)) : 0;
   }
 
-  /**
-   * fBm (fractal Brownian motion): combina `octaves` de Perlin con
-   * amplitud acumulativa y frecuencia creciente.
-   */
-  generateFractalNoise(x: number, y: number, config: NoiseConfig): number {
+  octaveNoise(x: number, y: number, config: NoiseConfig): number {
     let value = 0;
     let amplitude = 1;
-    let frequency = config.scale;
+    let frequency = 1 / config.scale;
     let maxValue = 0;
 
     for (let i = 0; i < config.octaves; i++) {
-      value += this.generateNoise2D(x * frequency, y * frequency) * amplitude;
+      value += this.noise(x * frequency, y * frequency) * amplitude;
       maxValue += amplitude;
       amplitude *= config.persistence;
       frequency *= config.lacunarity;
@@ -146,137 +173,32 @@ export class PerlinNoise {
     return value / maxValue;
   }
 
-  /**
-   * Mapa de elevación normalizado [0,1] a partir de fBm, muestreo uniforme.
-   */
+  generateNoise2D(x: number, y: number, preset?: keyof typeof NOISE_PRESETS): number {
+    const config = preset ? NOISE_PRESETS[preset] : NOISE_PRESETS.SMOOTH;
+    return this.octaveNoise(x, y, config);
+  }
+
   generateElevationMap(width: number, height: number, config: NoiseConfig): number[][] {
     const elevationMap: number[][] = [];
     
     for (let y = 0; y < height; y++) {
       elevationMap[y] = [];
       for (let x = 0; x < width; x++) {
-        const noise = this.generateFractalNoise(x / width, y / height, config);
-        elevationMap[y][x] = (noise + 1) * 0.5;
+        const value = this.octaveNoise(x, y, config);
+        // Normalizar a rango [0, 1]
+        elevationMap[y][x] = (value + 1) / 2;
       }
     }
-
+    
     return elevationMap;
   }
 }
 
-/**
- * 🌀 GENERACIÓN DE RUIDO SIMPLEX (ALTERNATIVA MÁS EFICIENTE)
- * Skew/unskew 2D con constantes F2/G2. Escala final 70*(n0+n1+n2).
- */
-export class SimplexNoise {
-  private perm!: number[];
-  private F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
-  private G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
-
-  constructor(seed: number = 12345) {
-    this.initializePermutation(seed);
-  }
-
-  private initializePermutation(seed: number): void {
-    this.perm = [];
-    const p = [];
-    
-    for (let i = 0; i < 256; i++) {
-      p[i] = i;
-    }
-
-    let seedValue = seed;
-    const seededRandom = () => {
-      seedValue = (seedValue * 9301 + 49297) % 233280;
-      return seedValue / 233280;
-    };
-
-    for (let i = 255; i > 0; i--) {
-      const j = Math.floor(seededRandom() * (i + 1));
-      [p[i], p[j]] = [p[j], p[i]];
-    }
-
-    for (let i = 0; i < 512; i++) {
-      this.perm[i] = p[i & 255];
-    }
-  }
-
-  generateNoise2D(xin: number, yin: number): number {
-    let n0, n1, n2;
-
-    const s = (xin + yin) * this.F2;
-    const i = Math.floor(xin + s);
-    const j = Math.floor(yin + s);
-    const t = (i + j) * this.G2;
-    const X0 = i - t;
-    const Y0 = j - t;
-    const x0 = xin - X0;
-    const y0 = yin - Y0;
-
-    let i1, j1;
-    if (x0 > y0) {
-      i1 = 1;
-      j1 = 0;
-    } else {
-      i1 = 0;
-      j1 = 1;
-    }
-
-    const x1 = x0 - i1 + this.G2;
-    const y1 = y0 - j1 + this.G2;
-    const x2 = x0 - 1.0 + 2.0 * this.G2;
-    const y2 = y0 - 1.0 + 2.0 * this.G2;
-
-    const ii = i & 255;
-    const jj = j & 255;
-    const gi0 = this.perm[ii + this.perm[jj]] % 12;
-    const gi1 = this.perm[ii + i1 + this.perm[jj + j1]] % 12;
-    const gi2 = this.perm[ii + 1 + this.perm[jj + 1]] % 12;
-
-    let t0 = 0.5 - x0 * x0 - y0 * y0;
-    if (t0 < 0) n0 = 0.0;
-    else {
-      t0 *= t0;
-      n0 = t0 * t0 * this.grad(gi0, x0, y0);
-    }
-
-    let t1 = 0.5 - x1 * x1 - y1 * y1;
-    if (t1 < 0) n1 = 0.0;
-    else {
-      t1 *= t1;
-      n1 = t1 * t1 * this.grad(gi1, x1, y1);
-    }
-
-    let t2 = 0.5 - x2 * x2 - y2 * y2;
-    if (t2 < 0) n2 = 0.0;
-    else {
-      t2 *= t2;
-      n2 = t2 * t2 * this.grad(gi2, x2, y2);
-    }
-
-    return 70.0 * (n0 + n1 + n2);
-  }
-
-  private grad(hash: number, x: number, y: number): number {
-    const h = hash & 7;
-    const u = h < 4 ? x : y;
-    const v = h < 4 ? y : x;
-    return ((h & 1) ? -u : u) + ((h & 2) ? -2.0 * v : 2.0 * v);
-  }
-}
-
-/**
- * 🎯 FUNCIONES AUXILIARES PARA APLICACIONES ESPECÍFICAS
- */
-
-/**
- * Generar mapa de densidad para distribución orgánica de elementos
- */
 export function generateDensityMap(
-  width: number, 
-  height: number, 
+  width: number,
+  height: number,
   config: NoiseConfig,
-  centerBias: boolean = true
+  naturalClustering?: boolean
 ): number[][] {
   const noise = new PerlinNoise(config.seed);
   const densityMap: number[][] = [];
@@ -284,90 +206,80 @@ export function generateDensityMap(
   for (let y = 0; y < height; y++) {
     densityMap[y] = [];
     for (let x = 0; x < width; x++) {
-      let density = noise.generateFractalNoise(x / width, y / height, config);
+      let value = noise.octaveNoise(x, y, config);
       
-
-      if (centerBias) {
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const distanceFromCenter = Math.sqrt(
-          Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
-        );
-        const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
-        const centerWeight = 1 - (distanceFromCenter / maxDistance);
-        
-        density = density * 0.7 + centerWeight * 0.3;
+      // Aplicar clustering natural si se especifica
+      if (naturalClustering) {
+        // Crear clusters más naturales usando múltiples capas de ruido
+        const clusterNoise = noise.octaveNoise(x * 0.5, y * 0.5, {
+          ...config,
+          scale: config.scale * 2,
+          octaves: 3
+        });
+        value = (value + clusterNoise * 0.3) / 1.3;
       }
-
-      densityMap[y][x] = Math.max(0, Math.min(1, (density + 1) * 0.5));
+      
+      // Normalizar a rango [0, 1]
+      densityMap[y][x] = (value + 1) / 2;
     }
   }
 
   return densityMap;
 }
 
-/**
- * Generar variación orgánica para tamaños y posiciones
- */
-export function generateOrganicVariation(
-  baseValue: number,
-  x: number,
-  y: number,
-  noise: PerlinNoise,
-  variationAmount: number = 0.3
-): number {
-  const noiseValue = noise.generateNoise2D(x * 0.1, y * 0.1);
-  const variation = noiseValue * variationAmount;
-  return baseValue * (1 + variation);
-}
-
-/**
- * Crear coordenadas con jitter natural
- */
-export function addOrganicJitter(
-  point: Point,
-  noise: PerlinNoise,
-  jitterAmount: number = 10
-): Point {
-  const noiseX = noise.generateNoise2D(point.x * 0.05, point.y * 0.05);
-  const noiseY = noise.generateNoise2D(point.x * 0.05 + 100, point.y * 0.05 + 100);
+export function smoothDensityMap(
+  densityMap: number[][],
+  iterations: number = 1
+): number[][] {
+  let result = densityMap.map(row => [...row]);
   
-  return {
-    x: point.x + noiseX * jitterAmount,
-    y: point.y + noiseY * jitterAmount
-  };
+  for (let iter = 0; iter < iterations; iter++) {
+    const newMap = result.map(row => [...row]);
+    
+    for (let y = 1; y < result.length - 1; y++) {
+      for (let x = 1; x < result[y].length - 1; x++) {
+        let sum = 0;
+        let count = 0;
+        
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            sum += result[y + dy][x + dx];
+            count++;
+          }
+        }
+        
+        newMap[y][x] = sum / count;
+      }
+    }
+    
+    result = newMap;
+  }
+  
+  return result;
 }
 
-/**
- * Presets de configuración para diferentes usos
- */
-export const NOISE_PRESETS = {
-  TERRAIN: {
-    seed: 42,
-    scale: 0.01,
-    octaves: 4,
-    persistence: 0.5,
-    lacunarity: 2.0
-  },
-  SETTLEMENT_LAYOUT: {
-    seed: 123,
-    scale: 0.02,
-    octaves: 3,
-    persistence: 0.6,
-    lacunarity: 1.8
-  },
-  ORGANIC_VARIATION: {
-    seed: 456,
-    scale: 0.05,
-    octaves: 2,
-    persistence: 0.4,
-    lacunarity: 2.2
-  },
-  STREET_CURVATURE: {
-    seed: 789,
-    scale: 0.03,
-    octaves: 2,
-    persistence: 0.3,
-    lacunarity: 2.5
+export function generatePerlinField(
+  width: number,
+  height: number,
+  seed: string,
+  preset: keyof typeof NOISE_PRESETS = 'SMOOTH'
+): number[][] {
+  const config = {
+    ...NOISE_PRESETS[preset],
+    seed: stringToSeed(seed)
+  };
+  
+  return generateDensityMap(width, height, config);
+}
+
+function stringToSeed(str: string): number {
+  // CORRIGIDO: Mejor algoritmo hash para evitar colisiones
+  let hash = 5381; // DJB2 hash base
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) + hash) + char; // hash * 33 + char
+    hash = hash & hash; // Convertir a 32bit integer
   }
-} as const;
+  // CORRIGIDO: Asegurar que el resultado sea positivo y en rango seguro
+  return Math.abs(hash) % 2147483647;
+}

@@ -196,8 +196,10 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   const generateOrganicTileMap = useCallback(() => {
     if (grassTiles.length === 0 || organicZones.length === 0) return;
     
-    const mapWidth = Math.ceil(width / 32) + 2;
-    const mapHeight = Math.ceil(height / 32) + 2;
+    // Usar 16x16 para grass tiles (ya que corregimos el tamaño)
+    const tileSize = 16;
+    const mapWidth = Math.ceil(width / tileSize) + 2;
+    const mapHeight = Math.ceil(height / tileSize) + 2;
     const tiles: string[][] = [];
     
     console.log('🗺️ Generando mapa visual orgánico...');
@@ -213,10 +215,10 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
     // Aplicar zonas específicas
     organicZones.forEach(zone => {
-      const startX = Math.floor(zone.bounds.x / 32);
-      const startY = Math.floor(zone.bounds.y / 32);
-      const endX = Math.min(mapWidth - 1, Math.floor((zone.bounds.x + zone.bounds.width) / 32));
-      const endY = Math.min(mapHeight - 1, Math.floor((zone.bounds.y + zone.bounds.height) / 32));
+      const startX = Math.floor(zone.bounds.x / tileSize);
+      const startY = Math.floor(zone.bounds.y / tileSize);
+      const endX = Math.min(mapWidth - 1, Math.floor((zone.bounds.x + zone.bounds.width) / tileSize));
+      const endY = Math.min(mapHeight - 1, Math.floor((zone.bounds.y + zone.bounds.height) / tileSize));
       
       for (let y = startY; y <= endY; y++) {
         for (let x = startX; x <= endX; x++) {
@@ -255,7 +257,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
     setTileMap({
       tiles,
-      tileSize: 32,
+      tileSize: tileSize,
       width: mapWidth,
       height: mapHeight
     });
@@ -263,6 +265,20 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     console.log(`✅ Mapa orgánico generado: ${mapWidth}x${mapHeight}`);
   }, [width, height, grassTiles, stoneTiles, organicZones]);
 
+
+  // Función para obtener el tamaño de renderizado de un tile
+  const getTileRenderSize = useCallback((tile: ExtractedTile) => {
+    // Determinar el tamaño basado en el tipo de sprite
+    if (tile.id.includes('tree_large')) {
+      return 64; // Árboles grandes
+    } else if (tile.id.includes('stone_large') || tile.id.includes('stone_detailed')) {
+      return 64; // Piedras grandes
+    } else if (tile.id.includes('bush') || tile.id.includes('grass')) {
+      return 32; // Arbustos y detalles de césped
+    } else {
+      return 32; // Tamaño por defecto para props
+    }
+  }, []);
 
   const generateOrganicGameObjects = useCallback(() => {
     if (propTiles.length === 0 || plantTiles.length === 0 || organicMapElements.length === 0) return;
@@ -419,13 +435,14 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     // Renderizar sombras de objetos
     gameObjects.forEach(obj => {
       if (obj.shadow) {
+        const shadowSize = getTileRenderSize(obj.tile);
         ctx.globalAlpha = 0.4;
         ctx.drawImage(
           obj.shadow.image,
           obj.x + 3,
           obj.y + 3,
-          32,
-          32
+          shadowSize,
+          shadowSize
         );
         ctx.globalAlpha = 1.0;
       }
@@ -433,12 +450,13 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
     // Renderizar objetos principales
     gameObjects.forEach(obj => {
+      const objectSize = getTileRenderSize(obj.tile);
       ctx.drawImage(
         obj.tile.image,
         obj.x,
         obj.y,
-        32,
-        32
+        objectSize,
+        objectSize
       );
     });
     
@@ -470,7 +488,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
     ctx.restore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, organicZones, width, height, zoom, panX, panY, getLightIntensity, phase]);
+  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, organicZones, width, height, zoom, panX, panY, getLightIntensity, phase, getTileRenderSize]);
 
 
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {

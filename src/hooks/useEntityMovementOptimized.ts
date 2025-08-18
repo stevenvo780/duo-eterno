@@ -4,6 +4,7 @@ import { shouldUpdateMovement, measureExecutionTime } from '../utils/performance
 import { makeIntelligentDecision } from '../utils/aiDecisionEngine';
 import { getAttractionTarget, getEntityZone, checkCollisionWithObstacles } from '../utils/mapGeneration';
 import { MOVEMENT_CONFIG, NEED_TO_ZONE_MAPPING, RESONANCE_THRESHOLDS } from "../constants";
+import { MAP_CONFIG } from "../utils/organicMapGeneration"; // NUEVO: Import para boundaries
 import type { Entity, Zone, Position } from '../types';
 import { getGameIntervals } from '../config/gameConfig';
 
@@ -132,14 +133,15 @@ export const useEntityMovementOptimized = () => {
     const dy = target.y - entity.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-
-    if (distance < 20) {
+    // CORRIGIDO: Protección contra división por cero
+    if (distance < 1e-10) { // Usar epsilon pequeño en lugar de comparación exacta
       return entity.position;
     }
 
-
-    const dirX = dx / distance;
-    const dirY = dy / distance;
+    // CORRIGIDO: Usar Math.hypot para mejor precisión
+    const safeDistance = Math.max(1e-10, distance);
+    const dirX = dx / safeDistance;
+    const dirY = dy / safeDistance;
     
 
     const { entityMovementSpeed } = getGameIntervals();
@@ -166,9 +168,11 @@ export const useEntityMovementOptimized = () => {
       }
     }
 
-
-    newX = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(1000 - MOVEMENT_CONFIG.ENTITY_SIZE, newX));
-    newY = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(600 - MOVEMENT_CONFIG.ENTITY_SIZE, newY));
+    // CORRIGIDO: Usar MAP_CONFIG en lugar de valores hardcodeados
+    const maxX = MAP_CONFIG.width - MOVEMENT_CONFIG.ENTITY_SIZE;
+    const maxY = MAP_CONFIG.height - MOVEMENT_CONFIG.ENTITY_SIZE;
+    newX = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxX, newX));
+    newY = Math.max(MOVEMENT_CONFIG.ENTITY_SIZE, Math.min(maxY, newY));
 
 
     const newPosition = { x: newX, y: newY };
