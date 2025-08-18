@@ -63,7 +63,6 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   const [stoneTiles, setStoneTiles] = useState<ExtractedTile[]>([]);
   const [propTiles, setPropTiles] = useState<ExtractedTile[]>([]);
   const [plantTiles, setPlantTiles] = useState<ExtractedTile[]>([]);
-  const [shadowTiles, setShadowTiles] = useState<ExtractedTile[]>([]);
 
   // Cargar sistema completo de assets profesionales
   const loadProfessionalAssets = useCallback(async () => {
@@ -129,7 +128,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       setStoneTiles(stoneCollection);
       setPropTiles(propCollection);
       setPlantTiles(plantCollection);
-      setShadowTiles(shadowCollection);
+      // shadowTiles removed as unused
       
       setLoadingProgress(90);
       
@@ -422,10 +421,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     ctx.globalAlpha = 1.0;
     
     // Renderizar cuerpo de entidad (top-down view)
-    ctx.fillStyle = entity.mood === 'happy' ? '#4CAF50' : 
-                   entity.mood === 'sad' ? '#F44336' : '#FF9800';
+    ctx.fillStyle = entity.mood === 'HAPPY' ? '#4CAF50' : 
+                   entity.mood === 'SAD' ? '#F44336' : '#FF9800';
     
-    if (entity.shape === 'circle') {
+    // Determinar forma basada en ID (circle vs square)
+    if (entity.id === 'circle') {
       ctx.beginPath();
       ctx.arc(x, y, size/2, 0, Math.PI * 2);
       ctx.fill();
@@ -437,8 +437,8 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
-    const faceEmoji = entity.mood === 'happy' ? '😊' : 
-                     entity.mood === 'sad' ? '😢' : '😵';
+    const faceEmoji = entity.mood === 'HAPPY' ? '😊' : 
+                     entity.mood === 'SAD' ? '😢' : '😵';
     ctx.fillText(faceEmoji, x, y + 3);
   }, []);
 

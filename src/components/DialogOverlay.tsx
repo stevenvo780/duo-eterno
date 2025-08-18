@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '../hooks/useGame';
 
 const DialogOverlay: React.FC = () => {

@@ -23,8 +23,8 @@ export interface NoiseConfig {
  * Algoritmo estándar para generar ruido coherente y orgánico
  */
 export class PerlinNoise {
-  private permutation: number[];
-  private gradients: Point[];
+  private permutation!: number[];
+  private gradients!: Point[];
 
   constructor(seed: number = 12345) {
     this.initializePermutation(seed);
@@ -157,7 +157,7 @@ export class PerlinNoise {
  * Versión simplificada para casos que requieren mayor performance
  */
 export class SimplexNoise {
-  private perm: number[];
+  private perm!: number[];
   private F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
   private G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
 

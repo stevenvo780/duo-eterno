@@ -6,7 +6,7 @@
  */
 
 import type { Point } from './noiseGeneration';
-import { PerlinNoise, generateOrganicVariation } from './noiseGeneration';
+import { PerlinNoise } from './noiseGeneration';
 
 export interface VoronoiCell {
   id: string;
@@ -95,7 +95,7 @@ export class VoronoiGenerator {
       const candidate = this.generateCandidatePoint(seededRandom);
       
       // Verificar distancia mínima con otros puntos
-      if (this.isValidPoint(candidate, points, grid, cellSize, gridWidth, gridHeight)) {
+      if (this.isValidPoint(candidate, grid, cellSize, gridWidth, gridHeight)) {
         points.push(candidate);
         
         // Agregar al grid
@@ -114,7 +114,7 @@ export class VoronoiGenerator {
         y: boundaryPadding + seededRandom() * (height - 2 * boundaryPadding)
       };
       
-      if (this.isValidPoint(fallbackPoint, points, grid, cellSize, gridWidth, gridHeight)) {
+      if (this.isValidPoint(fallbackPoint, grid, cellSize, gridWidth, gridHeight)) {
         points.push(fallbackPoint);
       }
     }
@@ -170,7 +170,6 @@ export class VoronoiGenerator {
    */
   private isValidPoint(
     candidate: Point,
-    existingPoints: Point[],
     grid: Point[][],
     cellSize: number,
     gridWidth: number,

@@ -7,7 +7,6 @@
 
 import type { Point } from './noiseGeneration';
 import { PerlinNoise, NOISE_PRESETS } from './noiseGeneration';
-import type { VoronoiCell } from './voronoiGeneration';
 
 export interface OrganicStreet {
   id: string;
@@ -40,12 +39,12 @@ export interface StreetConfig {
  */
 export class OrganicStreetGenerator {
   private noise: PerlinNoise;
-  private elevationMap: number[][];
+  private elevationMap!: number[][];
   private config: StreetConfig;
   private width: number;
   private height: number;
   private streets: OrganicStreet[] = [];
-  private occupancyGrid: boolean[][];
+  private occupancyGrid!: boolean[][];
 
   constructor(
     width: number, 

@@ -1017,7 +1017,7 @@ export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElemen
 }
 
 // 🎨 OBTENER COLOR TEMÁTICO PARA HABITACIONES
-function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITECTURAL_THEMES): string {
+export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITECTURAL_THEMES): string {
   const themeConfig = ARCHITECTURAL_THEMES[theme];
   
   // Mapear tipos de zona a colores según el tema
@@ -1044,7 +1044,7 @@ function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITEC
 
 // 🛠️ FUNCIONES AUXILIARES MEJORADAS (CONTINUACIÓN)
 
-function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
+export function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
   const effects: Record<Zone['type'], Zone['effects']> = {
     food: { hunger: 30, happiness: 12, energy: 5 },
     rest: { sleepiness: 35, energy: 30, happiness: 15 },
