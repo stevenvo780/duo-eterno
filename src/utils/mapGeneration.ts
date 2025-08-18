@@ -1,4 +1,5 @@
 import type { Zone, MapElement, EntityStats } from '../types';
+import { generateUnifiedMap } from './unifiedMapGeneration';
 
 export const createDefaultZones = (): Zone[] => {
   return [
@@ -313,3 +314,38 @@ export const getAttractionTarget = (
 
   return null;
 };
+
+/**
+ * 🚀 NUEVA FUNCIÓN PRINCIPAL DE GENERACIÓN DE MAPAS
+ * 
+ * Utiliza el sistema unificado con assets mejorados
+ */
+export async function generateEnhancedMap(
+  seed?: string,
+  algorithm: 'default' | 'organic' | 'smart' | 'hybrid' = 'hybrid'
+): Promise<{ zones: Zone[]; mapElements: MapElement[] }> {
+  try {
+    const result = await generateUnifiedMap({
+      seed,
+      algorithm,
+      theme: 'modern',
+      density: 0.7,
+      useRealAssets: true,
+      preloadAssets: true
+    });
+
+    console.log(`✅ Mapa generado exitosamente con ${result.zones.length} zonas y ${result.mapElements.length} elementos`);
+    console.log('📊 Stats de assets:', result.assetStats);
+
+    return {
+      zones: result.zones,
+      mapElements: result.mapElements
+    };
+  } catch (error) {
+    console.error('❌ Error generando mapa mejorado, fallback a sistema por defecto:', error);
+    return {
+      zones: createDefaultZones(),
+      mapElements: createDefaultMapElements()
+    };
+  }
+}

@@ -43,9 +43,9 @@ export interface AssetFolder {
 }
 
 export const ASSET_MANIFEST: Record<string, AssetFolder> = {
-  "activities": {
-    "name": "activities",
-    "path": "activities",
+  "ui_icons": {
+    "name": "ui_icons",
+    "path": "ui_icons",
     "animations": [
       {
         "id": "ARZone_detected",

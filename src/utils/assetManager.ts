@@ -12,7 +12,7 @@ import { spriteAnimationManager } from './spriteAnimationManager';
 export interface Asset {
   id: string;
   name: string;
-  category: 'ground' | 'buildings' | 'furniture' | 'nature' | 'roads' | 'water' | 'decorations' | 'animations' | 'activities' | 'food' | 'ambient';
+  category: 'terrain_tiles' | 'structures' | 'furniture_objects' | 'natural_elements' | 'infrastructure' | 'water' | 'environmental_objects' | 'animated_entities' | 'ui_icons' | 'consumable_items' | 'dialogs';
   subtype?: string;
   image: HTMLImageElement;
   size: number;
@@ -25,84 +25,78 @@ export interface AssetCategory {
 
 // Mapeo de categorías dinámicas a tipos estáticos
 const DYNAMIC_CATEGORY_MAPPING = {
-  'ground': 'ground',
-  'buildings': 'buildings', 
-  'nature': 'nature',
-  'roads': 'roads',
+  'terrain_tiles': 'terrain_tiles',
+  'structures': 'structures', 
+  'natural_elements': 'natural_elements',
+  'infrastructure': 'infrastructure',
   'water': 'water',
-  'animations': 'animations',
-  'activities': 'decorations',
-  'food': 'decorations',
-  'ambient': 'decorations',
-  'furniture': 'furniture'
+  'animated_entities': 'animated_entities',
+  'ui_icons': 'environmental_objects',
+  'consumable_items': 'environmental_objects',
+  'environmental_objects': 'environmental_objects',
+  'furniture_objects': 'furniture_objects',
+  'dialogs': 'dialogs'
 } as const;
 
-// Assets reales disponibles después de la limpieza (21 assets esenciales + 400+ muebles)
+// Assets organizados por las nuevas carpetas descriptivas
 export const ASSET_CATEGORIES = {
-  // Terreno base (8 assets)
-  GROUND: {
-    cesped: ['tile_0182_suelo_cesped', 'tile_0210_suelo_cesped'],
-    tierra: ['tile_0144_suelo_tierra', 'tile_0184_suelo_tierra'],
-    arena: ['tile_0143_suelo_arena', 'tile_0179_suelo_arena'],
-    piedra: ['tile_0145_suelo_piedra', 'tile_0181_suelo_piedra']
+  // Terreno base - terrain_tiles
+  TERRAIN_TILES: {
+    grass: ['cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5'],
+    dirt: ['Grass_Middle', 'TexturedGrass'],
+    stone: ['tile_0533_suelo_piedra', 'tile_0545_suelo_piedra'],
+    sand: ['tile_0547_suelo_arena'],
+    earth: ['tile_0548_suelo_tierra']
   },
 
-  // Edificios (5 assets)
-  BUILDINGS: {
-    principal: ['tile_0000_edificio_principal'],
-    comercial: ['tile_0003_edificio_comercial', 'tile_0007_edificio_comercial'],
-    residencial: ['tile_0004_edificio_pequeño', 'tile_0005_edificio_grande']
+  // Edificios - structures  
+  STRUCTURES: {
+    houses: ['House', 'House_Hay_1', 'House_Hay_2', 'House_Hay_3', 'House_Hay_4_Purple'],
+    walls: ['muros1', 'muros2', 'muros3', 'CityWall_Gate_1'],
+    fences: ['Fences'],
+    wells: ['Well_Hay_1'],
+    glass: ['vidrio']
   },
 
-  // Muebles reales disponibles en furniture_light
-  FURNITURE: {
-    // Muebles de sala
-    seating: ['tile_furniture_sofa_brown', 'tile_furniture_armchair'],
-    tables: [
-      'tile_furniture_table_round',
-      'tile_furniture_coffee_table',
-      'tile_furniture_dining_table',
-      'tile_furniture_table_long'
-    ],
-
-    // Dormitorio
-    bedroom: ['tile_furniture_bed_double', 'tile_furniture_nightstand', 'tile_furniture_dresser'],
-
-    // Cocina
-    kitchen: ['tile_furniture_stove', 'tile_furniture_fridge'],
-
-    // Oficina/Estudio
-    office: ['tile_furniture_desk'],
-
-    // Baño
-    bathroom: ['tile_furniture_mirror'],
-
-    // Entretenimiento
-    entertainment: ['tile_furniture_tv_stand'],
-
-    // Almacenamiento
-    storage: ['tile_furniture_wardrobe'],
-
-    // Decoración
-    decoration: ['tile_furniture_stool']
+  // Muebles - furniture_objects
+  FURNITURE_OBJECTS: {
+    storage: ['Barrel_Small_Empty', 'Basket_Empty', 'Chest', 'Chests_001', 'Chests_002'],
+    containers: ['Crate_Large_Empty', 'Crate_Medium_Closed'],
+    waste: ['basuras2', 'basuras3', 'basuras4', 'basuras_calle2', 'basuras_calle3'],
+    bottles: ['botellas2', 'botellas3'],
+    boxes: ['cajas2', 'cajas3'],
+    windows: ['ventana1', 'ventana2', 'ventana3', 'ventana4', 'ventana5']
   },
 
-  // Naturaleza (3 assets)
-  NATURE: {
-    arboles: ['tile_0002_arbol_grande', 'tile_0033_arbol_pequeño', 'tile_0034_arbol_frondoso']
+  // Naturaleza - natural_elements
+  NATURAL_ELEMENTS: {
+    trees: ['Oak_Tree', 'Tree_Emerald_1', 'Tree_Emerald_2', 'Tree_Emerald_3'],
+    bushes: ['Bush_Emerald_1', 'Bush_Emerald_2', 'Bush_Emerald_3'],
+    rocks: ['Rock_Brown_1', 'Rock_Brown_2', 'Rock_Brown_4', 'Rock_Brown_6'],
+    cliffs: ['Cliff_001_001', 'Cliff_001_002'],
+    logs: ['troncos1', 'troncos2', 'troncos3']
   },
 
-  // Carreteras (4 assets completos para conectividad)
-  ROADS: {
-    horizontal: ['tile_0001_carretera_horizontal'],
-    vertical: ['tile_0189_carretera_vertical'],
-    curva: ['tile_0154_carretera_curva'],
-    cruce: ['tile_0191_carretera_cruce']
+  // Infraestructura - infrastructure
+  INFRASTRUCTURE: {
+    paths: ['Path_Middle', 'FarmLand_Tile']
   },
 
-  // Agua (1 asset esencial)
+  // Agua - water
   WATER: {
-    deep: ['tile_0149_agua_profunda']
+    tiles: ['Water_Middle', 'tile_0198', 'tile_0230']
+  },
+
+  // Objetos ambientales - environmental_objects
+  ENVIRONMENTAL_OBJECTS: {
+    decorations: ['Banner_Stick_1_Purple', 'BulletinBoard_1', 'Sign_1', 'Sign_2'],
+    furniture: ['Bench_1', 'Bench_3', 'Table_Medium_1', 'silla'],
+    lighting: ['LampPost_3', 'lamparas1', 'lamparas2', 'lamparas3'],
+    poles: ['poste1', 'poste2', 'poste3', 'poste4'],
+    clothing: ['ropas_tendidas1', 'ropas_tendidas2', 'ropas_tendidas3'],
+    umbrellas: ['sombrilla1', 'sombrilla2', 'sombrilla3'],
+    waste: ['basuras1', 'basuras_calle1', 'botellas1', 'cajas1'],
+    street_furniture: ['sillas_de_calle1', 'sillas_de_calle2', 'sillas_de_calle3']
   }
 } as const;
 
@@ -276,12 +270,29 @@ export class AssetManager {
   private createLoadPromise(assetId: string): Promise<Asset> {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      // Soporte para muebles en subcarpeta furniture_light
-      const path = assetId.startsWith('furniture_light/')
-        ? `/assets/Tiles/${assetId}.png`
-        : assetId.startsWith('tile_furniture_')
-          ? `/assets/Tiles/furniture_light/${assetId}.png`
-          : `/assets/Tiles/${assetId}.png`;
+      // Determinar la carpeta correcta basada en el tipo de asset
+      let folderPath = '/assets/';
+      
+      if (assetId.includes('cesped') || assetId.includes('Grass') || assetId.includes('tile_0') && assetId.includes('suelo')) {
+        folderPath += 'terrain_tiles/';
+      } else if (assetId.includes('House') || assetId.includes('muro') || assetId.includes('Wall') || assetId.includes('vidrio')) {
+        folderPath += 'structures/';
+      } else if (assetId.includes('Barrel') || assetId.includes('Chest') || assetId.includes('ventana') || assetId.includes('basuras')) {
+        folderPath += 'furniture_objects/';
+      } else if (assetId.includes('Tree') || assetId.includes('Bush') || assetId.includes('Rock') || assetId.includes('tronco')) {
+        folderPath += 'natural_elements/';
+      } else if (assetId.includes('Path') || assetId.includes('FarmLand')) {
+        folderPath += 'infrastructure/';
+      } else if (assetId.includes('Water') || assetId.includes('tile_0198') || assetId.includes('tile_0230')) {
+        folderPath += 'water/';
+      } else if (assetId.includes('lampara') || assetId.includes('poste') || assetId.includes('silla') || assetId.includes('sombrilla')) {
+        folderPath += 'environmental_objects/';
+      } else {
+        // Fallback a environmental_objects para assets no categorizados
+        folderPath += 'environmental_objects/';
+      }
+      
+      const path = folderPath + assetId + '.png';
 
       image.onload = () => {
         const asset: Asset = {
@@ -395,13 +406,14 @@ export class AssetManager {
   }
 
   private detectCategory(id: string): Asset['category'] {
-    if (id.startsWith('furniture/') || id.includes('furniture_')) return 'furniture';
-    if (id.includes('suelo_')) return 'ground';
-    if (id.includes('edificio_') || id.includes('tejado_')) return 'buildings';
-    if (id.includes('arbol_')) return 'nature';
-    if (id.includes('carretera_')) return 'roads';
-    if (id.includes('agua_')) return 'water';
-    return 'decorations';
+    if (id.includes('cesped') || id.includes('Grass') || id.includes('suelo') || id.includes('tile_0')) return 'terrain_tiles';
+    if (id.includes('House') || id.includes('muro') || id.includes('Wall') || id.includes('vidrio')) return 'structures';
+    if (id.includes('Barrel') || id.includes('Chest') || id.includes('ventana') || id.includes('basuras')) return 'furniture_objects';
+    if (id.includes('Tree') || id.includes('Bush') || id.includes('Rock') || id.includes('tronco')) return 'natural_elements';
+    if (id.includes('Path') || id.includes('FarmLand')) return 'infrastructure';
+    if (id.includes('Water') || id.includes('agua')) return 'water';
+    if (id.includes('lampara') || id.includes('poste') || id.includes('silla') || id.includes('sombrilla')) return 'environmental_objects';
+    return 'environmental_objects';
   }
 
   private detectSubtype(id: string): string | undefined {
@@ -429,31 +441,31 @@ export class AssetManager {
       return 'decoration'; // fallback para muebles no categorizados
     }
 
-    // Para suelos
-    if (name.includes('cesped')) return 'cesped';
-    if (name.includes('tierra')) return 'tierra';
-    if (name.includes('arena')) return 'arena';
-    if (name.includes('piedra')) return 'piedra';
+    // Para terreno
+    if (name.includes('cesped') || name.includes('grass')) return 'grass';
+    if (name.includes('tierra') || name.includes('dirt')) return 'dirt';
+    if (name.includes('arena') || name.includes('sand')) return 'sand';
+    if (name.includes('piedra') || name.includes('stone')) return 'stone';
 
-    // Para edificios
-    if (name.includes('principal')) return 'principal';
-    if (name.includes('comercial')) return 'comercial';
-    if (name.includes('pequeño')) return 'residencial';
-    if (name.includes('grande')) return 'residencial';
-    if (name.includes('alto')) return 'alto';
-    if (name.includes('tejado')) return 'tejado';
+    // Para estructuras
+    if (name.includes('house')) return 'houses';
+    if (name.includes('muro') || name.includes('wall')) return 'walls';
+    if (name.includes('fence')) return 'fences';
+    if (name.includes('well')) return 'wells';
+    if (name.includes('vidrio') || name.includes('glass')) return 'glass';
 
-    // Para árboles (simplificado)
-    if (name.includes('arbol')) return 'arboles';
+    // Para elementos naturales
+    if (name.includes('tree')) return 'trees';
+    if (name.includes('bush')) return 'bushes';
+    if (name.includes('rock')) return 'rocks';
+    if (name.includes('cliff')) return 'cliffs';
+    if (name.includes('tronco') || name.includes('log')) return 'logs';
 
-    // Para carreteras
-    if (name.includes('horizontal')) return 'horizontal';
-    if (name.includes('vertical')) return 'vertical';
-    if (name.includes('curva')) return 'curva';
-    if (name.includes('cruce')) return 'cruce';
+    // Para infraestructura
+    if (name.includes('path') || name.includes('farm')) return 'paths';
 
     // Para agua
-    if (name.includes('agua')) return 'deep';
+    if (name.includes('water') || name.includes('agua')) return 'tiles';
 
     return undefined;
   }
@@ -489,27 +501,29 @@ export class AssetManager {
     console.log('🎨 Precargando assets esenciales...');
 
     const essentialAssets = [
-      // Suelos básicos
-      'tile_0182_suelo_cesped',
-      'tile_0144_suelo_tierra',
-      'tile_0143_suelo_arena',
-      'tile_0145_suelo_piedra',
+      // Terreno básico
+      'cesped1',
+      'cesped2', 
+      'Grass_Middle',
+      'TexturedGrass',
+      'tile_0533_suelo_piedra',
 
-      // Edificios básicos
-      'tile_0000_edificio_principal',
-      'tile_0003_edificio_comercial',
-      'tile_0004_edificio_pequeño',
+      // Estructuras básicas
+      'House',
+      'House_Hay_1',
+      'muros1',
 
       // Naturaleza básica
-      'tile_0002_arbol_grande',
-      'tile_0033_arbol_pequeño',
+      'Oak_Tree',
+      'Tree_Emerald_1',
+      'Bush_Emerald_1',
+      'Rock_Brown_1',
 
-      // Carreteras básicas
-      'tile_0001_carretera_horizontal',
-      'tile_0189_carretera_vertical',
+      // Infraestructura básica
+      'Path_Middle',
 
       // Agua básica
-      'tile_0149_agua_profunda'
+      'Water_Middle'
     ];
 
     await Promise.all(essentialAssets.map(id => this.loadAsset(id)));
@@ -544,8 +558,8 @@ export class AssetManager {
       const manifestModule = await import('../generated/asset-manifest');
       return Object.keys(manifestModule.ASSET_MANIFEST);
     } catch {
-      // Fallback a lista conocida
-      return ['ground', 'buildings', 'nature', 'roads', 'water', 'animations', 'activities', 'food', 'ambient'];
+      // Fallback a lista conocida con los nuevos nombres
+      return ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'animated_entities', 'ui_icons', 'consumable_items', 'environmental_objects', 'furniture_objects', 'dialogs'];
     }
   }
 }

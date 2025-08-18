@@ -17,11 +17,13 @@ const { execSync } = require('child_process');
 
 // Configuración del detector
 const CONFIG = {
-    // Directorios a escanear (solo carpetas que probablemente contengan animaciones)
+    // Directorios a escanear
     assetPaths: [
-        'public/assets/animations',  // Carpeta principal de animaciones
-        'public/assets/activities',  // Actividades pueden tener animaciones
-        'public/assets/nature'       // Solo árboles/plantas que puedan animarse
+        'public/assets/activities',
+        'public/assets/ambient', 
+        'public/assets/buildings',
+        'public/assets/food',
+        'public/assets/nature'
     ],
     
     // Dimensiones mínimas para considerar un spritesheet
@@ -134,19 +136,16 @@ class SpritesheetDetector {
             }
         }
         
-        // 3. Seleccionar el layout más probable con confianza mínima
+        // 3. Seleccionar el layout más probable
         if (possibleLayouts.length > 0) {
             const bestLayout = possibleLayouts.sort((a, b) => b.confidence - a.confidence)[0];
             
-            // Solo considerar como spritesheet si tiene confianza alta (>= 40)
-            if (bestLayout.confidence >= 40) {
-                return {
-                    isSpritesheet: true,
-                    layout: bestLayout,
-                    hasNamePattern: hasPattern,
-                    animationType: this.guessAnimationType(filename)
-                };
-            }
+            return {
+                isSpritesheet: true,
+                layout: bestLayout,
+                hasNamePattern: hasPattern,
+                animationType: this.guessAnimationType(filename)
+            };
         }
         
         return { isSpritesheet: false };
@@ -170,23 +169,12 @@ class SpritesheetDetector {
         if (cols % 4 === 0 || rows % 4 === 0) confidence += 10; // Múltiplos de 4
         
         // Bonus por patrones en el nombre
-        if (/walk|run|idle|jump|attack|move|cycle|loop/.test(filename)) confidence += 25;
+        if (/walk|run|idle|jump|attack/.test(filename)) confidence += 25;
         if (/anim|sprite|sheet/.test(filename)) confidence += 15;
-        
-        // Bonus GRANDE por estar en carpeta animations
-        if (filename.includes('animations/')) confidence += 30;
-        
-        // Penalty fuerte para imágenes que claramente no son animaciones
-        if (/logo|icon|ui|button|background|bg|tile|static/.test(filename)) confidence -= 40;
-        if (/banner|stick|barrel|basket|bench|sign|house|building/.test(filename)) confidence -= 30;
-        if (/food|fruit|vegetable|item|tool|weapon/.test(filename)) confidence -= 25;
         
         // Penalty por grids muy grandes o muy pequeños
         if (totalFrames > 100) confidence -= 20;
-        if (totalFrames < 4) confidence -= 30; // Aumentar penalty para pocos frames
-        
-        // Penalty para dimensiones que no son potencias de 2 o múltiplos comunes
-        if (frameSize.width % 8 !== 0 || frameSize.height % 8 !== 0) confidence -= 10;
+        if (totalFrames < 2) confidence -= 50;
         
         return confidence;
     }
