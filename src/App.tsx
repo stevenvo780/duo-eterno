@@ -14,6 +14,10 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
   
 
   useGameLoop();
@@ -24,6 +28,19 @@ const GameContent: React.FC = React.memo(() => {
 
   React.useEffect(() => {
     logGeneral('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
+  }, []);
+
+  // Manejar redimensionado de ventana
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleEntitySelect = React.useCallback((entityId: string | null) => {
@@ -41,44 +58,17 @@ const GameContent: React.FC = React.memo(() => {
       fontFamily: 'system-ui, sans-serif'
     }}>
       <div style={{
-        padding: '16px',
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        borderBottom: '2px solid #475569',
-        textAlign: 'center'
-      }}>
-        <h1 style={{
-          margin: 0,
-          color: '#f1f5f9',
-          fontSize: '24px',
-          fontWeight: 600,
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-          fontFamily: 'serif'
-        }}>
-          Isa & Stev: Resonancia Cuántica
-        </h1>
-        <p style={{
-          margin: '4px 0 0 0',
-          color: '#cbd5e1',
-          fontSize: '14px',
-          opacity: 0.8,
-          fontStyle: 'italic'
-        }}>
-          Un Experimento en la Física del Amor Eterno
-        </p>
-      </div>
-
-      <div style={{
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        padding: '20px',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         <ProfessionalTopDownCanvas 
-          width={1000} 
-          height={600}
+          width={windowSize.width} 
+          height={windowSize.height - 80}
           onEntityClick={handleEntitySelect}
         />
         <EntityDialogueSystem />

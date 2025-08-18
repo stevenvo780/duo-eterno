@@ -1,8 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * Script automatizado para detectar y reportar código no utilizado
- * Combina ts-prune con ESLint para análisis completo
+ * Script automatizado para detectar y reportar código no utilizado.
+ *
+ * En tres fases:
+ * 1) Ejecuta ts-prune para detectar exports no referenciados en el grafo TS.
+ * 2) Ejecuta ESLint y filtra reglas de imports/vars no usadas para contexto adicional.
+ * 3) Heurística simple: busca archivos .ts/.tsx que no son importados por otros.
+ *
+ * Nota sobre complejidad: la tercera fase NO construye un grafo de dependencias
+ * real; usa una expresión regular que busca el basename del archivo en sentencias
+ * `from "..."`. Esto puede producir falsos positivos/negativos cuando existen
+ * alias de paths, resoluciones personalizadas o importaciones dinámicas.
  */
 
 const { execSync } = require('child_process');
@@ -82,6 +91,15 @@ try {
 console.log('\n📁 Buscando archivos potencialmente no utilizados...');
 
 const srcDir = path.join(process.cwd(), 'src');
+/**
+ * Recorre recursivamente un directorio para listar archivos TS/TSX.
+ *
+ * Complejidad: O(N) en número de entradas del árbol, con coste de E/S
+ * proporcional al número de directorios y archivos visitados.
+ *
+ * @param {string} dir - Ruta del directorio raíz a explorar.
+ * @returns {string[]} Lista de rutas absolutas de archivos fuente.
+ */
 const getAllFiles = (dir) => {
   const files = [];
   
@@ -111,12 +129,20 @@ for (const file of sourceFiles) {
 
   let isImported = false;
   
+  // Heurística: comprobar si el basename del archivo aparece en una sentencia import
+  // del resto de archivos. No resuelve paths relativos/alias en tiempo real.
   for (const otherFile of sourceFiles) {
     if (file === otherFile) continue;
     
     try {
       const content = fs.readFileSync(otherFile, 'utf8');
-      const importPattern = new RegExp(`from ['"].*${path.basename(file, path.extname(file))}['"]`, 'g');
+      // Construcción de la expresión regular:
+      // from '"].*<basename-sin-ext>['"]
+      // Limita falsos positivos buscando sólo en cadenas de importación.
+      const importPattern = new RegExp(
+        `from ['\"].*${path.basename(file, path.extname(file))}['\"]`,
+        'g'
+      );
       
       if (importPattern.test(content)) {
         isImported = true;

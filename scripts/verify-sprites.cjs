@@ -1,14 +1,22 @@
 #!/usr/bin/env node
 
 /**
- * Script de verificación de sprites para Duo Eterno
- * Verifica que todos los sprites requeridos estén disponibles
+ * Script de verificación de sprites para Duo Eterno.
+ *
+ * Revisa la presencia de archivos .png requeridos en `public/assets/sprites` y
+ * entrega un resumen de cobertura. Esta utilidad no inspecciona atlas/tilesets,
+ * sólo nombres de archivo planos.
  */
 
 const fs = require('fs');
 const path = require('path');
 
 
+/**
+ * Conjunto canónico de nombres de sprite requeridos.
+ * Mantener sincronizado con la UI/escenas que los referencian.
+ * @type {string[]}
+ */
 const REQUIRED_SPRITES = [
   'barra_estadistica',
   'canvas_base',
@@ -50,8 +58,19 @@ const REQUIRED_SPRITES = [
   'fuente_agua'
 ];
 
+/**
+ * Directorio base donde se esperan los sprites PNG.
+ */
 const SPRITES_DIR = path.join(__dirname, '../public/assets/sprites');
 
+/**
+ * Verifica la existencia de sprites requeridos y emite un reporte.
+ *
+ * Detalles:
+ * - Complejidad O(N) en número de sprites requeridos.
+ * - Mide cobertura simple: encontrados / requeridos.
+ * - Retorna código de salida 1 si faltan sprites (útil en CI).
+ */
 function checkSprites() {
   console.log('🔍 Verificando sprites requeridos...\n');
   

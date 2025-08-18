@@ -445,8 +445,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
 
 
   useEffect(() => {
-    loadProfessionalAssets();
-  }, [loadProfessionalAssets]);
+    if (!assetsLoaded) {
+      loadProfessionalAssets();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo ejecutar una vez al montar
 
 
   useEffect(() => {

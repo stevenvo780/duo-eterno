@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 """
-Script de generación de sprites pixel art para Duo Eterno
-Genera sprites proceduralmente usando la paleta DB32
+Script de generación de sprites pixel art para Duo Eterno.
+
+Descripción breve
+-----------------
+Genera sprites de forma procedural usando la paleta DB32. Las figuras básicas
+se construyen con primitivas de Pillow (rectángulos, elipses, líneas y arcos).
+
+Notas matemáticas
+-----------------
+- Sistema de coordenadas: origen en la esquina superior izquierda (0, 0), eje X
+  hacia la derecha y eje Y hacia abajo.
+- Elipses y círculos: Pillow usa cajas delimitadoras [x0, y0, x1, y1]; un círculo
+  es una elipse con radio uniforme. Las expresiones tipo
+  `[cx - r, cy - r, cx + r, cy + r]` definen un círculo centrado en (cx, cy).
+- Arcos: el método `draw.arc(bbox, start, end)` mide ángulos en grados y sentido
+  horario desde el eje X positivo hacia la derecha (convención Pillow). Un arco
+  0→180 dibuja una curva tipo sonrisa; 180→360, una curva invertida (triste).
+- Discretización: se usan divisiones enteras (`//`) y funciones como `max(...)`
+  para que rasgos mínimos (ojos/bordes) no desaparezcan en tamaños reducidos.
 """
 
 import os
@@ -30,7 +47,24 @@ DB32_PALETTE = [
 ]
 
 def create_basic_sprite(size=32, bg_color=(20, 12, 28), main_color=(109, 170, 44)):
-    """Crea un sprite básico con fondo y color principal"""
+    """
+    Crea un sprite básico con un rectángulo centrado.
+
+    Parámetros
+    ----------
+    size : int
+        Tamaño del lienzo cuadrado en píxeles (size x size).
+    bg_color : tuple[int, int, int]
+        Color de fondo RGB.
+    main_color : tuple[int, int, int]
+        Color principal del rectángulo.
+
+    Detalles geométricos
+    --------------------
+    - `border` define un margen interior para evitar tocar los bordes del lienzo.
+    - Se usa `draw.rectangle([x0, y0, x1, y1])` con coordenadas simétricas
+      respecto al centro para mantener proporciones.
+    """
     img = Image.new('RGBA', (size, size), bg_color + (255,))
     draw = ImageDraw.Draw(img)
     
@@ -42,7 +76,20 @@ def create_basic_sprite(size=32, bg_color=(20, 12, 28), main_color=(109, 170, 44
     return img
 
 def generate_entity_circle_happy(size=32):
-    """Genera sprite de entidad circular feliz"""
+    """
+    Genera sprite de entidad circular feliz.
+
+    Parámetros
+    ----------
+    size : int
+        Tamaño del lienzo cuadrado.
+
+    Geometría y rasgos
+    -------------------
+    - Cuerpo: círculo centrado con radio proporcional al lienzo.
+    - Ojos: dos elipses pequeñas colocadas simétricamente respecto al centro.
+    - Boca: arco 0→180 grados para simular una sonrisa.
+    """
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
@@ -68,7 +115,15 @@ def generate_entity_circle_happy(size=32):
     return img
 
 def generate_entity_circle_sad(size=32):
-    """Genera sprite de entidad circular triste"""
+    """
+    Genera sprite de entidad circular triste.
+
+    Técnica
+    -------
+    - Recolorea los píxeles del cuerpo (verde) a un tono rojo para transmitir
+      tristeza.
+    - Dibuja un arco 180→360 grados para una boca invertida.
+    """
     img = generate_entity_circle_happy(size)
     draw = ImageDraw.Draw(img)
     
@@ -90,7 +145,15 @@ def generate_entity_circle_sad(size=32):
     return img
 
 def generate_entity_square_happy(size=32):
-    """Genera sprite de entidad cuadrada feliz"""
+    """
+    Genera sprite de entidad cuadrada feliz.
+
+    Detalles geométricos
+    --------------------
+    - Cuerpo: cuadrado centrado con lado proporcional al lienzo.
+    - Ojos: rectángulos pequeños simétricos.
+    - Boca: línea horizontal centrada.
+    """
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
@@ -119,6 +182,10 @@ def generate_entity_square_happy(size=32):
     return img
 
 # Mapeo de sprites disponibles
+# Cada entrada asocia un nombre lógico con una función generadora
+# que recibe `size: int` y retorna un `PIL.Image` (RGBA).
+# Algunas variantes usan lambdas como placeholders (pendiente implementación)
+# manteniendo la API uniforme para el pipeline de generación.
 SPRITE_GENERATORS = {
     'entidad_circulo_happy': generate_entity_circle_happy,
     'entidad_circulo_sad': generate_entity_circle_sad,
@@ -143,7 +210,27 @@ SPRITE_GENERATORS = {
 }
 
 def generate_sprite(name, size=32, output_dir="sprites"):
-    """Genera un sprite específico"""
+    """
+    Genera un sprite específico y lo guarda como PNG.
+
+    Parámetros
+    ----------
+    name : str
+        Nombre lógico del sprite (clave en `SPRITE_GENERATORS`).
+    size : int
+        Lado del lienzo cuadrado (en píxeles).
+    output_dir : str
+        Directorio de salida donde se escribe `<name>.png`.
+
+    Retorna
+    -------
+    bool
+        True si se genera correctamente, False en caso de error.
+
+    Notas
+    -----
+    El generador asociado a `name` debe aceptar `size` y devolver un `Image` RGBA.
+    """
     if name not in SPRITE_GENERATORS:
         print(f"❌ Sprite no encontrado: {name}")
         return False
@@ -162,6 +249,16 @@ def generate_sprite(name, size=32, output_dir="sprites"):
         return False
 
 def main():
+    """
+    Punto de entrada del CLI.
+
+    Subcomandos y argumentos
+    ------------------------
+    - type: restringe a categorías lógicas (actualmente informativo).
+    - names: lista separada por comas o `all` para todos los generadores.
+    - output_dir: carpeta de destino.
+    - --size: tamaño (px) del lienzo cuadrado.
+    """
     parser = argparse.ArgumentParser(description='Generador de sprites para Duo Eterno')
     parser.add_argument('type', choices=['sprites', 'patterns', 'all'], 
                        help='Tipo de assets a generar')
