@@ -516,7 +516,10 @@ export class OrganicStreetGenerator {
     const minDistance = 50;
     
     for (let i = minDistance; i < path.length - minDistance; i += minDistance) {
-      if (Math.random() < this.config.branchingProbability) {
+      // CORRIGIDO: Usar probabilidad determinista basada en posición en lugar de Math.random()
+      const positionSeed = (i * 1664525 + 1013904223) % 2147483647;
+      const deterministicValue = (positionSeed / 2147483647);
+      if (deterministicValue < this.config.branchingProbability) {
         branchPoints.push(path[i]);
       }
     }

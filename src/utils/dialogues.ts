@@ -114,5 +114,9 @@ export const dialogues = {
 
 export const getRandomDialogue = (type: keyof typeof dialogues): string => {
   const options = dialogues[type];
-  return options[Math.floor(Math.random() * options.length)];
+  // CORRIGIDO: Usar selección determinista basada en tipo y timestamp en lugar de Math.random()
+  const typeHash = type.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
+  const seed = (Date.now() + typeHash) * 1664525 + 1013904223;
+  const index = Math.abs(seed % 2147483647) % options.length;
+  return options[index];
 };

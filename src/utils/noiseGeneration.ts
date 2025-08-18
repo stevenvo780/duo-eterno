@@ -1,5 +1,5 @@
 /**
- * Sistema de generación de ruido Perlin y utilidades para mapas orgánicos
+ * Sistema simplificado de generación de ruido para mapas orgánicos
  */
 
 export interface Point {
@@ -58,43 +58,36 @@ export class PerlinNoise {
   private p: number[] = [];
 
   constructor(seed: number = 0) {
-    // CORRIGIDO: Validar y normalizar seed de entrada
     const safeSeed = isFinite(seed) ? Math.abs(seed) % 2147483647 : 0;
     this.initializePermutation(safeSeed);
   }
 
   private initializePermutation(seed: number) {
-    // CORRIGIDO: Validar seed de entrada
     if (!isFinite(seed)) {
       seed = 0;
     }
     
-    // Generar permutación basada en la semilla
     const rng = this.seedRandom(seed);
     
-    // Permutación base
     for (let i = 0; i < 256; i++) {
       this.permutation[i] = i;
     }
     
-    // Mezclar usando la semilla
     for (let i = 255; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
     }
     
-    // Duplicar para evitar desbordamientos
     for (let i = 0; i < 512; i++) {
       this.p[i] = this.permutation[i % 256];
     }
   }
 
   private seedRandom(seed: number) {
-    // CORRIGIDO: Usar const para valores inmutables y mejor overflow handling
-    const m = 2147483647; // Max safe 32-bit integer (más seguro que 0x80000000)
+    const m = 2147483647;
     const a = 1103515245;
     const c = 12345;
-    let state = Math.abs(seed) % m; // CORRIGIDO: Normalizar seed
+    let state = Math.abs(seed) % m;
     
     return function() {
       state = (a * state + c) % m;
@@ -118,7 +111,6 @@ export class PerlinNoise {
   }
 
   noise(x: number, y: number): number {
-    // CORRIGIDO: Validar inputs para evitar NaN/Infinity
     if (!isFinite(x) || !isFinite(y)) {
       return 0;
     }
@@ -153,7 +145,6 @@ export class PerlinNoise {
       v
     );
     
-    // CORRIGIDO: Asegurar que el resultado esté en rango válido
     return isFinite(result) ? Math.max(-1, Math.min(1, result)) : 0;
   }
 
@@ -185,7 +176,6 @@ export class PerlinNoise {
       elevationMap[y] = [];
       for (let x = 0; x < width; x++) {
         const value = this.octaveNoise(x, y, config);
-        // Normalizar a rango [0, 1]
         elevationMap[y][x] = (value + 1) / 2;
       }
     }
@@ -208,9 +198,7 @@ export function generateDensityMap(
     for (let x = 0; x < width; x++) {
       let value = noise.octaveNoise(x, y, config);
       
-      // Aplicar clustering natural si se especifica
       if (naturalClustering) {
-        // Crear clusters más naturales usando múltiples capas de ruido
         const clusterNoise = noise.octaveNoise(x * 0.5, y * 0.5, {
           ...config,
           scale: config.scale * 2,
@@ -219,12 +207,9 @@ export function generateDensityMap(
         value = (value + clusterNoise * 0.3) / 1.3;
       }
       
-      // Normalizar a rango [0, 1]
       densityMap[y][x] = (value + 1) / 2;
     }
   }
 
   return densityMap;
 }
-
-// Eliminadas utilidades no usadas: smoothDensityMap, generatePerlinField, stringToSeed

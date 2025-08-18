@@ -194,7 +194,9 @@ export class PoissonDiskSampler {
     
 
     while (this.activeList.length > 0) {
-      const randomIndex = Math.floor(Math.random() * this.activeList.length);
+      // CORRIGIDO: Usar índice determinista basado en timestamp en lugar de Math.random()
+      const seed = (Date.now() * 1664525 + 1013904223) % 2147483647;
+      const randomIndex = Math.abs(seed) % this.activeList.length;
       const point = this.activeList[randomIndex];
       
       let foundValidPoint = false;
@@ -219,8 +221,11 @@ export class PoissonDiskSampler {
   }
 
   private generateCandidate(center: Point, densityMap?: number[][]): Point {
-    const angle = Math.random() * 2 * Math.PI;
-    let distance = this.radius + Math.random() * this.radius;
+    // CORRIGIDO: Usar ángulo y distancia deterministas en lugar de Math.random()
+    const timeSeed = Date.now();
+    const angle = ((timeSeed * 1664525 + 1013904223) % 2147483647) / 2147483647 * 2 * Math.PI;
+    const distanceSeed = ((timeSeed + 12345) * 1664525 + 1013904223) % 2147483647;
+    let distance = this.radius + (distanceSeed / 2147483647) * this.radius;
     
 
     if (densityMap) {
@@ -347,7 +352,8 @@ export class OrganicMapGenerator {
       MAP_CONFIG.height, 
       {
         seed: this.seedToNumber(this.config.seed),
-        numCells: Math.floor(6 + Math.random() * 8),
+        // CORRIGIDO: Usar número determinista de celdas en lugar de Math.random()
+        numCells: Math.floor(6 + ((this.seedToNumber(this.config.seed) * 1664525 + 1013904223) % 2147483647) / 2147483647 * 8),
         relaxationIterations: 2,
         minCellDistance: 80
       }

@@ -13,15 +13,7 @@
 import { gameConfig } from '../config/gameConfig';
 
 
-interface PerformanceMetrics {
-  fps: number;
-  frameTime: number;
-  updateTime: number;
-  renderTime: number;
-  memoryUsage: number;
-  activeTimers: number;
-  lastMeasurement: number;
-}
+// Eliminada interfaz PerformanceMetrics no utilizada
 
 
 
@@ -239,15 +231,7 @@ const autopoiesisThrottler = new AdaptiveThrottler(200, 100, 1000);
 const movementThrottler = new AdaptiveThrottler(50, 25, 200);
 const performanceMonitor = new SimplePerformanceMonitor();
 
-const performanceMetrics: PerformanceMetrics = {
-  fps: 60,
-  frameTime: 16.67,
-  updateTime: 0,
-  renderTime: 0,
-  memoryUsage: 0,
-  activeTimers: 0,
-  lastMeasurement: Date.now()
-};
+// Eliminado bloque de métricas acumuladas no usado
 
 
 
@@ -259,12 +243,6 @@ export const shouldUpdateMovement = (): boolean => {
   return movementThrottler.shouldExecute(Date.now());
 };
 
-export const getCurrentMetrics = (): PerformanceMetrics & { snapshot?: PerformanceSnapshot | null } => {
-  return { 
-    ...performanceMetrics,
-    snapshot: performanceMonitor.getLatestMetrics()
-  };
-};
 
 export const measureExecutionTime = <T>(name: string, fn: () => T): T => {
   const start = performance.now();
@@ -290,8 +268,6 @@ export const recordRenderCall = (): void => {
   performanceMonitor.recordRenderCall();
 };
 
-export const getActivePerformanceAlerts = (): PerformanceAlert[] => {
-  return performanceMonitor.getActiveAlerts();
-};
+// Eliminados exports no usados: getCurrentMetrics, getActivePerformanceAlerts
 
 // Eliminados exports no usados: updatePerformanceThrottlers, usePerformanceMonitoring

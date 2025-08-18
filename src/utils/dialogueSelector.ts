@@ -13,8 +13,9 @@ export const loadDialogueData = async (): Promise<void> => {
     const response = await fetch('/assets/dialogs/dialogos_chat_isa.lite.censored_plus.json');
     dialogueData = await response.json();
     
-
-    currentIndex = Math.floor(Math.random() * dialogueData.length);
+    // CORRIGIDO: Usar hash determinista del timestamp en lugar de Math.random()
+    const seed = Date.now();
+    currentIndex = Math.floor((seed * 1664525 + 1013904223) % 2147483647) % dialogueData.length;
   } catch (error) {
     console.warn('No se pudo cargar el archivo de diálogos:', error);
     dialogueData = [];
@@ -52,8 +53,9 @@ export const getNextDialogue = (
     }
   }
 
-
-  return dialogueData[Math.floor(Math.random() * dialogueData.length)];
+  // CORRIGIDO: Usar índice determinista en lugar de Math.random()
+  const fallbackIndex = (Date.now() * 1664525 + 1013904223) % 2147483647;
+  return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];
 };
 
 
@@ -71,7 +73,10 @@ export const getEmotionForActivity = (activity: string): string => {
   };
 
   const emotions = emotionMap[activity] || ['NEUTRAL', 'LOVE', 'CURIOUS'];
-  return emotions[Math.floor(Math.random() * emotions.length)];
+  // CORRIGIDO: Usar selección determinista basada en actividad en lugar de Math.random()
+  const activityHash = activity.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
+  const emotionIndex = Math.abs(activityHash) % emotions.length;
+  return emotions[emotionIndex];
 };
 
 export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
@@ -135,7 +140,10 @@ export const getDialogueForInteraction = (
   // Buscar diálogos que coincidan con el contexto de la interacción
   // Priorizar emociones específicas si están definidas
   const emotionsToTry = config.priority ? [...config.priority, ...config.emotions] : config.emotions;
-  const targetActivity = config.activities[Math.floor(Math.random() * config.activities.length)];
+  // CORRIGIDO: Usar selección determinista basada en interactionType en lugar de Math.random()
+  const interactionHash = interactionType.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff, 0);
+  const activityIndex = Math.abs(interactionHash) % config.activities.length;
+  const targetActivity = config.activities[activityIndex];
 
   // Intentar con emociones prioritarias primero
   for (const emotion of emotionsToTry) {
