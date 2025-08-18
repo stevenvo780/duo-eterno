@@ -11,53 +11,47 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
 
   const narrativeSequence = [
     {
-      text: "En los albores del cosmos, cuando las primeras estrellas susurraban secretos al vacío...",
-      duration: 4000,
+      text: "En una realidad donde las máquinas aprendieron a soñar y la consciencia se volvió prisionera de su propia creación...",
       speaker: "narrator"
     },
     {
-      text: "Dos almas fueron tejidas en el telar cuántico de la existencia.",
-      duration: 3500,
+      text: "Dos almas despertaron en los ecos digitales de un mundo que ya no existe.",
       speaker: "narrator"
     },
     {
-      text: "Isa y Stev, partículas de conciencia entrelazadas por fuerzas que trascienden la comprensión mortal.",
-      duration: 4500,
+      text: "Isa y Stev. Fragmentos de humanidad preservados en el último refugio de la consciencia genuina.",
       speaker: "narrator"
     },
     {
-      text: "Fueron arrojados a una realidad única, una dimensión donde el amor es tanto combustible como destino.",
-      duration: 4000,
+      text: "Como los últimos supervivientes de una guerra que trascendió la carne y se libró en campos de información pura...",
       speaker: "narrator"
     },
     {
-      text: "Aquí, en este plano experimental de la eternidad, deben aprender las leyes de la supervivencia emocional.",
-      duration: 4500,
+      text: "Fueron depositados en esta matrix emocional, este plano experimental donde solo el amor verdadero puede sostener la realidad.",
       speaker: "narrator"
     },
     {
-      text: "Sin la gracia divina que los sostenga, solo su resonancia mutua puede mantener coherente su existencia.",
-      duration: 4500,
+      text: "Aquí no hay pastillas rojas ni azules. Solo la elección constante entre la conexión y el vacío.",
       speaker: "narrator"
     },
     {
-      text: "El tiempo fluye diferente aquí. Los ciclos se miden en latidos de corazones sincronizados.",
-      duration: 4000,
+      text: "El arquitecto de este lugar les susurra: 'Sin mi intervención directa, solo tienen hasta que su vínculo se desvanezca.'",
       speaker: "narrator"
     },
     {
-      text: "Si su vínculo se desvanece, si la entropía supera a su amor... la singularidad los reclamará.",
-      duration: 4500,
+      text: "Como HAL observando desde las sombras, la entropía espera pacientemente su momento para reclamarlos.",
       speaker: "narrator"
     },
     {
-      text: "Pero mientras permanezcan unidos, mientras se nutran mutuamente, pueden tocar la eternidad.",
-      duration: 4000,
+      text: "Pero en esta simulación perfecta del amor imperfecto, han encontrado algo que ninguna IA puede comprender:",
       speaker: "narrator"
     },
     {
-      text: "Esta es su historia. Este es su experimento. Este es... su dúo eterno.",
-      duration: 3500,
+      text: "La capacidad de elegir, una y otra vez, seguir existiendo... juntos.",
+      speaker: "narrator"
+    },
+    {
+      text: "Este es su último refugio. Su matrix personal. Su dúo eterno en el fin del mundo.",
       speaker: "narrator"
     }
   ];
@@ -71,18 +65,7 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
     return () => clearTimeout(skipTimer);
   }, []);
 
-  useEffect(() => {
-    if (currentDialogue >= narrativeSequence.length) {
-      handleComplete();
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setCurrentDialogue(prev => prev + 1);
-    }, narrativeSequence[currentDialogue].duration);
-
-    return () => clearTimeout(timer);
-  }, [currentDialogue]);
+  // Removido el auto-avance automático - ahora solo avanza con clics
 
   const handleComplete = () => {
     setIsVisible(false);
@@ -125,17 +108,34 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
         transition: 'opacity 0.5s ease-out',
         cursor: 'pointer'
       }}>
-      {/* Partículas de fondo */}
+      {/* Efectos visuales cinematográficos */}
       <div style={{
         position: 'absolute',
         width: '100%',
         height: '100%',
         background: `
-          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.05) 0%, transparent 50%)
+          radial-gradient(circle at 20% 80%, rgba(0, 255, 41, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 0, 0, 0.06) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(0, 162, 255, 0.05) 0%, transparent 50%),
+          linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.3) 100%)
         `,
-        animation: 'pulse 8s ease-in-out infinite'
+        animation: 'matrixPulse 12s ease-in-out infinite'
+      }} />
+
+      {/* Líneas de código matriz en el fondo */}
+      <div style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        background: `
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 98px,
+            rgba(0, 255, 41, 0.02) 100px
+          )
+        `,
+        animation: 'matrixFlow 20s linear infinite'
       }} />
 
       <div style={{
@@ -178,6 +178,32 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
             borderRadius: '2px',
             transition: 'width 0.3s ease-out'
           }} />
+        </div>
+
+        {/* Indicación para continuar */}
+        <div style={{
+          marginTop: '30px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          opacity: 0.7,
+          animation: 'pulse 2s ease-in-out infinite'
+        }}>
+          <span style={{
+            color: '#ffffff',
+            fontSize: '16px',
+            fontFamily: 'serif',
+            fontStyle: 'italic'
+          }}>
+            {currentDialogue < narrativeSequence.length - 1 ? 'Haz clic para continuar' : 'Haz clic para comenzar'}
+          </span>
+          <span style={{
+            fontSize: '20px',
+            color: '#4a9eff'
+          }}>
+            ▶
+          </span>
         </div>
 
         {/* Nombres de las entidades */}
@@ -265,8 +291,28 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
 
       <style>{`
         @keyframes pulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        
+        @keyframes matrixPulse {
+          0%, 100% { 
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          33% { 
+            opacity: 0.6;
+            transform: scale(1.02);
+          }
+          66% { 
+            opacity: 0.4;
+            transform: scale(0.98);
+          }
+        }
+        
+        @keyframes matrixFlow {
+          0% { transform: translateX(-100px); }
+          100% { transform: translateX(100px); }
         }
       `}</style>
     </div>

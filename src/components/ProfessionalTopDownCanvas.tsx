@@ -387,6 +387,33 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     }
     
 
+    // Renderizar zonas orgánicas como fondos sutiles
+    organicZones.forEach(zone => {
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = zone.color;
+      ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
+      
+      // Borde sutil para definir la zona
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = zone.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
+      
+      // Etiqueta de zona
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = '#333333';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        zone.name, 
+        zone.bounds.x + zone.bounds.width / 2, 
+        zone.bounds.y + 15
+      );
+      
+      ctx.globalAlpha = 1.0;
+    });
+    
+    // Renderizar sombras de objetos
     gameObjects.forEach(obj => {
       if (obj.shadow) {
         ctx.globalAlpha = 0.4;
@@ -401,7 +428,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     });
     
-
+    // Renderizar objetos principales
     gameObjects.forEach(obj => {
       ctx.drawImage(
         obj.tile.image,
@@ -412,7 +439,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       );
     });
     
-
+    // Renderizar entidades
     if (gameState.entities) {
       gameState.entities.forEach(entity => {
         renderTopDownEntity(ctx, entity);
@@ -421,7 +448,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
     ctx.restore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, width, height, zoom, panX, panY]);
+  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, organicZones, width, height, zoom, panX, panY]);
 
 
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
