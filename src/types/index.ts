@@ -1,6 +1,17 @@
-import type { ACTIVITY_TYPES } from '../constants';
-
-export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+export type ActivityType = 
+  | 'RESTING'
+  | 'MEDITATING'
+  | 'SOCIALIZING'
+  | 'WORKING'
+  | 'EXERCISING'
+  | 'WANDERING'
+  | 'WRITING'
+  | 'EXPLORING'
+  | 'CONTEMPLATING'
+  | 'DANCING'
+  | 'HIDING'
+  | 'SHOPPING'
+  | 'COOKING';
 export type ZoneType =
   | 'kitchen'
   | 'bedroom'
@@ -17,16 +28,14 @@ export type ZoneType =
   | 'comfort'
   | 'work'
   | 'energy';
-export type EntityStateType =
-  | 'alive'
-  | 'resting'
+export type EntityStateType = 
+  | 'idle' 
+  | 'moving' 
+  | 'interacting' 
+  | 'resting' 
+  | 'seeking'
   | 'dead'
-  | 'fading'
-  | 'DEAD'
-  | 'FADING'
-  | 'LOW_RESONANCE'
-  | 'SEEKING'
-  | 'IDLE';
+  | 'fading';
 export type MoodType =
   | 'HAPPY'
   | 'SAD'

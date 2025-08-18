@@ -6,12 +6,12 @@ import React, { useState, useEffect } from 'react';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { LogEntry as DynamicsLogEntry } from '../utils/dynamicsLogger';
 
-interface DynamicsDebugPanelProps {
+interface DebugPanelProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClose }) => {
+const DebugPanel: React.FC<DebugPanelProps> = ({ visible, onClose }) => {
   const [logs, setLogs] = useState<DynamicsLogEntry[]>([]);
   const [category, setCategory] = useState<'ALL' | DynamicsLogEntry['category']>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -264,4 +264,4 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
   );
 };
 
-export default DynamicsDebugPanel;
+export default DebugPanel;

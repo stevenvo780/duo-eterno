@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LoadingSpinner: React.FC<{ size?: number }> = ({ size = 20 }) => {
+const Spinner: React.FC<{ size?: number }> = ({ size = 20 }) => {
   const border = `${Math.max(2, Math.round(size / 10))}px`;
   return (
     <div
@@ -16,4 +16,4 @@ const LoadingSpinner: React.FC<{ size?: number }> = ({ size = 20 }) => {
   );
 };
 
-export default LoadingSpinner;
+export default Spinner;

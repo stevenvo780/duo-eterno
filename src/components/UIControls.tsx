@@ -3,10 +3,10 @@ import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect } from '../utils/interactions';
 import { getDialogueForInteraction } from '../utils/dialogueSelector';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
-import DynamicsDebugPanel from './DynamicsDebugPanel';
+import DebugPanel from './DebugPanel';
 import EntityPanel from './EntityPanel';
 import StatBar from './StatBar';
-import LoadingSpinner from './LoadingSpinner';
+import Spinner from './Spinner';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { gameConfig } from '../config/gameConfig';
@@ -620,11 +620,11 @@ const UIControls: React.FC<UIControlsProps> = ({
 
       {loading && (
         <div style={{ position: 'fixed', top: 10, right: 10, zIndex: 1500 }}>
-          <LoadingSpinner />
+          <Spinner />
         </div>
       )}
 
-      <DynamicsDebugPanel visible={showDebug} onClose={() => setShowDebug(false)} />
+      <DebugPanel visible={showDebug} onClose={() => setShowDebug(false)} />
     </div>
   );
 };

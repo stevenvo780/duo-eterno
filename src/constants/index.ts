@@ -218,8 +218,14 @@ export const NEED_TO_ZONE_MAPPING = {
   hunger: 'kitchen',
   thirst: 'kitchen',
   energy: 'bedroom',
+  sleepiness: 'bedroom',
   social: 'living',
-  entertainment: 'living'
+  entertainment: 'living',
+  loneliness: 'social',
+  happiness: 'play',
+  boredom: 'recreation',
+  money: 'work',
+  health: 'bedroom'
 } as const;
 
 // RESONANCE_THRESHOLDS para interacciones
@@ -228,20 +234,10 @@ export const RESONANCE_THRESHOLDS = {
   MEDIUM: 0.6,
   HIGH: 0.8
 } as const;
-
 // Tipos para el sistema de zonas
 export type ZoneType = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'outdoor';
 
-// Tipos para actividades y estados de entidades
-export type ActivityType =
-  | 'reading'
-  | 'gaming'
-  | 'cooking'
-  | 'sleeping'
-  | 'working'
-  | 'exercising'
-  | 'socializing'
-  | 'relaxing';
+// EntityStateType permanece en constants para compatibilidad
 export type EntityStateType = 'idle' | 'moving' | 'interacting' | 'resting' | 'seeking';
 
 // Alias de constantes no usados removidos

@@ -8,15 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "clean": "eslint . --config eslint.config.js --fix && node scripts/fix-unused-vars.cjs && prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "clean": "eslint . --config eslint.config.js --fix && prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "preview": "vite preview",
-    "analyze": "node scripts/check-deadcode-improved.cjs",
+    "analyze": "node scripts/analyze-assets.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage",
-    "verify-sprites": "node scripts/verify-sprites.cjs",
-    "sprite-loader": "node scripts/sprite-animation-loader.js",
-    "detect-spritesheets": "node scripts/spritesheet-detector.cjs"
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "react": "^19.1.0",

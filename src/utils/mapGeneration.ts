@@ -322,7 +322,7 @@ export const getAttractionTarget = (
  */
 export async function generateEnhancedMap(
   seed?: string,
-  algorithm: 'default' | 'organic' | 'smart' | 'hybrid' = 'hybrid'
+  algorithm: 'default' | 'organic' | 'grid' = 'organic'
 ): Promise<{ zones: Zone[]; mapElements: MapElement[] }> {
   try {
     const result = await generateUnifiedMap({

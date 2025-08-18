@@ -69,7 +69,7 @@ class AnimationManager {
   }
 
   private async loadAnimationFiles(name: string, category: string): Promise<LoadedAnimation> {
-    const basePath = `/assets/animations/${category}/${name}`;
+    const basePath = `/assets/animated_entities/${category}/${name}`;
 
     const metadataResponse = await fetch(`${basePath}.json`);
     if (!metadataResponse.ok) {

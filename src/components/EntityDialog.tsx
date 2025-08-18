@@ -14,7 +14,7 @@ interface ActiveDialogue {
   duration: number;
 }
 
-const EntityDialogueSystem: React.FC = () => {
+const EntityDialog: React.FC = () => {
   const { gameState, dialogueState } = useGame();
   const [activeDialogues, setActiveDialogues] = useState<ActiveDialogue[]>([]);
 
@@ -71,4 +71,4 @@ const EntityDialogueSystem: React.FC = () => {
   );
 };
 
-export default EntityDialogueSystem;
+export default EntityDialog;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-interface IntroNarrativeProps {
+interface IntroSceneProps {
   onComplete: () => void;
 }
 
-const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
+const IntroScene: React.FC<IntroSceneProps> = ({ onComplete }) => {
   const [currentDialogue, setCurrentDialogue] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [showSkip, setShowSkip] = useState(false);
@@ -353,4 +353,4 @@ const IntroNarrative: React.FC<IntroNarrativeProps> = ({ onComplete }) => {
   );
 };
 
-export default IntroNarrative;
+export default IntroScene;

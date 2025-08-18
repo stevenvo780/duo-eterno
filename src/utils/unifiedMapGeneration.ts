@@ -6,7 +6,7 @@
  */
 
 import type { Zone, MapElement, ZoneType } from '../types';
-import { assetManager } from './assetManager';
+import { assetManager } from './modernAssetManager';
 import { generateOrganicProceduralMap } from './organicMapGeneration';
 import { createDefaultZones, createDefaultMapElements } from './mapGeneration';
 
@@ -231,21 +231,23 @@ export class UnifiedMapGenerator {
           // Intentar usar assets de agua si están disponibles
           const waterAssets = assetManager.getAssetsByType('water');
           if (waterAssets.length > 0) {
-            assetId = waterAssets[Math.floor(Math.random() * waterAssets.length)].id;
+            assetId = waterAssets[Math.floor(Math.random() * waterAssets.length)].id || 'default-water';
+          } else {
+            assetId = 'default-water';
           }
         } else if (noiseValue < -0.3) {
           tileType = 'stone';
           // Usar un asset de césped diferente para stone
-          assetId = grassAssets[Math.floor(Math.random() * Math.min(5, grassAssets.length))].id;
+          assetId = grassAssets[Math.floor(Math.random() * Math.min(5, grassAssets.length))]?.id || 'default-grass';
         } else {
           tileType = 'grass';
           // Usar variaciones de césped
-          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)].id;
+          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)]?.id || 'default-grass';
         }
         
         // Si no se encontró asset específico, usar césped por defecto
         if (!assetId && grassAssets.length > 0) {
-          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)].id;
+          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)]?.id || 'default-grass';
         }
         
         if (assetId) {
@@ -386,8 +388,8 @@ export class UnifiedMapGenerator {
     try {
       // Buscar asset apropiado
       const asset = searchPattern
-        ? (await assetManager.searchAssetsByPattern(searchPattern, folderName))[0]
-        : await assetManager.getRandomAssetFromFolder(folderName);
+        ? assetManager.searchAssets(searchPattern)?.[0]
+        : assetManager.getAssetsByType(folderName)?.[0];
 
       if (asset) {
         return {

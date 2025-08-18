@@ -18,7 +18,7 @@ interface Props {
   onEntityClick?: (entity: Entity) => void;
 }
 
-const ProfessionalTopDownCanvas: React.FC<Props> = ({
+const GameCanvas: React.FC<Props> = ({
   width,
   height,
   zoom,
@@ -68,8 +68,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     if (initializationStarted.current) return; // Ya está en proceso
     initializationStarted.current = true;
     
-    let isMounted = true;
-    
     const loadAssets = async () => {
       try {
         setLoadingProgress(10);
@@ -106,10 +104,6 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     };
 
     loadAssets();
-    
-    return () => {
-      isMounted = false;
-    };
   }, []); // Solo ejecutar una vez al montar el componente
 
   // Inicializar renderer cuando los assets estén listos
@@ -403,4 +397,4 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   );
 };
 
-export default ProfessionalTopDownCanvas;
+export default GameCanvas;

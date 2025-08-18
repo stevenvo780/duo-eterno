@@ -5,10 +5,11 @@ import type {
   EntityStats,
   InteractionType,
   DialogueEntry,
-  ConversationState
+  ConversationState,
+  ActivityType,
+  EntityStateType
 } from '../types';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
-import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
 
@@ -23,9 +24,6 @@ interface DialogueState {
   position?: { x: number; y: number };
 }
 
-type EntityState = EntityStateType;
-type EntityActivity = ActivityType;
-
 interface GameContextType {
   gameState: GameState;
   dialogueState: DialogueState;
@@ -38,8 +36,8 @@ type GameAction =
       type: 'UPDATE_ENTITY_POSITION';
       payload: { entityId: string; position: { x: number; y: number } };
     }
-  | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityState } }
-  | { type: 'UPDATE_ENTITY_ACTIVITY'; payload: { entityId: string; activity: EntityActivity } }
+  | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityStateType } }
+  | { type: 'UPDATE_ENTITY_ACTIVITY'; payload: { entityId: string; activity: ActivityType } }
   | { type: 'UPDATE_ENTITY_STATS'; payload: { entityId: string; stats: Partial<EntityStats> } }
   | { type: 'UPDATE_ENTITY_MOOD'; payload: { entityId: string; mood: EntityMood } }
   | { type: 'ADD_THOUGHT'; payload: { entityId: string; thought: string } }
@@ -82,7 +80,7 @@ const initialGameState: GameState = {
     {
       id: 'circle',
       position: { x: gameConfig.entityCircleInitialX, y: gameConfig.entityCircleInitialY },
-      state: 'alive',
+      state: 'idle',
       activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
@@ -106,7 +104,7 @@ const initialGameState: GameState = {
     {
       id: 'square',
       position: { x: gameConfig.entitySquareInitialX, y: gameConfig.entitySquareInitialY },
-      state: 'alive',
+      state: 'idle',
       activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
@@ -247,7 +245,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             ? {
                 ...entity,
                 isDead: true,
-                state: 'DEAD',
+                state: 'dead',
                 timeOfDeath: Date.now()
               }
             : entity
@@ -264,7 +262,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             ? {
                 ...entity,
                 isDead: false,
-                state: 'IDLE',
+                state: 'idle',
                 timeOfDeath: undefined,
                 stats: {
                   hunger: gameConfig.thresholdLow,
@@ -289,7 +287,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         entities: state.entities.map(entity => ({
           ...entity,
           isDead: true,
-          state: 'DEAD' as EntityState,
+          state: 'dead' as EntityStateType,
           timeOfDeath: Date.now()
         }))
       };

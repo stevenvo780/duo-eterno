@@ -1,13 +1,14 @@
 /**
- * 🎭 ENTIDAD SIMPLE
+ * 🎭 ENTIDAD SPRITE
  *
- * Representa entidades del juego con sprites estáticos
+ * Representa entidades del juego con sprites animados o estáticos
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Entity } from '../types';
+import { AnimatedSprite } from './AnimatedSprite';
 
-interface AnimatedEntityProps {
+interface EntitySpriteProps {
   entity: Entity;
   size?: number;
   showMoodIndicator?: boolean;
@@ -15,13 +16,47 @@ interface AnimatedEntityProps {
   onClick?: () => void;
 }
 
-export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
+export const EntitySprite: React.FC<EntitySpriteProps> = ({
   entity,
   size = 32,
   showMoodIndicator = true,
   showActivityIndicator = true,
   onClick
 }) => {
+  // Determinar si tiene animación disponible y cual usar
+  const animationInfo = useMemo(() => {
+    if (!entity.id || !entity.mood) return null;
+
+    // Determinar estado para la animación
+    let state = 'happy';
+    if (entity.stats?.health !== undefined && entity.stats.health <= 10) {
+      state = 'dying';
+    } else if (entity.mood) {
+      switch (entity.mood.toLowerCase()) {
+        case 'sad':
+        case 'lonely':
+        case 'bored':
+          state = 'sad';
+          break;
+        case 'happy':
+        case 'excited':
+        case 'content':
+        default:
+          state = 'happy';
+          break;
+      }
+    }
+
+    // Generar nombre de animación basado en id y estado
+    const animationName = `entidad_${entity.id}_${state}_anim`;
+    
+    return {
+      name: animationName,
+      category: 'entities',
+      state
+    };
+  }, [entity.id, entity.mood, entity.stats?.health]);
+
   const getEntityColor = () => {
     if (entity.stats?.health !== undefined && entity.stats.health <= 10) {
       return '#666'; // gris para dying
@@ -62,17 +97,31 @@ export const AnimatedEntity: React.FC<AnimatedEntityProps> = ({
         cursor: onClick ? 'pointer' : 'default'
       }}
     >
-      {/* Sprite de la entidad */}
-      <div
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: getEntityColor(),
-          borderRadius: getEntityShape() === 'circle' ? '50%' : '10%',
-          border: '2px solid rgba(255,255,255,0.3)',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-        }}
-      />
+      {/* Sprite animado o estático */}
+      {animationInfo ? (
+        <AnimatedSprite
+          animationName={animationInfo.name}
+          category={animationInfo.category}
+          size={size}
+          autoPlay={true}
+          loop={true}
+          style={{
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+          }}
+        />
+      ) : (
+        // Fallback a sprite estático
+        <div
+          style={{
+            width: size,
+            height: size,
+            backgroundColor: getEntityColor(),
+            borderRadius: getEntityShape() === 'circle' ? '50%' : '10%',
+            border: '2px solid rgba(255,255,255,0.3)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        />
+      )}
 
       {/* Indicador de humor */}
       {showMoodIndicator && entity.mood && (

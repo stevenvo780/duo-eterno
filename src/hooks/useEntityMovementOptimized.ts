@@ -197,7 +197,7 @@ export const useEntityMovementOptimized = () => {
 
       measureExecutionTime('entity-movement-optimized', () => {
         const livingEntities = gameState.entities.filter(
-          e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
+          e => !e.isDead && e.state !== 'dead' && e.state !== 'fading'
         );
 
         for (const entity of livingEntities) {
@@ -255,17 +255,17 @@ export const useEntityMovementOptimized = () => {
 
           const currentZone = getEntityZone(entity.position, gameState.zones);
           if (currentZone) {
-            if (entity.state === 'SEEKING') {
+            if (entity.state === 'seeking') {
               dispatch({
                 type: 'UPDATE_ENTITY_STATE',
-                payload: { entityId: entity.id, state: 'IDLE' }
+                payload: { entityId: entity.id, state: 'idle' }
               });
             }
           } else {
-            if (entity.state === 'IDLE') {
+            if (entity.state === 'idle') {
               dispatch({
                 type: 'UPDATE_ENTITY_STATE',
-                payload: { entityId: entity.id, state: 'SEEKING' }
+                payload: { entityId: entity.id, state: 'seeking' }
               });
             }
           }

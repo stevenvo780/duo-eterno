@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import ProfessionalTopDownCanvas from './components/ProfessionalTopDownCanvas';
+import GameCanvas from './components/GameCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
-import EntityDialogueSystem from './components/EntityDialogueSystem';
-import IntroNarrative from './components/IntroNarrative';
+import EntityDialog from './components/EntityDialog';
+import IntroScene from './components/IntroScene';
 import { useGameLoop } from './hooks/useGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
@@ -75,7 +75,7 @@ const GameContent: React.FC = React.memo(() => {
       }}
     >
       {/* Narrativa de introducción */}
-      {showIntro && <IntroNarrative onComplete={handleIntroComplete} />}
+      {showIntro && <IntroScene onComplete={handleIntroComplete} />}
 
       <div
         style={{
@@ -85,7 +85,7 @@ const GameContent: React.FC = React.memo(() => {
           overflow: 'hidden'
         }}
       >
-        <ProfessionalTopDownCanvas
+        <GameCanvas
           width={windowSize.width}
           height={windowSize.height - 80}
           zoom={1}
@@ -93,7 +93,7 @@ const GameContent: React.FC = React.memo(() => {
           panY={0}
           onEntityClick={handleEntitySelect}
         />
-        <EntityDialogueSystem />
+        <EntityDialog />
         <DialogOverlay />
       </div>
 

@@ -2,20 +2,19 @@ import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
 import { getEntityZone } from '../utils/mapGeneration';
 import { getGameIntervals, gameConfig } from '../config/gameConfig';
-import type { EntityStats } from '../types';
+import type { EntityStats, ZoneType } from '../types';
 import { shouldUpdateAutopoiesis } from '../utils/performanceOptimizer';
 import { logZones } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
-import type { ZoneType } from '../constants';
 
 const ZONE_EFFECT_SCALE = 0.03;
 
 const zoneConfigs: Partial<
   Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>
 > = {
-  food: { stats: ['hunger'], criticalThreshold: 20, label: 'Alimento' },
-  rest: { stats: ['sleepiness', 'energy'], criticalThreshold: 30, label: 'Descanso' },
-  play: { stats: ['boredom', 'happiness'], criticalThreshold: 30, label: 'Diversión' },
+  kitchen: { stats: ['hunger'], criticalThreshold: 20, label: 'Alimento' },
+  bedroom: { stats: ['sleepiness', 'energy'], criticalThreshold: 30, label: 'Descanso' },
+  living: { stats: ['boredom', 'happiness'], criticalThreshold: 30, label: 'Diversión' },
   social: { stats: ['loneliness', 'happiness'], criticalThreshold: 30, label: 'Social' },
   comfort: {
     stats: ['happiness', 'boredom', 'loneliness'],
@@ -87,7 +86,7 @@ export const useZoneEffects = () => {
       messageCounter.current++;
 
       const livingEntities = gameStateRef.current.entities.filter(
-        e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
+        e => !e.isDead && e.state !== 'dead' && e.state !== 'fading'
       );
 
       for (const entity of livingEntities) {
