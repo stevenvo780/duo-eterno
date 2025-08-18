@@ -129,7 +129,7 @@ SPRITES = {
 }
 ```
 
-3. Añadir a la lista en `OptimizedCanvas.tsx`:
+3. Añadir a la lista en `ProfessionalTopDownCanvas.tsx`:
 ```typescript
 const assetsToLoad = [
     // ... otros assets ...
@@ -158,7 +158,7 @@ python3 scripts/create-pixel-art.py sprites "sprite_especifico" public/assets/sp
 ## 📱 Uso en Componentes
 
 ```typescript
-// En OptimizedCanvas.tsx
+// En ProfessionalTopDownCanvas.tsx
 const sprite = loadedImages[spriteKey];
 if (sprite && sprite.complete) {
   ctx.drawImage(sprite, x, y, width, height);

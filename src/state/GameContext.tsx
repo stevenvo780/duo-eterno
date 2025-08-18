@@ -12,6 +12,9 @@ interface DialogueState {
   startTime: number;
   duration: number;
   speaker?: 'circle' | 'square' | 'system';
+  entityId?: string;
+  emotion?: string;
+  position?: { x: number; y: number };
 }
 
 type EntityState = EntityStateType;
@@ -36,7 +39,7 @@ type GameAction =
   | { type: 'BREAK_RELATIONSHIP' }
   | { type: 'TICK'; payload: number }
   | { type: 'INTERACT'; payload: { type: InteractionType; entityId?: string } }
-  | { type: 'SHOW_DIALOGUE'; payload: { message: string; duration?: number; speaker?: 'circle' | 'square' | 'system' } }
+  | { type: 'SHOW_DIALOGUE'; payload: { message: string; duration?: number; speaker?: 'circle' | 'square' | 'system'; entityId?: string; emotion?: string; position?: { x: number; y: number } } }
   | { type: 'HIDE_DIALOGUE' }
   | { type: 'START_CONNECTION_ANIMATION'; payload: { type: InteractionType } }
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
@@ -114,7 +117,11 @@ const initialDialogueState: DialogueState = {
   visible: false,
   message: '',
   startTime: 0,
-  duration: 3000
+  duration: 3000,
+  speaker: undefined,
+  entityId: undefined,
+  emotion: undefined,
+  position: undefined
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -334,7 +341,10 @@ const dialogueReducer = (state: DialogueState, action: GameAction): DialogueStat
         message: action.payload.message,
         startTime: Date.now(),
         duration: action.payload.duration || 3000,
-        speaker: action.payload.speaker
+        speaker: action.payload.speaker,
+        entityId: action.payload.entityId,
+        emotion: action.payload.emotion,
+        position: action.payload.position
       };
     }
     

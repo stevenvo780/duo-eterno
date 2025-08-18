@@ -150,7 +150,7 @@ npm run analyze-now
 ```
 src/
  ├─ components/          # UI Components
- │   ├─ Canvas.tsx       # Motor de renderizado con optimización adaptiva
+ │   ├─ ProfessionalTopDownCanvas.tsx  # Motor de renderizado principal
  │   ├─ UIControls.tsx   # Interfaz de interacción y stats
  │   └─ DynamicsDebugPanel.tsx  # Herramientas de investigación
  ├─ hooks/               # Game Logic Hooks

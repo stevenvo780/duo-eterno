@@ -4,6 +4,7 @@ import { GameProvider } from './state/GameContext';
 import ProfessionalTopDownCanvas from './components/ProfessionalTopDownCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
+import EntityDialogueSystem from './components/EntityDialogueSystem';
 import { useGameLoop } from './hooks/useGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
@@ -78,6 +79,7 @@ const GameContent: React.FC = React.memo(() => {
           height={600}
           onEntityClick={handleEntitySelect}
         />
+        <EntityDialogueSystem />
         <DialogOverlay />
       </div>
 

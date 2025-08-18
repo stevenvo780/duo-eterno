@@ -74,9 +74,9 @@ export const APPLIED_FIXES = {
     },
     {
       issue: 'Carga de sprites sin error handling',
-      location: 'OptimizedCanvas.tsx:314-401',
-      solution: 'Sistema de fallbacks robusto documentado',
-      impact: 'Renderizado estable sin sprites críticos'
+      location: 'ProfessionalTopDownCanvas.tsx:365-395',
+      solution: 'Sistema de carga robusto con fallbacks implementado',
+      impact: 'Renderizado estable con manejo de errores'
     }
   ],
   LOW: [
