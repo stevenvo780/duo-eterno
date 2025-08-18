@@ -22,23 +22,27 @@ Consolidar hallazgos y plan de acción para: (1) por qué la generación/visuali
 - Calles mal tipadas/rendereadas: las calles orgánicas llegan como `play_zone` y no como tipo de vía; no hay renderer específico de caminos.
 - Resolución de sprites: normalización rígida a 64 px, doble carga de imágenes, smoothing activo y fallbacks agresivos (128/64/32/48) que distorsionan escala.
 
+## Estado del proceso (a medias)
+- Assets: reestructuradas y creadas (roads/autotiles/decals/cliffs) bajo la nueva taxonomía. OK.
+- Mapeo: `src/generated/asset-analysis.json` actualizado. OK.
+- Código: NO actualizado aún para consumir la taxonomía. Faltan preload, `generateUnifiedMap` en reducer, `RoadRenderer`, autotiles, pixel-perfect y cámara.
+- Implicación: el pipeline actual seguirá mostrando los problemas descritos hasta que se apliquen los cambios de código (F1–F3 del plan).
+
 ## Evidencia (código y rutas)
 - Estado/generación
   - `src/state/GameContext.tsx`: acciones `GENERATE_NEW_MAP`/`RESET_GAME` usan `createDefaultZones`/`createDefaultMapElements`.
   - `src/utils/mapGeneration.ts`: define defaults y `generateEnhancedMap` (no usado por el reducer).
-  - `src/utils/unifiedMapGeneration.ts`: genera `terrainTiles` y aplica assets, pero no está cableado al estado.
+  - `src/utils/unifiedMapGeneration.ts`: genera `terrainTiles` y aplica assets, pero no está cableado al estado; precarga carpetas legacy (p.ej. `terrain_tiles`).
   - `src/utils/organicMapGeneration.ts`: Voronoi/Perlin/Poisson; devuelve calles como `play_zone`.
 - Renderizado
-  - `src/utils/rendering/MapRenderer.ts`: en `initialize` genera terreno según extents de zonas, no desde `terrainTiles` unificado.
-  - `src/utils/rendering/TileRenderer.ts`: `TILE_SIZE=64`; selección por heurística de nombre; smoothing no desactivado.
-  - `src/utils/rendering/ObjectRenderer.ts`:
-    - `BASE_RESOLUTION=64`; `detectImageResolution` recarga imagen; clamp [24,192].
-    - `getAssetSize` usa fallbacks (structures 128, natural 64, furniture 64, decoration 32, animated 48) si no cargó.
-    - `generateRandomDecorations` siembra hasta 4000x3000.
-  - `src/utils/rendering/EntityAnimationRenderer.ts`: fallback de animación asume frames 64x64 sin inferir del PNG.
+  - `src/utils/rendering/MapRenderer.ts`: en `initialize` genera terreno ad-hoc vía `tileRenderer.generateTerrainMap()` según extents de zonas.
+  - `src/utils/rendering/TileRenderer.ts`: carga `terrain_tiles`, selecciona por nombre `cesped`, no usa `terrainTiles` del generador.
+  - `src/utils/rendering/ObjectRenderer.ts`: carga carpetas legacy (`environmental_objects`,`furniture_objects`, etc.), detecta resolución recargando imágenes.
+  - `src/utils/rendering/EntityAnimationRenderer.ts`: usa `animated_entities` (correcto con la nueva taxonomía).
 - Navegación/cámara
-  - `src/components/NavigableGameCanvas.tsx`: mundo 4000x3000; `initialX=1000`, `initialY=750`, `initialZoom=1`.
-  - `src/config/gameConfig.ts`: posiciones iniciales entidades (200,200) y (600,300).
+  - `src/components/NavigableGameCanvas.tsx`: mundo 4000×3000 fijo; `initialX/Y` fijos; sin fit-to-content.
+- Assets/manager
+  - `src/utils/modernAssetManager.ts`: no persiste `naturalWidth/Height`; `size` fijo 64; `getKnownAssets` depende de `asset-analysis.json` (OK).
 
 ## Hallazgos detallados
 1) Pipeline de mapa inconexo
@@ -58,49 +62,75 @@ Consolidar hallazgos y plan de acción para: (1) por qué la generación/visuali
 - Generadores coherentes (Rogue, RimWorld-like) definen una fuente única de verdad: tiles y objetos consumidos por renderer y por gameplay.
 - Render de pixel art desactiva smoothing y usa escalado entero; tamaños derivados de dimensiones reales del asset/spritesheet.
 
-## Contratos de datos (TypeScript)
-```ts
-export interface TerrainTile {
-  x: number; y: number; // coords en tiles
-  biome: string;
-  kind: 'grass'|'water'|'rock'|'sand';
-  variant?: string;
-  edgeMask?: number; // bitmask 4-dir para transiciones
-}
-export type RoadKind = 'path'|'road'|'bridge'
-export interface RoadPolyline {
-  id: string; kind: RoadKind; width: number; // en tiles
-  points: Array<{ x: number; y: number }>; // coords en tiles
-}
-export enum ZLayer {
-  TerrainBase, Autotile, Water, Roads, Decals, GroundObject, Structure, Canopy, Overlay
-}
-export interface AssetMetadata {
-  id: string; path: string;
-  scale_base_px: 32|48|64|96|128;
-  naturalWidth: number; naturalHeight: number;
-  anchor: { x: number; y: number };
-  zLayer: ZLayer; biomes?: string[];
-  rules?: Record<string, unknown>;
-}
-```
+## Crítica al algoritmo de generación propuesto (fuerte)
+- Adecuación general: es una buena base (biomas por elevación/humedad/temperatura, roads como polylines, Poisson-disc, autotiles, RNG seed). No está listo para producción sin endurecer reglas, costes y validación.
+- Complejidad vs. valor: mezcla varias técnicas medio implementadas. Sug.: priorizar terreno→autotiles→roads, y dejar POIs/plantillas para fase posterior.
+- Biomes/ruido: FBM Perlin puro produce bandas y micro-biomas. Falta suavizado espacial (filtro mayoritario k×k) y domain warping/warp ridged para continuidad. Riesgo de "mosaico" a zoom medio.
+- Agua/costas: sin máscara de cuencas/erosión, las costas salen dentadas. Al menos aplicar morphological open/close y blur antes de umbralizar.
+- Caminos: "vector fields" naturales tienden a serpenteos sin propósito. Mejor: POIs→A* sobre mapa de costes (pendiente, evitar agua), luego suavizar (Catmull-Rom) y clasificar jerarquía (primario/secundario) con anchos distintos.
+- Autotiles: set minimal (16+4) puede generar conflictos diagonales. Prioridad y resolución de esquinas debe ser estricta; idealmente usar set de 47-corners o Wang tiles si el arte lo permite.
+- Colocación de objetos: Poisson sin máscaras de exclusión (roads/structures/agua) crea solapes y objetos flotantes. Añadir rejection sampling con reglas nearWater/slope y clusters controlados.
+- Determinismo/semillas: falta plan de schedule de semillas por chunk/tipo para evitar popping al generar perezosamente.
+- Performance/streaming: generar todo el mundo upfront no escala. Proponer chunking (p.ej. 64×64 tiles), caché LRU y generación bajo demanda por viewport.
+- Metadatos/arte: el algoritmo asume `asset-metadata` que aún no existe. Debe degradar con heurísticas sin romperse; definir plan de adopción gradual.
+- Métricas de calibración: no hay “golden seeds” ni KPIs por bioma/densidades. Sin esto, tuning es subjetivo.
+- Veredicto: Bueno como "baseline académico"; insuficiente como "sistema de juego" hasta implementar costes reales (pendiente, agua, proximidad a POIs), continuidad de biomas, máscaras de exclusión y streaming.
 
-## Especificaciones de render clave
-### RoadRenderer (conectividad por bitmask)
-- Vecindad 4-direcciones (N=1, E=2, S=4, W=8). Selección por `mask`:
-  - 1,2,4,8 → `end_{n|e|s|w}`
-  - 5 (N+S) → `straight_v`; 10 (E+W) → `straight_h`
-  - 3 (N+E) → `curve_ne`; 6 (E+S) → `curve_se`; 12 (S+W) → `curve_sw`; 9 (W+N) → `curve_nw`
-  - 7 (N+E+S) → `t_w`; 11 (E+S+W) → `t_n`; 14 (S+W+N) → `t_e`; 13 (W+N+E) → `t_s`
-  - 15 → `cross`
-- Ancho (`width>1`): rasterizar offsets laterales en tiles; usar decals de borde para suavizar vértices.
-- Orden de capa: tras `Water`, antes de `Decals`.
+## Contraste documento ↔ código: plan detallado por archivo (pasos precisos)
+1) `src/state/GameContext.tsx`
+- Reemplazar en `RESET_GAME`/`GENERATE_NEW_MAP` los defaults por `await generateUnifiedMap({ seed, width: WORLD_SIZE.w, height: WORLD_SIZE.h, tileSize: 64, algorithm: 'organic' })`.
+- Extender `GameState` para incluir `terrainTiles`, `roads`, `objectLayers`, `worldSize`.
+- Guardar `mapSeed` y versionar generador (p.ej. `generatorVersion: 1`).
+- DoD: estado expone `terrainTiles.length>0`; zonas/mapElements siguen presentes; seed reproducible.
 
-### Autotiles (bordes y esquinas)
-- Fase 1 (bordes 4-neighbors): calcular `edgeMask` (0..15) para `edge_{n|e|s|w}`.
-- Fase 2 (esquinas 8-neighbors): si `edge_n && edge_e` → `corner_ne`, etc.
-- Prioridad: corner > edge; resolver en orden determinista para evitar parpadeos.
-- Tests: 16 patrones de mask + 4 esquinas con Vitest (snapshot de nombres).
+2) `src/utils/rendering/MapRenderer.ts`
+- `initialize(sceneData)`: eliminar generación interna del terreno; aceptar `terrainMap` ya construido o construirlo desde `sceneData.terrainTiles` usando `TileRenderer.fromUnifiedTiles(tiles, TILE_SIZE)`.
+- Añadir `setWorldBounds({w,h})` y exponerlo a navegación para clamp.
+- Integrar `RoadRenderer.render(ctx, roads, zoom, viewport)` (archivo nuevo) entre `Water` y `Decals`.
+- Desactivar smoothing al inicio de cada frame: `ctx.imageSmoothingEnabled = false`.
+- DoD: no hay llamadas a `tileRenderer.generateTerrainMap`; render funciona con tiles externos.
+
+3) `src/utils/rendering/TileRenderer.ts`
+- Cambiar preload: `assetManager.loadAssetsByFolderName('terrain/base')` y `terrain/autotiles` (no `terrain_tiles`).
+- Eliminar dependencia de nombres `cesped`; introducir `fromUnifiedTiles(tiles, tileSize)` que construya `TerrainMap` desde `TerrainTile[]`.
+- Implementar autotiles: `applyAutotiles(grid)` usando bitmask 4-dir + esquinas 8-dir según especificación.
+- DoD: render recibe `terrainMap` externo; muestra bordes/ esquinas correctamente.
+
+4) `src/utils/rendering/ObjectRenderer.ts`
+- Sustituir cargas legacy por nueva taxonomía: `foliage/trees`, `foliage/shrubs`, `mushrooms`, `rocks`, `ruins`, `props`, `structures`, `water`, `decals`, `animated_entities`.
+- Eliminar `environmental_objects`, `furniture_objects`, `building`, `consumable_items`.
+- Quitar `detectImageResolution` y `resolutionCache` como fuente primaria; usar `asset.image.naturalWidth/Height` y persistir en `Asset` (ver AssetManager).
+- Restringir `generateRandomDecorations` al bbox del terreno; o reemplazar por `placeObjectsByBiome(objectLayers)` (F4).
+- DoD: sin recarga de imágenes duplicada; carpetas nuevas reflejadas en logs; sin objetos fuera del terreno.
+
+5) `src/utils/modernAssetManager.ts`
+- Extender `Asset` con `naturalWidth`, `naturalHeight`, `scale_base_px?`, `anchor?`, `zLayer?`.
+- En `img.onload`, setear `naturalWidth/Height` y marcar `loaded=true`.
+- Añadir `preloadEssentialAssetsByFolders([...nueva taxonomía...])` con orden del documento.
+- Mantener compatibilidad con `asset-analysis.json` (las claves deben coincidir con rutas nuevas, p.ej. `foliage/trees`).
+- DoD: `getStats().categories` muestra nuevas carpetas; assets tienen `naturalWidth/Height`.
+
+6) `src/utils/unifiedMapGeneration.ts`
+- `preloadRequiredAssets()`: cambiar categorías a `terrain/base`, `terrain/autotiles`, `water`, `structures`, `foliage/trees`, `foliage/shrubs`, `rocks`, `props`, `decals`, `animated_entities`.
+- `generateTerrainTiles()`: no usar `terrain_tiles` ni `cesped`; seleccionar desde `terrain/base` y etiquetar `type` por bioma/agua.
+- Exportar `roads: RoadPolyline[]` (aunque sea vacío en 1ª iteración) para integrar `RoadRenderer`.
+- DoD: `assetStats.terrainTiles>0` y carpetas nuevas precargadas.
+
+7) `src/components/NavigableGameCanvas.tsx`
+- Reemplazar constantes por `WORLD_SIZE` del estado; añadir fit-to-content en `useMapNavigation` (centra bbox de zonas/entidades).
+- Asegurar zoom entero: snap del `zoom` a múltiplos discretos según `TILE_SIZE` y DPR.
+- Botón "Centrar contenido" que reutiliza el fit.
+- DoD: inicia centrado; no hay que "buscar en esquinas".
+
+8) `src/utils/rendering/EntityAnimationRenderer.ts`
+- Mantener ruta `animated_entities` (ya correcta).
+- Inferir `frame_size` de `image.naturalWidth / columns`, si es posible; exponer opción de metadatos futura.
+- DoD: animaciones sin recortes a 200% zoom.
+
+9) Nuevo `src/utils/rendering/RoadRenderer.ts`
+- Implementar raster basado en bitmask (N=1,E=2,S=4,W=8) y ancho; elegir `road_path_*` de `/assets/roads`.
+- API: `render(ctx, roads, viewport, zoom)` y `rasterToTiles()` opcional.
+- DoD: variantes straight/curve/T/cross/end visibles y conectadas.
 
 ## Cámara y pixel-perfect
 - Escala: `scale = Math.max(1, Math.floor(min(viewW/worldW, viewH/worldH) * devicePixelRatio))` ajustada a múltiplos de `TILE_SIZE`.
@@ -127,35 +157,27 @@ export interface AssetMetadata {
 
 ## Plan de remediación (fases y dependencias)
 F1 — Fuente única de verdad + cámara
-- `src/state/GameContext.tsx`: usar `generateUnifiedMap({ seed, width, height, tileSize: 64 })` para `GENERATE_NEW_MAP`/`RESET_GAME`.
-- Estado expone: `terrainTiles`, `roads`, `poi`, `objectLayers` y `WORLD_SIZE` único.
-- `NavigableGameCanvas`: fit-to-content inicial; clamp por WORLD_SIZE.
+- `GameContext`: cablear `generateUnifiedMap`; exponer `WORLD_SIZE` y tiles/roads.
+- `MapRenderer`/`TileRenderer`: consumir tiles externos; fit-to-content.
 
 F2 — Asset manager y pixel-art
-- `modernAssetManager`: persistir `naturalWidth/Height`, `scale_base_px`, `anchor`, `zLayer`, `biomes`, `rules`; fusionar `asset-metadata.json` (nuevo) o `generated/asset-analysis.json`.
-- Desactivar smoothing en todos los ctx; escalado entero; eliminar `detectImageResolution` en `ObjectRenderer`.
+- `modernAssetManager` + `ObjectRenderer`: dimensiones naturales; smoothing off; nueva taxonomía.
 
 F3 — Autotiles y RoadRenderer (con tests)
-- `TileRenderer`: aplicar `edgeMask` 4-dir y esquinas 8-dir; cubrir 16+4 casos.
-- `RoadRenderer` nuevo: raster por bitmask 4-dir y ancho; ordenar capas.
-- Vitest: unit tests de mapping; fixtures mínimos de masks.
+- `TileRenderer` + `RoadRenderer`: bitmask y capas.
 
 F4 — Población, culling y observabilidad
-- Poisson-disc por bioma; respetar reglas nearWater/slope; evitar solapes.
-- Quadtree y culling por viewport para objetos estáticos.
-- Eventos/metrics y logs ≤ 10 líneas.
+- Poisson por bioma; quadtree; eventos.
 
 F5 — Preload presupuestado y limpieza
-- Lotes, decode, idle-callback; límites de memoria y concurrencia.
-- Retirar fallbacks legacy y normalizaciones agresivas.
+- Lotes decode; retirar fallbacks legacy.
 
 ## Migración, compatibilidad y flags
 - Feature flags: `renderer.road`, `renderer.autotile`, `camera.fitToContent`, `assets.pixelPerfect`, `compatMode` (tamaños legacy).
-- Plan reversible: cambios agrupados por módulo; cada fase mergeable/rollback en 1 commit.
-- Seeds: versionar el generador en estado; anotar incompatibilidades.
+- Plan reversible por módulos; versionar generador.
 
 ## Riesgos
-- Escala percibida tras cambiar sizing → mitigar con `compatMode` y preset de escala.
+- Escala percibida tras cambiar sizing → `compatMode` y preset de escala.
 - Semillas previas incompatibles → versionar y comunicar.
 - Fit-to-content con zoom/pan manual → transición suave.
 
@@ -172,29 +194,17 @@ F5 — Preload presupuestado y limpieza
   - `terrain/base`, `terrain/autotiles`, `roads`, `cliffs`, `decals`, `foliage/trees`, `foliage/shrubs`, `mushrooms`, `rocks`, `ruins`, `props`, `structures`, `water`, `animated_entities`.
 - Uso recomendado en el loader/preload:
   - Preload por carpetas: `['terrain/base','terrain/autotiles','roads','cliffs','decals','foliage/trees','foliage/shrubs','mushrooms','rocks','ruins','props','structures','water','animated_entities']`.
-  - Consumir categorías dinámicas de `src/generated/asset-analysis.json` (ej.: `ROADS.all`, `CLIFFS.all`, `DECALS.all`) via `modernAssetManager`.
-- Convenciones de nombres: `lower_snake_case`.
-- Fallbacks visuales ya incluidos: caminos “path”, bordes de agua/cesped, parches (decals) y caras de acantilado.
+  - Consumir categorías dinámicas de `src/generated/asset-analysis.json` via `modernAssetManager`.
 
 ## Problemas actuales (exhaustivo)
-- Generación
-  - Reducer usa defaults; `unified/organic` no cableados; `terrainTiles` no circula al renderer.
-  - Calles llegan con tipo `play_zone`; no existe `RoadRenderer` ni capa road.
-  - Decoración aleatoria se siembra hasta 4000x3000 independientemente del terreno real.
-  - Selección de tile de terreno por heurística de nombre: sin transiciones ni biomas reales.
-- Estado/Coordenadas
-  - No hay `WORLD_SIZE` único compartido; límites de cámara y generador divergen.
-- Render/Assets
-  - `ObjectRenderer` normaliza a 64 px, con fallbacks agresivos si la imagen aún no está lista.
-  - Doble carga de imágenes para detectar resolución; falta persistir `naturalWidth/Height` en `Asset`.
-  - `imageSmoothing` no se desactiva; animaciones asumen frames 64x64 sin inferencia del PNG.
-  - Ausencia de `RoadRenderer`; orden de capas limitado; sombras simplistas.
-- Navegación
-  - Cámara inicia fija sin fit-to-content; no hay acción de “centrar en entidad/contenido”.
+- Generación: reducer usa defaults; `terrainTiles` no circula; roads como `play_zone`.
+- Estado/Coordenadas: sin `WORLD_SIZE` único.
+- Render/Assets: normalización a 64 px; doble carga; smoothing activo; carpetas legacy; sin RoadRenderer.
+- Navegación: cámara fija sin fit-to-content.
 
 ## Fuera de alcance (esta iteración)
 - Iluminación dinámica avanzada y WebGL.
-- Biomas avanzados con reglas complejas y LOD de vegetación más allá de lo descrito.
+- Biomas avanzados complejos/LOD adicionales.
 
 ## Aceptación y checklist final
 - Estado expone `terrainTiles`, `roads`, `objectLayers` y `WORLD_SIZE`; renderer no genera terreno propio.
