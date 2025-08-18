@@ -21,7 +21,7 @@
       ]
     },
     {
-      "source": "/assets/sprites/(.*).png",
+      "source": "/assets/tiles/(.*).png",
       "headers": [
         {
           "key": "Cache-Control",
@@ -34,11 +34,15 @@
       ]
     },
     {
-      "source": "/assets/animations/(.*)",
+      "source": "/assets/furniture/(.*).png",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Content-Type",
+          "value": "image/png"
         }
       ]
     },
