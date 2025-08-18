@@ -25,7 +25,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "verify-sprites": "node scripts/verify-sprites.cjs",
-    "generate-sprites": "python3 scripts/create-pixel-art.py sprites all public/assets/sprites"
+    "generate-sprites": "python3 scripts/create-pixel-art.py sprites all public/assets/sprites",
+    "super-validate": "node scripts/super-validate-unused.cjs"
   },
   "dependencies": {
     "lodash": "^4.17.21",

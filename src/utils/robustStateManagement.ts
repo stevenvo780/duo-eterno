@@ -30,7 +30,6 @@ const STAT_VALIDATION_CONFIG = {
 
 /**
  * Valida y corrige un valor de stat individual
- * CORRIGIDO: Validación exhaustiva con logging de problemas
  */
 export function validateAndFixStat(
   statName: keyof EntityStats, 
@@ -78,7 +77,6 @@ export function validateAndFixStat(
 
 /**
  * Valida y corrige un objeto completo de stats
- * CORRIGIDO: Validación exhaustiva de todo el estado
  */
 export function validateAndFixStats(
   stats: Partial<EntityStats>, 
@@ -131,7 +129,6 @@ function validateStatsCoherence(stats: EntityStats, context: string): void {
 
 /**
  * Aplica un cambio de stat de manera segura
- * CORRIGIDO: Previene overflow y underflow
  */
 export function applyStatChange(
   currentStats: EntityStats,
@@ -181,7 +178,6 @@ export function applyStatChange(
 
 /**
  * Aplica múltiples cambios de stats de manera atómica
- * CORRIGIDO: Valida cada cambio y el resultado final
  */
 export function applyMultipleStatChanges(
   currentStats: EntityStats,
@@ -205,7 +201,6 @@ export function applyMultipleStatChanges(
 
 /**
  * Calcula el nivel de supervivencia de manera robusta
- * CORRIGIDO: Manejo seguro de divisiones y edge cases
  */
 export function calculateSurvivalLevel(stats: EntityStats): {
   level: 'OPTIMAL' | 'COMFORTABLE' | 'LOW' | 'WARNING' | 'CRITICAL' | 'EMERGENCY';
@@ -260,7 +255,6 @@ export function calculateSurvivalLevel(stats: EntityStats): {
 
 /**
  * Calcula efectividad de zona de manera segura
- * CORRIGIDO: Evita divisiones por cero y valores extremos
  */
 export function calculateZoneEffectiveness(
   entityStats: EntityStats,
@@ -301,7 +295,6 @@ export function calculateZoneEffectiveness(
 
 /**
  * Calcula prioridad de actividad de manera robusta
- * CORRIGIDO: Evita NaN y valores infinitos en cálculos de prioridad
  */
 export function calculateActivityPriority(
   entityStats: EntityStats,

@@ -67,7 +67,7 @@ export class AssetManager {
     Object.entries(ASSET_CATEGORIES).forEach(([category, subtypes]) => {
       this.categorizedAssets[category.toLowerCase()] = [];
       
-      Object.entries(subtypes).forEach(([subtype, assetIds]) => {
+      Object.entries(subtypes).forEach(([subtype]) => {
         if (!this.categorizedAssets[subtype]) {
           this.categorizedAssets[subtype] = [];
         }
@@ -144,10 +144,10 @@ export class AssetManager {
    * Carga assets de un subtipo específico
    */
   async loadAssetsBySubtype(category: keyof typeof ASSET_CATEGORIES, subtype: string): Promise<Asset[]> {
-    const categoryData = ASSET_CATEGORIES[category];
-    const assetIds = categoryData[subtype as keyof typeof categoryData] || [];
+    const categoryData = ASSET_CATEGORIES[category] as Record<string, readonly string[]>;
+    const assetIds: readonly string[] = categoryData[subtype] || [];
     
-    const loadPromises = assetIds.map(id => this.loadAsset(id));
+    const loadPromises = Array.from(assetIds).map((id: string) => this.loadAsset(id));
     return Promise.all(loadPromises);
   }
 

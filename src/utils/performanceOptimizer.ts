@@ -13,9 +13,6 @@
 import { gameConfig } from '../config/gameConfig';
 
 
-// Eliminada interfaz PerformanceMetrics no utilizada
-
-
 
 export interface PerformanceSnapshot {
   timestamp: number;
@@ -231,8 +228,6 @@ const autopoiesisThrottler = new AdaptiveThrottler(200, 100, 1000);
 const movementThrottler = new AdaptiveThrottler(50, 25, 200);
 const performanceMonitor = new SimplePerformanceMonitor();
 
-// Eliminado bloque de métricas acumuladas no usado
-
 
 
 export const shouldUpdateAutopoiesis = (): boolean => {
@@ -267,7 +262,3 @@ export const recordFrame = (): void => {
 export const recordRenderCall = (): void => {
   performanceMonitor.recordRenderCall();
 };
-
-// Eliminados exports no usados: getCurrentMetrics, getActivePerformanceAlerts
-
-// Eliminados exports no usados: updatePerformanceThrottlers, usePerformanceMonitoring

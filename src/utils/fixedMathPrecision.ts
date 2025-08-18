@@ -14,8 +14,7 @@ import {
 
 /**
  * Redondeo de alta precisión SIN sesgo epsilon
- * CORRIGIDO: Elimina la adición de epsilon que causaba sesgo
- */
+*/
 export const preciseRound = (value: number, decimals: number = 6): number => {
   if (!isFinite(value)) return value;
   
@@ -25,8 +24,7 @@ export const preciseRound = (value: number, decimals: number = 6): number => {
 
 /**
  * Comparación de números con tolerancia mejorada
- * CORRIGIDO: Usa epsilon relativo para números grandes
- */
+*/
 export const areEqual = (a: number, b: number, epsilon: number = MATH.HIGH_PRECISION_EPSILON): boolean => {
   if (a === b) return true;
   
@@ -44,8 +42,7 @@ export const areEqual = (a: number, b: number, epsilon: number = MATH.HIGH_PRECI
 
 /**
  * Clamp seguro con mejor manejo de edge cases
- * CORRIGIDO: Mejor validación y logging condicional
- */
+*/
 export const safeClamp = (value: number, min: number, max: number): number => {
 
   if (!isFinite(min) || !isFinite(max)) {
@@ -66,8 +63,7 @@ export const safeClamp = (value: number, min: number, max: number): number => {
 
 /**
  * Normalización robusta mejorada
- * CORRIGIDO: Mejor manejo de rangos pequeños
- */
+*/
 export const safeNormalize = (value: number, min: number, max: number): number => {
   if (!isFinite(value) || !isFinite(min) || !isFinite(max)) {
     return 0.5;
@@ -87,7 +83,6 @@ export const safeNormalize = (value: number, min: number, max: number): number =
 
 /**
  * Generador de ruido Perlin con seed determinista
- * CORRIGIDO: Elimina Math.random() no determinista
  */
 class DeterministicNoise {
   private permutation: number[];
@@ -98,10 +93,8 @@ class DeterministicNoise {
   
   /**
    * Genera tabla de permutación determinista basada en seed
-   * CORRIGIDO: Mejor manejo de overflow para seeds grandes
    */
   private generatePermutation(seed: number): number[] {
-    // CORRIGIDO: Normalizar seed para evitar overflow
     let state = Math.abs(seed) % 2147483647; // Max safe 32-bit integer
     const a = 1664525;
     const c = 1013904223;
@@ -177,7 +170,6 @@ const globalNoise = new DeterministicNoise(12345);
 
 /**
  * Función de ruido determinista pública
- * CORRIGIDO: Reemplaza la función no determinista anterior
  */
 export const deterministicNoise = (x: number, y: number): number => {
   return globalNoise.noise2D(x, y);
@@ -186,8 +178,7 @@ export const deterministicNoise = (x: number, y: number): number => {
 /**
  * Función de ruido híbrido que permite variabilidad controlada
  * Para casos donde se necesita balance entre determinismo y naturalidad
- * CORRIGIDO: Ahora usa seed determinista en lugar de Math.random()
- */
+*/
 export const balancedNoise = (x: number, y: number, variabilityFactor: number = 0.3, seed: number = 54321): number => {
   if (!validateNumber(x, 'balancedNoise.x') || !validateNumber(y, 'balancedNoise.y')) {
     return 0;
@@ -196,7 +187,6 @@ export const balancedNoise = (x: number, y: number, variabilityFactor: number = 
   const deterministicComponent = globalNoise.noise2D(x, y);
   
   if (variabilityFactor > 0 && variabilityFactor <= 1) {
-    // CORRIGIDO: Usar generador determinista en lugar de Math.random()
     const variabilityNoise = new DeterministicNoise(seed);
     const variableComponent = (variabilityNoise.noise2D(x * 0.1, y * 0.1) + 1) * 0.5; // Normalizar a [0,1]
     return deterministicComponent * (1 - variabilityFactor) + variableComponent * variabilityFactor;
@@ -209,8 +199,7 @@ export const balancedNoise = (x: number, y: number, variabilityFactor: number = 
 
 /**
  * Cálculo de coherencia temporal robusto
- * CORRIGIDO: Mejor manejo de datos ruidosos y casos edge
- */
+*/
 export const calculateCoherence = (history: number[]): number => {
   if (history.length < 3) return 0.5;
   
@@ -256,8 +245,7 @@ export const lerp = (start: number, end: number, t: number): number => {
 
 /**
  * Interpolación exponencial mejorada
- * CORRIGIDO: Mejor manejo de deltaTime y factores extremos
- */
+*/
 export const expLerp = (
   current: number, 
   target: number, 
@@ -367,8 +355,7 @@ const vectorMath = {
 
 /**
  * Validador numérico robusto
- * CORRIGIDO: Logging condicional para producción
- */
+*/
 export const validateNumber = (
   value: number, 
   context: string = 'unknown',
@@ -381,7 +368,6 @@ export const validateNumber = (
 ): boolean => {
   const { allowZero = true, allowNegative = true, maxAbsValue = 1e12, silent = false } = options;
   
-  // CORRIGIDO: Solo log en desarrollo o cuando no esté en silent mode
   const shouldLog = !silent && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test');
   
   if (!isFinite(value)) {
@@ -411,8 +397,7 @@ export const validateNumber = (
 
 /**
  * Cálculo de resonancia mejorado
- * CORRIGIDO: Mejor manejo de casos edge y validación
- */
+*/
 export const calculateResonance = (
   entityDistance: number,
   harmonyLevel: number,

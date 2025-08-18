@@ -84,7 +84,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
         setAssetsLoaded(true);
         
         // Precargar animaciones del personaje
-        await preloadAnimations();
+        await preloadAnimations([{ name: 'idle', category: 'entities' }]);
         
       } catch (error) {
         console.error('❌ Error cargando assets:', error);

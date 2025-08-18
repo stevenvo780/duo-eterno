@@ -149,7 +149,6 @@ const shouldChangeActivity = (
     changeChance *= damp;
   }
   
-  // CORRIGIDO: Usar generador determinista en lugar de Math.random()
   const seed = (Date.now() * 1664525 + 1013904223) % 2147483647;
   const deterministicValue = (seed / 2147483647);
   return deterministicValue < changeChance;
@@ -235,7 +234,6 @@ const softmaxPick = (scores: Array<{ activity: EntityActivity; score: number }>,
   const exps = scores.map(s => Math.exp((s.score - maxScore) / tau));
   const sum = exps.reduce((a, b) => a + b, 0);
   
-  // CORRIGIDO: Usar generador determinista en lugar de Math.random()
   const seed = (Date.now() * 1664525 + 1013904223) % 2147483647;
   let r = (seed / 2147483647) * sum;
   
@@ -313,5 +311,3 @@ export const makeIntelligentDecision = (
   
   return entity.activity;
 };
-
-// Removed unused export getActivitySession

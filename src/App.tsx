@@ -12,6 +12,7 @@ import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
 import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger';
+import type { Entity } from './types';
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -45,7 +46,11 @@ const GameContent: React.FC = React.memo(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleEntitySelect = React.useCallback((entityId: string | null) => {
+  const handleEntitySelect = React.useCallback((entity: Entity) => {
+    setSelectedEntityId(entity.id);
+  }, []);
+
+  const handleEntitySelectString = React.useCallback((entityId: string | null) => {
     setSelectedEntityId(entityId);
   }, []);
 
@@ -85,7 +90,7 @@ const GameContent: React.FC = React.memo(() => {
 
       <UIControls 
         selectedEntityId={selectedEntityId}
-        onEntitySelect={handleEntitySelect}
+        onEntitySelect={handleEntitySelectString}
         onShowIntro={() => setShowIntro(true)}
       />
     </div>

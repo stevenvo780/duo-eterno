@@ -729,5 +729,3 @@ export const logRenderCompat = (message: string, data?: unknown) => {
   if (data !== undefined) console.log(`🎨 [RENDER] ${message}`, data);
   else console.log(`🎨 [RENDER] ${message}`);
 };
-
-// Exportes de logging especializados no usados han sido eliminados.
