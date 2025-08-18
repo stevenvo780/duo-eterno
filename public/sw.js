@@ -3,7 +3,7 @@ const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/assets/react.svg'
+  '/vite.svg'
 ];
 
 self.addEventListener('install', event => {

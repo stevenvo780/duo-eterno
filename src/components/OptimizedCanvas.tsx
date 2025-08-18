@@ -313,16 +313,19 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
   // Load all sprite assets
   useEffect(() => {
     const assetsToLoad = [
+      // Interface y elementos UI
       'barra_estadistica',
       'canvas_base', 
       'conexion_entidades',
       'dialogo_overlay',
+      // Entidades principales
       'entidad_circulo_happy',
       'entidad_circulo_sad', 
       'entidad_circulo_dying',
       'entidad_square_happy',
       'entidad_square_sad',
       'entidad_square_dying',
+      // Patrones de zonas
       'pattern_kitchen',
       'pattern_bedroom',
       'pattern_living',
@@ -336,26 +339,25 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
       'furniture_sofa_classic',
       'furniture_table_coffee',
       'furniture_table_dining',
-      // Plantas
+      // Plantas y naturaleza
       'plant_small',
       'plant_tree',
       'plant_flower',
+      'flor_rosa',
       // Decoración
       'deco_lamp',
       'deco_clock',
       'deco_bookshelf',
-      // Caminos
+      'banco',
+      'lampara',
+      'fuente_agua',
+      // Caminos y obstáculos
       'path_stone_h',
       'path_stone_v',
       'path_brick_h',
       'path_dirt_h',
       'obstaculo_arbol',
-      'obstaculo_roca',
-      // Legacy assets para compatibilidad
-      'banco',
-      'flor_rosa',
-      'fuente_agua',
-      'lampara'
+      'obstaculo_roca'
     ];
 
     const loadImage = (assetName: string): Promise<HTMLImageElement> => {
@@ -363,12 +365,8 @@ const OptimizedCanvas: React.FC<OptimizedCanvasProps> = ({ width, height }) => {
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = () => {
-          console.warn(`Failed to load ${assetName}, trying alternative paths...`);
-          // Try unified sprites directory
-          const altImg = new Image();
-          altImg.onload = () => resolve(altImg);
-          altImg.onerror = reject;
-          altImg.src = `/assets/sprites/${assetName}.png`;
+          console.warn(`Failed to load sprite: ${assetName}`);
+          reject(new Error(`Could not load ${assetName}`));
         };
         img.src = `/assets/sprites/${assetName}.png`;
       });

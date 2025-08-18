@@ -10,7 +10,7 @@ const DialogOverlay: React.FC = () => {
     const img = new Image();
     img.onload = () => setDialogSprite(img);
     img.onerror = () => console.error('Failed to load dialog sprite');
-    img.src = '/assets/pixel_art/dialogo_overlay.png';
+    img.src = '/assets/sprites/dialogo_overlay.png';
   }, []);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const DialogOverlay: React.FC = () => {
           position: 'relative',
           width: '320px',
           height: '120px',
-          backgroundImage: `url(/assets/pixel_art/dialogo_overlay.png)`,
+          backgroundImage: `url(/assets/sprites/dialogo_overlay.png)`,
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
