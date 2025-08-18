@@ -1,0 +1,139 @@
+import React, { useEffect, useState } from 'react';
+
+interface DialogBubbleProps {
+  x: number;
+  y: number;
+  message: string;
+  speaker: 'ISA' | 'STEV';
+  emotion: string;
+  visible: boolean;
+  duration: number;
+  onComplete: () => void;
+}
+
+const DialogBubble: React.FC<DialogBubbleProps> = ({
+  x,
+  y,
+  message,
+  speaker,
+  emotion: _emotion,
+  visible,
+  duration,
+  onComplete
+}) => {
+  const [opacity, setOpacity] = useState(0);
+  const [scale, setScale] = useState(0.8);
+
+  useEffect(() => {
+    if (visible) {
+      setOpacity(1);
+      setScale(1);
+
+      const timer = setTimeout(() => {
+        setOpacity(0);
+        setScale(0.8);
+        setTimeout(onComplete, 300);
+      }, duration - 300);
+
+      return () => clearTimeout(timer);
+    } else {
+      setOpacity(0);
+      setScale(0.8);
+    }
+  }, [visible, duration, onComplete]);
+
+  if (!visible && opacity === 0) return null;
+
+  const getEmotionColor = (speaker: string) => {
+    const baseColors = {
+      ISA: '#e91e63',
+      STEV: '#3f51b5'
+    };
+
+    const base = baseColors[speaker as keyof typeof baseColors] || baseColors.STEV;
+
+    return {
+      background: `${base}dd`,
+      border: `${base}ff`
+    };
+  };
+
+  const colors = getEmotionColor(speaker);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y - 60,
+        opacity,
+        transform: `scale(${scale}) translate(-50%, -100%)`,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: 'none',
+        zIndex: 1000,
+        maxWidth: '200px',
+        minWidth: '80px'
+      }}
+    >
+      <div
+        style={{
+          background: colors.background,
+          border: `2px solid ${colors.border}`,
+          borderRadius: '16px',
+          padding: '8px 12px',
+          fontSize: '12px',
+          fontFamily: 'system-ui, sans-serif',
+          color: 'white',
+          textAlign: 'center',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          position: 'relative',
+          backdropFilter: 'blur(4px)',
+          wordWrap: 'break-word',
+          lineHeight: '1.3'
+        }}
+      >
+        <div
+          style={{
+            fontSize: '10px',
+            fontWeight: 'bold',
+            marginBottom: '2px',
+            opacity: 0.9,
+            fontStyle: 'italic'
+          }}
+        >
+          {speaker === 'ISA' ? 'Isa' : 'Stev'}
+        </div>
+        {message}
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: `8px solid ${colors.border}`
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-6px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: `6px solid ${colors.background}`
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default DialogBubble;

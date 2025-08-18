@@ -1,20 +1,56 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { migrateToLatest, serializeStateV1, safeLoad, safeSave } from '../persistence';
 import type { GameState } from '../../types';
 
 const baseState: GameState = {
   entities: [
     {
-      id: 'circle', position: { x: 10, y: 20 }, state: 'IDLE', activity: 'WANDERING',
-      stats: { hunger: 50, sleepiness: 50, loneliness: 50, happiness: 50, energy: 50, boredom: 50, money: 10, health: 80 },
-      lastStateChange: Date.now(), lastActivityChange: Date.now(), lastInteraction: Date.now(),
-      pulsePhase: 0, colorHue: 200, mood: 'CONTENT', thoughts: [], isDead: false
+      id: 'circle',
+      position: { x: 10, y: 20 },
+      state: 'IDLE',
+      activity: 'WANDERING',
+      stats: {
+        hunger: 50,
+        sleepiness: 50,
+        loneliness: 50,
+        happiness: 50,
+        energy: 50,
+        boredom: 50,
+        money: 10,
+        health: 80
+      },
+      lastStateChange: Date.now(),
+      lastActivityChange: Date.now(),
+      lastInteraction: Date.now(),
+      pulsePhase: 0,
+      colorHue: 200,
+      mood: 'CONTENT',
+      thoughts: [],
+      isDead: false
     },
     {
-      id: 'square', position: { x: 30, y: 40 }, state: 'IDLE', activity: 'WANDERING',
-      stats: { hunger: 50, sleepiness: 50, loneliness: 50, happiness: 50, energy: 50, boredom: 50, money: 10, health: 80 },
-      lastStateChange: Date.now(), lastActivityChange: Date.now(), lastInteraction: Date.now(),
-      pulsePhase: Math.PI, colorHue: 300, mood: 'CONTENT', thoughts: [], isDead: false
+      id: 'square',
+      position: { x: 30, y: 40 },
+      state: 'IDLE',
+      activity: 'WANDERING',
+      stats: {
+        hunger: 50,
+        sleepiness: 50,
+        loneliness: 50,
+        happiness: 50,
+        energy: 50,
+        boredom: 50,
+        money: 10,
+        health: 80
+      },
+      lastStateChange: Date.now(),
+      lastActivityChange: Date.now(),
+      lastInteraction: Date.now(),
+      pulsePhase: Math.PI,
+      colorHue: 300,
+      mood: 'CONTENT',
+      thoughts: [],
+      isDead: false
     }
   ],
   resonance: 60,
@@ -27,14 +63,11 @@ const baseState: GameState = {
 };
 
 describe('persistence migrator and io', () => {
-  const storageKey = 'duoEternoState';
   let originalLS: Storage;
 
   beforeEach(() => {
-    // Mock localStorage
     originalLS = global.localStorage;
     const store = new Map<string, string>();
-    // @ts-expect-error redefine
     global.localStorage = {
       getItem: (k: string) => store.get(k) ?? null,
       setItem: (k: string, v: string) => void store.set(k, v),
@@ -42,11 +75,10 @@ describe('persistence migrator and io', () => {
       clear: () => store.clear(),
       key: (i: number) => Array.from(store.keys())[i] ?? null,
       length: 0
-    } as any;
+    } as Storage;
   });
 
   afterEach(() => {
-    // @ts-expect-error restore
     global.localStorage = originalLS;
   });
 

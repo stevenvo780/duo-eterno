@@ -2,7 +2,6 @@ import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
   return [
-    // Zona alimentaria integrada (jardín + cocina) - esquina superior izquierda
     {
       id: 'food_complex',
       name: 'Complejo Alimentario',
@@ -16,8 +15,7 @@ export const createDefaultZones = (): Zone[] => {
         energy: 5
       }
     },
-    
-    // Santuario de descanso - superior derecha cerca del trabajo
+
     {
       id: 'rest_sanctuary',
       name: 'Santuario de Descanso',
@@ -31,8 +29,7 @@ export const createDefaultZones = (): Zone[] => {
         happiness: 15
       }
     },
-    
-    // Área de juegos central - corazón del mapa
+
     {
       id: 'play_central',
       name: 'Plaza de Juegos Central',
@@ -47,8 +44,7 @@ export const createDefaultZones = (): Zone[] => {
         energy: -5
       }
     },
-    
-    // Plaza social con fuente - esquina inferior izquierda
+
     {
       id: 'social_plaza',
       name: 'Plaza Social Comunitaria',
@@ -63,8 +59,7 @@ export const createDefaultZones = (): Zone[] => {
         energy: 5
       }
     },
-    
-    // Bosque de meditación - inferior central
+
     {
       id: 'meditation_grove',
       name: 'Bosque de Meditación Zen',
@@ -80,8 +75,7 @@ export const createDefaultZones = (): Zone[] => {
         energy: 10
       }
     },
-    
-    // Estación de trabajo - superior derecha
+
     {
       id: 'work_station',
       name: 'Centro de Trabajo Productivo',
@@ -95,8 +89,7 @@ export const createDefaultZones = (): Zone[] => {
         energy: -15
       }
     },
-    
-    // Estación energética - lateral derecha
+
     {
       id: 'energy_station',
       name: 'Reactor Energético',
@@ -116,7 +109,6 @@ export const createDefaultZones = (): Zone[] => {
 
 export const createDefaultMapElements = (): MapElement[] => {
   return [
-    // Obstáculos funcionales
     {
       id: 'rock_central',
       type: 'obstacle',
@@ -138,8 +130,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 25, height: 60 },
       color: '#059669'
     },
-    
-    // Elementos decorativos - Jardín de alimentos
+
     {
       id: 'flower_garden_1',
       type: 'food_zone',
@@ -161,8 +152,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 8, height: 8 },
       color: '#639bff'
     },
-    
-    // Decorativos - Área de descanso
+
     {
       id: 'banco_rest_1',
       type: 'rest_zone',
@@ -177,8 +167,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 24, height: 12 },
       color: '#9e684c'
     },
-    
-    // Decorativos - Plaza social
+
     {
       id: 'fuente_social',
       type: 'social_zone',
@@ -200,8 +189,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 24, height: 12 },
       color: '#9e684c'
     },
-    
-    // Decorativos - Área de juegos
+
     {
       id: 'lampara_juegos_1',
       type: 'play_zone',
@@ -216,8 +204,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 16, height: 24 },
       color: '#f2d450'
     },
-    
-    // Decorativos - Estación de trabajo
+
     {
       id: 'lampara_work',
       type: 'play_zone',
@@ -225,8 +212,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       size: { width: 16, height: 24 },
       color: '#f2d450'
     },
-    
-    // Decorativos - Bosque de meditación
+
     {
       id: 'flower_meditation_1',
       type: 'food_zone',
@@ -257,18 +243,18 @@ export const checkCollisionWithObstacles = (
   mapElements: MapElement[]
 ): boolean => {
   const obstacles = mapElements.filter(element => element.type === 'obstacle');
-  
+
   for (const obstacle of obstacles) {
     const distance = Math.sqrt(
       Math.pow(position.x - (obstacle.position.x + obstacle.size.width / 2), 2) +
-      Math.pow(position.y - (obstacle.position.y + obstacle.size.height / 2), 2)
+        Math.pow(position.y - (obstacle.position.y + obstacle.size.height / 2), 2)
     );
-    
+
     if (distance < entitySize + Math.min(obstacle.size.width, obstacle.size.height) / 2) {
       return true;
     }
   }
-  
+
   return false;
 };
 
@@ -299,19 +285,19 @@ export const getAttractionTarget = (
 
   for (const zone of zones) {
     let score = zone.attractiveness;
-    
+
     if (zone.effects?.hunger && entityStats.hunger < 30) score += 0.5;
     if (zone.effects?.sleepiness && entityStats.sleepiness < 30) score += 0.5;
     if (zone.effects?.loneliness && entityStats.loneliness < 30) score += 0.5;
     if (zone.effects?.boredom && entityStats.boredom < 30) score += 0.5;
     if (zone.effects?.money && entityStats.money < 40) score += 0.5;
-    
+
     const distance = Math.sqrt(
       Math.pow(currentPosition.x - (zone.bounds.x + zone.bounds.width / 2), 2) +
-      Math.pow(currentPosition.y - (zone.bounds.y + zone.bounds.height / 2), 2)
+        Math.pow(currentPosition.y - (zone.bounds.y + zone.bounds.height / 2), 2)
     );
     score -= distance / 1000;
-    
+
     if (score > bestScore) {
       bestScore = score;
       bestZone = zone;

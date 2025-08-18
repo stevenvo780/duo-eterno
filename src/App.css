@@ -1,5 +1,3 @@
-/* Dúo Eterno - Minimal Tamagotchi Game Styles -  */
-
 #root {
   max-width: 100%;
   margin: 0;
@@ -13,23 +11,23 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  /* Enable hardware acceleration */
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Canvas optimizations */
 canvas {
-  /* Enable hardware acceleration for canvas */
   transform: translateZ(0);
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 }
 
-/* Utility classes for smooth animations */
 .fade-in {
   animation: fadeIn 0.3s ease-in; /* Reduced duration */
 }
@@ -50,7 +48,8 @@ canvas {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -58,13 +57,11 @@ canvas {
   }
 }
 
-/* Performance optimizations */
 .gpu-accelerated {
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Disable text selection for better performance */
 .no-select {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -97,7 +94,6 @@ canvas {
   padding: 20px;
 }
 
-/* Ensure smooth animations */
 * {
   box-sizing: border-box;
 }
@@ -110,7 +106,6 @@ canvas:hover {
   filter: brightness(1.05);
 }
 
-/* Button hover effects */
 button {
   transition: all 0.2s ease;
 }
@@ -124,7 +119,6 @@ button:active {
   transform: translateY(0);
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }

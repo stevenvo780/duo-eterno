@@ -1,10 +1,9 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import type { GameState, EntityMood, EntityStats, InteractionType } from '../types';
 import { generateProceduralMap, generateMapSeed } from '../utils/proceduralMapGeneration';
-import type { ActivityType, EntityStateType } from '../constants/gameConstants';
+import type { ActivityType, EntityStateType } from '../constants';
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
-
 
 interface DialogueState {
   visible: boolean;
@@ -12,6 +11,9 @@ interface DialogueState {
   startTime: number;
   duration: number;
   speaker?: 'circle' | 'square' | 'system';
+  entityId?: string;
+  emotion?: string;
+  position?: { x: number; y: number };
 }
 
 type EntityState = EntityStateType;
@@ -23,9 +25,12 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>;
 }
 
-type GameAction = 
+type GameAction =
   | { type: 'UPDATE_RESONANCE'; payload: number }
-  | { type: 'UPDATE_ENTITY_POSITION'; payload: { entityId: string; position: { x: number; y: number } } }
+  | {
+      type: 'UPDATE_ENTITY_POSITION';
+      payload: { entityId: string; position: { x: number; y: number } };
+    }
   | { type: 'UPDATE_ENTITY_STATE'; payload: { entityId: string; state: EntityState } }
   | { type: 'UPDATE_ENTITY_ACTIVITY'; payload: { entityId: string; activity: EntityActivity } }
   | { type: 'UPDATE_ENTITY_STATS'; payload: { entityId: string; stats: Partial<EntityStats> } }
@@ -36,22 +41,31 @@ type GameAction =
   | { type: 'BREAK_RELATIONSHIP' }
   | { type: 'TICK'; payload: number }
   | { type: 'INTERACT'; payload: { type: InteractionType; entityId?: string } }
-  | { type: 'SHOW_DIALOGUE'; payload: { message: string; duration?: number; speaker?: 'circle' | 'square' | 'system' } }
+  | {
+      type: 'SHOW_DIALOGUE';
+      payload: {
+        message: string;
+        duration?: number;
+        speaker?: 'circle' | 'square' | 'system';
+        entityId?: string;
+        emotion?: string;
+        position?: { x: number; y: number };
+      };
+    }
   | { type: 'HIDE_DIALOGUE' }
   | { type: 'START_CONNECTION_ANIMATION'; payload: { type: InteractionType } }
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
   | { type: 'RESET_GAME' }
   | { type: 'GENERATE_NEW_MAP'; payload?: { seed?: string } }
-  | { type: 'LOAD_SAVED_STATE'; payload: GameState }
-;
+  | { type: 'LOAD_SAVED_STATE'; payload: GameState };
 
 const initialGameState: GameState = {
   entities: [
     {
       id: 'circle',
       position: { x: gameConfig.entityCircleInitialX, y: gameConfig.entityCircleInitialY },
-      state: 'IDLE',
-      activity: 'WANDERING',
+      state: 'alive',
+      activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
         sleepiness: gameConfig.entityInitialStats,
@@ -74,8 +88,8 @@ const initialGameState: GameState = {
     {
       id: 'square',
       position: { x: gameConfig.entitySquareInitialX, y: gameConfig.entitySquareInitialY },
-      state: 'IDLE',
-      activity: 'WANDERING',
+      state: 'alive',
+      activity: 'RESTING',
       stats: {
         hunger: gameConfig.entityInitialStats,
         sleepiness: gameConfig.entityInitialStats,
@@ -107,14 +121,18 @@ const initialGameState: GameState = {
   },
   zones: [],
   mapElements: [],
-  mapSeed: generateMapSeed() // Generar semilla única para cada partida
+  mapSeed: generateMapSeed()
 };
 
 const initialDialogueState: DialogueState = {
   visible: false,
   message: '',
   startTime: 0,
-  duration: 3000
+  duration: 3000,
+  speaker: undefined,
+  entityId: undefined,
+  emotion: undefined,
+  position: undefined
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -122,7 +140,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'UPDATE_RESONANCE': {
       return { ...state, resonance: Math.max(0, Math.min(100, action.payload)) };
     }
-    
+
     case 'UPDATE_ENTITY_POSITION': {
       return {
         ...state,
@@ -133,7 +151,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         )
       };
     }
-    
+
     case 'UPDATE_ENTITY_STATE': {
       return {
         ...state,
@@ -183,9 +201,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         entities: state.entities.map(entity =>
-          entity.id === action.payload.entityId
-            ? { ...entity, mood: action.payload.mood }
-            : entity
+          entity.id === action.payload.entityId ? { ...entity, mood: action.payload.mood } : entity
         )
       };
     }
@@ -195,8 +211,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
-            ? { 
-                ...entity, 
+            ? {
+                ...entity,
                 thoughts: [...entity.thoughts.slice(-4), action.payload.thought]
               }
             : entity
@@ -209,9 +225,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         entities: state.entities.map(entity =>
           entity.id === action.payload.entityId
-            ? { 
-                ...entity, 
-                isDead: true, 
+            ? {
+                ...entity,
+                isDead: true,
                 state: 'DEAD',
                 timeOfDeath: Date.now()
               }
@@ -259,14 +275,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }))
       };
     }
-    
+
     case 'TICK': {
       return {
         ...state,
         cycles: state.cycles + 1
       };
     }
-    
+
     case 'INTERACT': {
       return {
         ...state,
@@ -277,7 +293,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
       };
     }
-    
+
     case 'START_CONNECTION_ANIMATION': {
       return {
         ...state,
@@ -292,12 +308,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'UPDATE_TOGETHER_TIME': {
       return { ...state, togetherTime: action.payload };
     }
-    
+
     case 'RESET_GAME': {
       const newSeed = generateMapSeed();
       const { zones, mapElements } = generateProceduralMap(newSeed);
-      return { 
-        ...initialGameState, 
+      return {
+        ...initialGameState,
         cycles: 0,
         mapSeed: newSeed,
         zones,
@@ -315,12 +331,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         mapElements
       };
     }
-    
+
     case 'LOAD_SAVED_STATE': {
       return action.payload;
     }
 
-    
     default:
       return state;
   }
@@ -334,14 +349,17 @@ const dialogueReducer = (state: DialogueState, action: GameAction): DialogueStat
         message: action.payload.message,
         startTime: Date.now(),
         duration: action.payload.duration || 3000,
-        speaker: action.payload.speaker
+        speaker: action.payload.speaker,
+        entityId: action.payload.entityId,
+        emotion: action.payload.emotion,
+        position: action.payload.position
       };
     }
-    
+
     case 'HIDE_DIALOGUE': {
       return { ...state, visible: false };
     }
-    
+
     default:
       return state;
   }
@@ -361,13 +379,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Generar mapa inicial
     dispatch({ type: 'GENERATE_NEW_MAP' });
   }, []);
 
-  // Persistencia mínima (autosave 20s + beforeunload)
   usePersistence(gameState, dispatch);
-
 
   return (
     <GameContext.Provider value={{ gameState, dialogueState, dispatch }}>

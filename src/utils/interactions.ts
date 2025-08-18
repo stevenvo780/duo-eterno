@@ -1,9 +1,5 @@
 import type { InteractionType, InteractionEffect, EntityStats, EntityMood } from '../types';
 
-// Nota: las interacciones no ajustan resonancia directamente.
-// El incremento de resonancia (p.ej. NOURISH) se maneja en la UI/loop con atenuación
-// y el modelo unificado de resonancia para evitar doble conteo y spamming.
-
 const interactionEffects: Record<InteractionType, InteractionEffect> = {
   NOURISH: {
     stats: { happiness: 15, energy: 10 },
@@ -35,12 +31,12 @@ const interactionEffects: Record<InteractionType, InteractionEffect> = {
 };
 
 export const applyInteractionEffect = (
-  currentStats: EntityStats, 
+  currentStats: EntityStats,
   interaction: InteractionType
 ): { stats: EntityStats; mood?: EntityMood } => {
   const effect = interactionEffects[interaction];
   const effectiveStats = effect.stats;
-  
+
   const newStats = { ...currentStats };
 
   Object.entries(effectiveStats).forEach(([stat, change]) => {

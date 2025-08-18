@@ -1,7 +1,11 @@
+// Setup de entorno de pruebas para Vitest.
+// Objetivo: alinear temporizadores y objetos globales con expectativas de código
+// de producción (e.g., game loops, animaciones) y habilitar matchers de Testing Library.
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-// Setup timer globals para vitest
+
+// Exponer temporizadores reales (sobrescribibles) para permitir spy/mocks finos.
 Object.defineProperty(global, 'setInterval', {
   value: setInterval,
   writable: true
@@ -22,7 +26,8 @@ Object.defineProperty(global, 'clearTimeout', {
   writable: true
 });
 
-// Mock window con todos los métodos necesarios para los tests
+
+// Mock de `window` mínimo viable para componentes que leen propiedades comunes.
 const mockWindow = {
   setInterval: setInterval,
   clearInterval: clearInterval,
@@ -37,13 +42,14 @@ const mockWindow = {
   }
 };
 
-// Setup window object completo
+
 Object.defineProperty(globalThis, 'window', {
   value: mockWindow,
   writable: true
 });
 
-// Mock performance.now para compatibilidad
+
+// Shim de `performance.now()` para cronometría en tests deterministas.
 Object.defineProperty(global, 'performance', {
   value: {
     now: () => Date.now()

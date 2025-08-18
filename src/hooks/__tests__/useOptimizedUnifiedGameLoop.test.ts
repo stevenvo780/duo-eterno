@@ -2,19 +2,15 @@
  * 🧪 Tests simplificados para useOptimizedUnifiedGameLoop
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('useOptimizedUnifiedGameLoop', () => {
-  
   it('should have basic functionality tests', () => {
-    // Test funciones matemáticas utilizadas en el game loop
-    const calculateMood = (stats: any, resonance: number) => {
-      const criticalFactors = [
-        stats.hunger < 15,
-        stats.sleepiness < 15,
-        stats.energy < 15
-      ].filter(Boolean).length;
-      
+    const calculateMood = (stats: { hunger: number; sleepiness: number; energy: number }) => {
+      const criticalFactors = [stats.hunger < 15, stats.sleepiness < 15, stats.energy < 15].filter(
+        Boolean
+      ).length;
+
       if (criticalFactors >= 2) return 'ANXIOUS';
       return 'CONTENT';
     };
@@ -24,23 +20,26 @@ describe('useOptimizedUnifiedGameLoop', () => {
   });
 
   it('should calculate distance correctly', () => {
-    const calculateDistance = (entity1: any, entity2: any) => {
+    const calculateDistance = (
+      entity1: { position: { x: number; y: number } },
+      entity2: { position: { x: number; y: number } }
+    ) => {
       return Math.sqrt(
         Math.pow(entity1.position.x - entity2.position.x, 2) +
-        Math.pow(entity1.position.y - entity2.position.y, 2)
+          Math.pow(entity1.position.y - entity2.position.y, 2)
       );
     };
 
     const entity1 = { position: { x: 0, y: 0 } };
     const entity2 = { position: { x: 3, y: 4 } };
 
-    expect(calculateDistance(entity1, entity2)).toBe(5); // 3-4-5 triangle
+    expect(calculateDistance(entity1, entity2)).toBe(5);
   });
 
   it('should handle performance timing', () => {
     const measureTime = () => {
       const start = performance.now();
-      // Simular trabajo
+
       for (let i = 0; i < 1000; i++) {
         Math.random();
       }

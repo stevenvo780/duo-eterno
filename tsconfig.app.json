@@ -7,7 +7,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
+
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
@@ -19,7 +19,7 @@
       "@/*": ["src/*"]
     },
 
-    /* Linting */
+
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -30,7 +30,8 @@
   "include": ["src"],
   "exclude": [
     "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/**/__tests__/**"
+    "src/**/*.test.tsx", 
+    "src/**/__tests__/**",
+    "src/archive/**"
   ]
 }

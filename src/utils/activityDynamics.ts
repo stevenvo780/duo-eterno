@@ -1,66 +1,105 @@
 import type { EntityStats, EntityActivity } from '../types';
-import type { ActivityType, ZoneType } from '../constants/gameConstants';
+import type { ActivityType, ZoneType } from '../constants';
 import { gameConfig } from '../config/gameConfig';
 import { logAutopoiesis } from './logger';
+import {
+  ACTIVITY_OPTIMAL_DURATIONS,
+  HYBRID_DECAY_RATES,
+  ACTIVITY_DECAY_MULTIPLIERS,
+  SURVIVAL_COSTS,
+  DECAY_CONFIG,
+  EFFICIENCY_FUNCTIONS
+} from '../constants/activityConstants';
+
+interface TimeOfDayModifiers {
+  isNight: boolean;
+  phase: 'dawn' | 'day' | 'dusk' | 'night';
+  hour: number;
+}
 
 export const getActivityDynamics = () => ({
-  WANDERING: { optimalDuration: gameConfig.activityDurationWandering },
-  MEDITATING: { optimalDuration: gameConfig.activityDurationMeditating },
-  WRITING: { optimalDuration: gameConfig.activityDurationWriting },
-  RESTING: { optimalDuration: gameConfig.activityDurationResting },
-  SOCIALIZING: { optimalDuration: gameConfig.activityDurationSocializing },
-  EXPLORING: { optimalDuration: gameConfig.activityDurationExploring },
-  CONTEMPLATING: { optimalDuration: gameConfig.activityDurationContemplating },
-  DANCING: { optimalDuration: gameConfig.activityDurationDancing },
-  HIDING: { optimalDuration: gameConfig.activityDurationHiding },
-  WORKING: { optimalDuration: gameConfig.activityDurationWorking },
-  SHOPPING: { optimalDuration: gameConfig.activityDurationShopping },
-  EXERCISING: { optimalDuration: gameConfig.activityDurationExercising },
-  COOKING: { optimalDuration: gameConfig.activityDurationCooking }
+  WANDERING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WANDERING },
+  MEDITATING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.MEDITATING },
+  WRITING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WRITING },
+  RESTING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.RESTING },
+  SOCIALIZING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.SOCIALIZING },
+  EXPLORING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.EXPLORING },
+  CONTEMPLATING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.CONTEMPLATING },
+  DANCING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.DANCING },
+  HIDING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.HIDING },
+  WORKING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WORKING },
+  SHOPPING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.SHOPPING },
+  EXERCISING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.EXERCISING },
+  COOKING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.COOKING }
 });
 
-// Mantenemos la interfaz original pero usando constantes del .env donde sea posible
-export const ACTIVITY_EFFECTS: Record<ActivityType, {
-  immediate: Record<string, number>;
-  perMinute: Record<string, number>;
-  cost?: Record<string, number>;
-  minDuration: number;
-  optimalDuration: number;
-  efficiencyOverTime: (timeSpent: number) => number;
-  resultingMood: string;
-}> = {
+// Función para obtener modificadores de actividad según la hora del día
+export const getTimeOfDayActivityModifiers = (timeOfDay: TimeOfDayModifiers) => {
+  const { isNight, phase, hour } = timeOfDay;
+
+  return {
+    RESTING: {
+      // Durante la noche (22:00 - 6:00), dormir es más efectivo
+      efficiencyMultiplier: isNight ? 1.8 : 1.0,
+      // La recuperación de energía es mejor durante la noche
+      energyRecoveryBonus: isNight ? 1.5 : 1.0,
+      // La recuperación de sueño es mejor durante la noche natural
+      sleepinessRecoveryBonus: isNight ? 2.0 : 0.8,
+      // Bonus especial para horas profundas de la noche (1:00 - 5:00)
+      deepSleepBonus: hour >= 1 && hour <= 5 ? 1.3 : 1.0
+    },
+    SOCIALIZING: {
+      // Socializar de noche puede ser más relajante pero menos energético
+      efficiencyMultiplier: isNight ? 1.2 : 1.0,
+      moodBonus: isNight ? 1.3 : 1.0
+    },
+    MEDITATING: {
+      // Meditar en la madrugada o noche es más efectivo
+      efficiencyMultiplier: phase === 'night' || phase === 'dawn' ? 1.4 : 1.0
+    },
+    CONTEMPLATING: {
+      // Contemplar durante la noche es más profundo
+      efficiencyMultiplier: isNight ? 1.5 : 1.0
+    }
+  };
+};
+
+export const ACTIVITY_EFFECTS: Record<
+  ActivityType,
+  {
+    immediate: Record<string, number>;
+    perMinute: Record<string, number>;
+    cost?: Record<string, number>;
+    minDuration: number;
+    optimalDuration: number;
+    efficiencyOverTime: (timeSpent: number) => number;
+    resultingMood: string;
+  }
+> = {
   WORKING: {
     immediate: { money: 10, energy: -0.3 },
-    perMinute: { 
-      money: gameConfig.workingMoneyGain, 
-      energy: -gameConfig.workingEnergyCost, 
-      boredom: -gameConfig.workingBoredomReduction, 
-      hunger: -gameConfig.workingHungerCost 
+    perMinute: {
+      money: 5,
+      energy: -2,
+      boredom: -3,
+      hunger: -1
     },
     minDuration: 60000,
-    optimalDuration: gameConfig.activityDurationWorking,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 60000) return 0.5;
-      if (timeSpent > 300000) return 0.6;
-      return 1.0;
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WORKING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.WORKING,
     resultingMood: 'TIRED'
   },
 
   RESTING: {
     immediate: { sleepiness: -0.2, energy: 0.15 },
-    perMinute: { 
-      sleepiness: -gameConfig.restingSleepinessReduction, 
-      energy: gameConfig.restingEnergyGain, 
-      hunger: -gameConfig.restingHungerCost 
+    perMinute: {
+      sleepiness: -15,
+      energy: 8,
+      hunger: -1
     },
     minDuration: 45000,
-    optimalDuration: gameConfig.activityDurationResting,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 45000) return 0.4;
-      if (timeSpent > 300000) return 0.7;
-      return 1.0;
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.RESTING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.RESTING,
     resultingMood: 'CALM'
   },
 
@@ -68,11 +107,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { loneliness: 0.2, happiness: 0.1 },
     perMinute: { loneliness: 20, happiness: 8, energy: -3, hunger: -2 },
     minDuration: 20000,
-    optimalDuration: 90000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 20000) return 0.5;
-      return 1.0 + Math.min(0.5, timeSpent / 120000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.SOCIALIZING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.SOCIALIZING,
     resultingMood: 'HAPPY'
   },
 
@@ -80,38 +116,28 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { boredom: 0.2, happiness: 0.15, energy: -0.05 },
     perMinute: { boredom: 25, happiness: 15, energy: -5, hunger: -4 },
     minDuration: 15000,
-    optimalDuration: 60000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent > 120000) return 0.6;
-      return 1.0;
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.DANCING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.DANCING,
     resultingMood: 'EXCITED'
   },
 
   SHOPPING: {
     immediate: { happiness: 0.2 },
     perMinute: { happiness: 10, hunger: 8, boredom: 5 },
-    cost: { money: gameConfig.activityCostShopping },
+    cost: { money: 5 },
     minDuration: 10000,
-    optimalDuration: 30000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent > 60000) return 0.5;
-      return 1.0;
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.SHOPPING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.SHOPPING,
     resultingMood: 'CONTENT'
   },
 
   COOKING: {
     immediate: { boredom: 0.05 },
     perMinute: { hunger: 20, happiness: 5, energy: -3 },
-    cost: { money: gameConfig.activityCostCooking },
+    cost: { money: 3 },
     minDuration: 25000,
-    optimalDuration: 45000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 25000) return 0.3;
-      if (timeSpent > 90000) return 0.7;
-      return 1.0;
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.COOKING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.COOKING,
     resultingMood: 'CONTENT'
   },
 
@@ -119,12 +145,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { energy: -0.2, boredom: 0.1 },
     perMinute: { energy: -10, boredom: 8, happiness: 6, hunger: -6 },
     minDuration: 30000,
-    optimalDuration: 90000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 30000) return 0.4;
-      if (timeSpent > 180000) return 0.5;
-      return 1.0 + Math.min(0.3, timeSpent / 120000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.EXERCISING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.EXERCISING,
     resultingMood: 'EXCITED'
   },
 
@@ -132,11 +154,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { happiness: 0.05, loneliness: -0.03 },
     perMinute: { happiness: 8, loneliness: -3, sleepiness: -5, boredom: 3 },
     minDuration: 60000,
-    optimalDuration: 180000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 60000) return 0.3;
-      return Math.min(1.5, 0.5 + timeSpent / 120000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.MEDITATING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.MEDITATING,
     resultingMood: 'CALM'
   },
 
@@ -144,11 +163,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { boredom: 0.15, loneliness: -0.05 },
     perMinute: { boredom: 15, happiness: 5, loneliness: -4, energy: -2 },
     minDuration: 45000,
-    optimalDuration: 150000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 45000) return 0.4;
-      return Math.min(1.2, 0.6 + timeSpent / 200000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WRITING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.WRITING,
     resultingMood: 'CONTENT'
   },
 
@@ -156,8 +172,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { boredom: 0.04, loneliness: -0.02 },
     perMinute: { boredom: 5, energy: -2, happiness: 2 },
     minDuration: 15000,
-    optimalDuration: 60000,
-    efficiencyOverTime: () => 0.7,
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WANDERING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.WANDERING,
     resultingMood: 'CALM'
   },
 
@@ -165,10 +181,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { boredom: 0.2, energy: -0.1 },
     perMinute: { boredom: 18, energy: -6, happiness: 8, hunger: -3 },
     minDuration: 30000,
-    optimalDuration: 120000,
-    efficiencyOverTime: (timeSpent) => {
-      return Math.min(1.3, 0.8 + timeSpent / 180000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.EXPLORING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.EXPLORING,
     resultingMood: 'EXCITED'
   },
 
@@ -176,11 +190,8 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { boredom: 0.08, loneliness: -0.05 },
     perMinute: { boredom: 8, happiness: 4, loneliness: -5, energy: 1 },
     minDuration: 90000,
-    optimalDuration: 240000,
-    efficiencyOverTime: (timeSpent) => {
-      if (timeSpent < 90000) return 0.3;
-      return Math.min(1.4, 0.5 + timeSpent / 180000);
-    },
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.CONTEMPLATING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.CONTEMPLATING,
     resultingMood: 'CALM'
   },
 
@@ -188,28 +199,37 @@ export const ACTIVITY_EFFECTS: Record<ActivityType, {
     immediate: { loneliness: -0.2 },
     perMinute: { loneliness: -15, happiness: -5, energy: 3 },
     minDuration: 30000,
-    optimalDuration: 90000,
-    efficiencyOverTime: () => 0.6,
+    optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.HIDING,
+    efficiencyOverTime: EFFICIENCY_FUNCTIONS.HIDING,
     resultingMood: 'ANXIOUS'
   }
 };
 
 export const mapActivityToPreferredZone = (activity: EntityActivity): ZoneType | null => {
   switch (activity) {
-    case 'RESTING': return 'rest';
+    case 'RESTING':
+      return 'rest';
     case 'SOCIALIZING':
-    case 'DANCING': return 'social';
+    case 'DANCING':
+      return 'social';
     case 'EXERCISING':
     case 'WANDERING':
-    case 'EXPLORING': return 'play';
-    case 'WORKING': return 'work';
-    case 'COOKING': return 'food';
-    case 'SHOPPING': return 'work';
+    case 'EXPLORING':
+      return 'play';
+    case 'WORKING':
+      return 'work';
+    case 'COOKING':
+      return 'food';
+    case 'SHOPPING':
+      return 'work';
     case 'MEDITATING':
     case 'CONTEMPLATING':
-    case 'WRITING': return 'comfort';
-    case 'HIDING': return 'comfort';
-    default: return null;
+    case 'WRITING':
+      return 'comfort';
+    case 'HIDING':
+      return 'comfort';
+    default:
+      return null;
   }
 };
 
@@ -218,15 +238,32 @@ export const calculateActivityPriority = (
   currentStats: EntityStats,
   timeSpentInActivity: number = 0
 ): number => {
+  // Prioridad por necesidades con ponderación no lineal:
+  // w(v; α)=1-(min(100,max(0,v))/100)^α modela mayor sensibilidad en déficit altos.
+  // Se combinan efectos por actividad (p.ej., hambre→COOKING, energy→RESTING)
+  // y eficiencia temporal tipo curva (rendimientos decrecientes fuera de óptimo).
   const effects = ACTIVITY_EFFECTS[activity];
+  if (!effects) {
+    console.warn(`No effects found for activity: ${activity}`);
+    return 0;
+  }
+
   let priority = 0;
 
-  // Nonlinear need weighting: higher weight when stat is low, saturates when high
-  const w = (v: number, alpha = 1.6) => 1 - Math.pow(Math.min(100, Math.max(0, v)) / 100, alpha);
+  const w = (v: number, alpha = 1.6) => {
+    if (!isFinite(v) || !isFinite(alpha)) return 0;
+
+    const clampedV = Math.min(100, Math.max(0, v));
+    const clampedAlpha = Math.max(0.1, Math.min(10, alpha));
+    const base = clampedV / 100;
+
+    const result = Math.pow(base, clampedAlpha);
+    return isFinite(result) ? Math.max(0, Math.min(1, 1 - result)) : 0;
+  };
 
   if (activity === 'WORKING') {
     priority += w(currentStats.money) * 100;
-    priority -= w(100 - currentStats.energy) * 30; // penalize fatigue
+    priority -= w(100 - currentStats.energy) * 30;
   }
 
   if (activity === 'SHOPPING') {
@@ -240,7 +277,7 @@ export const calculateActivityPriority = (
   }
 
   if (activity === 'RESTING') {
-    priority += Math.max(0, (currentStats.sleepiness - 30)) * 1.2 + w(100 - currentStats.energy) * 80;
+    priority += Math.max(0, currentStats.sleepiness - 30) * 1.2 + w(100 - currentStats.energy) * 80;
   }
 
   if (activity === 'COOKING') {
@@ -259,42 +296,22 @@ export const calculateActivityPriority = (
     priority -= w(100 - currentStats.energy) * 50;
   }
 
-  const efficiency = effects.efficiencyOverTime(timeSpentInActivity);
+  const efficiency = effects.efficiencyOverTime
+    ? effects.efficiencyOverTime(timeSpentInActivity)
+    : 0.5;
   priority *= efficiency;
 
-  if (timeSpentInActivity > effects.optimalDuration * 1.5) {
+  if (
+    effects.optimalDuration &&
+    isFinite(timeSpentInActivity) &&
+    isFinite(effects.optimalDuration) &&
+    timeSpentInActivity > effects.optimalDuration * 1.5
+  ) {
     priority *= 0.5;
   }
 
-  return Math.max(0, priority);
+  return isFinite(priority) ? Math.max(0, priority) : 0;
 };
-
-const getHybridDecayRates = () => ({
-  base: {
-    hunger: -gameConfig.decayHungerRate,
-    sleepiness: -gameConfig.decaySleepinessRate,
-    boredom: -gameConfig.decayBoredomRate,
-    loneliness: -gameConfig.decayLonelinessRate,
-    energy: -gameConfig.decayEnergyRate,
-    happiness: -gameConfig.decayHappinessRate
-  }
-} as const);
-
-const getActivityDecayMultipliers = (): Record<EntityActivity, number> => ({
-  WORKING: gameConfig.activityMultWorking,
-  SHOPPING: gameConfig.activityMultShopping,
-  COOKING: gameConfig.activityMultCooking,
-  EXERCISING: gameConfig.activityMultExercising,
-  RESTING: gameConfig.activityMultResting,
-  SOCIALIZING: gameConfig.activityMultSocializing,
-  DANCING: gameConfig.activityMultDancing,
-  EXPLORING: gameConfig.activityMultExploring,
-  MEDITATING: gameConfig.activityMultMeditating,
-  CONTEMPLATING: gameConfig.activityMultContemplating,
-  WRITING: gameConfig.activityMultWriting,
-  WANDERING: gameConfig.activityMultWandering,
-  HIDING: gameConfig.activityMultHiding
-});
 
 export const applyHybridDecay = (
   currentStats: EntityStats,
@@ -302,18 +319,21 @@ export const applyHybridDecay = (
   deltaTimeMs: number
 ): EntityStats => {
   const newStats = { ...currentStats };
-  const timeMultiplier = (deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
-  
-  const activityDecayMultipliers = getActivityDecayMultipliers();
-  const decayMultiplier = activityDecayMultipliers[activity] ?? 1.0;
-  const hybridDecayRates = getHybridDecayRates();
 
-  Object.entries(hybridDecayRates.base).forEach(([statName, baseRate]) => {
+  if (!isFinite(deltaTimeMs) || deltaTimeMs < 0) {
+    return newStats; // No aplicar decay si el tiempo es inválido
+  }
+
+  const safeTimeMultiplier = Math.min(10, deltaTimeMs / 1000) * gameConfig.gameSpeedMultiplier;
+
+  const decayMultiplier = ACTIVITY_DECAY_MULTIPLIERS[activity] ?? 1.0;
+
+  Object.entries(HYBRID_DECAY_RATES.base).forEach(([statName, baseRate]) => {
     if (statName in newStats) {
       const finalRate = baseRate * decayMultiplier;
-      const configuredRate = finalRate * gameConfig.baseDecayMultiplier * timeMultiplier;
+      const configuredRate = finalRate * DECAY_CONFIG.GENERAL_MULTIPLIER * safeTimeMultiplier;
       const statKey = statName as keyof EntityStats;
-      
+
       let newValue = newStats[statKey] + configuredRate;
 
       if (statKey === 'money') {
@@ -321,13 +341,15 @@ export const applyHybridDecay = (
       } else {
         newValue = Math.max(0, Math.min(100, newValue));
       }
-      
-      newStats[statKey] = newValue as EntityStats[keyof EntityStats];
+
+      newStats[statKey] = isFinite(newValue)
+        ? (newValue as EntityStats[keyof EntityStats])
+        : newStats[statKey];
     }
   });
 
-  logAutopoiesis.debug('Decay aplicado', { 
-    activity, 
+  logAutopoiesis.debug('Decay aplicado', {
+    activity,
     changes: Object.fromEntries(
       Object.entries(newStats).map(([k, v]) => [k, v - currentStats[k as keyof EntityStats]])
     )
@@ -336,29 +358,146 @@ export const applyHybridDecay = (
   return newStats;
 };
 
-const getSurvivalCosts = () => ({
-  LIVING_COST: gameConfig.survivalLivingCost,
-  CRITICAL_MONEY: gameConfig.survivalCriticalMoney,
-  CRITICAL_HUNGER: 20,
-  CRITICAL_ENERGY: 15,
-  CRITICAL_SLEEPINESS: 20
-});
-
-export const applySurvivalCosts = (
-  currentStats: EntityStats,
-  deltaTimeMs: number
-): EntityStats => {
+export const applySurvivalCosts = (currentStats: EntityStats, deltaTimeMs: number): EntityStats => {
   const newStats = { ...currentStats };
   const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
-  const survivalCosts = getSurvivalCosts();
 
-  newStats.money = Math.max(0, newStats.money - survivalCosts.LIVING_COST * minutesElapsed);
+  newStats.money = Math.max(0, newStats.money - SURVIVAL_COSTS.LIVING_COST * minutesElapsed);
 
-  if (newStats.money < survivalCosts.CRITICAL_MONEY) {
-    const desperation = (survivalCosts.CRITICAL_MONEY - newStats.money) / survivalCosts.CRITICAL_MONEY;
+  if (newStats.money < SURVIVAL_COSTS.CRITICAL_MONEY) {
+    const desperation =
+      (SURVIVAL_COSTS.CRITICAL_MONEY - newStats.money) / SURVIVAL_COSTS.CRITICAL_MONEY;
     newStats.hunger = Math.max(0, newStats.hunger - desperation * 5 * minutesElapsed);
     newStats.happiness = Math.max(0, newStats.happiness - desperation * 3 * minutesElapsed);
   }
+
+  return newStats;
+};
+
+// Función que aplica efectos de actividad con modificadores de día/noche
+export const applyActivityEffectsWithTimeModifiers = (
+  activity: EntityActivity,
+  currentStats: EntityStats,
+  deltaTimeMs: number,
+  timeOfDay: TimeOfDayModifiers
+): EntityStats => {
+  // Aplicar efectos base de la actividad (usar lógica básica)
+  const newStats = { ...currentStats };
+  const effects = ACTIVITY_EFFECTS[activity];
+
+  if (effects) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+
+    // Aplicar efectos inmediatos
+    Object.entries(effects.immediate).forEach(([stat, value]) => {
+      const statKey = stat as keyof EntityStats;
+      if (statKey in newStats) {
+        if (statKey === 'money') {
+          newStats[statKey] = Math.max(0, newStats[statKey] + value);
+        } else {
+          newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + value));
+        }
+      }
+    });
+
+    // Aplicar efectos por minuto
+    Object.entries(effects.perMinute).forEach(([stat, value]) => {
+      const statKey = stat as keyof EntityStats;
+      if (statKey in newStats) {
+        const change = value * minutesElapsed;
+        if (statKey === 'money') {
+          newStats[statKey] = Math.max(0, newStats[statKey] + change);
+        } else {
+          newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + change));
+        }
+      }
+    });
+  }
+
+  // Obtener modificadores de tiempo del día
+  const modifiers = getTimeOfDayActivityModifiers(timeOfDay);
+  const activityModifier = modifiers[activity as keyof typeof modifiers];
+
+  if (!activityModifier) {
+    return newStats; // Si no hay modificadores para esta actividad, devolver stats base
+  }
+
+  // Aplicar modificadores específicos para RESTING
+  if (activity === 'RESTING' && activityModifier) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const effects = ACTIVITY_EFFECTS.RESTING;
+
+    // Aplicar bonificaciones de recuperación nocturna
+    if ('energyRecoveryBonus' in activityModifier) {
+      const energyBonus =
+        (effects.perMinute.energy || 0) *
+        (activityModifier.energyRecoveryBonus - 1) *
+        minutesElapsed;
+      newStats.energy = Math.min(100, Math.max(0, newStats.energy + energyBonus));
+    }
+
+    if ('sleepinessRecoveryBonus' in activityModifier) {
+      const sleepBonus =
+        (effects.perMinute.sleepiness || 0) *
+        (activityModifier.sleepinessRecoveryBonus - 1) *
+        minutesElapsed;
+      newStats.sleepiness = Math.min(100, Math.max(0, newStats.sleepiness + sleepBonus));
+    }
+
+    if ('deepSleepBonus' in activityModifier) {
+      // Bonus de sueño profundo - mejora la recuperación de salud
+      const deepSleepHealthBonus = activityModifier.deepSleepBonus * 0.5 * minutesElapsed;
+      newStats.health = Math.min(100, Math.max(0, newStats.health + deepSleepHealthBonus));
+    }
+
+    // Durante la noche, dormir reduce el aburrimiento más eficientemente
+    if (timeOfDay.isNight) {
+      const boredomReduction = 2 * minutesElapsed;
+      newStats.boredom = Math.max(0, newStats.boredom - boredomReduction);
+    }
+  }
+
+  // Aplicar modificadores para otras actividades
+  if (activity === 'SOCIALIZING' && activityModifier && 'moodBonus' in activityModifier) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const happinessBonus =
+      (ACTIVITY_EFFECTS.SOCIALIZING.perMinute.happiness || 0) *
+      (activityModifier.moodBonus - 1) *
+      minutesElapsed;
+    newStats.happiness = Math.min(100, Math.max(0, newStats.happiness + happinessBonus));
+  }
+
+  if (
+    (activity === 'MEDITATING' || activity === 'CONTEMPLATING') &&
+    activityModifier &&
+    'efficiencyMultiplier' in activityModifier
+  ) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const activityData = ACTIVITY_EFFECTS[activity];
+
+    // Multiplicar todos los efectos positivos por el modificador de eficiencia
+    Object.entries(activityData.perMinute).forEach(([stat, value]) => {
+      if (value > 0 && stat in newStats) {
+        const bonus = value * (activityModifier.efficiencyMultiplier - 1) * minutesElapsed;
+        const statKey = stat as keyof EntityStats;
+        if (statKey !== 'money') {
+          newStats[statKey] = Math.min(100, Math.max(0, newStats[statKey] + bonus));
+        }
+      }
+    });
+  }
+
+  logAutopoiesis.debug('Efectos aplicados con modificadores de tiempo', {
+    activity,
+    timeOfDay: timeOfDay.phase,
+    isNight: timeOfDay.isNight,
+    changes: Object.fromEntries(
+      Object.entries(newStats).map(([k, v]) => [
+        k,
+        (v as number) - (currentStats[k as keyof EntityStats] as number)
+      ])
+    )
+  });
 
   return newStats;
 };

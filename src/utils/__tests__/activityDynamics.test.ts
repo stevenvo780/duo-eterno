@@ -10,7 +10,7 @@ const baseStats: EntityStats = {
   energy: 80,
   boredom: 80,
   money: 50,
-  health: 100,
+  health: 100
 };
 
 describe('activityDynamics', () => {

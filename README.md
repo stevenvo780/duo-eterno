@@ -150,7 +150,7 @@ npm run analyze-now
 ```
 src/
  ├─ components/          # UI Components
- │   ├─ Canvas.tsx       # Motor de renderizado con optimización adaptiva
+ │   ├─ ProfessionalTopDownCanvas.tsx  # Motor de renderizado principal
  │   ├─ UIControls.tsx   # Interfaz de interacción y stats
  │   └─ DynamicsDebugPanel.tsx  # Herramientas de investigación
  ├─ hooks/               # Game Logic Hooks
@@ -180,76 +180,76 @@ backend/
 
 ### **4.1 Autopoiesis: Sistema de Decay Híbrido**
 ```typescript
-// Cada stat decae de manera diferencial según actividad
+
 ∆stat = baseRate × activityMultiplier × decayMultiplier × dt
 
-// Ejemplo: WORKING acelera decay, RESTING lo reduce
+
 ACTIVITY_DECAY_MULTIPLIERS = {
-  WORKING: 1.6,      // El trabajo desgasta más
-  RESTING: 0.4,      // El descanso preserva
-  MEDITATING: 0.6,   // La contemplación reduce entropía
-  EXERCISING: 1.5    // El ejercicio consume energía
+  WORKING: 1.6,
+  RESTING: 0.4,
+  MEDITATING: 0.6,
+  EXERCISING: 1.5
 }
 ```
 
 ### **4.2 Personalidades Emergentes**
 ```typescript
-// Diferencias matemáticas que generan comportamientos únicos
+
 ENTITY_PERSONALITIES = {
   circle: {
-    socialPreference: 0.7,     // Más social, busca compañía
-    activityPersistence: 0.6,  // Cambia de actividad más frecuentemente  
-    riskTolerance: 0.4,        // Más cauteloso en decisiones
-    energyEfficiency: 0.5      // Consumo energético standard
+    socialPreference: 0.7,
+    activityPersistence: 0.6,
+    riskTolerance: 0.4,
+    energyEfficiency: 0.5
   },
   square: {
-    socialPreference: 0.5,     // Más independiente
-    activityPersistence: 0.8,  // Se enfoca en tareas por más tiempo
-    riskTolerance: 0.6,        // Más dispuesto a explorar
-    energyEfficiency: 0.7      // Más eficiente energéticamente
+    socialPreference: 0.5,
+    activityPersistence: 0.8,
+    riskTolerance: 0.6,
+    energyEfficiency: 0.7
   }
 }
 ```
 
 ### **4.3 Dinámicas de Zona con Crowding Effects**
 ```typescript
-// Efectividad de zona depende de necesidad y competencia
+
 needLevel = 100 - avg(relevant_stats)
-baseEffectiveness = 1 + needLevel / 50  // Más necesidad = más efectividad
-crowdPenalty = 1 / (1 + 0.4 * max(0, occupancy - 1))  // Competencia reduce efectividad
+baseEffectiveness = 1 + needLevel / 50
+crowdPenalty = 1 / (1 + 0.4 * max(0, occupancy - 1))
 
 finalEffectiveness = baseEff × crowdPenalty × globalMultiplier
 ```
 
 ### **4.4 Resonancia como Sistema Dinámico**
 ```typescript
-// Proximidad física genera resonancia
+
 closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))
 
-// Ganancia saturante (homeostasis implícita)
+
 gain = BOND_GAIN_PER_SEC × closeness × moodBonus × synergy × (1 - resonance/100)
 
-// Pérdida por separación y stress
+
 separation = SEPARATION_DECAY × (1 - closeness) × (resonance/100)
 stress = STRESS_DECAY × criticalStatsCount × (resonance/100)
 
-// Ecuación diferencial
+
 dResonance/dt = gain - separation - stress
 ```
 
 ### **4.5 Activity Inertia & Flow States**
 ```typescript
-// Las entidades desarrollan "momentum" en actividades
+
 calculateActivityInertia(entity, currentTime) {
   const session = activitySessions.get(entity.id);
   let inertia = personality.activityPersistence;
   
   if (session.effectiveness > 0.7) {
-    inertia += 0.2;  // Flow state aumenta persistencia
+    inertia += 0.2;
   }
   
   if (session.interruptions > 2) {
-    inertia -= 0.3;  // Interrupciones fragmentan focus
+    inertia -= 0.3;
   }
   
   return inertia;
@@ -318,10 +318,10 @@ VITE_LOG_SERVER_URL=http://localhost:3002
 
 ### **6.2 Controles de Simulación**
 ```javascript
-// Controles en browser console para investigación
-window.setGameSpeed(10);             // Acelerar simulación
-window.speedPresets['Turbo (5x)'];   // Presets disponibles
-window.logConfig();                  // Ver configuración actual
+
+window.setGameSpeed(10);
+window.speedPresets['Turbo (5x)'];
+window.logConfig();
 ```
 
 ---
@@ -466,7 +466,7 @@ Cuando `avgStat < criticalThreshold` se marca **criticalNeed** y se muestra diá
 ### 4.3 Resonancia (Vínculo)
 Modelo unificado y saturante con cercanía, humor, sinergia y estrés:
 ```
-closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))   // ∈ [0,1]
+closeness = 1 / (1 + exp((distance - BOND_DISTANCE) / DISTANCE_SCALE))
 
 gain   = BOND_GAIN_PER_SEC * closeness * moodBonus * synergy * (1 - R/100)
 sep    = SEPARATION_DECAY_PER_SEC * (1 - closeness) * (R/100)

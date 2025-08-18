@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
 import './App.css';
 import { GameProvider } from './state/GameContext';
-import OptimizedCanvas from './components/OptimizedCanvas';
+import ProfessionalTopDownCanvas from './components/ProfessionalTopDownCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
-import { useBalancedGameLoop } from './hooks/useBalancedGameLoop';
+import EntityDialogueSystem from './components/EntityDialogueSystem';
+import IntroNarrative from './components/IntroNarrative';
+import { useGameLoop } from './hooks/useGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
 import { useEntityMovementOptimized } from './hooks/useEntityMovementOptimized';
 import { gameConfig } from './config/gameConfig';
 import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger';
+import type { Entity } from './types';
+import { safeLoad, markIntroAsSeen } from './utils/persistence';
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  
-  // 🎮 GAME LOOP BALANCEADO - Dinámicas de supervivencia mejoradas con degradación estratégica
-  useBalancedGameLoop();
-  
+  // Mostrar la intro solo si no existe partida guardada O si existe pero no ha visto la intro
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    const savedGame = safeLoad();
+    return !savedGame || !savedGame.hasSeenIntro;
+  });
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  useGameLoop();
+
   useDialogueSystem();
   useZoneEffects();
   useEntityMovementOptimized();
@@ -25,64 +37,68 @@ const GameContent: React.FC = React.memo(() => {
     logGeneral('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
   }, []);
 
-  const handleEntitySelect = React.useCallback((entityId: string | null) => {
+  // Manejar redimensionado de ventana
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleEntitySelect = React.useCallback((entity: Entity) => {
+    setSelectedEntityId(entity.id);
+  }, []);
+
+  const handleEntitySelectString = React.useCallback((entityId: string | null) => {
     setSelectedEntityId(entityId);
   }, []);
 
-  return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#0f1419',
-      overflow: 'hidden',
-      fontFamily: 'system-ui, sans-serif'
-    }}>
-      <div style={{
-        padding: '16px',
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        borderBottom: '2px solid #475569',
-        textAlign: 'center'
-      }}>
-        <h1 style={{
-          margin: 0,
-          color: '#f1f5f9',
-          fontSize: '24px',
-          fontWeight: 600,
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-        }}>
-          Dúo Eterno
-        </h1>
-        <p style={{
-          margin: '4px 0 0 0',
-          color: '#cbd5e1',
-          fontSize: '14px',
-          opacity: 0.8
-        }}>
-          Un Tamagotchi del Vínculo
-        </p>
-      </div>
+  const handleIntroComplete = React.useCallback(() => {
+    setShowIntro(false);
+    markIntroAsSeen();
+  }, []);
 
-      <div style={{
-        flex: 1,
+  return (
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        padding: '20px',
-        position: 'relative'
-      }}>
-        <OptimizedCanvas 
-          width={1000} 
-          height={600}
+        flexDirection: 'column',
+        backgroundColor: '#0f1419',
+        overflow: 'hidden',
+        fontFamily: 'system-ui, sans-serif'
+      }}
+    >
+      {/* Narrativa de introducción */}
+      {showIntro && <IntroNarrative onComplete={handleIntroComplete} />}
+
+      <div
+        style={{
+          flex: 1,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <ProfessionalTopDownCanvas
+          width={windowSize.width}
+          height={windowSize.height - 80}
+          onEntityClick={handleEntitySelect}
         />
+        <EntityDialogueSystem />
         <DialogOverlay />
       </div>
 
-      <UIControls 
+      <UIControls
         selectedEntityId={selectedEntityId}
-        onEntitySelect={handleEntitySelect}
+        onEntitySelect={handleEntitySelectString}
+        onShowIntro={() => setShowIntro(true)}
       />
     </div>
   );

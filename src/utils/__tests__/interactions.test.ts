@@ -5,8 +5,14 @@ import type { EntityStats } from '../../types';
 describe('interactions', () => {
   it('FEED increases hunger and clamps to 100', () => {
     const stats: EntityStats = {
-      hunger: 90, sleepiness: 50, loneliness: 50, happiness: 50,
-      energy: 50, boredom: 50, money: 10, health: 100
+      hunger: 90,
+      sleepiness: 50,
+      loneliness: 50,
+      happiness: 50,
+      energy: 50,
+      boredom: 50,
+      money: 10,
+      health: 100
     };
     const { stats: after } = applyInteractionEffect(stats, 'FEED');
     expect(after.hunger).toBeLessThanOrEqual(100);

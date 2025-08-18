@@ -1,7 +1,20 @@
 import { gameConfig } from '../config/gameConfig';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogSystem = 'autopoiesis' | 'movement' | 'zones' | 'ai' | 'upgrades' | 'render' | 'storage' | 'general' | 'love' | 'activity' | 'zone' | 'survival' | 'debug';
+export type LogSystem =
+  | 'autopoiesis'
+  | 'movement'
+  | 'zones'
+  | 'ai'
+  | 'upgrades'
+  | 'render'
+  | 'storage'
+  | 'general'
+  | 'love'
+  | 'activity'
+  | 'zone'
+  | 'survival'
+  | 'debug';
 
 interface LogEntry {
   timestamp: number;
@@ -29,20 +42,34 @@ class Logger {
 
   private getSystemEmoji(system: LogSystem): string {
     switch (system) {
-      case 'autopoiesis': return '🔄';
-      case 'movement': return '🏃';
-      case 'zones': return '🎯';
-      case 'ai': return '🧠';
-      case 'upgrades': return '⬆️';
-      case 'render': return '🎨';
-      case 'storage': return '💾';
-      case 'general': return '📋';
-      case 'love': return '💖';
-      case 'activity': return '🎯';
-      case 'zone': return '🗺️';
-      case 'survival': return '🏥';
-      case 'debug': return '🔍';
-      default: return '📝';
+      case 'autopoiesis':
+        return '🔄';
+      case 'movement':
+        return '🏃';
+      case 'zones':
+        return '🎯';
+      case 'ai':
+        return '🧠';
+      case 'upgrades':
+        return '⬆️';
+      case 'render':
+        return '🎨';
+      case 'storage':
+        return '💾';
+      case 'general':
+        return '📋';
+      case 'love':
+        return '💖';
+      case 'activity':
+        return '🎯';
+      case 'zone':
+        return '🗺️';
+      case 'survival':
+        return '🏥';
+      case 'debug':
+        return '🔍';
+      default:
+        return '📝';
     }
   }
 
@@ -136,54 +163,33 @@ export const logAutopoiesis = {
   debug: (msg: string, data?: unknown) => logger.debug('autopoiesis', msg, data),
   info: (msg: string, data?: unknown) => logger.info('autopoiesis', msg, data),
   warn: (msg: string, data?: unknown) => logger.warn('autopoiesis', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('autopoiesis', msg, data),
-};
-
-export const logMovement = {
-  debug: (msg: string, data?: unknown) => logger.debug('movement', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('movement', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('movement', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('movement', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('autopoiesis', msg, data)
 };
 
 export const logZones = {
   debug: (msg: string, data?: unknown) => logger.debug('zones', msg, data),
   info: (msg: string, data?: unknown) => logger.info('zones', msg, data),
   warn: (msg: string, data?: unknown) => logger.warn('zones', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('zones', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('zones', msg, data)
 };
 
 export const logAI = {
   debug: (msg: string, data?: unknown) => logger.debug('ai', msg, data),
   info: (msg: string, data?: unknown) => logger.info('ai', msg, data),
   warn: (msg: string, data?: unknown) => logger.warn('ai', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('ai', msg, data),
-};
-
-export const logUpgrades = {
-  debug: (msg: string, data?: unknown) => logger.debug('upgrades', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('upgrades', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('upgrades', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('upgrades', msg, data),
-};
-
-export const logRender = {
-  debug: (msg: string, data?: unknown) => logger.debug('render', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('render', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('render', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('render', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('ai', msg, data)
 };
 
 export const logStorage = {
   debug: (msg: string, data?: unknown) => logger.debug('storage', msg, data),
   info: (msg: string, data?: unknown) => logger.info('storage', msg, data),
   warn: (msg: string, data?: unknown) => logger.warn('storage', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('storage', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('storage', msg, data)
 };
 
 export const logGeneral = {
   debug: (msg: string, data?: unknown) => logger.debug('general', msg, data),
   info: (msg: string, data?: unknown) => logger.info('general', msg, data),
   warn: (msg: string, data?: unknown) => logger.warn('general', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('general', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('general', msg, data)
 };

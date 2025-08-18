@@ -40,13 +40,8 @@ export class DynamicsLogger {
   private systemSnapshots: SystemSnapshot[] = [];
   private maxLogSize = 1000;
   private isEnabled = true;
-  private sessionId = `session_${Date.now()}`;
-  private exportInterval: number | null = null;
-  private apiBaseUrl = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_LOG_SERVER_URL) || 'http://localhost:3002';
-  private exportEnabled = (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_ENABLE_LOG_EXPORT) === 'true';
   private lastProximityLog = 0;
 
-  // Configuración de qué logs mostrar
   private config = {
     showAutonomy: true,
     showLove: true,
@@ -57,21 +52,16 @@ export class DynamicsLogger {
   };
 
   constructor() {
-    // Auto-limpiar logs antiguos cada 30 segundos
     setInterval(() => this.cleanup(), 30000);
-    
-    // Iniciar auto-exportación solo si está habilitado por variables de entorno
-    if (this.exportEnabled) {
-      this.startAutoExport(5000);
-    }
+
+    console.log('🚀 DynamicsLogger iniciado en modo local');
   }
 
   private cleanup() {
     if (this.logs.length > this.maxLogSize) {
       this.logs = this.logs.slice(-this.maxLogSize * 0.8);
     }
-    
-    // Mantener solo snapshots de las últimas 5 minutos
+
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     this.entitySnapshots = this.entitySnapshots.filter(s => s.timestamp > fiveMinutesAgo);
     this.systemSnapshots = this.systemSnapshots.filter(s => s.timestamp > fiveMinutesAgo);
@@ -79,38 +69,45 @@ export class DynamicsLogger {
 
   private shouldLog(level: LogEntry['level'], category: LogEntry['category']): boolean {
     if (!this.isEnabled) return false;
-    
+
     const levelPriority = { DEBUG: 0, INFO: 1, WARNING: 2, ERROR: 3 };
     const configLevelPriority = levelPriority[this.config.logLevel];
-    
+
     if (levelPriority[level] < configLevelPriority) return false;
-    
+
     switch (category) {
-      case 'AUTONOMY': return this.config.showAutonomy;
-      case 'LOVE': return this.config.showLove;
-      case 'SURVIVAL': return this.config.showSurvival;
-      case 'INTERACTION': return this.config.showInteractions;
-      case 'SYSTEM': return this.config.showSystem;
-      default: return true;
+      case 'AUTONOMY':
+        return this.config.showAutonomy;
+      case 'LOVE':
+        return this.config.showLove;
+      case 'SURVIVAL':
+        return this.config.showSurvival;
+      case 'INTERACTION':
+        return this.config.showInteractions;
+      case 'SYSTEM':
+        return this.config.showSystem;
+      default:
+        return true;
     }
   }
 
   private log(entry: Omit<LogEntry, 'timestamp'>) {
     if (!this.shouldLog(entry.level, entry.category)) return;
-    
+
     const logEntry: LogEntry = {
       ...entry,
       timestamp: Date.now()
     };
-    
+
     this.logs.push(logEntry);
-    
-    // Solo almacenar el registro, evitando spam en consola
   }
 
-  // === LOGS DE AUTONOMÍA ===
-  
-  logActivityChange(entityId: string, oldActivity: EntityActivity, newActivity: EntityActivity, reason: string) {
+  logActivityChange(
+    entityId: string,
+    oldActivity: EntityActivity,
+    newActivity: EntityActivity,
+    reason: string
+  ) {
     this.log({
       system: 'activity',
       category: 'AUTONOMY',
@@ -121,7 +118,12 @@ export class DynamicsLogger {
     });
   }
 
-  logMoodChange(entityId: string, oldMood: EntityMood, newMood: EntityMood, stats: Entity['stats']) {
+  logMoodChange(
+    entityId: string,
+    oldMood: EntityMood,
+    newMood: EntityMood,
+    stats: Entity['stats']
+  ) {
     this.log({
       system: 'activity',
       category: 'AUTONOMY',
@@ -132,7 +134,11 @@ export class DynamicsLogger {
     });
   }
 
-  logDecisionMaking(entityId: string, availableActivities: { activity: EntityActivity; score: number }[], chosen: EntityActivity) {
+  logDecisionMaking(
+    entityId: string,
+    availableActivities: { activity: EntityActivity; score: number }[],
+    chosen: EntityActivity
+  ) {
     this.log({
       system: 'activity',
       category: 'AUTONOMY',
@@ -143,19 +149,22 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE AMOR ===
-  
-  logResonanceChange(oldResonance: number, newResonance: number, reason: string, entities: Entity[]) {
+  logResonanceChange(
+    oldResonance: number,
+    newResonance: number,
+    reason: string,
+    entities: Entity[]
+  ) {
     const change = newResonance - oldResonance;
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
-    
+
     this.log({
       system: 'love',
       category: 'LOVE',
       level,
       message: `Resonancia ${change > 0 ? 'aumentó' : 'disminuyó'}: ${oldResonance.toFixed(1)} → ${newResonance.toFixed(1)}`,
-      data: { 
-        reason, 
+      data: {
+        reason,
         change: change.toFixed(2),
         distance: this.calculateDistance(entities),
         bothAlive: entities.filter(e => !e.isDead).length === 2,
@@ -164,10 +173,13 @@ export class DynamicsLogger {
     });
   }
 
-  logProximityEffect(entities: Entity[], distance: number, effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL') {
+  logProximityEffect(
+    entities: Entity[],
+    distance: number,
+    effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL'
+  ) {
     if (effect === 'NEUTRAL') return;
-    
-    // Reducir spam: solo loguear cada 5 segundos
+
     const now = Date.now();
     if (!this.lastProximityLog || now - this.lastProximityLog > 5000) {
       this.log({
@@ -192,13 +204,11 @@ export class DynamicsLogger {
       system: 'love',
       category: 'LOVE',
       level: 'DEBUG',
-      message: `Tiempo juntos ${isIncreasing ? 'aumenta' : 'disminuye'}: ${(newTime/1000).toFixed(1)}s`,
+      message: `Tiempo juntos ${isIncreasing ? 'aumenta' : 'disminuye'}: ${(newTime / 1000).toFixed(1)}s`,
       data: { oldTime, newTime, isIncreasing }
     });
   }
 
-  // === LOGS DE SUPERVIVENCIA ===
-  
   logStatsCritical(entityId: string, criticalStats: string[], stats: Entity['stats']) {
     this.log({
       system: 'survival',
@@ -235,7 +245,7 @@ export class DynamicsLogger {
   logHealthChange(entityId: string, oldHealth: number, newHealth: number, factors: string[]) {
     const change = newHealth - oldHealth;
     const level = Math.abs(change) > 5 ? 'INFO' : 'DEBUG';
-    
+
     this.log({
       system: 'survival',
       category: 'SURVIVAL',
@@ -246,12 +256,10 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE ZONA ===
-  
   logZoneEffect(entityId: string, zoneName: string, effects: Record<string, number>) {
     const significantEffects = Object.entries(effects).filter(([, value]) => Math.abs(value) > 1);
     if (significantEffects.length === 0) return;
-    
+
     this.log({
       system: 'zone',
       category: 'SYSTEM',
@@ -262,8 +270,6 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE INTERACCIONES ===
-  
   logUserInteraction(interactionType: string, entityId: string | undefined, effect: unknown) {
     this.log({
       system: 'interaction',
@@ -286,8 +292,6 @@ export class DynamicsLogger {
     });
   }
 
-  // === SNAPSHOTS ===
-  
   takeEntitySnapshot(entity: Entity) {
     const snapshot: EntitySnapshot = {
       timestamp: Date.now(),
@@ -298,7 +302,7 @@ export class DynamicsLogger {
       position: { ...entity.position },
       isDead: entity.isDead
     };
-    
+
     this.entitySnapshots.push(snapshot);
   }
 
@@ -310,19 +314,17 @@ export class DynamicsLogger {
       cycles,
       entitiesAlive: entities.filter(e => !e.isDead).length
     };
-    
+
     this.systemSnapshots.push(snapshot);
   }
 
-  // === ANÁLISIS Y REPORTES ===
-  
   getRecentLogs(category?: LogEntry['category'], limit = 50): LogEntry[] {
     let filtered = this.logs;
-    
+
     if (category) {
       filtered = this.logs.filter(log => log.category === category);
     }
-    
+
     return filtered.slice(-limit);
   }
 
@@ -332,22 +334,21 @@ export class DynamicsLogger {
     moodChanges: number;
     avgHealth: number;
   } {
-    const snapshots = this.entitySnapshots
-      .filter(s => s.entityId === entityId)
-      .slice(-20); // Últimas 20 snapshots
-    
-    const activityChanges = this.logs
-      .filter(log => log.entityId === entityId && log.message.includes('cambió actividad'))
-      .length;
-    
-    const moodChanges = this.logs
-      .filter(log => log.entityId === entityId && log.message.includes('cambió estado emocional'))
-      .length;
-    
-    const avgHealth = snapshots.length > 0 
-      ? snapshots.reduce((sum, s) => sum + s.stats.health, 0) / snapshots.length
-      : 0;
-    
+    const snapshots = this.entitySnapshots.filter(s => s.entityId === entityId).slice(-20);
+
+    const activityChanges = this.logs.filter(
+      log => log.entityId === entityId && log.message.includes('cambió actividad')
+    ).length;
+
+    const moodChanges = this.logs.filter(
+      log => log.entityId === entityId && log.message.includes('cambió estado emocional')
+    ).length;
+
+    const avgHealth =
+      snapshots.length > 0
+        ? snapshots.reduce((sum, s) => sum + s.stats.health, 0) / snapshots.length
+        : 0;
+
     return {
       recentSnapshots: snapshots,
       activityChanges,
@@ -362,22 +363,25 @@ export class DynamicsLogger {
     proximityEvents: number;
     maxTogetherTime: number;
   } {
-    const resonanceChanges = this.logs
-      .filter(log => log.category === 'LOVE' && log.message.includes('Resonancia'))
-      .length;
-    
-    const proximityEvents = this.logs
-      .filter(log => log.category === 'LOVE' && log.message.includes('proximidad'))
-      .length;
-    
-    const avgResonance = this.systemSnapshots.length > 0
-      ? this.systemSnapshots.reduce((sum, s) => sum + s.resonance, 0) / this.systemSnapshots.length
-      : 0;
-    
-    const maxTogetherTime = this.systemSnapshots.length > 0
-      ? Math.max(...this.systemSnapshots.map(s => s.togetherTime))
-      : 0;
-    
+    const resonanceChanges = this.logs.filter(
+      log => log.category === 'LOVE' && log.message.includes('Resonancia')
+    ).length;
+
+    const proximityEvents = this.logs.filter(
+      log => log.category === 'LOVE' && log.message.includes('proximidad')
+    ).length;
+
+    const avgResonance =
+      this.systemSnapshots.length > 0
+        ? this.systemSnapshots.reduce((sum, s) => sum + s.resonance, 0) /
+          this.systemSnapshots.length
+        : 0;
+
+    const maxTogetherTime =
+      this.systemSnapshots.length > 0
+        ? Math.max(...this.systemSnapshots.map(s => s.togetherTime))
+        : 0;
+
     return {
       avgResonance,
       resonanceChanges,
@@ -386,19 +390,14 @@ export class DynamicsLogger {
     };
   }
 
-  // === UTILIDADES ===
-  
   private calculateDistance(entities: Entity[]): number {
     if (entities.length < 2) return 0;
     const [e1, e2] = entities;
     return Math.sqrt(
-      Math.pow(e1.position.x - e2.position.x, 2) +
-      Math.pow(e1.position.y - e2.position.y, 2)
+      Math.pow(e1.position.x - e2.position.x, 2) + Math.pow(e1.position.y - e2.position.y, 2)
     );
   }
 
-  // === CONFIGURACIÓN ===
-  
   setConfig(config: Partial<typeof this.config>) {
     this.config = { ...this.config, ...config };
   }
@@ -411,14 +410,12 @@ export class DynamicsLogger {
     this.isEnabled = false;
   }
 
-  // === REPORTE COMPLETO ===
-  
   generateReport(): string {
     const loveStats = this.getLoveStats();
     const circleStats = this.getEntityStats('circle');
     const squareStats = this.getEntityStats('square');
     const recentErrors = this.getRecentLogs().filter(log => log.level === 'ERROR');
-    
+
     return `
 🎮 === REPORTE DE DINÁMICAS DEL TAMAGOCHI ===
 
@@ -426,7 +423,7 @@ export class DynamicsLogger {
 - Resonancia promedio: ${loveStats.avgResonance.toFixed(1)}
 - Cambios de resonancia: ${loveStats.resonanceChanges}
 - Eventos de proximidad: ${loveStats.proximityEvents}
-- Tiempo máximo juntos: ${(loveStats.maxTogetherTime/1000).toFixed(1)}s
+- Tiempo máximo juntos: ${(loveStats.maxTogetherTime / 1000).toFixed(1)}s
 
 🤖 AUTONOMÍA DE AGENTES:
 - Círculo: ${circleStats.activityChanges} cambios de actividad, ${circleStats.moodChanges} cambios de humor
@@ -442,114 +439,10 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
 📊 Total de logs: ${this.logs.length}
     `.trim();
   }
-
-  // === EXPORTACIÓN AUTOMÁTICA ===
-  
-  private async exportLogsToBackend(): Promise<void> {
-    try {
-      const gameState = this.getGameStateFromSnapshots();
-      const metadata = {
-        sessionId: this.sessionId,
-        timestamp: Date.now(),
-        gameState,
-        totalSnapshots: this.entitySnapshots.length + this.systemSnapshots.length,
-        sessionDuration: this.getSessionDuration(),
-        analysis: this.getQuickAnalysis()
-      };
-      
-      const response = await fetch(`${this.apiBaseUrl}/api/logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          logs: this.logs,
-          metadata
-        })
-      });
-      
-      if (response.ok) {
-        await response.json();
-      } else {
-        console.warn(`⚠️ Error exportando logs: ${response.status}`);
-      }
-    } catch (error) {
-      console.warn('⚠️ Backend no disponible para exportar logs:', error);
-    }
-  }
-  
-  private getGameStateFromSnapshots() {
-    const latestSystem = this.systemSnapshots[this.systemSnapshots.length - 1];
-    const latestEntities = this.entitySnapshots
-      .filter(s => s.timestamp === Math.max(...this.entitySnapshots.map(es => es.timestamp)));
-    
-    return {
-      resonance: latestSystem?.resonance || 0,
-      togetherTime: latestSystem?.togetherTime || 0,
-      cycles: latestSystem?.cycles || 0,
-      entities: latestEntities,
-      entitiesAlive: latestSystem?.entitiesAlive || 0
-    };
-  }
-  
-  private getSessionDuration(): number {
-    if (this.logs.length === 0) return 0;
-    const firstLog = this.logs[0];
-    const lastLog = this.logs[this.logs.length - 1];
-    return lastLog.timestamp - firstLog.timestamp;
-  }
-  
-  private getQuickAnalysis() {
-    const loveStats = this.getLoveStats();
-    const circleStats = this.getEntityStats('circle');
-    const squareStats = this.getEntityStats('square');
-    const errors = this.logs.filter(log => log.level === 'ERROR');
-    const deaths = this.logs.filter(log => log.message.includes('murió') || log.message.includes('muerte'));
-    
-    return {
-      loveStats,
-      circleStats,
-      squareStats,
-      errorsCount: errors.length,
-      deathsCount: deaths.length,
-      criticalEventsCount: this.logs.filter(log => 
-        log.level === 'WARNING' || 
-        log.message.includes('críticas') ||
-        log.message.includes('salud')
-      ).length
-    };
-  }
-  
-  startAutoExport(intervalMs: number = 10000): void {
-    this.stopAutoExport();
-    this.exportInterval = window.setInterval(() => {
-      if (!this.exportEnabled) return;
-      if (this.logs.length > 0) {
-        this.exportLogsToBackend();
-      }
-    }, intervalMs);
-  }
-  
-  stopAutoExport(): void {
-    if (this.exportInterval) {
-      clearInterval(this.exportInterval);
-      this.exportInterval = null;
-    }
-  }
-  
-  async manualExport(): Promise<void> {
-    await this.exportLogsToBackend();
-  }
-  
-  setApiUrl(url: string): void {
-    this.apiBaseUrl = url;
-  }
 }
 
-// Instancia global del logger
 export const dynamicsLogger = new DynamicsLogger();
 
-// Hacer disponible globalmente para debugging
 if (typeof window !== 'undefined') {
   (window as unknown as { dynamicsLogger: DynamicsLogger }).dynamicsLogger = dynamicsLogger;
 }

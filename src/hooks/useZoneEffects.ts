@@ -6,19 +6,24 @@ import type { EntityStats } from '../types';
 import { shouldUpdateAutopoiesis } from '../utils/performanceOptimizer';
 import { logZones } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
-import type { ZoneType } from '../constants/gameConstants';
+import type { ZoneType } from '../constants';
 
-// Ajusta cuán intensamente actúan los efectos de las zonas sobre las estadísticas
 const ZONE_EFFECT_SCALE = 0.03;
 
-const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>> = {
-  food:    { stats: ['hunger'],                 criticalThreshold: 20, label: 'Alimento' },
-  rest:    { stats: ['sleepiness', 'energy'],   criticalThreshold: 30, label: 'Descanso' },
-  play:    { stats: ['boredom', 'happiness'],   criticalThreshold: 30, label: 'Diversión' },
-  social:  { stats: ['loneliness', 'happiness'],criticalThreshold: 30, label: 'Social' },
-  comfort: { stats: ['happiness', 'boredom', 'loneliness'],criticalThreshold: 40, label: 'Confort' },
-  energy:  { stats: ['energy'],                 criticalThreshold: 20, label: 'Energía' },
-  work:    { stats: ['money', 'energy'],        criticalThreshold: 50, label: 'Trabajo' }
+const zoneConfigs: Partial<
+  Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>
+> = {
+  food: { stats: ['hunger'], criticalThreshold: 20, label: 'Alimento' },
+  rest: { stats: ['sleepiness', 'energy'], criticalThreshold: 30, label: 'Descanso' },
+  play: { stats: ['boredom', 'happiness'], criticalThreshold: 30, label: 'Diversión' },
+  social: { stats: ['loneliness', 'happiness'], criticalThreshold: 30, label: 'Social' },
+  comfort: {
+    stats: ['happiness', 'boredom', 'loneliness'],
+    criticalThreshold: 40,
+    label: 'Confort'
+  },
+  energy: { stats: ['energy'], criticalThreshold: 20, label: 'Energía' },
+  work: { stats: ['money', 'energy'], criticalThreshold: 50, label: 'Trabajo' }
 };
 
 const calculateZoneEffectiveness = (
@@ -33,8 +38,8 @@ const calculateZoneEffectiveness = (
   const criticalNeed = avgStat < config.criticalThreshold;
   const needLevel = 100 - avgStat;
   const baseEffectiveness = 1 + needLevel / 50;
-  // Crowding: reduce effectiveness as occupancy grows beyond 1
-  const capacityLambda = 0.4; // tuneable; per extra occupant
+
+  const capacityLambda = 0.4;
   const crowdFactor = 1 / (1 + capacityLambda * Math.max(0, occupancy - 1));
 
   return {
@@ -60,9 +65,17 @@ export const useZoneEffects = () => {
   const intervalRef = useRef<number | undefined>(undefined);
   const lastUpdateTime = useRef<number>(0);
   const messageCounter = useRef<number>(0);
+  const gameStateRef = useRef(gameState);
+  const dispatchRef = useRef(dispatch);
+
+  useEffect(() => {
+    gameStateRef.current = gameState;
+    dispatchRef.current = dispatch;
+  }, [gameState, dispatch]);
 
   useEffect(() => {
     const { zoneEffectsInterval } = getGameIntervals();
+
     logZones.info('Zone Effects iniciado', { interval: zoneEffectsInterval });
 
     intervalRef.current = window.setInterval(() => {
@@ -73,20 +86,24 @@ export const useZoneEffects = () => {
       lastUpdateTime.current = now;
       messageCounter.current++;
 
-      const livingEntities = gameState.entities.filter(
+      const livingEntities = gameStateRef.current.entities.filter(
         e => !e.isDead && e.state !== 'DEAD' && e.state !== 'FADING'
       );
 
       for (const entity of livingEntities) {
-        const currentZone = getEntityZone(entity.position, gameState.zones);
+        const currentZone = getEntityZone(entity.position, gameStateRef.current.zones);
         if (!currentZone || !currentZone.effects) continue;
 
         const occupancy = livingEntities.filter(e => {
-          const z = getEntityZone(e.position, gameState.zones);
+          const z = getEntityZone(e.position, gameStateRef.current.zones);
           return z && z.id === currentZone.id;
         }).length;
 
-        const { effectiveness, criticalNeed } = calculateZoneEffectiveness(entity.stats, currentZone.type, occupancy);
+        const { effectiveness, criticalNeed } = calculateZoneEffectiveness(
+          entity.stats,
+          currentZone.type,
+          occupancy
+        );
         const timeMultiplier = (deltaTime / 1000) * gameConfig.gameSpeedMultiplier;
         const finalEffects: Partial<EntityStats> = {};
 
@@ -101,24 +118,46 @@ export const useZoneEffects = () => {
           }
 
           const currentStat = entity.stats[statKey];
-          const newValue = Math.max(0, Math.min(100, currentStat + baseValue * effectiveness * timeMultiplier * ZONE_EFFECT_SCALE));
+          const newValue = Math.max(
+            0,
+            Math.min(
+              100,
+              currentStat + baseValue * effectiveness * timeMultiplier * ZONE_EFFECT_SCALE
+            )
+          );
           if (Math.abs(newValue - currentStat) > 0.1) finalEffects[statKey] = newValue;
         });
 
         if (Object.keys(finalEffects).length) {
-          dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: finalEffects } });
-          
-          // Log para análisis
-          dynamicsLogger.logZoneEffect(entity.id, currentZone.name, finalEffects as Record<string, number>);
-          
+          dispatchRef.current({
+            type: 'UPDATE_ENTITY_STATS',
+            payload: { entityId: entity.id, stats: finalEffects }
+          });
+
+          dynamicsLogger.logZoneEffect(
+            entity.id,
+            currentZone.name,
+            finalEffects as Record<string, number>
+          );
+
           if (gameConfig.debugMode && messageCounter.current % 10 === 0) {
-            logZones.debug('Zone effects', { entity: entity.id, effects: finalEffects, effectiveness });
+            logZones.debug('Zone effects', {
+              entity: entity.id,
+              effects: finalEffects,
+              effectiveness
+            });
           }
         }
 
         if (criticalNeed && messageCounter.current % 15 === 0) {
-          const message = getContextualZoneMessage(entity.id, currentZone.type, effectiveness, criticalNeed);
-          if (message) dispatch({ type: 'SHOW_DIALOGUE', payload: { message, duration: 2000 } });
+          const message = getContextualZoneMessage(
+            entity.id,
+            currentZone.type,
+            effectiveness,
+            criticalNeed
+          );
+          if (message)
+            dispatchRef.current({ type: 'SHOW_DIALOGUE', payload: { message, duration: 2000 } });
         }
       }
     }, zoneEffectsInterval);
@@ -126,8 +165,9 @@ export const useZoneEffects = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
         logZones.info('Zone Effects detenido');
       }
     };
-  }, [gameState.entities, gameState.zones, dispatch]);
+  }, []);
 };

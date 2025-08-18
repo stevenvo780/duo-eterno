@@ -1,25 +1,87 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from './useGame';
 import { getRandomDialogue } from '../utils/dialogues';
+import {
+  loadDialogueData,
+  getNextDialogue,
+  getSpeakerForEntity,
+  getEmotionForActivity
+} from '../utils/dialogueSelector';
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
+  const [dialoguesLoaded, setDialoguesLoaded] = useState(false);
 
   useEffect(() => {
-    // Show post-nutrition dialogue when nourishing
+    loadDialogueData().then(() => {
+      setDialoguesLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!dialoguesLoaded) return;
+
     if (gameState.connectionAnimation.active) {
       const animationAge = Date.now() - gameState.connectionAnimation.startTime;
-      if (animationAge < 100) { // Just started
+      if (animationAge < 100) {
         const isFading = gameState.entities.some(entity => entity.state === 'FADING');
-        const dialogueType = isFading ? 'revival' : 'post-nutrition';
-        dispatch({
-          type: 'SHOW_DIALOGUE',
-          payload: { 
-            message: getRandomDialogue(dialogueType),
-            duration: isFading ? 4000 : 3000
+
+        if (isFading) {
+          dispatch({
+            type: 'SHOW_DIALOGUE',
+            payload: {
+              message: getRandomDialogue('revival'),
+              duration: 4000
+            }
+          });
+        } else {
+          const dialogue = getNextDialogue(undefined, 'LOVE', 'SOCIALIZING');
+          if (dialogue) {
+            dispatch({
+              type: 'SHOW_DIALOGUE',
+              payload: {
+                message: dialogue.text,
+                duration: 3000,
+                speaker: dialogue.speaker === 'ISA' ? 'circle' : 'square'
+              }
+            });
+          }
+        }
+      }
+    }
+  }, [gameState.connectionAnimation, gameState.entities, dispatch, dialoguesLoaded]);
+
+  useEffect(() => {
+    if (!dialoguesLoaded) return;
+
+    const interval = setInterval(() => {
+      if (!gameState.connectionAnimation.active) {
+        gameState.entities.forEach(entity => {
+          const timeBasedTrigger = (Date.now() + entity.id.charCodeAt(0) * 1000) % 20000 < 1000;
+
+          if (timeBasedTrigger && !entity.isDead) {
+            const speaker = getSpeakerForEntity(entity.id);
+            const emotion = getEmotionForActivity(entity.activity);
+            const dialogue = getNextDialogue(speaker, emotion, entity.activity);
+
+            if (dialogue) {
+              dispatch({
+                type: 'SHOW_DIALOGUE',
+                payload: {
+                  message: dialogue.text,
+                  duration: 2500,
+                  speaker: entity.id,
+                  entityId: entity.id,
+                  emotion: dialogue.emotion,
+                  position: { x: entity.position.x, y: entity.position.y }
+                }
+              });
+            }
           }
         });
       }
-    }
-  }, [gameState.connectionAnimation, gameState.entities, dispatch]);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState.entities, gameState.connectionAnimation.active, dispatch, dialoguesLoaded]);
 };

@@ -1,8 +1,12 @@
+// Configuración ESLint para TypeScript + React en Duo Eterno.
+// Objetivo: feedback temprano sobre problemas comunes (imports/vars sin usar,
+// reglas React Hooks) y compatibilidad con tooling (ts-prune, scripts de limpieza).
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import unusedImports from 'eslint-plugin-unused-imports'
 
 export default tseslint.config(
   { ignores: ['dist'] },
@@ -16,6 +20,7 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      'unused-imports': unusedImports,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -23,6 +28,26 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+
+      // Política de no-usados:
+      // - Prefijo `_` indica uso intencionalmente ignorado (alineado con script fix-unused-vars).
+      // - `unused-imports` limpia imports huérfanos incluso si el tipo/JSX no los usa.
+      '@typescript-eslint/no-unused-vars': ['error', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': ['warn', {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      }],
+
+      'no-unused-expressions': 'error',
+      'no-unreachable': 'error',
+      'no-unused-labels': 'error',
     },
   },
 )
