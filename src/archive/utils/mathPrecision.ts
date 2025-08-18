@@ -432,7 +432,7 @@ export const calculateAdvancedResonance = (
   interactionHistory: number[],
   harmonyLevel: number,
   timeBonus: number = 0,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   _currentResonance: AdvancedResonanceState | null = null
 ): AdvancedResonanceState => {
   // Calcular frecuencia fundamental basada en proximidad
@@ -584,7 +584,7 @@ export interface PredictionState {
  */
 export const predictBehaviorPatterns = (
   behaviorHistory: Array<{ action: string; timestamp: number; context: unknown }>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   _currentContext: unknown
 ): PredictionState => {
   if (behaviorHistory.length < MATH_CONSTANTS.PATTERN_MEMORY_DEPTH / 4) {
@@ -921,7 +921,7 @@ for (let i = 0; i < 256; i++) {
 /**
  * Cálculo de gradiente del campo vectorial
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const calculateGradient = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): Vector2D => {
   const eps = 0.01;
   
@@ -958,7 +958,7 @@ const calculateGradient = (position: Vector2D, attractors: Vector2D[], _repulsor
 /**
  * Cálculo de divergencia del campo vectorial
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const calculateDivergence = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): number => {
   const eps = 0.01;
   
@@ -995,7 +995,7 @@ const calculateDivergence = (position: Vector2D, attractors: Vector2D[], _repuls
 /**
  * Cálculo de curl del campo vectorial
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const calculateCurl = (position: Vector2D, attractors: Vector2D[], _repulsors: Vector2D[]): number => {
   const eps = 0.01;
   

@@ -6,7 +6,6 @@ import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
 import EntityPanel from './EntityPanel';
 import StatBar from './StatBar';
-import Toast from './Toast';
 import LoadingSpinner from './LoadingSpinner';
 import type { InteractionType } from '../types';
 import { TRANSLATIONS } from "../constants";
@@ -517,7 +516,20 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         </div>
       </div>
       
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && (
+        <div 
+          style={{
+            position: 'fixed', top: '20px', right: '20px', 
+            padding: '10px', borderRadius: '4px',
+            background: toast.type === 'success' ? '#4CAF50' : 
+                       toast.type === 'error' ? '#f44336' : 
+                       toast.type === 'warning' ? '#ff9800' : '#2196F3',
+            color: 'white', zIndex: 1000
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
       
       {loading && (
         <div style={{ position: 'fixed', top: 10, right: 10, zIndex: 1500 }}>

@@ -79,7 +79,7 @@ export const getEmotionForActivity = (activity: string): string => {
 };
 
 export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
-  // Mapear entidades del juego a speakers del chat
+  // Mapear entidades del juego a speakers del chat: circle=Isa, square=Stev
   return entityId === 'circle' ? 'ISA' : 'STEV';
 };
 

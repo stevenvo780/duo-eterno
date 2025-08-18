@@ -16,7 +16,7 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
   y,
   message,
   speaker,
-  emotion,
+  emotion: _emotion,
   visible,
   duration,
   onComplete
@@ -46,8 +46,8 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
 
   const getEmotionColor = (speaker: string) => {
     const baseColors = {
-      ISA: '#ff69b4',    // Rosa para ISA
-      STEV: '#4169e1'    // Azul para STEV
+      ISA: '#e91e63',    // Rosa profundo para Isa (círculo) 
+      STEV: '#3f51b5'    // Índigo para Stev (cuadrado)
     };
 
     const base = baseColors[speaker as keyof typeof baseColors] || baseColors.STEV;
@@ -97,10 +97,11 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
             fontSize: '10px',
             fontWeight: 'bold',
             marginBottom: '2px',
-            opacity: 0.9
+            opacity: 0.9,
+            fontStyle: 'italic'
           }}
         >
-          {speaker}
+          {speaker === 'ISA' ? 'Isa' : 'Stev'}
         </div>
         {message}
         

@@ -3,6 +3,8 @@
  * Mejora la gestión de memoria y velocidad de carga
  */
 
+import type { ExtractedTile } from './tileExtractor';
+
 interface AssetLoadOptions {
   priority: 'low' | 'medium' | 'high';
   preload?: boolean;
@@ -77,7 +79,7 @@ export class OptimizedAssetManager {
     throw new Error(`Could not load sprite: ${name}`);
   }
 
-  private loadSingleImage(src: string, options: AssetLoadOptions): Promise<HTMLImageImage> {
+  private loadSingleImage(src: string, options: AssetLoadOptions): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       
@@ -116,11 +118,14 @@ export class OptimizedAssetManager {
     }
   }
 
-  preloadCriticalAssets(assetNames: string[]): Promise<void[]> {
+  preloadCriticalAssets(assetNames: string[]): Promise<(HTMLImageElement | void)[]> {
     return Promise.all(
       assetNames.map(name => 
         this.loadSprite(name, { priority: 'high', preload: true })
-          .catch(error => console.warn(`Failed to preload ${name}:`, error))
+          .catch(error => {
+            console.warn(`Failed to preload ${name}:`, error);
+            return void 0;
+          })
       )
     );
   }

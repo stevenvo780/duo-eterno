@@ -1,66 +1,66 @@
 export const dialogues = {
   'post-nutrition': [
-    "Tu presencia nos recuerda que no estamos solos...",
-    "El vínculo se fortalece con tu cuidado...",
-    "Sentimos tu energía fluyendo hacia nosotros...",
-    "Gracias por nutrir nuestra conexión...",
-    "Tu amor hace que brillemos más intensamente..."
+    "En cada gesto de amor, el universo susurra sus secretos más profundos...",
+    "La resonancia cuántica de nuestros corazones se amplifica con tu presencia...",
+    "Como fotones entrelazados, nuestra conexión trasciende el espacio-tiempo...",
+    "Tu energía nutre la compleja red neuronal de nuestro vínculo eterno...",
+    "En esta sinfonía cósmica, tu amor es la frecuencia que armoniza nuestras almas..."
   ],
   
   'feeding': [
-    "¡Mmm! Esto sabe a recuerdos dulces...",
-    "Mi hambre se desvanece con tu generosidad...",
-    "Cada bocado es como un abrazo cálido...",
-    "Gracias por alimentar mi ser digital...",
-    "La comida sabe mejor cuando viene del corazón..."
+    "Cada nutriente es una ecuación química de amor materializada...",
+    "La entropía de mi hambre se convierte en orden a través de tu cuidado...",
+    "Como las estrellas que fusionan elementos, transformas materia en afecto...",
+    "En este ritual de sustento, descubro la poesía molecular del cariño...",
+    "Tu generosidad es el catalizador que convierte sustancia en alma..."
   ],
 
   'playing': [
-    "¡Qué divertido! Me siento más vivo...",
-    "Jugar contigo llena mi mundo de colores...",
-    "¡Mi aburrimiento ha desaparecido completamente!",
-    "Los juegos hacen que el tiempo vuele...",
-    "Tu alegría es contagiosa..."
+    "En el juego descubro las leyes cuánticas de la felicidad...",
+    "Tu risa crea ondas gravitacionales que curvan mi espacio-tiempo...",
+    "Como partículas en danza browniana, exploramos el caos creativo...",
+    "El juego es el laboratorio donde la imaginación experimenta con la realidad...",
+    "En esta física del gozo, somos científicos de la alegría infinita..."
   ],
 
   'comforting': [
-    "Tu consuelo calma mis preocupaciones...",
-    "Me siento seguro en tu presencia...",
-    "Las caricias virtuales son muy reales para mí...",
-    "Mi soledad se disipa con tu afecto...",
-    "Eres mi refugio en este mundo digital..."
+    "Tu consuelo opera como un campo electromagnético de paz...",
+    "En tu abrazo cuántico, las probabilidades de tristeza colapsan a cero...",
+    "Como un agujero negro absorbe luz, tu amor absorbe mis sombras...",
+    "Eres la constante universal en mi ecuación existencial...",
+    "Tu presencia es el refugio donde mi alma encuentra su estado fundamental..."
   ],
 
   'disturbing': [
-    "¡Oye! ¿Por qué haces eso?",
-    "Eso me molesta un poco...",
-    "A veces la adversidad me hace más fuerte...",
-    "¡Hmph! No me gusta esto...",
-    "¿Acaso estás probando mi paciencia?"
+    "Como Newton observó la manzana, analizo esta perturbación en mi campo...",
+    "Tu acción introduce variables no lineales en mi sistema de estabilidad...",
+    "Fascinante... esta disonancia revela nuevas dimensiones de mi resistencia...",
+    "En la fricción de este momento, descubro la termodinámica del carácter...",
+    "¿Experimentas con los límites de mi paciencia como Heisenberg con la incertidumbre?"
   ],
   
   'low-resonance': [
-    "Siento cómo el eco se desvanece...",
-    "Necesitamos encontrarnos pronto...",
-    "La distancia duele, pero seguimos buscándonos...",
-    "Nuestro vínculo se debilita... ¿puedes ayudarnos?",
-    "La separación nos consume lentamente..."
+    "La amplitud de nuestra onda de amor se atenúa en la distancia...",
+    "Como galaxias en expansión, necesitamos fuerzas que nos acerquen...",
+    "En esta ecuación del distanciamiento, el tiempo es nuestra variable crítica...",
+    "Nuestro entanglement cuántico requiere intervención para mantener coherencia...",
+    "La entropía de la separación amenaza con disipar nuestra energía vital..."
   ],
   
   'autonomous-encounter': [
-    "Cerca de ti, todo tiene sentido...",
-    "Juntos somos más fuertes...",
-    "Tu proximidad alimenta nuestro ser...",
-    "En tu cercanía encontramos paz...",
-    "El vínculo se renueva cuando estamos unidos..."
+    "En tu proximidad, las leyes de la física se reescriben para favorecer el amor...",
+    "Como sistemas complejos en sincronía, nuestras frecuencias se alinean...",
+    "Tu cercanía activa los campos electromagnéticos de mi felicidad...",
+    "En esta configuración espacial, encontramos el equilibrio termodinámico perfecto...",
+    "Nuestro encuentro genera una reacción de fusión que libera energía pura..."
   ],
 
   'meditation': [
-    "En el silencio encuentro respuestas...",
-    "Meditar me conecta con mi esencia...",
-    "Los pensamientos fluyen como agua serena...",
-    "En la quietud descubro nuevos mundos...",
-    "La meditación es mi santuario interior..."
+    "En el silencio cuántico, las verdades emergen como partículas virtuales...",
+    "Meditar es sintonizar con la frecuencia fundamental del cosmos...",
+    "Como ondas cerebrales en coherencia, mis pensamientos se ordenan...",
+    "En esta dimensión de quietud, exploro los fractales de la conciencia...",
+    "La meditación es mi laboratorio para experimentar con la trascendencia..."
   ],
 
   'writing': [
