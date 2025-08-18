@@ -56,14 +56,6 @@ export const getNextDialogue = (
   return dialogueData[Math.floor(Math.random() * dialogueData.length)];
 };
 
-export const getDialogueFromPoint = (startIndex: number): DialogueEntry | null => {
-  if (dialogueData.length === 0 || startIndex < 0 || startIndex >= dialogueData.length) {
-    return null;
-  }
-  
-  currentIndex = startIndex;
-  return dialogueData[currentIndex];
-};
 
 export const getEmotionForActivity = (activity: string): string => {
   // Mapeo expandido basado en las emociones presentes en el JSON real
@@ -87,9 +79,7 @@ export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
   return entityId === 'circle' ? 'ISA' : 'STEV';
 };
 
-export const getDialogueCount = (): number => {
-  return dialogueData.length;
-};
+// Eliminadas utilidades no usadas: getDialogueFromPoint, getDialogueCount
 
 // Mapeo de tipos de interacción a emociones/actividades del chat
 export const getDialogueForInteraction = (

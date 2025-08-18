@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { useRenderer } from '../hooks/useRenderer';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
+import { useDayNightCycle } from '../hooks/useDayNightCycle';
+import { DayNightClock } from './DayNightClock';
 import { 
   loadAndExtractTiles, 
   getTilesByType, 
@@ -51,6 +53,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   const { gameState } = useGame();
   const { shouldRender } = useRenderer();
   const { preloadAnimations } = useAnimationSystem();
+  const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
   
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -446,9 +449,28 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       });
     }
     
+    // Aplicar efectos de día/noche
+    const lightIntensity = getLightIntensity();
+    if (lightIntensity < 1.0) {
+      // Overlay de oscuridad para la noche
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = `rgba(100, 150, 255, ${1 - lightIntensity})`;
+      ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
+      
+      // Overlay cálido para el atardecer/amanecer
+      if (phase === 'dusk' || phase === 'dawn') {
+        ctx.globalCompositeOperation = 'overlay';
+        const warmth = phase === 'dusk' ? 0.3 : 0.2;
+        ctx.fillStyle = `rgba(255, 150, 100, ${warmth})`;
+        ctx.fillRect(-panX, -panY, width / zoom, height / zoom);
+      }
+      
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    
     ctx.restore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, organicZones, width, height, zoom, panX, panY]);
+  }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, organicZones, width, height, zoom, panX, panY, getLightIntensity, phase]);
 
 
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
@@ -575,10 +597,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
         onClick={handleCanvasClick}
         style={{ 
           cursor: onEntityClick ? 'pointer' : 'default',
-          background: '#2d5a27',
+          background: getSkyColor(),
           display: 'block',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          transition: 'background-color 2s ease'
         }}
       />
       
@@ -634,6 +657,15 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
         }}>
           🌍 Tiles: {allTiles.size} | Objetos: {gameObjects.length}
         </div>
+      )}
+      
+      {/* Reloj de día y noche */}
+      {assetsLoaded && (
+        <DayNightClock 
+          position="top-right" 
+          size="medium" 
+          showPhase={true}
+        />
       )}
     </div>
   );

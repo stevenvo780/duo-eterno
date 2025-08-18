@@ -6,14 +6,17 @@
 
 import { useEffect, useRef } from 'react';
 import { useGame } from './useGame';
+import { useDayNightCycle } from './useDayNightCycle';
 import type { EntityStats, Entity } from '../types';
 import { getGameConfig, getGameIntervals } from '../config/gameConfig';
 import { SURVIVAL } from '../constants';
 import { robustStateUtils } from '../utils/robustStateManagement';
 import { optimizedDynamicsLogger, logGeneral } from '../utils/optimizedDynamicsLogger';
+import { applyActivityEffectsWithTimeModifiers } from '../utils/activityDynamics';
 
 export const useGameLoop = () => {
   const { gameState, dispatch } = useGame();
+  const { currentTime } = useDayNightCycle();
   const config = getGameConfig();
   
 

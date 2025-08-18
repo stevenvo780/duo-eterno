@@ -109,7 +109,7 @@ export const useRenderer = () => {
         return memInfo.usedJSHeapSize / (1024 * 1024);
       }
     } catch {
-
+      return 0;
     }
     return 0;
   }, []);

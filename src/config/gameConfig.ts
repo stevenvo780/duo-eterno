@@ -388,10 +388,7 @@ export const getGameIntervals = () => ({
 export const gameConfig = getGameConfig();
 
 
-export const updateGameConfig = () => {
-  const newConfig = getGameConfig();
-  Object.assign(gameConfig, newConfig);
-};
+// Nota: updateGameConfig eliminado por no usarse
 
 
 if (typeof window !== 'undefined') {

@@ -11,6 +11,12 @@ import {
   EFFICIENCY_FUNCTIONS
 } from '../constants/activityConstants';
 
+interface TimeOfDayModifiers {
+  isNight: boolean;
+  phase: 'dawn' | 'day' | 'dusk' | 'night';
+  hour: number;
+}
+
 export const getActivityDynamics = () => ({
   WANDERING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.WANDERING },
   MEDITATING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.MEDITATING },
@@ -26,6 +32,37 @@ export const getActivityDynamics = () => ({
   EXERCISING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.EXERCISING },
   COOKING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.COOKING }
 });
+
+// Función para obtener modificadores de actividad según la hora del día
+export const getTimeOfDayActivityModifiers = (timeOfDay: TimeOfDayModifiers) => {
+  const { isNight, phase, hour } = timeOfDay;
+  
+  return {
+    RESTING: {
+      // Durante la noche (22:00 - 6:00), dormir es más efectivo
+      efficiencyMultiplier: isNight ? 1.8 : 1.0,
+      // La recuperación de energía es mejor durante la noche
+      energyRecoveryBonus: isNight ? 1.5 : 1.0,
+      // La recuperación de sueño es mejor durante la noche natural
+      sleepinessRecoveryBonus: isNight ? 2.0 : 0.8,
+      // Bonus especial para horas profundas de la noche (1:00 - 5:00)
+      deepSleepBonus: (hour >= 1 && hour <= 5) ? 1.3 : 1.0
+    },
+    SOCIALIZING: {
+      // Socializar de noche puede ser más relajante pero menos energético
+      efficiencyMultiplier: isNight ? 1.2 : 1.0,
+      moodBonus: isNight ? 1.3 : 1.0
+    },
+    MEDITATING: {
+      // Meditar en la madrugada o noche es más efectivo
+      efficiencyMultiplier: (phase === 'night' || phase === 'dawn') ? 1.4 : 1.0
+    },
+    CONTEMPLATING: {
+      // Contemplar durante la noche es más profundo
+      efficiencyMultiplier: isNight ? 1.5 : 1.0
+    }
+  };
+};
 
 
 export const ACTIVITY_EFFECTS: Record<ActivityType, {
@@ -303,5 +340,94 @@ export const applySurvivalCosts = (
     newStats.happiness = Math.max(0, newStats.happiness - desperation * 3 * minutesElapsed);
   }
 
+  return newStats;
+};
+
+// Función que aplica efectos de actividad con modificadores de día/noche
+export const applyActivityEffectsWithTimeModifiers = (
+  activity: EntityActivity,
+  currentStats: EntityStats,
+  deltaTimeMs: number,
+  timeOfDay: TimeOfDayModifiers
+): EntityStats => {
+  // Aplicar efectos base de la actividad
+  const newStats = applyActivityEffects(activity, currentStats, deltaTimeMs);
+  
+  // Obtener modificadores de tiempo del día
+  const modifiers = getTimeOfDayActivityModifiers(timeOfDay);
+  const activityModifier = modifiers[activity as keyof typeof modifiers];
+  
+  if (!activityModifier) {
+    return newStats; // Si no hay modificadores para esta actividad, devolver stats base
+  }
+  
+  // Aplicar modificadores específicos para RESTING
+  if (activity === 'RESTING' && activityModifier) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const effects = ACTIVITY_EFFECTS.RESTING;
+    
+    // Aplicar bonificaciones de recuperación nocturna
+    if ('energyRecoveryBonus' in activityModifier) {
+      const energyBonus = (effects.perMinute.energy || 0) * 
+                         (activityModifier.energyRecoveryBonus - 1) * 
+                         minutesElapsed;
+      newStats.energy = Math.min(100, Math.max(0, newStats.energy + energyBonus));
+    }
+    
+    if ('sleepinessRecoveryBonus' in activityModifier) {
+      const sleepBonus = (effects.perMinute.sleepiness || 0) * 
+                        (activityModifier.sleepinessRecoveryBonus - 1) * 
+                        minutesElapsed;
+      newStats.sleepiness = Math.min(100, Math.max(0, newStats.sleepiness + sleepBonus));
+    }
+    
+    if ('deepSleepBonus' in activityModifier) {
+      // Bonus de sueño profundo - mejora la recuperación de salud
+      const deepSleepHealthBonus = activityModifier.deepSleepBonus * 0.5 * minutesElapsed;
+      newStats.health = Math.min(100, Math.max(0, newStats.health + deepSleepHealthBonus));
+    }
+    
+    // Durante la noche, dormir reduce el aburrimiento más eficientemente
+    if (timeOfDay.isNight) {
+      const boredomReduction = 2 * minutesElapsed;
+      newStats.boredom = Math.max(0, newStats.boredom - boredomReduction);
+    }
+  }
+  
+  // Aplicar modificadores para otras actividades
+  if (activity === 'SOCIALIZING' && activityModifier && 'moodBonus' in activityModifier) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const happinessBonus = (ACTIVITY_EFFECTS.SOCIALIZING.perMinute.happiness || 0) * 
+                          (activityModifier.moodBonus - 1) * 
+                          minutesElapsed;
+    newStats.happiness = Math.min(100, Math.max(0, newStats.happiness + happinessBonus));
+  }
+  
+  if ((activity === 'MEDITATING' || activity === 'CONTEMPLATING') && 
+      activityModifier && 'efficiencyMultiplier' in activityModifier) {
+    const minutesElapsed = (deltaTimeMs / 60000) * gameConfig.gameSpeedMultiplier;
+    const activityData = ACTIVITY_EFFECTS[activity];
+    
+    // Multiplicar todos los efectos positivos por el modificador de eficiencia
+    Object.entries(activityData.perMinute).forEach(([stat, value]) => {
+      if (value > 0 && stat in newStats) {
+        const bonus = value * (activityModifier.efficiencyMultiplier - 1) * minutesElapsed;
+        const statKey = stat as keyof EntityStats;
+        if (statKey !== 'money') {
+          newStats[statKey] = Math.min(100, Math.max(0, newStats[statKey] + bonus));
+        }
+      }
+    });
+  }
+  
+  logAutopoiesis.debug('Efectos aplicados con modificadores de tiempo', { 
+    activity, 
+    timeOfDay: timeOfDay.phase,
+    isNight: timeOfDay.isNight,
+    changes: Object.fromEntries(
+      Object.entries(newStats).map(([k, v]) => [k, v - currentStats[k as keyof EntityStats]])
+    )
+  });
+  
   return newStats;
 };
