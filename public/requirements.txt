@@ -1,4 +1,25 @@
+# Dependencias para clasificación con IA LOCAL (sin APIs externas)
+
+# Básicas
 Pillow>=10.0.0
 imagehash>=4.3.1
-openai>=1.0.0
+numpy>=1.21.0
+opencv-python>=4.5.0
+scikit-learn>=1.0.0
+
+# PyTorch (necesario para CLIP y otros modelos)
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Modelos de IA locales
+clip-by-openai>=1.0
+ultralytics>=8.0.0  # YOLO
+transformers>=4.21.0  # BLIP y otros modelos HuggingFace
+
+# Opcionales para mejor rendimiento
+# accelerate>=0.20.0  # Para modelos HuggingFace más rápidos
+# bitsandbytes>=0.39.0  # Para modelos cuantizados (menor uso de memoria)
+
+# Utilidades
+tqdm>=4.64.0
 requests>=2.31.0
