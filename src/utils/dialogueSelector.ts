@@ -68,11 +68,46 @@ export const getNextDialogue = (
   // 4. Match speaker only
   dialogue = findDialogue(preferredSpeaker, undefined, undefined);
   if (dialogue) return dialogue;
-
+  
   // 5. Fallback to any dialogue
   const fallbackIndex = (Date.now() * 1664525 + 1013904223) % 2147483647;
   return dialogueData[Math.floor(fallbackIndex) % dialogueData.length];
 };
+
+const responseMap: Record<string, string[]> = {
+  NEUTRAL: ['CURIOUS', 'NEUTRAL', 'PLAYFUL'],
+  LOVE: ['LOVE', 'PLAYFUL', 'GRATITUDE'],
+  SADNESS: ['LOVE', 'CURIOUS', 'NEUTRAL'],
+  ANGER: ['CURIOUS', 'NEUTRAL'],
+  ANXIETY: ['LOVE', 'NEUTRAL'],
+  PLAYFUL: ['PLAYFUL', 'LOVE', 'CURIOUS'],
+  CURIOUS: ['NEUTRAL', 'PLAYFUL'],
+  GRATITUDE: ['LOVE', 'NEUTRAL'],
+  PRIDE: ['GRATITUDE', 'LOVE'],
+  APOLOGY: ['NEUTRAL', 'LOVE'],
+  STRESS: ['LOVE', 'NEUTRAL'],
+  SICKNESS: ['LOVE', 'CARING'],
+  PAIN: ['LOVE', 'CARING'],
+  CARING: ['GRATITUDE', 'LOVE'],
+  CONTEMPLATING: ['CURIOUS', 'NEUTRAL'],
+  DEFAULT: ['NEUTRAL', 'CURIOUS', 'LOVE', 'PLAYFUL'],
+};
+
+export const getResponseWriter = (
+  responderSpeaker: 'ISA' | 'STEV',
+  lastDialogue: DialogueEntry
+): DialogueEntry | null => {
+  const possibleEmotions = responseMap[lastDialogue.emotion] || responseMap.DEFAULT;
+  
+  for (const emotion of possibleEmotions) {
+    const dialogue = getNextDialogue(responderSpeaker, emotion, lastDialogue.activity);
+    if (dialogue) return dialogue;
+  }
+
+  // Fallback to any dialogue from the responder
+  return getNextDialogue(responderSpeaker, undefined, undefined);
+};
+
 
 export const getEmotionForActivity = (activity: string): string => {
   const emotionMap: Record<string, string[]> = {

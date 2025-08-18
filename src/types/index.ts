@@ -90,16 +90,6 @@ export interface Zone {
   };
 }
 
-export type { ZoneType, ActivityType, EntityStateType, MoodType } from '../constants';
-
-export interface InteractionEffect {
-  stats: Partial<EntityStats>;
-  resonance?: number;
-  mood?: EntityMood;
-  duration?: number;
-}
-
-export type EntityActivity = ActivityType;
 
 export interface DialogueEntry {
   speaker: 'ISA' | 'STEV';
@@ -116,19 +106,3 @@ export interface ConversationState {
   startTime: number;
 }
 
-export interface GameState {
-  entities: Entity[];
-  resonance: number;
-  cycles: number;
-  lastSave: number;
-  togetherTime: number;
-  connectionAnimation: {
-    active: boolean;
-    startTime: number;
-    type: InteractionType;
-  };
-  zones: Zone[];
-  mapElements: MapElement[];
-  mapSeed?: string;
-  currentConversation: ConversationState;
-}

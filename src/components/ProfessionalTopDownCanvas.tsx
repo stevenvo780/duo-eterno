@@ -1,14 +1,15 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useGame } from '../hooks/useGame';
 import { useRenderer } from '../hooks/useRenderer';
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
 import { DayNightClock } from './DayNightClock';
 import { assetManager, type Asset } from '../utils/assetManager';
-import type { Entity } from '../types';
+import { generateAdvancedTerrain, type TerrainGenerationResult, type TileData } from '../utils/advancedTerrainGeneration';
+import type { Entity, Zone, MapElement } from '../types';
 
-interface TileMap {
-  tiles: string[][];
+interface AdvancedTileMap {
+  tiles: TileData[][];
   tileSize: number;
   width: number;
   height: number;
@@ -20,6 +21,12 @@ interface GameObject {
   x: number;
   y: number;
   shadow?: Asset;
+  metadata?: {
+    rotation?: number;
+    flipX?: boolean;
+    weathering?: number;
+    naturalVariation?: boolean;
+  };
 }
 
 interface Props {
@@ -48,7 +55,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [tileMap, setTileMap] = useState<TileMap | null>(null);
+  const [terrainResult, setTerrainResult] = useState<TerrainGenerationResult | null>(null);
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
 
   // Usar zones y mapElements directamente del GameContext
@@ -94,41 +101,28 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
   // El mapa ya se genera en el GameContext, no necesitamos regenerarlo aquí
 
-  // Generar tilemap dinámico
-  const generateSmartTileMap = useCallback(() => {
-    if (!assetsLoaded || zones.length === 0) return;
+  // Generar tilemap dinámico usando el sistema avanzado
+  const generateAdvancedTileMap = useCallback(() => {
+    if (!assetsLoaded) return;
 
-    const tileSize = 32;
-    const mapWidth = Math.ceil(width / tileSize) + 4;
-    const mapHeight = Math.ceil(height / tileSize) + 4;
-    const tiles: string[][] = [];
+    console.log('🌍 Generando mapa avanzado con terreno procedural...');
 
-    console.log('🗺️ Generando tilemap con fondo de césped...');
+    try {
+      // Generar terreno usando el nuevo sistema
+      const result = generateAdvancedTerrain(width, height, Date.now(), {
+        tileSize: 32,
+        detailLevel: 1,
+        biomeBlendRadius: 3
+      });
 
-    // Crear mapa base COMPLETO con césped uniforme
-    const grassAsset =
-      assetManager.getAssetById('tile_0182_suelo_cesped') ||
-      assetManager.getAssetById('tile_0210_suelo_cesped');
-    const grassTileId = grassAsset?.id || 'tile_0182_suelo_cesped';
-
-    for (let y = 0; y < mapHeight; y++) {
-      tiles[y] = [];
-      for (let x = 0; x < mapWidth; x++) {
-        tiles[y][x] = grassTileId; // TODO EL FONDO ES CÉSPED
-      }
+      setTerrainResult(result);
+      console.log('✅ Terreno avanzado generado:', result.metadata);
+    } catch (error) {
+      console.error('❌ Error generando terreno avanzado:', error);
+      // Fallback al sistema básico
+      console.log('🔄 Usando sistema de fallback...');
     }
-
-    setTileMap({
-      tiles,
-      tileSize,
-      width: mapWidth,
-      height: mapHeight
-    });
-
-    console.log(`✅ Fondo de césped generado: ${mapWidth}x${mapHeight}`);
-  }, [width, height, assetsLoaded, zones]);
-
-  // Generar objetos del juego
+  }, [width, height, assetsLoaded]);  // Generar objetos del juego
   const generateGameObjects = useCallback(async () => {
     if (!assetsLoaded || mapElements.length === 0) return;
 
@@ -213,8 +207,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
 
   // Ejecutar generaciones cuando sea necesario
   useEffect(() => {
-    generateSmartTileMap();
-  }, [generateSmartTileMap]);
+    generateAdvancedTileMap();
+  }, [generateAdvancedTileMap]);
 
   useEffect(() => {
     generateGameObjects();
@@ -265,54 +259,121 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   // Función de renderizado principal
   const renderProfessionalScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      if (!assetsLoaded || !tileMap) return;
+      if (!assetsLoaded || !terrainResult) return;
 
       ctx.clearRect(0, 0, width, height);
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(panX, panY);
 
-      // Renderizar tilemap
+      // Renderizar tilemap avanzado con variaciones
+      const tileMap = terrainResult.tileMap;
       for (let y = 0; y < tileMap.height; y++) {
         for (let x = 0; x < tileMap.width; x++) {
-          const tileId = tileMap.tiles[y][x];
-          const asset = assetManager.getAssetById(tileId);
+          const tileData = tileMap.tiles[y][x];
+          const asset = assetManager.getAssetById(tileData.textureId);
 
           if (asset?.image) {
+            ctx.save();
+            
+            // Aplicar transformaciones del tile
+            const centerX = x * tileMap.tileSize + tileMap.tileSize / 2;
+            const centerY = y * tileMap.tileSize + tileMap.tileSize / 2;
+            
+            ctx.translate(centerX, centerY);
+            if (tileData.rotation) ctx.rotate((tileData.rotation * Math.PI) / 180);
+            
+            // Aplicar tint y variaciones de color
+            ctx.fillStyle = tileData.tint;
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.fillRect(-tileMap.tileSize / 2, -tileMap.tileSize / 2, tileMap.tileSize, tileMap.tileSize);
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Dibujar el tile
             ctx.drawImage(
               asset.image,
-              x * tileMap.tileSize,
-              y * tileMap.tileSize,
+              -tileMap.tileSize / 2,
+              -tileMap.tileSize / 2,
               tileMap.tileSize,
               tileMap.tileSize
             );
+            
+            ctx.restore();
           }
         }
       }
 
       // Renderizar zonas como fondos sutiles
-      zones.forEach(zone => {
-        ctx.globalAlpha = 0.15;
+      zones.forEach((zone) => {
+        ctx.globalAlpha = 0.12;
         ctx.fillStyle = zone.color;
         ctx.fillRect(zone.bounds.x, zone.bounds.y, zone.bounds.width, zone.bounds.height);
         ctx.globalAlpha = 1.0;
-
-        // Renderizar nombre de la zona
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.font = '12px Arial';
-        ctx.fillText(zone.name, zone.bounds.x + 5, zone.bounds.y + 15);
+        
+        // Renderizar nombre de la zona con mejor tipografía
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.font = 'bold 11px system-ui';
+        ctx.fillText(zone.name, zone.bounds.x + 8, zone.bounds.y + 18);
       });
 
-      // Renderizar objetos del juego
+      // Renderizar objetos del terreno (generados proceduralmente)
+      terrainResult.objects.forEach(obj => {
+        const asset = assetManager.getRandomAssetByType('nature') || 
+                      assetManager.getAssetById('tile_0182_suelo_cesped');
+        
+        if (asset?.image) {
+          ctx.save();
+          
+          // Aplicar variaciones si existen
+          if (obj.metadata?.rotation) {
+            ctx.translate(obj.position.x + obj.size.width / 2, obj.position.y + obj.size.height / 2);
+            ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
+            ctx.translate(-obj.size.width / 2, -obj.size.height / 2);
+          }
+          
+          if (obj.metadata?.flipX) {
+            ctx.scale(-1, 1);
+          }
+          
+          // Aplicar weathering/aging
+          if (obj.metadata?.weathering && typeof obj.metadata.weathering === 'number') {
+            ctx.globalAlpha = 1 - (obj.metadata.weathering * 0.3);
+          }
+          
+          ctx.drawImage(
+            asset.image, 
+            obj.metadata?.rotation ? 0 : obj.position.x, 
+            obj.metadata?.rotation ? 0 : obj.position.y, 
+            obj.size.width, 
+            obj.size.height
+          );
+          
+          ctx.restore();
+        }
+      });
+
+      // Renderizar objetos del juego tradicionales
       gameObjects.forEach(obj => {
         if (obj.asset.image) {
-          ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
+          ctx.save();
+          
+          // Aplicar variaciones naturales si existen
+          if (obj.metadata?.rotation) {
+            ctx.translate(obj.x + obj.asset.size / 2, obj.y + obj.asset.size / 2);
+            ctx.rotate((obj.metadata.rotation * Math.PI) / 180);
+            ctx.translate(-obj.asset.size / 2, -obj.asset.size / 2);
+            ctx.drawImage(obj.asset.image, 0, 0, obj.asset.size, obj.asset.size);
+          } else {
+            ctx.drawImage(obj.asset.image, obj.x, obj.y, obj.asset.size, obj.asset.size);
+          }
+          
+          ctx.restore();
         }
       });
 
       // Renderizar entidades
       if (gameState.entities) {
-        gameState.entities.forEach(entity => {
+        gameState.entities.forEach((entity: Entity) => {
           renderTopDownEntity(ctx, entity);
         });
       }
@@ -340,7 +401,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     },
     [
       assetsLoaded,
-      tileMap,
+      terrainResult,
       gameObjects,
       gameState.entities,
       zones,
@@ -353,9 +414,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
       phase,
       renderTopDownEntity
     ]
-  );
-
-  // Loop de animación
+  );  // Loop de animación
   useEffect(() => {
     if (!assetsLoaded) return;
 

@@ -86,6 +86,9 @@ export interface GameConfig {
     animationSpeed: number;
     maxLogEntries: number;
     statUpdateFrequency: number;
+    dialogueInitiationChance: number;
+    dialogueConversationTimeout: number;
+    dialogueResponseDelay: number;
   };
 
   performance: {
@@ -190,7 +193,10 @@ const baseConfig: GameConfig = {
     dialogueDuration: 3000,
     animationSpeed: 1.0,
     maxLogEntries: 100,
-    statUpdateFrequency: 500
+    statUpdateFrequency: 500,
+    dialogueInitiationChance: 0.1,
+    dialogueConversationTimeout: 20000,
+    dialogueResponseDelay: 3000,
   },
 
   performance: {

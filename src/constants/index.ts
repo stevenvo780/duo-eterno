@@ -220,96 +220,8 @@ export const {
   ATTENTION_SPAN_MS
 } = TIMING;
 
-export type ActivityType = (typeof ACTIVITIES.TYPES)[number];
-export type ZoneType =
-  | 'kitchen'
-  | 'bedroom'
-  | 'living'
-  | 'bathroom'
-  | 'office'
-  | 'gym'
-  | 'library'
-  | 'social'
-  | 'recreation'
-  | 'food'
-  | 'rest'
-  | 'play'
-  | 'comfort'
-  | 'work'
-  | 'energy';
-export type EntityStateType =
-  | 'alive'
-  | 'resting'
-  | 'dead'
-  | 'fading'
-  | 'DEAD'
-  | 'FADING'
-  | 'LOW_RESONANCE'
-  | 'SEEKING'
-  | 'IDLE';
-export type MoodType =
-  | 'HAPPY'
-  | 'SAD'
-  | 'ANGRY'
-  | 'CALM'
-  | 'EXCITED'
-  | 'BORED'
-  | 'LONELY'
-  | 'CONTENT'
-  | 'ANXIOUS'
-  | 'TIRED';
 
-export const ACTIVITY_TYPES = ACTIVITIES.TYPES;
 
-export const STAT_KEYS = [
-  'hunger',
-  'energy',
-  'happiness',
-  'sleepiness',
-  'boredom',
-  'loneliness',
-  'health'
-] as const;
-export const ENTITY_STATES = [
-  'alive',
-  'resting',
-  'dead',
-  'fading',
-  'DEAD',
-  'FADING',
-  'LOW_RESONANCE',
-  'SEEKING',
-  'IDLE'
-] as const;
-export const MOOD_TYPES = [
-  'HAPPY',
-  'SAD',
-  'ANGRY',
-  'CALM',
-  'EXCITED',
-  'BORED',
-  'LONELY',
-  'CONTENT',
-  'ANXIOUS',
-  'TIRED'
-] as const;
-export const ZONE_TYPES = [
-  'kitchen',
-  'bedroom',
-  'living',
-  'bathroom',
-  'office',
-  'gym',
-  'library',
-  'social',
-  'recreation',
-  'food',
-  'rest',
-  'play',
-  'comfort',
-  'work',
-  'energy'
-] as const;
 
 export const TRANSLATIONS = {
   HAPPY: 'Feliz',
@@ -397,23 +309,6 @@ export const ENTITY_PHYSICS = {
 
 // PATHFINDING_CONFIG removido por no usarse
 
-export const NEED_TO_ZONE_MAPPING = {
-  hunger: 'food',
-  sleepiness: 'rest',
-  boredom: 'play',
-  loneliness: 'social',
-  energy: 'rest',
-  happiness: 'comfort',
-  money: 'work',
-  health: 'comfort'
-} as const;
 
-export const RESONANCE_THRESHOLDS = {
-  LOW: 15,
-  WEAK: 20,
-  MODERATE: 50,
-  STRONG: 75,
-  INTENSE: 90
-} as const;
 
 // Función de validación no usada removida

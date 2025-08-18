@@ -5,13 +5,22 @@ import {
   getNextDialogue,
   getSpeakerForEntity,
   getEmotionForActivity,
-  getDialogueForInteraction
+  getDialogueForInteraction,
+  getResponseWriter,
 } from '../utils/dialogueSelector';
+import { gameConfig } from '../config/gameConfig';
+import type { DialogueEntry } from '../types';
+
+const {
+  dialogueInitiationChance,
+  dialogueConversationTimeout,
+  dialogueResponseDelay,
+} = gameConfig.ui;
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
   const [dialoguesLoaded, setDialoguesLoaded] = useState(false);
-  const { currentConversation } = gameState;
+  const { currentConversation, entities } = gameState;
 
   useEffect(() => {
     loadDialogueData().then(() => {
@@ -19,21 +28,24 @@ export const useDialogueSystem = () => {
     });
   }, []);
 
-  const initiateConversation = useCallback(() => {
-    if (Math.random() > 0.1) return; // 10% chance to start a conversation each tick
+  const canConverse = (entityId: string): boolean => {
+    const entity = entities.find(e => e.id === entityId);
+    if (!entity) return false;
+    return !entity.isDead && entity.activity !== 'SLEEPING' && entity.activity !== 'WORKING';
+  };
 
-    const initiator = gameState.entities[Math.floor(Math.random() * gameState.entities.length)];
-    if (initiator.isDead) return;
+  const initiateConversation = useCallback(() => {
+    if (Math.random() > dialogueInitiationChance) return;
+
+    const initiator = entities[Math.floor(Math.random() * entities.length)];
+    if (!canConverse(initiator.id)) return;
 
     const speaker = getSpeakerForEntity(initiator.id);
     const emotion = getEmotionForActivity(initiator.activity);
     const dialogue = getNextDialogue(speaker, emotion, initiator.activity);
 
     if (dialogue) {
-      dispatch({
-        type: 'START_CONVERSATION',
-        payload: { participants: gameState.entities.map(e => e.id) }
-      });
+      dispatch({ type: 'START_CONVERSATION', payload: { participants: entities.map(e => e.id) } });
       dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: initiator.id, dialogue } });
       dispatch({
         type: 'SHOW_DIALOGUE',
@@ -43,37 +55,33 @@ export const useDialogueSystem = () => {
           speaker: initiator.id,
           entityId: initiator.id,
           emotion: dialogue.emotion,
-          position: { x: initiator.position.x, y: initiator.position.y }
-        }
+          position: { x: initiator.position.x, y: initiator.position.y },
+        },
       });
     }
-  }, [gameState.entities, dispatch]);
+  }, [entities, dispatch]);
 
   const advanceConversation = useCallback(() => {
     const { lastSpeaker, lastDialogue } = currentConversation;
     if (!lastSpeaker || !lastDialogue) return;
 
-    const responderId = gameState.entities.find(e => e.id !== lastSpeaker)?.id;
-    if (!responderId) {
+    const responderId = entities.find(e => e.id !== lastSpeaker)?.id;
+    if (!responderId || !canConverse(responderId)) {
       dispatch({ type: 'END_CONVERSATION' });
       return;
     }
-
-    const responder = gameState.entities.find(e => e.id === responderId);
-    if (!responder || responder.isDead) {
-      dispatch({ type: 'END_CONVERSATION' });
-      return;
+    
+    const responder = entities.find(e => e.id === responderId);
+    if (!responder) {
+        dispatch({ type: 'END_CONVERSATION' });
+        return;
     }
 
-    // Simple response logic: find a dialogue with a matching activity and emotion
-    const speaker = getSpeakerForEntity(responderId);
-    const responseDialogue = getNextDialogue(speaker, lastDialogue.emotion, lastDialogue.activity);
+    const responderSpeaker = getSpeakerForEntity(responderId);
+    const responseDialogue = getResponseWriter(responderSpeaker, lastDialogue);
 
     if (responseDialogue) {
-      dispatch({
-        type: 'ADVANCE_CONVERSATION',
-        payload: { speaker: responderId, dialogue: responseDialogue }
-      });
+      dispatch({ type: 'ADVANCE_CONVERSATION', payload: { speaker: responderId, dialogue: responseDialogue } });
       dispatch({
         type: 'SHOW_DIALOGUE',
         payload: {
@@ -82,14 +90,14 @@ export const useDialogueSystem = () => {
           speaker: responderId,
           entityId: responderId,
           emotion: responseDialogue.emotion,
-          position: { x: responder.position.x, y: responder.position.y }
-        }
+          position: { x: responder.position.x, y: responder.position.y },
+        },
       });
     } else {
-      // End conversation if no response is found
       dispatch({ type: 'END_CONVERSATION' });
     }
-  }, [currentConversation, gameState.entities, dispatch]);
+  }, [currentConversation, entities, dispatch]);
+
 
   useEffect(() => {
     if (!dialoguesLoaded) return;
@@ -100,61 +108,50 @@ export const useDialogueSystem = () => {
       if (!currentConversation.isActive) {
         initiateConversation();
       } else {
-        // Check for conversation timeout
-        if (Date.now() - currentConversation.startTime > 20000) {
-          // 20 second timeout
+        if (Date.now() - currentConversation.startTime > dialogueConversationTimeout) {
           dispatch({ type: 'END_CONVERSATION' });
           return;
         }
-        // Only advance conversation if it's the other entity's turn
+        
         if (currentConversation.lastSpeaker) {
-          const lastSpeakerIndex = currentConversation.participants.indexOf(
-            currentConversation.lastSpeaker
-          );
-          const _nextSpeakerIndex =
-            (lastSpeakerIndex + 1) % currentConversation.participants.length;
-
-          // A simple delay before responding
-          if (Date.now() - currentConversation.startTime > 3000) {
-            advanceConversation();
-          }
+            const responseTimer = setTimeout(() => {
+                advanceConversation();
+            }, dialogueResponseDelay + Math.random() * 1000); // Add some randomness
+            
+            return () => clearTimeout(responseTimer);
         }
       }
-    }, 3000); // Check every 3 seconds
+    }, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, [
-    dialoguesLoaded,
-    gameState.connectionAnimation.active,
-    currentConversation,
-    initiateConversation,
-    advanceConversation,
-    dispatch
-  ]);
+  }, [dialoguesLoaded, gameState.connectionAnimation.active, currentConversation, initiateConversation, advanceConversation, dispatch]);
 
   // Handle dialogues from interactions
   useEffect(() => {
     if (!dialoguesLoaded || !gameState.connectionAnimation.active) return;
 
-    const interaction = gameState.connectionAnimation.type;
-    const entityId = 'circle'; // For now, assume circle is the target of interaction
-    const dialogue = getDialogueForInteraction(interaction, entityId);
+    const { type: interactionType, entityId } = gameState.connectionAnimation;
+    
+    // The INTERACT action should have the entityId in its payload
+    const targetEntityId = entityId || 'circle'; // Fallback for safety
+
+    const dialogue = getDialogueForInteraction(interactionType, targetEntityId);
 
     if (dialogue) {
-      dispatch({
-        type: 'SHOW_DIALOGUE',
-        payload: {
-          message: dialogue.text,
-          duration: 3000,
-          speaker: entityId,
-          entityId: entityId,
-          emotion: dialogue.emotion,
-          position: {
-            x: gameState.entities.find(e => e.id === entityId)!.position.x,
-            y: gameState.entities.find(e => e.id === entityId)!.position.y
-          }
-        }
-      });
+      const entity = entities.find(e => e.id === targetEntityId);
+      if (entity) {
+        dispatch({
+          type: 'SHOW_DIALOGUE',
+          payload: {
+            message: dialogue.text,
+            duration: 3000,
+            speaker: targetEntityId,
+            entityId: targetEntityId,
+            emotion: dialogue.emotion,
+            position: { x: entity.position.x, y: entity.position.y },
+          },
+        });
+      }
     }
-  }, [gameState.connectionAnimation, dialoguesLoaded, dispatch, gameState.entities]);
+  }, [gameState.connectionAnimation, dialoguesLoaded, dispatch, entities]);
 };
