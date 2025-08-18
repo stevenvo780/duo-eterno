@@ -112,14 +112,14 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   // El mapa ya se genera en el GameContext, no necesitamos regenerarlo aquí
 
   // Generar tilemap dinámico usando el sistema avanzado
-  const generateAdvancedTileMap = useCallback(() => {
+  const generateAdvancedTileMap = useCallback(async () => {
     if (!assetsLoaded) return;
 
     console.log('🌍 Generando mapa avanzado con terreno procedural...');
 
     try {
       // Generar terreno usando el nuevo sistema
-      const result = generateAdvancedTerrain(width, height, Date.now(), {
+      const result = await generateAdvancedTerrain(width, height, Date.now(), {
         tileSize: 32,
         detailLevel: 1,
         biomeBlendRadius: 3

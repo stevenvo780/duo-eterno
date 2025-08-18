@@ -38,67 +38,90 @@ const DYNAMIC_CATEGORY_MAPPING = {
   'dialogs': 'dialogs'
 } as const;
 
-// Assets organizados por las nuevas carpetas descriptivas
-export const ASSET_CATEGORIES = {
-  // Terreno base - terrain_tiles
-  TERRAIN_TILES: {
-    grass: ['cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5'],
-    dirt: ['Grass_Middle', 'TexturedGrass'],
-    stone: ['tile_0533_suelo_piedra', 'tile_0545_suelo_piedra'],
-    sand: ['tile_0547_suelo_arena'],
-    earth: ['tile_0548_suelo_tierra']
-  },
+// Importar análisis dinámico de assets existentes
+let assetAnalysis: any = null;
 
-  // Edificios - structures  
-  STRUCTURES: {
-    houses: ['House', 'House_Hay_1', 'House_Hay_2', 'House_Hay_3', 'House_Hay_4_Purple'],
-    walls: ['muros1', 'muros2', 'muros3', 'CityWall_Gate_1'],
-    fences: ['Fences'],
-    wells: ['Well_Hay_1'],
-    glass: ['vidrio']
-  },
-
-  // Muebles - furniture_objects
-  FURNITURE_OBJECTS: {
-    storage: ['Barrel_Small_Empty', 'Basket_Empty', 'Chest', 'Chests_001', 'Chests_002'],
-    containers: ['Crate_Large_Empty', 'Crate_Medium_Closed'],
-    waste: ['basuras2', 'basuras3', 'basuras4', 'basuras_calle2', 'basuras_calle3'],
-    bottles: ['botellas2', 'botellas3'],
-    boxes: ['cajas2', 'cajas3'],
-    windows: ['ventana1', 'ventana2', 'ventana3', 'ventana4', 'ventana5']
-  },
-
-  // Naturaleza - natural_elements
-  NATURAL_ELEMENTS: {
-    trees: ['Oak_Tree', 'Tree_Emerald_1', 'Tree_Emerald_2', 'Tree_Emerald_3'],
-    bushes: ['Bush_Emerald_1', 'Bush_Emerald_2', 'Bush_Emerald_3'],
-    rocks: ['Rock_Brown_1', 'Rock_Brown_2', 'Rock_Brown_4', 'Rock_Brown_6'],
-    cliffs: ['Cliff_001_001', 'Cliff_001_002'],
-    logs: ['troncos1', 'troncos2', 'troncos3']
-  },
-
-  // Infraestructura - infrastructure
-  INFRASTRUCTURE: {
-    paths: ['Path_Middle', 'FarmLand_Tile']
-  },
-
-  // Agua - water
-  WATER: {
-    tiles: ['Water_Middle', 'tile_0198', 'tile_0230']
-  },
-
-  // Objetos ambientales - environmental_objects
-  ENVIRONMENTAL_OBJECTS: {
-    decorations: ['Banner_Stick_1_Purple', 'BulletinBoard_1', 'Sign_1', 'Sign_2'],
-    furniture: ['Bench_1', 'Bench_3', 'Table_Medium_1', 'silla'],
-    lighting: ['LampPost_3', 'lamparas1', 'lamparas2', 'lamparas3'],
-    poles: ['poste1', 'poste2', 'poste3', 'poste4'],
-    clothing: ['ropas_tendidas1', 'ropas_tendidas2', 'ropas_tendidas3'],
-    umbrellas: ['sombrilla1', 'sombrilla2', 'sombrilla3'],
-    waste: ['basuras1', 'basuras_calle1', 'botellas1', 'cajas1'],
-    street_furniture: ['sillas_de_calle1', 'sillas_de_calle2', 'sillas_de_calle3']
+// Función para cargar el análisis de assets
+async function loadAssetAnalysis() {
+  if (!assetAnalysis) {
+    try {
+      const analysis = await import('../generated/asset-analysis.json');
+      assetAnalysis = analysis.default || analysis;
+    } catch (error) {
+      console.warn('No se pudo cargar el análisis de assets, usando fallback');
+      assetAnalysis = await generateFallbackAssetCategories();
+    }
   }
-} as const;
+  return assetAnalysis;
+}
+
+// Categorías basadas únicamente en assets que sabemos que existen (fallback)
+async function generateFallbackAssetCategories() {
+  return {
+    categories: {
+      TERRAIN_TILES: {
+        grass: [
+          'Grass_Middle', 'TexturedGrass', 'cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5',
+          'cesped6', 'cesped7', 'cesped8', 'cesped9', 'cesped10', 'cesped11', 'cesped12', 'cesped13',
+          'cesped14', 'cesped15', 'cesped16', 'cesped17', 'cesped18', 'cesped19', 'cesped20',
+          'cesped21', 'cesped22', 'cesped23', 'cesped24', 'cesped25', 'cesped26', 'cesped27',
+          'cesped28', 'cesped29', 'cesped30', 'cesped31'
+        ],
+        textured: ['TexturedGrass']
+      },
+      STRUCTURES: {
+        houses: ['House', 'House_Hay_1', 'House_Hay_2', 'House_Hay_3', 'House_Hay_4_Purple'],
+        walls: ['CityWall_Gate_1', 'muros1', 'muros2', 'muros3'],
+        fences: ['Fences'],
+        wells: ['Well_Hay_1'],
+        glass: ['vidrio']
+      },
+      NATURAL_ELEMENTS: {
+        trees: ['Oak_Tree', 'Tree_Emerald_1', 'Tree_Emerald_2', 'Tree_Emerald_3', 'Tree_Emerald_4'],
+        bushes: ['Bush_Emerald_1', 'Bush_Emerald_2', 'Bush_Emerald_3', 'Bush_Emerald_4', 'Bush_Emerald_5', 'Bush_Emerald_6', 'Bush_Emerald_7'],
+        rocks: ['Rock_Brown_1', 'Rock_Brown_2', 'Rock_Brown_4', 'Rock_Brown_6', 'Rock_Brown_9'],
+        cliffs: ['Cliff_001_001', 'Cliff_001_002'],
+        logs: ['troncos1', 'troncos2', 'troncos3']
+      },
+      INFRASTRUCTURE: {
+        paths: ['FarmLand_Tile', 'Path_Middle']
+      },
+      WATER: {
+        tiles: ['Water_Middle', 'tile_0198', 'tile_0230']
+      },
+      ENVIRONMENTAL_OBJECTS: {
+        furniture: ['Bench_1', 'Bench_3', 'Table_Medium_1', 'silla', 'sillas_de_calle1', 'sillas_de_calle2', 'sillas_de_calle3', 'sillas_de_calle4'],
+        lighting: ['LampPost_3', 'lamparas1', 'lamparas2', 'lamparas3'],
+        signs: ['Sign_1', 'Sign_2', 'Signs_001', 'Signs_002', 'Signs_003', 'Signs_004', 'StreetSigns_001', 'StreetSigns_002', 'StreetSigns_003', 'StreetSigns_004', 'StreetSigns_005'],
+        decorations: ['Banner_Stick_1_Purple', 'Plant_2'],
+        street_items: ['poste1', 'poste2', 'poste3', 'poste4', 'ropas_tendidas1', 'ropas_tendidas2', 'ropas_tendidas3', 'sombrilla1', 'sombrilla2', 'sombrilla3'],
+        waste: ['basuras1', 'basuras_calle1'],
+        containers: ['botellas1', 'cajas1']
+      },
+      FURNITURE_OBJECTS: {
+        all: [
+          'Barrel_Small_Empty', 'Basket_Empty', 'Chest', 'Chests_001', 'Chests_002',
+          'Crate_Large_Empty', 'Crate_Medium_Closed', 'basuras2', 'basuras3', 'basuras4',
+          'basuras_calle2', 'basuras_calle3', 'basuras_calle4', 'basuras_calle5', 'basuras_calle6',
+          'botellas2', 'botellas3', 'cajas2', 'cajas3', 'ventana1', 'ventana2', 'ventana3',
+          'ventana4', 'ventana5', 'ventana6', 'ventana7', 'ventana8', 'ventana9', 'ventana10',
+          'ventana11', 'ventana12', 'ventana13'
+        ]
+      }
+    }
+  };
+}
+
+// Assets dinámicos - se cargan del análisis
+export const ASSET_CATEGORIES = new Proxy({}, {
+  get: function(_target: any, prop: string) {
+    if (!assetAnalysis) {
+      // Retornar promesa que resuelve cuando se cargue
+      return loadAssetAnalysis().then(analysis => analysis.categories[prop]);
+    }
+    return assetAnalysis.categories[prop];
+  }
+});
 
 export class AssetManager {
   private assets: Map<string, Asset> = new Map();
@@ -107,7 +130,10 @@ export class AssetManager {
   private dynamicAssetsLoaded: Set<string> = new Set();
 
   constructor() {
-    this.initializeCategories();
+    // Inicializar categorías de forma asíncrona
+    this.initializeCategories().catch(error => {
+      console.warn('Error en inicialización asíncrona de categorías:', error);
+    });
   }
 
   /**
@@ -208,7 +234,7 @@ export class AssetManager {
   // Métodos auxiliares privados
 
   private mapDynamicCategory(folderName: string): Asset['category'] {
-    return DYNAMIC_CATEGORY_MAPPING[folderName as keyof typeof DYNAMIC_CATEGORY_MAPPING] || 'decorations';
+    return DYNAMIC_CATEGORY_MAPPING[folderName as keyof typeof DYNAMIC_CATEGORY_MAPPING] || 'environmental_objects';
   }
 
   private categorizeAssetsByFolder(assets: Asset[], folderName: string) {
@@ -227,16 +253,30 @@ export class AssetManager {
     });
   }
 
-  private initializeCategories() {
-    Object.entries(ASSET_CATEGORIES).forEach(([category, subtypes]) => {
-      this.categorizedAssets[category.toLowerCase()] = [];
+  private async initializeCategories() {
+    try {
+      const analysis = await loadAssetAnalysis();
+      const categories = analysis.categories || {};
+      
+      Object.entries(categories).forEach(([category, subtypes]) => {
+        this.categorizedAssets[category.toLowerCase()] = [];
 
-      Object.entries(subtypes).forEach(([subtype]) => {
-        if (!this.categorizedAssets[subtype]) {
-          this.categorizedAssets[subtype] = [];
+        if (subtypes && typeof subtypes === 'object') {
+          Object.entries(subtypes as Record<string, any>).forEach(([subtype]) => {
+            if (!this.categorizedAssets[subtype]) {
+              this.categorizedAssets[subtype] = [];
+            }
+          });
         }
       });
-    });
+    } catch (error) {
+      console.warn('Error inicializando categorías, usando categorías básicas:', error);
+      // Inicializar categorías básicas
+      const basicCategories = ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects'];
+      basicCategories.forEach(category => {
+        this.categorizedAssets[category] = [];
+      });
+    }
   }
 
   /**
@@ -270,35 +310,31 @@ export class AssetManager {
   private createLoadPromise(assetId: string): Promise<Asset> {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      // Determinar la carpeta correcta basada en el tipo de asset
-      let folderPath = '/assets/';
+      const category = this.detectCategory(assetId);
       
-      if (assetId.includes('cesped') || assetId.includes('Grass') || assetId.includes('tile_0') && assetId.includes('suelo')) {
-        folderPath += 'terrain_tiles/';
-      } else if (assetId.includes('House') || assetId.includes('muro') || assetId.includes('Wall') || assetId.includes('vidrio')) {
-        folderPath += 'structures/';
-      } else if (assetId.includes('Barrel') || assetId.includes('Chest') || assetId.includes('ventana') || assetId.includes('basuras')) {
-        folderPath += 'furniture_objects/';
-      } else if (assetId.includes('Tree') || assetId.includes('Bush') || assetId.includes('Rock') || assetId.includes('tronco')) {
-        folderPath += 'natural_elements/';
-      } else if (assetId.includes('Path') || assetId.includes('FarmLand')) {
-        folderPath += 'infrastructure/';
-      } else if (assetId.includes('Water') || assetId.includes('tile_0198') || assetId.includes('tile_0230')) {
-        folderPath += 'water/';
-      } else if (assetId.includes('lampara') || assetId.includes('poste') || assetId.includes('silla') || assetId.includes('sombrilla')) {
-        folderPath += 'environmental_objects/';
-      } else {
-        // Fallback a environmental_objects para assets no categorizados
-        folderPath += 'environmental_objects/';
-      }
+      // Mapeo directo de categorías a carpetas
+      const categoryToFolder: Record<string, string> = {
+        'terrain_tiles': 'terrain_tiles',
+        'structures': 'structures',
+        'furniture_objects': 'furniture_objects',
+        'natural_elements': 'natural_elements',
+        'infrastructure': 'infrastructure',
+        'water': 'water',
+        'environmental_objects': 'environmental_objects',
+        'animated_entities': 'animated_entities',
+        'consumable_items': 'consumable_items',
+        'ui_icons': 'ui_icons',
+        'dialogs': 'dialogs'
+      };
       
+      const folderPath = '/assets/' + (categoryToFolder[category] || 'environmental_objects') + '/';
       const path = folderPath + assetId + '.png';
 
       image.onload = () => {
         const asset: Asset = {
           id: assetId,
           name: this.extractNameFromId(assetId),
-          category: this.detectCategory(assetId),
+          category: category,
           subtype: this.detectSubtype(assetId),
           image,
           size: this.detectSize(assetId),
@@ -316,27 +352,39 @@ export class AssetManager {
   }
 
   /**
-   * Carga múltiples assets de una categoría
+   * Carga múltiples assets de una categoría usando datos dinámicos
    */
-  async loadAssetsByCategory(category: keyof typeof ASSET_CATEGORIES): Promise<Asset[]> {
-    const categoryData = ASSET_CATEGORIES[category];
-    const allAssetIds = Object.values(categoryData).flat();
+  async loadAssetsByCategory(category: string): Promise<Asset[]> {
+    const analysis = await loadAssetAnalysis();
+    const categoryData = analysis.categories[category];
+    
+    if (!categoryData) {
+      console.warn(`Categoría ${category} no encontrada`);
+      return [];
+    }
 
+    const allAssetIds = Object.values(categoryData).flat() as string[];
     const loadPromises = allAssetIds.map(id => this.loadAsset(id));
     return Promise.all(loadPromises);
   }
 
   /**
-   * Carga assets de un subtipo específico
+   * Carga assets de un subtipo específico usando datos dinámicos
    */
   async loadAssetsBySubtype(
-    category: keyof typeof ASSET_CATEGORIES,
+    category: string,
     subtype: string
   ): Promise<Asset[]> {
-    const categoryData = ASSET_CATEGORIES[category] as Record<string, readonly string[]>;
-    const assetIds: readonly string[] = categoryData[subtype] || [];
+    const analysis = await loadAssetAnalysis();
+    const categoryData = analysis.categories[category];
+    
+    if (!categoryData || !categoryData[subtype]) {
+      console.warn(`Subtipo ${subtype} en categoría ${category} no encontrado`);
+      return [];
+    }
 
-    const loadPromises = Array.from(assetIds).map((id: string) => this.loadAsset(id));
+    const assetIds = categoryData[subtype];
+    const loadPromises = assetIds.map((id: string) => this.loadAsset(id));
     return Promise.all(loadPromises);
   }
 
@@ -406,13 +454,96 @@ export class AssetManager {
   }
 
   private detectCategory(id: string): Asset['category'] {
-    if (id.includes('cesped') || id.includes('Grass') || id.includes('suelo') || id.includes('tile_0')) return 'terrain_tiles';
-    if (id.includes('House') || id.includes('muro') || id.includes('Wall') || id.includes('vidrio')) return 'structures';
-    if (id.includes('Barrel') || id.includes('Chest') || id.includes('ventana') || id.includes('basuras')) return 'furniture_objects';
-    if (id.includes('Tree') || id.includes('Bush') || id.includes('Rock') || id.includes('tronco')) return 'natural_elements';
-    if (id.includes('Path') || id.includes('FarmLand')) return 'infrastructure';
-    if (id.includes('Water') || id.includes('agua')) return 'water';
-    if (id.includes('lampara') || id.includes('poste') || id.includes('silla') || id.includes('sombrilla')) return 'environmental_objects';
+    // Detección precisa basada únicamente en assets que sabemos que existen
+    
+    // Terrain tiles
+    if (id.includes('cesped') || id === 'Grass_Middle' || id === 'TexturedGrass') {
+      return 'terrain_tiles';
+    }
+    
+    // Structures
+    if (id.includes('House') || id.includes('muro') || id.includes('CityWall') || 
+        id === 'vidrio' || id === 'Well_Hay_1' || id === 'Fences') {
+      return 'structures';
+    }
+    
+    // Furniture objects
+    if (id.includes('Barrel') || id.includes('Chest') || id.includes('ventana') || 
+        id.includes('basuras') || id.includes('Crate') || id.includes('Basket') ||
+        id.includes('botellas') || id.includes('cajas')) {
+      return 'furniture_objects';
+    }
+    
+    // Natural elements
+    if (id.includes('Tree') || id.includes('Bush') || id.includes('Rock') || 
+        id.includes('tronco') || id === 'Oak_Tree' || id.includes('Emerald') || 
+        id.includes('Brown') || id.includes('Cliff')) {
+      return 'natural_elements';
+    }
+    
+    // Infrastructure
+    if (id === 'Path_Middle' || id === 'FarmLand_Tile') {
+      return 'infrastructure';
+    }
+    
+    // Water
+    if (id === 'Water_Middle' || id === 'tile_0198' || id === 'tile_0230') {
+      return 'water';
+    }
+    
+    // Environmental objects
+    if (id.includes('Bench') || id.includes('Table') || id.includes('Lamp') || 
+        id.includes('Sign') || id.includes('Banner') || id.includes('Plant') || 
+        id.includes('poste') || id === 'silla' || id.includes('sillas_de_calle') ||
+        id.includes('sombrilla') || id.includes('lamparas') || id.includes('ropas_tendidas') ||
+        id.includes('Boat') || id.includes('Fireplace') || id.includes('HayStack') ||
+        id.includes('Sack') || id.includes('Tombstones') || id.includes('Chopped_Tree')) {
+      return 'environmental_objects';
+    }
+    
+    // Animated entities
+    if (id.includes('Chicken') || id.includes('Boar') || id.includes('Pig') || 
+        id.includes('Sheep') || id.includes('Cow') || id.includes('Horse') || 
+        id === 'Campfire' || id.includes('Flowers_') || id === 'Idle' || id === 'Walk' ||
+        id.includes('Marine')) {
+      return 'animated_entities';
+    }
+    
+    // Consumable items
+    if (id.includes('_dish') || id.includes('bread') || id.includes('burger') || 
+        id.includes('pizza') || id.includes('cake') || id.includes('pie') ||
+        id.includes('taco') || id.includes('waffle') || id.includes('bacon') ||
+        id.includes('curry') || id.includes('donut') || id.includes('egg') ||
+        id.includes('fries') || id.includes('hotdog') || id.includes('icecream') ||
+        id.includes('jelly') || id.includes('jam') || id.includes('meat') ||
+        id.includes('nacho') || id.includes('omlet') || id.includes('pancake') ||
+        id.includes('popcorn') || id.includes('salmon') || id.includes('sandwich') ||
+        id.includes('steak') || id.includes('sushi') || id.includes('ramen') ||
+        id.includes('spaghetti')) {
+      return 'consumable_items';
+    }
+    
+    // UI Icons
+    if (id.includes('Google') || id.includes('Microsoft') || id.includes('Facebook') || 
+        id.includes('Instagram') || id.includes('Spotify') || id.includes('Netflix') ||
+        id.includes('Amazon') || id.includes('Discord') || id.includes('Twitter') ||
+        id.includes('YouTube') || id.includes('Chrome') || id.includes('Firefox') ||
+        id.includes('Telegram') || id.includes('WhatsApp') || id.includes('Zoom') ||
+        id.includes('Slack') || id.includes('Trello') || id.includes('Steam')) {
+      return 'ui_icons';
+    }
+    
+    // Building (legacy folder)
+    if (id === 'muro' || id === 'piso') {
+      return 'structures'; // Redirigir al structures
+    }
+    
+    // Dialogs
+    if (id.includes('dialog')) {
+      return 'dialogs';
+    }
+    
+    // Fallback
     return 'environmental_objects';
   }
 
@@ -495,36 +626,34 @@ export class AssetManager {
   }
 
   /**
-   * Precargar assets esenciales para el juego
+   * Precargar assets esenciales basados en assets existentes
    */
   async preloadEssentialAssets(): Promise<void> {
-    console.log('🎨 Precargando assets esenciales...');
+    console.log('🎨 Precargando assets esenciales dinámicos...');
 
-    const essentialAssets = [
-      // Terreno básico
-      'cesped1',
-      'cesped2', 
-      'Grass_Middle',
-      'TexturedGrass',
-      'tile_0533_suelo_piedra',
-
-      // Estructuras básicas
-      'House',
-      'House_Hay_1',
-      'muros1',
-
-      // Naturaleza básica
-      'Oak_Tree',
-      'Tree_Emerald_1',
-      'Bush_Emerald_1',
-      'Rock_Brown_1',
-
-      // Infraestructura básica
-      'Path_Middle',
-
-      // Agua básica
-      'Water_Middle'
-    ];
+    const analysis = await loadAssetAnalysis();
+    const essentialAssets: string[] = [];
+    
+    // Seleccionar algunos assets esenciales de cada categoría
+    if (analysis.categories.TERRAIN_TILES?.grass) {
+      essentialAssets.push(...analysis.categories.TERRAIN_TILES.grass.slice(0, 5));
+    }
+    
+    if (analysis.categories.STRUCTURES?.houses) {
+      essentialAssets.push(...analysis.categories.STRUCTURES.houses.slice(0, 3));
+    }
+    
+    if (analysis.categories.NATURAL_ELEMENTS?.trees) {
+      essentialAssets.push(...analysis.categories.NATURAL_ELEMENTS.trees.slice(0, 3));
+    }
+    
+    if (analysis.categories.WATER?.tiles) {
+      essentialAssets.push(...analysis.categories.WATER.tiles);
+    }
+    
+    if (analysis.categories.INFRASTRUCTURE?.paths) {
+      essentialAssets.push(...analysis.categories.INFRASTRUCTURE.paths);
+    }
 
     await Promise.all(essentialAssets.map(id => this.loadAsset(id)));
     console.log(`✅ Precargados ${essentialAssets.length} assets esenciales`);
@@ -554,13 +683,85 @@ export class AssetManager {
    */
   async getAvailableFolders(): Promise<string[]> {
     try {
-      // Intentar usar el sprite animation manager para obtener carpetas disponibles
-      const manifestModule = await import('../generated/asset-manifest');
-      return Object.keys(manifestModule.ASSET_MANIFEST);
+      const analysis = await loadAssetAnalysis();
+      return Object.keys(analysis.assetMap || {});
     } catch {
-      // Fallback a lista conocida con los nuevos nombres
-      return ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'animated_entities', 'ui_icons', 'consumable_items', 'environmental_objects', 'furniture_objects', 'dialogs'];
+      // Fallback a lista conocida
+      return ['terrain_tiles', 'structures', 'natural_elements', 'infrastructure', 'water', 'environmental_objects', 'furniture_objects'];
     }
+  }
+
+  /**
+   * Obtener todas las categorías disponibles dinámicamente
+   */
+  async getAvailableCategories(): Promise<string[]> {
+    try {
+      const analysis = await loadAssetAnalysis();
+      return Object.keys(analysis.categories || {});
+    } catch {
+      return ['TERRAIN_TILES', 'STRUCTURES', 'NATURAL_ELEMENTS', 'INFRASTRUCTURE', 'WATER', 'ENVIRONMENTAL_OBJECTS'];
+    }
+  }
+
+  /**
+   * Obtener assets aleatorios de una categoría específica
+   */
+  async getRandomAssetsFromCategory(category: string, count: number = 1): Promise<Asset[]> {
+    const analysis = await loadAssetAnalysis();
+    const categoryData = analysis.categories[category];
+    
+    if (!categoryData) return [];
+    
+    const allAssets = Object.values(categoryData as Record<string, string[]> || {}).flat();
+    const shuffled = allAssets.sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, count);
+    
+    // Filtrar y cargar solo assets que realmente existen
+    const validAssets: Asset[] = [];
+    for (const id of selected) {
+      try {
+        const asset = await this.loadAsset(id);
+        validAssets.push(asset);
+      } catch (error) {
+        console.warn(`⚠️ Asset ${id} no existe, omitiendo...`);
+      }
+    }
+    
+    return validAssets;
+  }
+
+  /**
+   * Validar que un asset existe antes de intentar cargarlo
+   */
+  async validateAssetExists(assetId: string): Promise<boolean> {
+    try {
+      await this.loadAsset(assetId);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Obtener lista de assets existentes de una categoría (solo IDs validados)
+   */
+  async getValidatedAssetsFromCategory(category: string): Promise<string[]> {
+    const analysis = await loadAssetAnalysis();
+    const categoryData = analysis.categories[category];
+    
+    if (!categoryData) return [];
+    
+    const allAssets = Object.values(categoryData as Record<string, string[]> || {}).flat();
+    const validatedAssets: string[] = [];
+    
+    // Validar cada asset antes de incluirlo
+    for (const assetId of allAssets) {
+      if (await this.validateAssetExists(assetId)) {
+        validatedAssets.push(assetId);
+      }
+    }
+    
+    return validatedAssets;
   }
 }
 
