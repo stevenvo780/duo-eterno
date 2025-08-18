@@ -117,11 +117,4 @@ export const safeSave = (state: GameState): void => {
   }
 };
 
-export const clearPersisted = (): void => {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-
-    logStorage.warn('Failed to clear persisted state', error);
-  }
-};
+// Eliminado: clearPersisted no utilizado

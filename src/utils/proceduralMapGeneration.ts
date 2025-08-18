@@ -304,7 +304,8 @@ export function checkCollision(
 }
 
 
-function selectThemeAndLayout(seed: string): {
+// CORRIGIDO: Exportar funciones para evitar errores de TS6133
+export function selectThemeAndLayout(seed: string): {
   theme: keyof typeof ARCHITECTURAL_THEMES;
   layout: string;
 } {
@@ -324,54 +325,7 @@ function selectThemeAndLayout(seed: string): {
 }
 
 
-/* Removed unused export generateHouseLayout
-export function generateHouseLayout(seed: string): {
-  rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>;
-  hallways: Array<{ x: number; y: number; width: number; height: number }>;
-  theme: keyof typeof ARCHITECTURAL_THEMES;
-} {
-  const { theme, layout } = selectThemeAndLayout(seed);
-  const themeConfig = ARCHITECTURAL_THEMES[theme];
-  
-
-  let seedValue = seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-  const seededRandom = () => {
-    seedValue = (seedValue * 9301 + 49297) % 233280;
-    return seedValue / 233280;
-  };
-
-
-  const selectedRooms = selectRoomsForLayout(layout, seededRandom);
-  
-
-  let rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
-  
-  switch (layout) {
-    case LAYOUT_ALGORITHMS.TRADITIONAL_L:
-      rooms = generateTraditionalLLayout(selectedRooms, themeConfig, seededRandom);
-      break;
-    case LAYOUT_ALGORITHMS.COURTYARD:
-      rooms = generateCourtyardLayout(selectedRooms, themeConfig);
-      break;
-    case LAYOUT_ALGORITHMS.LINEAR:
-      rooms = generateLinearLayout(selectedRooms, themeConfig, seededRandom);
-      break;
-    case LAYOUT_ALGORITHMS.U_SHAPED:
-      rooms = generateUShapedLayout(selectedRooms, themeConfig);
-      break;
-    case LAYOUT_ALGORITHMS.COMPACT_GRID:
-      rooms = generateCompactGridLayout(selectedRooms, themeConfig);
-      break;
-    default:
-      rooms = generateTraditionalLLayout(selectedRooms, themeConfig, seededRandom);
-  }
-
-  return { rooms, hallways: [], theme };
-}
-*/
-
-
-function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomType[] {
+export function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomType[] {
   const allRoomTypes = Object.keys(ROOM_TYPES) as RoomType[];
   const selectedRooms: RoomType[] = [];
   
@@ -430,7 +384,7 @@ function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomT
 }
 
 
-function generateTraditionalLLayout(
+export function generateTraditionalLLayout(
   roomTypes: RoomType[], 
   themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
   seededRandom: () => number
@@ -478,7 +432,7 @@ function generateTraditionalLLayout(
   return rooms;
 }
 
-function generateCourtyardLayout(
+export function generateCourtyardLayout(
   roomTypes: RoomType[], 
   themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
@@ -510,7 +464,7 @@ function generateCourtyardLayout(
   return rooms;
 }
 
-function generateLinearLayout(
+export function generateLinearLayout(
   roomTypes: RoomType[], 
   themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
   seededRandom: () => number
@@ -550,106 +504,6 @@ function generateLinearLayout(
   
   return rooms;
 }
-
-function generateUShapedLayout(
-  roomTypes: RoomType[], 
-  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
-): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
-  const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
-  
-
-  const leftWing = roomTypes.slice(0, Math.ceil(roomTypes.length / 3));
-  const centerWing = roomTypes.slice(Math.ceil(roomTypes.length / 3), Math.ceil(2 * roomTypes.length / 3));
-  const rightWing = roomTypes.slice(Math.ceil(2 * roomTypes.length / 3));
-  
-
-  [leftWing, centerWing, rightWing].forEach((wing, wingIndex) => {
-    wing.forEach((roomType, roomIndex) => {
-      const roomConfig = ROOM_TYPES[roomType];
-      const size = getAdjustedRoomSize(roomConfig.baseSize, themeConfig);
-      
-      let roomBounds: { x: number; y: number; width: number; height: number };
-      
-      switch (wingIndex) {
-        case 0:
-          roomBounds = {
-            x: MAP_CONFIG.padding,
-            y: MAP_CONFIG.padding + roomIndex * (size.height + 20),
-            width: size.width,
-            height: size.height
-          };
-          break;
-        case 1:
-          roomBounds = {
-            x: MAP_CONFIG.padding + size.width + 40,
-            y: MAP_CONFIG.height - MAP_CONFIG.padding - size.height,
-            width: size.width,
-            height: size.height
-          };
-          break;
-        case 2:
-          roomBounds = {
-            x: MAP_CONFIG.width - MAP_CONFIG.padding - size.width,
-            y: MAP_CONFIG.padding + roomIndex * (size.height + 20),
-            width: size.width,
-            height: size.height
-          };
-          break;
-        default:
-          roomBounds = {
-            x: MAP_CONFIG.padding,
-            y: MAP_CONFIG.padding,
-            width: size.width,
-            height: size.height
-          };
-      }
-      
-      rooms.push({ room: roomType, bounds: roomBounds });
-    });
-  });
-  
-  return rooms;
-}
-
-function generateCompactGridLayout(
-  roomTypes: RoomType[], 
-  themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
-): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
-  const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
-  
-
-  const gridCols = Math.ceil(Math.sqrt(roomTypes.length));
-  const gridRows = Math.ceil(roomTypes.length / gridCols);
-  
-  const cellWidth = (MAP_CONFIG.width - 2 * MAP_CONFIG.padding) / gridCols;
-  const cellHeight = (MAP_CONFIG.height - 2 * MAP_CONFIG.padding) / gridRows;
-  
-  roomTypes.forEach((roomType, index) => {
-    const row = Math.floor(index / gridCols);
-    const col = index % gridCols;
-    
-    const roomConfig = ROOM_TYPES[roomType];
-    let size = getAdjustedRoomSize(roomConfig.baseSize, themeConfig);
-    
-
-    size = {
-      width: Math.min(size.width, cellWidth - 20),
-      height: Math.min(size.height, cellHeight - 20)
-    };
-    
-    const roomBounds = {
-      x: MAP_CONFIG.padding + col * cellWidth + (cellWidth - size.width) / 2,
-      y: MAP_CONFIG.padding + row * cellHeight + (cellHeight - size.height) / 2,
-      width: size.width,
-      height: size.height
-    };
-    
-    rooms.push({ room: roomType, bounds: roomBounds });
-  });
-  
-  return rooms;
-}
-
 
 function getAdjustedRoomSize(
   baseSize: { width: number; height: number }, 
@@ -755,254 +609,6 @@ function getPositionAroundCourtyard(
   }
 }
 
-
-/* Removed unused export placeDecorations
-export function placeDecorations(
-  rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>,
-  seed: string,
-  theme: keyof typeof ARCHITECTURAL_THEMES
-): MapElement[] {
-  let seedValue = seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0) + 12345;
-  const seededRandom = () => {
-    seedValue = (seedValue * 9301 + 49297) % 233280;
-    return seedValue / 233280;
-  };
-
-  const decorations: MapElement[] = [];
-  const occupiedSpaces: Array<{ x: number; y: number; width: number; height: number }> = [];
-  const themeConfig = ARCHITECTURAL_THEMES[theme];
-
-  rooms.forEach(({ room, bounds }) => {
-    const roomConfig = ROOM_TYPES[room];
-    const decorationConfig = roomConfig.decorations;
-    
-
-    decorationConfig.essential.forEach((decorationType, index) => {
-      const decorationSize = getDecorationSize(decorationType);
-      let attempts = 0;
-      
-      while (attempts < 30) {
-        const decorationBounds = {
-          x: bounds.x + 15 + seededRandom() * (bounds.width - decorationSize.width - 30),
-          y: bounds.y + 15 + seededRandom() * (bounds.height - decorationSize.height - 30),
-          width: decorationSize.width,
-          height: decorationSize.height
-        };
-
-        const hasCollision = occupiedSpaces.some(space => 
-          checkCollision(decorationBounds, space, 8)
-        );
-
-        if (!hasCollision) {
-          decorations.push({
-            id: `${decorationType}_${room}_essential_${index}`,
-            type: getDecorationMapType(decorationType),
-            position: { x: decorationBounds.x, y: decorationBounds.y },
-            size: { width: decorationBounds.width, height: decorationBounds.height },
-            color: getThemedDecorationColor(decorationType, theme)
-          });
-          
-          occupiedSpaces.push(decorationBounds);
-          break;
-        }
-        
-        attempts++;
-      }
-    });
-
-
-    const numOptional = themeConfig.decorationStyle === 'minimal' ? 1 : 
-                       themeConfig.decorationStyle === 'compact' ? 2 : 3;
-    
-    for (let i = 0; i < numOptional && i < decorationConfig.optional.length; i++) {
-      const decorationType = decorationConfig.optional[Math.floor(seededRandom() * decorationConfig.optional.length)];
-      const decorationSize = getDecorationSize(decorationType);
-      let attempts = 0;
-      
-      while (attempts < 20) {
-        const decorationBounds = {
-          x: bounds.x + 10 + seededRandom() * (bounds.width - decorationSize.width - 20),
-          y: bounds.y + 10 + seededRandom() * (bounds.height - decorationSize.height - 20),
-          width: decorationSize.width,
-          height: decorationSize.height
-        };
-
-        const hasCollision = occupiedSpaces.some(space => 
-          checkCollision(decorationBounds, space, 5)
-        );
-
-        if (!hasCollision) {
-          decorations.push({
-            id: `${decorationType}_${room}_optional_${i}`,
-            type: getDecorationMapType(decorationType),
-            position: { x: decorationBounds.x, y: decorationBounds.y },
-            size: { width: decorationBounds.width, height: decorationBounds.height },
-            color: getThemedDecorationColor(decorationType, theme)
-          });
-          
-          occupiedSpaces.push(decorationBounds);
-          break;
-        }
-        
-        attempts++;
-      }
-    }
-
-
-    const themedDecorations = decorationConfig.themed[theme.toLowerCase() as keyof typeof decorationConfig.themed] || [];
-    if (themedDecorations.length > 0) {
-      const decorationType = themedDecorations[Math.floor(seededRandom() * themedDecorations.length)];
-      const decorationSize = getDecorationSize(decorationType);
-      let attempts = 0;
-      
-      while (attempts < 15) {
-        const decorationBounds = {
-          x: bounds.x + 10 + seededRandom() * (bounds.width - decorationSize.width - 20),
-          y: bounds.y + 10 + seededRandom() * (bounds.height - decorationSize.height - 20),
-          width: decorationSize.width,
-          height: decorationSize.height
-        };
-
-        const hasCollision = occupiedSpaces.some(space => 
-          checkCollision(decorationBounds, space, 5)
-        );
-
-        if (!hasCollision) {
-          decorations.push({
-            id: `${decorationType}_${room}_themed`,
-            type: getDecorationMapType(decorationType),
-            position: { x: decorationBounds.x, y: decorationBounds.y },
-            size: { width: decorationBounds.width, height: decorationBounds.height },
-            color: getThemedDecorationColor(decorationType, theme)
-          });
-          
-          occupiedSpaces.push(decorationBounds);
-          break;
-        }
-        
-        attempts++;
-      }
-    }
-  });
-
-  return decorations;
-}
-*/
-
-
-function getThemedDecorationColor(decorationType: string, theme: keyof typeof ARCHITECTURAL_THEMES): string {
-  const baseColors = getDecorationColor(decorationType);
-  
-
-  switch (theme) {
-    case 'MODERN':
-      return baseColors === '#64748b' ? '#9CA3AF' : baseColors;
-    case 'RUSTIC':
-      return baseColors === '#64748b' ? '#8B4513' : baseColors;
-    case 'ECOLOGICAL':
-      return baseColors === '#64748b' ? '#059669' : baseColors;
-    case 'URBAN':
-      return baseColors === '#64748b' ? '#6B7280' : baseColors;
-    default:
-      return baseColors;
-  }
-}
-
-
-function getDecorationSize(type: string): { width: number; height: number } {
-  const sizes: Record<string, { width: number; height: number }> = {
-
-    furniture_bed_simple: { width: 32, height: 20 },
-    furniture_bed_double: { width: 32, height: 24 },
-    furniture_sofa_modern: { width: 32, height: 16 },
-    furniture_sofa_classic: { width: 32, height: 18 },
-    furniture_table_coffee: { width: 24, height: 16 },
-    furniture_table_dining: { width: 32, height: 20 },
-    
-
-    plant_small: { width: 12, height: 12 },
-    plant_tree: { width: 32, height: 40 },
-    plant_flower: { width: 16, height: 16 },
-    
-
-    deco_lamp: { width: 12, height: 20 },
-    deco_clock: { width: 16, height: 16 },
-    deco_bookshelf: { width: 28, height: 32 },
-    
-
-    flower: { width: 8, height: 8 },
-    banco: { width: 24, height: 12 },
-    lamp: { width: 16, height: 24 },
-    fuente: { width: 32, height: 32 },
-    arbol: { width: 25, height: 60 }
-  };
-  
-  return sizes[type] || { width: 16, height: 16 };
-}
-
-function getDecorationMapType(decorationType: string): MapElement['type'] {
-  const typeMap: Record<string, MapElement['type']> = {
-
-    furniture_bed_simple: 'rest_zone',
-    furniture_bed_double: 'rest_zone',
-    furniture_sofa_modern: 'social_zone',
-    furniture_sofa_classic: 'social_zone',
-    furniture_table_coffee: 'social_zone',
-    furniture_table_dining: 'food_zone',
-    
-
-    plant_small: 'food_zone',
-    plant_tree: 'obstacle',
-    plant_flower: 'food_zone',
-    
-
-    deco_lamp: 'play_zone',
-    deco_clock: 'play_zone',
-    deco_bookshelf: 'play_zone',
-    
-
-    flower: 'food_zone',
-    banco: 'rest_zone',
-    lamp: 'play_zone',
-    fuente: 'social_zone',
-    arbol: 'obstacle'
-  };
-  
-  return typeMap[decorationType] || 'obstacle';
-}
-
-function getDecorationColor(decorationType: string): string {
-  const colors: Record<string, string> = {
-
-    furniture_bed_simple: '#8B4513',
-    furniture_bed_double: '#654321',
-    furniture_sofa_modern: '#4169E1',
-    furniture_sofa_classic: '#DC143C',
-    furniture_table_coffee: '#DEB887',
-    furniture_table_dining: '#A0522D',
-    
-
-    plant_small: '#228B22',
-    plant_tree: '#006400',
-    plant_flower: '#ff6b9d',
-    
-
-    deco_lamp: '#f2d450',
-    deco_clock: '#B5A642',
-    deco_bookshelf: '#8B4513',
-    
-
-    flower: '#ff6b9d',
-    banco: '#9e684c',
-    lamp: '#f2d450',
-    fuente: '#63bda4',
-    arbol: '#059669'
-  };
-  
-  return colors[decorationType] || '#64748b';
-}
-
-
 export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElements: MapElement[] } {
   console.log('🌿 Generando mapa con algoritmos orgánicos...');
   
@@ -1015,57 +621,3 @@ export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElemen
     naturalClustering: true
   });
 }
-
-
-/* Removed unused export getThemedRoomColor
-export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITECTURAL_THEMES): string {
-  const themeConfig = ARCHITECTURAL_THEMES[theme];
-  
-
-  const colorMap: Record<Zone['type'], keyof typeof themeConfig.colors> = {
-    food: 'primary',
-    rest: 'secondary',
-    social: 'accent',
-    play: 'accent',
-    work: 'secondary',
-    comfort: 'primary',
-    energy: 'primary',
-    kitchen: 'primary',
-    bedroom: 'secondary',
-    living: 'accent',
-    bathroom: 'secondary',
-    office: 'secondary',
-    gym: 'primary',
-    library: 'secondary',
-    recreation: 'accent'
-  };
-  
-  return themeConfig.colors[colorMap[zoneType] || 'primary'];
-}
-*/
-
-
-
-/* Removed unused export getZoneEffects
-export function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
-  const effects: Record<Zone['type'], Zone['effects']> = {
-    food: { hunger: 30, happiness: 12, energy: 5 },
-    rest: { sleepiness: 35, energy: 30, happiness: 15 },
-    play: { boredom: 45, happiness: 25, loneliness: 20 },
-    social: { loneliness: 40, happiness: 20, boredom: 15 },
-    work: { money: 80 },
-    comfort: { happiness: 18, boredom: 20, loneliness: 15 },
-    energy: { energy: 50, sleepiness: 25, happiness: 10 },
-    kitchen: { hunger: 25, happiness: 10 },
-    bedroom: { sleepiness: 40, energy: 25 },
-    living: { happiness: 15, loneliness: 10 },
-    bathroom: { health: 10, happiness: 5 },
-    office: { money: 60, boredom: -5 },
-    gym: { energy: -10, health: 20, happiness: 15 },
-    library: { happiness: 10, boredom: 30 },
-    recreation: { happiness: 20, boredom: 25 }
-  };
-  
-  return effects[zoneType] || {};
-}
-*/

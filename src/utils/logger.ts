@@ -139,12 +139,6 @@ export const logAutopoiesis = {
   error: (msg: string, data?: unknown) => logger.error('autopoiesis', msg, data),
 };
 
-export const logMovement = {
-  debug: (msg: string, data?: unknown) => logger.debug('movement', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('movement', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('movement', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('movement', msg, data),
-};
 
 export const logZones = {
   debug: (msg: string, data?: unknown) => logger.debug('zones', msg, data),
@@ -160,19 +154,7 @@ export const logAI = {
   error: (msg: string, data?: unknown) => logger.error('ai', msg, data),
 };
 
-export const logUpgrades = {
-  debug: (msg: string, data?: unknown) => logger.debug('upgrades', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('upgrades', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('upgrades', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('upgrades', msg, data),
-};
 
-export const logRender = {
-  debug: (msg: string, data?: unknown) => logger.debug('render', msg, data),
-  info: (msg: string, data?: unknown) => logger.info('render', msg, data),
-  warn: (msg: string, data?: unknown) => logger.warn('render', msg, data),
-  error: (msg: string, data?: unknown) => logger.error('render', msg, data),
-};
 
 export const logStorage = {
   debug: (msg: string, data?: unknown) => logger.debug('storage', msg, data),
