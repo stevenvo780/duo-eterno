@@ -25,20 +25,10 @@ const EntityDialogueSystem: React.FC = () => {
       
       if (entity) {
         const speaker = getSpeakerForEntity(entity.id);
-        
 
-
-        const canvasWidth = 1000;
-        const canvasHeight = 600;
-        const gameWidth = 800;
-        const gameHeight = 600;
-        
-
-        const offsetX = (canvasWidth - gameWidth) / 2;
-        const offsetY = (canvasHeight - gameHeight) / 2;
-        
-        const cssX = offsetX + entity.position.x + 20;
-        const cssY = offsetY + entity.position.y + 20;
+        // Ahora el canvas ocupa toda la pantalla, usar coordenadas directamente
+        const cssX = entity.position.x;
+        const cssY = entity.position.y;
         
         const newDialogue: ActiveDialogue = {
           id: `${entity.id}-${Date.now()}`,

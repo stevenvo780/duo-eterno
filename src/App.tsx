@@ -59,9 +59,6 @@ const GameContent: React.FC = React.memo(() => {
     }}>
       <div style={{
         flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
         position: 'relative',
         overflow: 'hidden'

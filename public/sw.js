@@ -1,3 +1,20 @@
+/**
+ * Service Worker para Duo Eterno.
+ *
+ * Estrategia de caché
+ * -------------------
+ * - Precache de rutas críticas (App Shell) en la fase `install`.
+ * - `activate` realiza limpieza de versiones antiguas para evitar acumulación.
+ * - `fetch` aplica Cache-First con actualización en segundo plano:
+ *   • Si existe en caché ⇒ responde inmediatamente (latencia mínima).
+ *   • Si no ⇒ va a red, responde y guarda copia en caché para el futuro.
+ *   • Fallback: ante fallo de red, devuelve `/index.html` para SPA routing.
+ *
+ * Notas de consistencia
+ * ---------------------
+ * - Cambiar `CACHE_NAME` invalida todo el caché previa activación.
+ * - Sólo maneja peticiones GET del mismo origen para no interferir con API externas.
+ */
 const CACHE_NAME = 'duo-eterno-v1';
 const PRECACHE_URLS = [
   '/',
@@ -39,4 +56,3 @@ self.addEventListener('fetch', event => {
     })
   );
 });
-

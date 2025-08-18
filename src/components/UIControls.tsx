@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect } from '../utils/interactions';
 import { getRandomDialogue } from '../utils/dialogues';
+import { getDialogueForInteraction } from '../utils/dialogueSelector';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
 import EntityPanel from './EntityPanel';

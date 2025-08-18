@@ -1,3 +1,6 @@
+// Configuración ESLint para TypeScript + React en Duo Eterno.
+// Objetivo: feedback temprano sobre problemas comunes (imports/vars sin usar,
+// reglas React Hooks) y compatibilidad con tooling (ts-prune, scripts de limpieza).
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -26,6 +29,9 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
 
+      // Política de no-usados:
+      // - Prefijo `_` indica uso intencionalmente ignorado (alineado con script fix-unused-vars).
+      // - `unused-imports` limpia imports huérfanos incluso si el tipo/JSX no los usa.
       '@typescript-eslint/no-unused-vars': ['error', { 
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',

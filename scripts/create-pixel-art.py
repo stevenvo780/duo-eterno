@@ -27,6 +27,9 @@ from PIL import Image, ImageDraw
 import argparse
 
 # Paleta DB32 (DawnBringer 32 colors) - colores principales
+# Referencia: una paleta ampliamente utilizada en pixel art por su contraste y
+# balance tonal. Se lista como una secuencia de tuplas RGB. No se aplica
+# dithering ni cuantización aquí; se usa directamente para rellenos simples.
 DB32_PALETTE = [
     (20, 12, 28),      # 0 - Negro profundo
     (68, 36, 52),      # 1 - Marrón oscuro

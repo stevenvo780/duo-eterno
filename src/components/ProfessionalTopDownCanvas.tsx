@@ -96,7 +96,9 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
             allTilesMap.set(key, tile);
           });
           
-          setLoadingProgress(((i + 1) / spritesheets.length) * 80);
+          // Solo actualizar progreso si es diferente para evitar re-renders innecesarios
+          const newProgress = ((i + 1) / spritesheets.length) * 80;
+          setLoadingProgress(prev => prev !== newProgress ? newProgress : prev);
           
         } catch (error) {
           console.warn(`⚠️ Error cargando ${spritesheetName}:`, error);
@@ -140,7 +142,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
         { name: 'entidad_square_sad_anim', category: 'entities' }
       ]);
       
-      setLoadingProgress(100);
+      setLoadingProgress(prev => prev !== 100 ? 100 : prev);
       
       console.log('✅ Assets profesionales cargados:', {
         totalTiles: allTilesMap.size,
@@ -157,7 +159,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       console.error('❌ Error en carga profesional:', error);
       setAssetsLoaded(true);
     }
-  }, [assetsLoaded, preloadAnimations]);
+  }, [preloadAnimations]); // Solo preloadAnimations como dependencia
 
 
   const generateProfessionalTileMap = useCallback(() => {
@@ -508,17 +510,24 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   }, [onEntityClick, gameState.entities, zoom, panX, panY]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ 
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%'
+    }}>
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         onClick={handleCanvasClick}
         style={{ 
-          border: '2px solid #8B4513',
-          borderRadius: '8px',
           cursor: onEntityClick ? 'pointer' : 'default',
-          background: '#2d5a27'
+          background: '#2d5a27',
+          display: 'block',
+          width: '100%',
+          height: '100%'
         }}
       />
       
@@ -536,8 +545,8 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
           textAlign: 'center',
           fontFamily: 'monospace'
         }}>
-          <div style={{ fontSize: '18px', marginBottom: '10px' }}>
-            🎨 Cargando Mundo Profesional
+          <div style={{ fontSize: '18px', marginBottom: '10px', fontFamily: 'serif' }}>
+            🌌 Inicializando Universo Cuántico
           </div>
           <div style={{ 
             width: '200px', 

@@ -90,3 +90,46 @@ export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
 export const getDialogueCount = (): number => {
   return dialogueData.length;
 };
+
+// Mapeo de tipos de interacción a emociones/actividades del chat
+export const getDialogueForInteraction = (
+  interactionType: string,
+  entityId: string
+): DialogueEntry | null => {
+  if (dialogueData.length === 0) return null;
+
+  const speaker = getSpeakerForEntity(entityId);
+  
+  // Mapeo de interacciones a emociones y contextos del chat
+  const interactionMap: Record<string, { emotions: string[], activities: string[] }> = {
+    'feed': {
+      emotions: ['LOVE', 'PLAYFUL', 'NEUTRAL'],
+      activities: ['SOCIALIZING'] // Momentos de cuidado/alimentación en el chat
+    },
+    'play': {
+      emotions: ['PLAYFUL', 'LOVE', 'CURIOUS'],
+      activities: ['SOCIALIZING'] // Momentos de juego y diversión
+    },
+    'comfort': {
+      emotions: ['LOVE', 'SADNESS', 'NEUTRAL'],
+      activities: ['SOCIALIZING'] // Momentos de consuelo y apoyo
+    },
+    'disturb': {
+      emotions: ['SADNESS', 'NEUTRAL'],
+      activities: ['SOCIALIZING'] // Momentos de molestia o frustración
+    },
+    'nourish': {
+      emotions: ['LOVE', 'PLAYFUL'],
+      activities: ['SOCIALIZING'] // Momentos de amor y nutrición mutua
+    }
+  };
+
+  const config = interactionMap[interactionType.toLowerCase()];
+  if (!config) return null;
+
+  // Buscar diálogos que coincidan con el contexto de la interacción
+  const targetEmotion = config.emotions[Math.floor(Math.random() * config.emotions.length)];
+  const targetActivity = config.activities[Math.floor(Math.random() * config.activities.length)];
+
+  return getNextDialogue(speaker, targetEmotion, targetActivity);
+};
