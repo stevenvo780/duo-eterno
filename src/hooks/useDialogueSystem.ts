@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useGame } from './useGame';
-import { getRandomDialogue } from '../utils/dialogues';
 import {
   loadDialogueData,
   getNextDialogue,
@@ -8,7 +7,6 @@ import {
   getEmotionForActivity,
   getDialogueForInteraction,
 } from '../utils/dialogueSelector';
-import type { DialogueEntry } from '../types';
 
 export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();

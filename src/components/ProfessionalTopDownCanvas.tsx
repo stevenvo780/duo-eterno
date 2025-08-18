@@ -52,8 +52,8 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
 
   // Usar zones y mapElements directamente del GameContext
-  const zones = gameState.zones || [];
-  const mapElements = gameState.mapElements || [];
+  const zones = useMemo(() => gameState.zones || [], [gameState.zones]);
+  const mapElements = useMemo(() => gameState.mapElements || [], [gameState.mapElements]);
 
   // Cargar assets esenciales
   useEffect(() => {
@@ -137,7 +137,7 @@ const ProfessionalTopDownCanvas: React.FC<Props> = ({
     // Intentar cargar muebles reales primero
     try {
       await assetManager.loadAssetsByCategory('FURNITURE');
-    } catch (error) {
+    } catch (_error) {
       console.warn('⚠️ No se pudieron cargar muebles, usando assets básicos');
     }
 
