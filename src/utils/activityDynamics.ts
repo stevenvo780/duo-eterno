@@ -190,6 +190,10 @@ export const calculateActivityPriority = (
   currentStats: EntityStats,
   timeSpentInActivity: number = 0
 ): number => {
+  // Prioridad por necesidades con ponderación no lineal:
+  // w(v; α)=1-(min(100,max(0,v))/100)^α modela mayor sensibilidad en déficit altos.
+  // Se combinan efectos por actividad (p.ej., hambre→COOKING, energy→RESTING)
+  // y eficiencia temporal tipo curva (rendimientos decrecientes fuera de óptimo).
   const effects = ACTIVITY_EFFECTS[activity];
   if (!effects) {
     console.warn(`No effects found for activity: ${activity}`);

@@ -1,8 +1,15 @@
 /**
  * 🔷 GENERACIÓN DE DIAGRAMAS DE VORONOI
- * 
- * Crea regiones irregulares para eliminar la apariencia de grid geométrico
- * Utilizado en RPGs como Dwarf Fortress, Prison Architect, etc.
+ *
+ * Crea regiones irregulares con distribución orgánica.
+ *
+ * Notas científicas
+ * -----------------
+ * - Semillas: muestreo tipo Poisson-disk aproximado para separación mínima.
+ * - Relajación de Lloyd: desplaza puntos hacia centroides aproximados para células
+ *   más regulares sin perder organicidad.
+ * - Área: fórmula de lazo (shoelace) para polígono simple.
+ * - Vecinos: aproximación por umbral de distancia entre centros.
  */
 
 import type { Point } from './noiseGeneration';
@@ -69,7 +76,8 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Generar puntos semilla usando Poisson disk sampling modificado
+   * Genera puntos semilla con Poisson-disk aproximado en rejilla y bias de habitabilidad.
+   * Complejidad O(k·N) con chequeo local en vecinos de celda (ventana 5x5).
    */
   private generateOrganicSeedPoints(): Point[] {
     const points: Point[] = [];
@@ -123,7 +131,8 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Generar punto candidato con bias orgánico
+   * Elige un candidato entre varios muestreados y aplica un score:
+   * habitability (ruido Perlin) y cercanía al centro (mezcla 70/30).
    */
   private generateCandidatePoint(seededRandom: () => number): Point {
     const { width, height, boundaryPadding } = this.config;
@@ -166,7 +175,7 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Verificar si un punto es válido (no está muy cerca de otros)
+   * Valida separación mínima usando rejilla de aceleración (cellSize=r/√2).
    */
   private isValidPoint(
     candidate: Point,
@@ -203,7 +212,8 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Aplicar Lloyd's relaxation para mejorar la distribución
+   * Lloyd's relaxation: aproxima el centroide de la célula evaluando muestras
+   * radiales y promediando los puntos más cercanos al centro.
    */
   private lloydRelaxation(points: Point[]): Point[] {
     let currentPoints = [...points];
@@ -224,7 +234,8 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Calcular centroide aproximado de una célula de Voronoi
+   * Centroide aproximado: muestrea puntos en un radio y conserva los que
+   * pertenecen a la región del centro en diagrama de Voronoi implícito.
    */
   private calculateCellCentroid(center: Point, allPoints: Point[]): Point {
     const sampleSize = 50;
@@ -303,7 +314,8 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Calcular vertices aproximados de una célula
+   * Vértices aproximados: proyecta rayos equiespaciados y recorta según
+   * bisectrices con puntos vecinos (aproximación distancia mínima).
    */
   private calculateCellVertices(center: Point, allPoints: Point[]): Point[] {
     const vertices: Point[] = [];
@@ -362,7 +374,7 @@ export class VoronoiGenerator {
   }
 
   /**
-   * Calcular área aproximada de una célula
+   * Área por fórmula de lazo (shoelace). Requiere vértices ordenados.
    */
   private calculateCellArea(vertices: Point[]): number {
     if (vertices.length < 3) return 0;

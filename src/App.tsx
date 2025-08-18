@@ -5,6 +5,7 @@ import ProfessionalTopDownCanvas from './components/ProfessionalTopDownCanvas';
 import UIControls from './components/UIControls';
 import DialogOverlay from './components/DialogOverlay';
 import EntityDialogueSystem from './components/EntityDialogueSystem';
+import IntroNarrative from './components/IntroNarrative';
 import { useGameLoop } from './hooks/useGameLoop';
 import { useDialogueSystem } from './hooks/useDialogueSystem';
 import { useZoneEffects } from './hooks/useZoneEffects';
@@ -14,6 +15,7 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
@@ -47,6 +49,10 @@ const GameContent: React.FC = React.memo(() => {
     setSelectedEntityId(entityId);
   }, []);
 
+  const handleIntroComplete = React.useCallback(() => {
+    setShowIntro(false);
+  }, []);
+
   return (
     <div style={{
       width: '100vw',
@@ -57,6 +63,11 @@ const GameContent: React.FC = React.memo(() => {
       overflow: 'hidden',
       fontFamily: 'system-ui, sans-serif'
     }}>
+      {/* Narrativa de introducción */}
+      {showIntro && (
+        <IntroNarrative onComplete={handleIntroComplete} />
+      )}
+
       <div style={{
         flex: 1,
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
@@ -75,6 +86,7 @@ const GameContent: React.FC = React.memo(() => {
       <UIControls 
         selectedEntityId={selectedEntityId}
         onEntitySelect={handleEntitySelect}
+        onShowIntro={() => setShowIntro(true)}
       />
     </div>
   );

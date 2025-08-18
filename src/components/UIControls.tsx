@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import { applyInteractionEffect } from '../utils/interactions';
-import { getRandomDialogue } from '../utils/dialogues';
 import { getDialogueForInteraction } from '../utils/dialogueSelector';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import DynamicsDebugPanel from './DynamicsDebugPanel';
@@ -15,9 +14,10 @@ import { gameConfig } from '../config/gameConfig';
 interface UIControlsProps {
   selectedEntityId?: string | null;
   onEntitySelect?: (entityId: string | null) => void;
+  onShowIntro?: () => void;
 }
 
-const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect }) => {
+const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelect, onShowIntro }) => {
   const { gameState, dispatch } = useGame();
   const [showStats, setShowStats] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
@@ -56,25 +56,21 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       }
 
 
-      const dialogueType = type.toLowerCase();
-      const dialogueMap: Record<string, string> = {
-        'feed': 'feeding',
-        'play': 'playing', 
-        'comfort': 'comforting',
-        'disturb': 'disturbing'
-      };
+      // Usar diálogos del chat real basados en la interacción
+      const dialogue = getDialogueForInteraction(type, entityId);
       
-      if (dialogueMap[dialogueType]) {
-        const message = getRandomDialogue(dialogueMap[dialogueType] as keyof typeof import('../utils/dialogues').dialogues);
-        
-
-        dynamicsLogger.logDialogue(entityId as 'circle' | 'square', message, dialogueType);
+      if (dialogue) {
+        // Log para análisis
+        dynamicsLogger.logDialogue(entityId as 'circle' | 'square', dialogue.text, type.toLowerCase());
         
         dispatch({
           type: 'SHOW_DIALOGUE',
           payload: { 
-            message,
+            message: dialogue.text,
             speaker: entityId as 'circle' | 'square',
+            entityId: entityId,
+            emotion: dialogue.emotion,
+            position: { x: entity.position.x, y: entity.position.y },
             duration: 3000
           }
         });
@@ -113,16 +109,25 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
 
         setToast({ message: 'Resonancia cuántica amplificada ∞', type: 'success' });
         
-        const message = getRandomDialogue('post-nutrition');
-        dynamicsLogger.logDialogue(undefined, message, 'post-nutrition');
+        // Usar diálogos del chat real para NOURISH
+        // Elegir una entidad aleatoria para que "responda" al nutrido
+        const randomEntity = gameState.entities[Math.floor(Math.random() * gameState.entities.length)];
+        const dialogue = getDialogueForInteraction('nourish', randomEntity.id);
         
-        dispatch({
-          type: 'SHOW_DIALOGUE',
-          payload: { 
-            message,
-            duration: 3000 
-          }
-        });
+        if (dialogue) {
+          dynamicsLogger.logDialogue(randomEntity.id as 'circle' | 'square', dialogue.text, 'nourish');
+          
+          dispatch({
+            type: 'SHOW_DIALOGUE',
+            payload: { 
+              message: dialogue.text,
+              entityId: randomEntity.id,
+              emotion: dialogue.emotion,
+              position: { x: randomEntity.position.x, y: randomEntity.position.y },
+              duration: 3000 
+            }
+          });
+        }
       }
     }
   };
@@ -134,6 +139,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         await new Promise(r => setTimeout(r, 300));
         dispatch({ type: 'RESET_GAME' });
         onEntitySelect?.(null);
+        onShowIntro?.(); // Mostrar narrativa de nuevo
         setToast({ message: 'Universo reiniciado: Nueva dimensión iniciada', type: 'info' });
       } finally {
         setLoading(false);

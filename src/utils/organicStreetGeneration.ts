@@ -239,7 +239,8 @@ export class OrganicStreetGenerator {
   }
 
   /**
-   * A* pathfinding modificado con costos de elevación
+   * A* modificado: f = g + h con costes que incorporan elevación y ocupación.
+   * Heurística h: distancia euclídea. g: suma de costes de movimiento locales.
    */
   private findOrganicPath(start: Point, end: Point, streetType: string): Point[] | null {
     const openSet: Array<{
@@ -323,7 +324,12 @@ export class OrganicStreetGenerator {
   }
 
   /**
-   * Calcular costo de movimiento considerando elevación y ocupación
+   * Coste de movimiento:
+   * - Base = distancia euclídea.
+   * - Elevación: |Δelev| * elevationInfluence (penaliza pendientes).
+   * - Ocupación: penaliza celdas ya ocupadas (evita solapamiento).
+   * - Tipo de calle: pondera para favorecer arterias principales.
+   * Devuelve un mínimo relativo para evitar costes 0 que rompan A*.
    */
   private calculateMovementCost(from: Point, to: Point, streetType: string): number {
     const distance = this.calculateDistance(from, to);
@@ -394,7 +400,8 @@ export class OrganicStreetGenerator {
   }
 
   /**
-   * Suavizar path con curvas orgánicas usando interpolación
+   * Suavizado de path: genera puntos intermedios con Bézier cuadrática y
+   * añade perturbación ligera de ruido para evitar rectas perfectas.
    */
   private smoothPath(path: Point[], curvatureAmount: number): Point[] {
     if (path.length < 3) return path;

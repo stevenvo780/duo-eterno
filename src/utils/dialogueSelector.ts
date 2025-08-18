@@ -100,36 +100,59 @@ export const getDialogueForInteraction = (
 
   const speaker = getSpeakerForEntity(entityId);
   
-  // Mapeo de interacciones a emociones y contextos del chat
-  const interactionMap: Record<string, { emotions: string[], activities: string[] }> = {
-    'feed': {
+  // Mapeo expandido de interacciones a emociones y contextos del chat
+  const interactionMap: Record<string, { emotions: string[], activities: string[], priority?: string[] }> = {
+    'FEED': {
       emotions: ['LOVE', 'PLAYFUL', 'NEUTRAL'],
-      activities: ['SOCIALIZING'] // Momentos de cuidado/alimentación en el chat
+      activities: ['SOCIALIZING'],
+      priority: ['LOVE'] // Priorizar expresiones de amor al alimentar
     },
-    'play': {
+    'PLAY': {
       emotions: ['PLAYFUL', 'LOVE', 'CURIOUS'],
-      activities: ['SOCIALIZING'] // Momentos de juego y diversión
+      activities: ['SOCIALIZING'],
+      priority: ['PLAYFUL'] // Priorizar diversión y juego
     },
-    'comfort': {
-      emotions: ['LOVE', 'SADNESS', 'NEUTRAL'],
-      activities: ['SOCIALIZING'] // Momentos de consuelo y apoyo
+    'COMFORT': {
+      emotions: ['LOVE', 'NEUTRAL', 'SADNESS'],
+      activities: ['SOCIALIZING'],
+      priority: ['LOVE'] // Priorizar expresiones de amor al consolar
     },
-    'disturb': {
-      emotions: ['SADNESS', 'NEUTRAL'],
-      activities: ['SOCIALIZING'] // Momentos de molestia o frustración
+    'DISTURB': {
+      emotions: ['SADNESS', 'NEUTRAL', 'CURIOUS'],
+      activities: ['SOCIALIZING'],
+      priority: ['NEUTRAL'] // Respuestas más neutras a molestias
     },
-    'nourish': {
-      emotions: ['LOVE', 'PLAYFUL'],
-      activities: ['SOCIALIZING'] // Momentos de amor y nutrición mutua
+    'NOURISH': {
+      emotions: ['LOVE', 'PLAYFUL', 'CURIOUS'],
+      activities: ['SOCIALIZING'],
+      priority: ['LOVE'] // Máxima prioridad al amor en nutrición mutua
+    },
+    'SLEEP': {
+      emotions: ['NEUTRAL', 'LOVE'],
+      activities: ['SOCIALIZING'],
+      priority: ['NEUTRAL']
+    },
+    'EXERCISE': {
+      emotions: ['PLAYFUL', 'CURIOUS', 'NEUTRAL'],
+      activities: ['SOCIALIZING'],
+      priority: ['PLAYFUL']
     }
   };
 
-  const config = interactionMap[interactionType.toLowerCase()];
+  const config = interactionMap[interactionType.toUpperCase()];
   if (!config) return null;
 
   // Buscar diálogos que coincidan con el contexto de la interacción
-  const targetEmotion = config.emotions[Math.floor(Math.random() * config.emotions.length)];
+  // Priorizar emociones específicas si están definidas
+  const emotionsToTry = config.priority ? [...config.priority, ...config.emotions] : config.emotions;
   const targetActivity = config.activities[Math.floor(Math.random() * config.activities.length)];
 
-  return getNextDialogue(speaker, targetEmotion, targetActivity);
+  // Intentar con emociones prioritarias primero
+  for (const emotion of emotionsToTry) {
+    const dialogue = getNextDialogue(speaker, emotion, targetActivity);
+    if (dialogue) return dialogue;
+  }
+
+  // Si no encontramos nada específico, buscar con cualquier emoción válida
+  return getNextDialogue(speaker, undefined, targetActivity);
 };

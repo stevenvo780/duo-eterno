@@ -70,6 +70,8 @@ const PERFORMANCE_THRESHOLDS = {
 
 
 
+// Regulador adaptativo: ajusta el intervalo de ejecución según promedio de FPS.
+// Regla simple: si FPS < warning ⇒ aumenta intervalo (menos frecuencia); si FPS > excellent ⇒ reduce.
 class AdaptiveThrottler {
   private lastExecutionTime: number = 0;
   private adaptiveInterval: number;
@@ -122,6 +124,7 @@ class AdaptiveThrottler {
 
 
 
+// Monitor de performance: toma snapshots periódicos y genera alertas al exceder umbrales.
 class SimplePerformanceMonitor {
   private snapshots: PerformanceSnapshot[] = [];
   private alerts: PerformanceAlert[] = [];

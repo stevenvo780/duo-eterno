@@ -122,6 +122,12 @@ export const useGameLoop = () => {
       }
 
 
+      // Modelo de resonancia: ganancia por cercanía + sincronía de actividad, con decaimiento
+      // Detalles científicos:
+      // - closeness: función logística 1/(1+e^{(d-maxD)/k}) con k=distScale que suaviza la contribución por distancia.
+      // - activityBonus: factor multiplicativo si comparten actividad.
+      // - Dinámica: dR = (gain - decay) * dt, con decay proporcional al nivel actual R.
+      // - Normalización: R se mantiene en [0,100].
       if (tickCountRef.current % 2 === 0 && livingEntities.length === 2) {
         const [a, b] = livingEntities as [Entity, Entity];
         const dx = a.position.x - b.position.x;
@@ -131,11 +137,15 @@ export const useGameLoop = () => {
         const R = gameStateRef.current.resonance;
         const maxD = Math.max(1, config.resonance.maxDistance);
         const distScale = Math.max(1, maxD / 4);
+        // Función logística (sigmoide) para convertir distancia a cercanía [0,1]
         const closeness = 1 / (1 + Math.exp((distance - maxD) / distScale));
 
         const sameActivity = a.activity === b.activity ? 1 : 0;
         const activityBonus = 1 + (sameActivity ? (config.resonance.activitySyncBonus - 1) : 0);
 
+        // Balance de ganancia–decaimiento:
+        // - gain decrece conforme R→100 (saturación suave)
+        // - decay crece linealmente con R (estabilidad del equilibrio)
         const gain = closeness * config.resonance.harmonyBonus * activityBonus * (1 - R / 100);
         const decay = config.resonance.decayRate * (R / 100);
         const dR = (gain - decay) * (deltaSec * 100);
@@ -148,6 +158,7 @@ export const useGameLoop = () => {
       }
 
 
+      // Telemetría periódica: snapshots de entidades y estado global para análisis
       if (tickCountRef.current % 50 === 0) {
         livingEntities.forEach(e => optimizedDynamicsLogger.takeEntitySnapshot(e));
         optimizedDynamicsLogger.takeSystemSnapshot(

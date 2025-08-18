@@ -1,8 +1,17 @@
 /**
  * 🌊 GENERACIÓN DE RUIDO PROCEDIMENTAL
- * 
- * Implementa algoritmos de ruido para crear variación orgánica y natural
- * basados en técnicas utilizadas en RPGs profesionales
+ *
+ * Contiene implementaciones de Perlin y Simplex 2D para generar campos de ruido
+ * coherente y variaciones fractales.
+ *
+ * Notas científicas
+ * -----------------
+ * - Perlin: usa gradientes en rejilla, interpolación quintic (fade t^3(6t^2-15t+10)),
+ *   y tabla de permutación seedable. generateFractalNoise aplica fBm con
+ *   `octaves`, `persistence` (amplitud decreciente) y `lacunarity` (frecuencia creciente).
+ * - Simplex 2D: skew/unskew del espacio con F2=(√3-1)/2, G2=(3-√3)/6 para formar
+ *   triángulos; reduce artefactos y coste O(1)/píxel. Devuelve suma ponderada de
+ *   contribuciones de los 3 vértices del simplex, escalada por 70.
  */
 
 export interface Point {
@@ -64,6 +73,7 @@ export class PerlinNoise {
     ];
   }
 
+  // Interpolador quintic continuo en C2: evita artefactos en rejilla
   private fade(t: number): number {
 
     return t * t * t * (t * (t * 6 - 15) + 10);
@@ -79,7 +89,8 @@ export class PerlinNoise {
   }
 
   /**
-   * Generar ruido Perlin en un punto específico
+   * Genera ruido Perlin 2D en [x,y].
+   * Detalle: interpola gradientes de las 4 esquinas del celda con fade(u), fade(v).
    */
   generateNoise2D(x: number, y: number): number {
 
@@ -116,7 +127,8 @@ export class PerlinNoise {
   }
 
   /**
-   * Generar ruido fractal con múltiples octavas
+   * fBm (fractal Brownian motion): combina `octaves` de Perlin con
+   * amplitud acumulativa y frecuencia creciente.
    */
   generateFractalNoise(x: number, y: number, config: NoiseConfig): number {
     let value = 0;
@@ -135,7 +147,7 @@ export class PerlinNoise {
   }
 
   /**
-   * Generar mapa de elevación usando ruido
+   * Mapa de elevación normalizado [0,1] a partir de fBm, muestreo uniforme.
    */
   generateElevationMap(width: number, height: number, config: NoiseConfig): number[][] {
     const elevationMap: number[][] = [];
@@ -154,7 +166,7 @@ export class PerlinNoise {
 
 /**
  * 🌀 GENERACIÓN DE RUIDO SIMPLEX (ALTERNATIVA MÁS EFICIENTE)
- * Versión simplificada para casos que requieren mayor performance
+ * Skew/unskew 2D con constantes F2/G2. Escala final 70*(n0+n1+n2).
  */
 export class SimplexNoise {
   private perm!: number[];

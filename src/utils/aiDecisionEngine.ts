@@ -1,3 +1,10 @@
+/**
+ * 🤖 Motor de decisiones de actividades para agentes.
+ *
+ * Decisiones se basan en: prioridad por necesidades (calculateActivityPriority),
+ * modulación por estado de ánimo y personalidad, hábitos aprendidos y selección
+ * estocástica suave (softmax con temperatura).
+ */
 import type { Entity, EntityActivity, EntityMood } from '../types';
 import { ACTIVITY_TYPES } from "../constants";
 import { ACTIVITY_EFFECTS, calculateActivityPriority, getActivityDynamics } from './activityDynamics';
@@ -61,6 +68,11 @@ const getPersonalityProfile = (entityId: 'circle' | 'square'): PersonalityProfil
   return ENTITY_PERSONALITIES[entityId];
 };
 
+/**
+ * Inercia de actividad: resiste cambios mientras la sesión actual progresa.
+ * Factores: persistencia de personalidad, efectividad observada, interrupciones y
+ * progreso relativo. Retorna [0,1] tras normalizar con `activityInertiaBonus`.
+ */
 const calculateActivityInertia = (
   entity: Entity,
   currentTime: number
@@ -90,6 +102,11 @@ const calculateActivityInertia = (
   return Math.max(0, Math.min(1, inertia * bonusNorm));
 };
 
+/**
+ * Criterio de cambio: umbral duro por urgencia y ventana mínima, luego
+ * probabilidad basada en estado de ánimo y (1 - inercia). La urgencia alta
+ * aumenta la probabilidad; personalidad puede amortiguar cambios.
+ */
 const shouldChangeActivity = (
   entity: Entity,
   currentTime: number,
@@ -135,6 +152,10 @@ const shouldChangeActivity = (
   return Math.random() < changeChance;
 };
 
+/**
+ * Modulación por estado de ánimo: ajusta el score base por afinidad actividad↔mood.
+ * Ej.: SOCIALIZING aumenta con socialSeek; RESTING/MEDITATING con energyConservation.
+ */
 const applyMoodModifiers = (
   baseScore: number,
   activity: EntityActivity,
@@ -201,6 +222,10 @@ const getHabitBias = (entityId: string, activity: EntityActivity): number => {
   return (habits[activity] ?? 0) * 5;
 };
 
+/**
+ * Selección softmax: convierte scores en distribución de probabilidad controlada
+ * por `tau` (temperatura). Menor tau ⇒ elección más codiciosa; mayor ⇒ más exploratoria.
+ */
 const softmaxPick = (scores: Array<{ activity: EntityActivity; score: number }>, temperature = 0.7) => {
   const tau = Math.max(0.1, temperature);
   const maxScore = Math.max(...scores.map(s => s.score));

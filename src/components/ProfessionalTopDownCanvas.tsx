@@ -8,7 +8,8 @@ import {
   getRandomTileByType,
   type ExtractedTile 
 } from '../utils/tileExtractor';
-import type { Entity } from '../types';
+import { generateOrganicProceduralMap } from '../utils/organicMapGeneration';
+import type { Entity, Zone, MapElement } from '../types';
 
 interface ProfessionalTopDownCanvasProps {
   width: number;
@@ -57,7 +58,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   const [tileMap, setTileMap] = useState<TileMap | null>(null);
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
   
-
+  // Estados para el sistema orgánico
+  const [organicZones, setOrganicZones] = useState<Zone[]>([]);
+  const [organicMapElements, setOrganicMapElements] = useState<MapElement[]>([]);
+  
+  // Estados para tiles categorizados
   const [allTiles, setAllTiles] = useState<Map<string, ExtractedTile>>(new Map());
   const [grassTiles, setGrassTiles] = useState<ExtractedTile[]>([]);
   const [stoneTiles, setStoneTiles] = useState<ExtractedTile[]>([]);
@@ -159,32 +164,91 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       console.error('❌ Error en carga profesional:', error);
       setAssetsLoaded(true);
     }
-  }, [preloadAnimations]); // Solo preloadAnimations como dependencia
+  }, [preloadAnimations, assetsLoaded]); // Agregada dependencia assetsLoaded
 
 
-  const generateProfessionalTileMap = useCallback(() => {
-    if (grassTiles.length === 0) return;
+  // Función para generar el mapa orgánico
+  const generateOrganicMap = useCallback(() => {
+    console.log('🌳 Generando mapa orgánico...');
+    
+    const { zones, mapElements } = generateOrganicProceduralMap(
+      gameState.mapSeed || Date.now().toString(),
+      {
+        theme: 'RUSTIC', // Tema rústico para mejor coherencia visual
+        useVoronoi: true,
+        organicStreets: true,
+        densityVariation: 0.7,
+        naturalClustering: true
+      }
+    );
+    
+    console.log('🏠 Zonas generadas:', zones.length);
+    console.log('🎯 Elementos generados:', mapElements.length);
+    
+    setOrganicZones(zones);
+    setOrganicMapElements(mapElements);
+  }, [gameState.mapSeed]);
+
+
+  const generateOrganicTileMap = useCallback(() => {
+    if (grassTiles.length === 0 || organicZones.length === 0) return;
     
     const mapWidth = Math.ceil(width / 32) + 2;
     const mapHeight = Math.ceil(height / 32) + 2;
-    
     const tiles: string[][] = [];
     
+    console.log('🗺️ Generando mapa visual orgánico...');
+    
+    // Inicializar con césped base
     for (let y = 0; y < mapHeight; y++) {
       tiles[y] = [];
       for (let x = 0; x < mapWidth; x++) {
-
-        if (Math.random() < 0.05 && stoneTiles.length > 0) {
-
-          const randomStone = stoneTiles[Math.floor(Math.random() * stoneTiles.length)];
-          tiles[y][x] = randomStone.id;
-        } else {
-
-          const randomGrass = grassTiles[Math.floor(Math.random() * grassTiles.length)];
-          tiles[y][x] = randomGrass.id;
-        }
+        const randomGrass = grassTiles[Math.floor(Math.random() * grassTiles.length)];
+        tiles[y][x] = randomGrass.id;
       }
     }
+    
+    // Aplicar zonas específicas
+    organicZones.forEach(zone => {
+      const startX = Math.floor(zone.bounds.x / 32);
+      const startY = Math.floor(zone.bounds.y / 32);
+      const endX = Math.min(mapWidth - 1, Math.floor((zone.bounds.x + zone.bounds.width) / 32));
+      const endY = Math.min(mapHeight - 1, Math.floor((zone.bounds.y + zone.bounds.height) / 32));
+      
+      for (let y = startY; y <= endY; y++) {
+        for (let x = startX; x <= endX; x++) {
+          if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth) {
+            // Usar diferentes tiles según el tipo de zona
+            let tileChoice: ExtractedTile;
+            
+            switch (zone.type) {
+              case 'kitchen':
+              case 'bedroom':
+              case 'living':
+              case 'bathroom':
+              case 'office':
+                // Zonas interiores - usar piedra lisa para simular suelo
+                tileChoice = stoneTiles.find(t => t.id.includes('smooth')) || stoneTiles[0] || grassTiles[0];
+                break;
+              case 'play':
+              case 'recreation':
+                // Zonas exteriores - césped con flores
+                tileChoice = grassTiles.find(t => t.id.includes('flower')) || grassTiles[0];
+                break;
+              case 'food':
+              case 'work':
+                // Caminos y áreas de trabajo - piedra base
+                tileChoice = stoneTiles.find(t => t.id.includes('base')) || stoneTiles[0] || grassTiles[0];
+                break;
+              default:
+                tileChoice = grassTiles[Math.floor(Math.random() * grassTiles.length)];
+            }
+            
+            tiles[y][x] = tileChoice.id;
+          }
+        }
+      }
+    });
     
     setTileMap({
       tiles,
@@ -192,153 +256,105 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       width: mapWidth,
       height: mapHeight
     });
-  }, [width, height, grassTiles, stoneTiles]);
+    
+    console.log(`✅ Mapa orgánico generado: ${mapWidth}x${mapHeight}`);
+  }, [width, height, grassTiles, stoneTiles, organicZones]);
 
 
-  const generateProfessionalGameObjects = useCallback(() => {
-    if (propTiles.length === 0 || plantTiles.length === 0) return;
+  const generateOrganicGameObjects = useCallback(() => {
+    if (propTiles.length === 0 || plantTiles.length === 0 || organicMapElements.length === 0) return;
     
     const objects: GameObject[] = [];
     let objectId = 0;
     
-
-    const treeSpots = [
-      { x: 120, y: 100, priority: 'high' },
-      { x: 280, y: 140, priority: 'high' },
-      { x: 450, y: 110, priority: 'high' },
-      { x: 600, y: 160, priority: 'medium' }
-    ];
+    console.log('🎯 Generando objetos desde mapElements orgánicos...');
     
-    treeSpots.forEach(spot => {
-      const treeTile = getRandomTileByType(allTiles, 'tree');
-      const shadowTile = getRandomTileByType(allTiles, 'shadow');
+    // Convertir mapElements a GameObjects
+    organicMapElements.forEach(element => {
+      let tile: ExtractedTile | null = null;
+      let type = 'decoration';
+      let zIndex = 1;
       
-      if (treeTile) {
-        objects.push({
-          id: `tree_${objectId++}`,
-          x: spot.x,
-          y: spot.y,
-          tileId: treeTile.id,
-          tile: treeTile,
-          type: 'tree',
-          shadow: shadowTile || undefined,
-          zIndex: 1
-        });
+      // Seleccionar tile según el tipo de elemento
+      switch (element.type) {
+        case 'obstacle':
+          // Árboles y obstáculos naturales
+          tile = getRandomTileByType(allTiles, 'tree') || getRandomTileByType(allTiles, 'bush');
+          type = 'environment';
+          zIndex = 2;
+          break;
+          
+        case 'food_zone':
+          // Mesas, cocinas, plantas de comida
+          tile = Array.from(allTiles.values()).find(t => 
+            t.id.includes('table') || t.id.includes('pot') || t.id.includes('barrel')
+          ) || getRandomTileByType(allTiles, 'bush');
+          type = 'food';
+          zIndex = 1;
+          break;
+          
+        case 'rest_zone':
+          // Sillas, sofás, camas
+          tile = Array.from(allTiles.values()).find(t => 
+            t.id.includes('chair') || t.id.includes('sofa') || t.id.includes('throne')
+          ) || getRandomTileByType(allTiles, 'furniture');
+          type = 'rest';
+          zIndex = 1;
+          break;
+          
+        case 'play_zone':
+          // Estatuas, lámparas, decoraciones
+          tile = Array.from(allTiles.values()).find(t => 
+            t.id.includes('statue') || t.id.includes('lamp') || t.id.includes('altar')
+          ) || getRandomTileByType(allTiles, 'decoration');
+          type = 'play';
+          zIndex = 1;
+          break;
+          
+        case 'social_zone':
+          // Muebles sociales, estanterías
+          tile = Array.from(allTiles.values()).find(t => 
+            t.id.includes('bookshelf') || t.id.includes('table') || t.id.includes('fountain')
+          ) || getRandomTileByType(allTiles, 'furniture');
+          type = 'social';
+          zIndex = 1;
+          break;
+          
+        default:
+          tile = getRandomTileByType(allTiles, 'decoration');
+          type = 'decoration';
+          zIndex = 0;
       }
-    });
-    
-
-    const furnitureZones = [
-
-      { 
-        center: { x: 200, y: 220 },
-        items: ['bookshelf', 'chair', 'table'],
-        theme: 'knowledge'
-      },
-
-      { 
-        center: { x: 350, y: 200 },
-        items: ['altar', 'throne', 'statue'],
-        theme: 'mystical'
-      },
-
-      { 
-        center: { x: 150, y: 300 },
-        items: ['chest_wood', 'barrel', 'crate_wood'],
-        theme: 'storage'
-      },
-
-      { 
-        center: { x: 500, y: 280 },
-        items: ['sofa', 'lamp', 'pot'],
-        theme: 'comfort'
-      }
-    ];
-    
-    furnitureZones.forEach(zone => {
-      zone.items.forEach((itemType, index) => {
-        const itemTile = Array.from(allTiles.values()).find(tile => 
-          tile.id.includes(itemType) || tile.id === itemType
-        );
+      
+      if (tile) {
         const shadowTile = getRandomTileByType(allTiles, 'shadow');
         
-        if (itemTile) {
-          const angle = (index / zone.items.length) * Math.PI * 2;
-          const radius = 40 + Math.random() * 20;
-          
-          objects.push({
-            id: `${itemType}_${objectId++}`,
-            x: zone.center.x + Math.cos(angle) * radius,
-            y: zone.center.y + Math.sin(angle) * radius,
-            tileId: itemTile.id,
-            tile: itemTile,
-            type: 'furniture',
-            shadow: shadowTile || undefined,
-            zIndex: 2
-          });
-        }
-      });
-    });
-    
-
-    const bushCount = 12;
-    for (let i = 0; i < bushCount; i++) {
-      const bushTile = getRandomTileByType(allTiles, 'bush');
-      const shadowTile = getRandomTileByType(allTiles, 'shadow');
-      
-      if (bushTile) {
         objects.push({
-          id: `bush_${objectId++}`,
-          x: Math.random() * (width - 64) + 32,
-          y: Math.random() * (height - 64) + 32,
-          tileId: bushTile.id,
-          tile: bushTile,
-          type: 'decoration',
+          id: `organic_${element.type}_${objectId++}`,
+          x: element.position.x,
+          y: element.position.y,
+          tileId: tile.id,
+          tile: tile,
+          type: type,
           shadow: shadowTile || undefined,
-          zIndex: 3
-        });
-      }
-    }
-    
-
-    const specialStructures = [
-      { type: 'fountain_center', x: 380, y: 350 },
-      { type: 'pillar', x: 180, y: 180 },
-      { type: 'door', x: 320, y: 120 }
-    ];
-    
-    specialStructures.forEach(structure => {
-      const structureTile = Array.from(allTiles.values()).find(tile => 
-        tile.id.includes(structure.type)
-      );
-      const shadowTile = getRandomTileByType(allTiles, 'shadow');
-      
-      if (structureTile) {
-        objects.push({
-          id: `structure_${objectId++}`,
-          x: structure.x,
-          y: structure.y,
-          tileId: structureTile.id,
-          tile: structureTile,
-          type: 'structure',
-          shadow: shadowTile || undefined,
-          zIndex: 0
+          zIndex: zIndex
         });
       }
     });
     
-
+    // Ordenar por zIndex para renderizado correcto
     objects.sort((a, b) => a.zIndex - b.zIndex);
     
     setGameObjects(objects);
-    console.log('🏗️ Mundo profesional generado:', {
-      objects: objects.length,
-      trees: objects.filter(o => o.type === 'tree').length,
-      furniture: objects.filter(o => o.type === 'furniture').length,
-      decorations: objects.filter(o => o.type === 'decoration').length
+    console.log(`✅ Objetos orgánicos generados: ${objects.length}`, {
+      food: objects.filter(o => o.type === 'food').length,
+      rest: objects.filter(o => o.type === 'rest').length,
+      play: objects.filter(o => o.type === 'play').length,
+      social: objects.filter(o => o.type === 'social').length,
+      environment: objects.filter(o => o.type === 'environment').length
     });
     
-  }, [allTiles, propTiles, plantTiles, width, height]);
+  }, [allTiles, propTiles, plantTiles, organicMapElements]);
 
 
   const renderProfessionalScene = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -456,10 +472,18 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
 
   useEffect(() => {
     if (assetsLoaded && grassTiles.length > 0) {
-      generateProfessionalTileMap();
-      generateProfessionalGameObjects();
+      // Generar el mapa orgánico primero
+      generateOrganicMap();
     }
-  }, [assetsLoaded, grassTiles.length, generateProfessionalTileMap, generateProfessionalGameObjects]);
+  }, [assetsLoaded, grassTiles.length, generateOrganicMap]);
+
+  // Efecto separado para generar tiles y objetos después de que el mapa orgánico esté listo
+  useEffect(() => {
+    if (organicZones.length > 0 && organicMapElements.length > 0) {
+      generateOrganicTileMap();
+      generateOrganicGameObjects();
+    }
+  }, [organicZones.length, organicMapElements.length, generateOrganicTileMap, generateOrganicGameObjects]);
 
 
   useEffect(() => {

@@ -105,8 +105,10 @@ export const useIntelligentMovement = (
 
   
   /**
-   * Implementa A* simplificado para navegación
-   * CORRIGIDO: Reemplaza el movimiento aleatorio con navegación inteligente
+   * Implementa navegación simplificada con heurística tipo A*:
+   * - Atajo directo si no hay obstáculo entre start→goal (chequeo línea-círculo).
+   * - Si hay obstáculo, se generan waypoints de evasión perimetral deterministas.
+   * Nota: no se construye una malla ni se calcula coste acumulado; se prioriza tiempo real.
    */
   const findPath = useCallback((start: Vector2D, goal: Vector2D, obstacles: ObstacleInfo[]): Vector2D[] => {
 
@@ -124,7 +126,9 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Detecta si hay obstáculos en el camino directo
+   * Detecta si hay obstáculos en el camino directo start→end usando intersección
+   * de línea con disco (obstáculo como círculo). Resuelve cuadrática paramétrica
+   * para el segmento y determina si existen t∈[0,1] que satisfacen la intersección.
    */
   const hasObstacleInPath = useCallback((start: Vector2D, end: Vector2D, obstacles: ObstacleInfo[]): boolean => {
     return obstacles.some(obstacle => {
@@ -133,7 +137,8 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Genera waypoints para evitar obstáculos
+   * Genera waypoints para evitar obstáculos desplazándose a puntos tangenciales
+   * alrededor del círculo de colisión. Aproxima desviación con un único punto lateral.
    */
   const generateWaypoints = useCallback((start: Vector2D, goal: Vector2D, obstacles: ObstacleInfo[]): Vector2D[] => {
     const waypoints: Vector2D[] = [];
@@ -157,7 +162,8 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Genera punto de evasión alrededor de obstáculo
+   * Genera un waypoint de evasión desplazando desde el centro del obstáculo
+   * en dirección perpendicular a la normal start→obstáculo, con radio aumentado.
    */
   const generateAvoidanceWaypoint = useCallback((
     start: Vector2D, 
@@ -209,8 +215,8 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Comportamiento de evasión de obstáculos
-   * CORRIGIDO: Lógica determinista sin aleatoriedad
+   * Evasión de obstáculos: suma de fuerzas de empuje inversamente proporcional a la distancia
+   * (modelo de steering). Fuerza = ((minDist - d)/minDist) * K en dirección opuesta al obstáculo.
    */
   const avoidObstacles = useCallback((entity: Entity, obstacles: ObstacleInfo[]): Vector2D => {
     const avoidanceForce = { x: 0, y: 0 };
@@ -238,8 +244,8 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Comportamiento de separación entre entidades
-   * CORRIGIDO: Usa distancia mínima de las constantes físicas
+   * Separación entre entidades: steering que evita solapamientos manteniendo
+   * una distancia mínima fija. Promedia contribuciones de vecinos cercanos.
    */
   const separate = useCallback((entity: Entity, neighbors: Entity[]): Vector2D => {
     const separationForce = { x: 0, y: 0 };
@@ -276,8 +282,8 @@ export const useIntelligentMovement = (
   }, []);
   
   /**
-   * Comportamiento de vagabundeo con personalidad natural
-   * BALANCEADO: Combina exploración sistemática con variaciones de personalidad
+   * Vagabundeo inteligente con personalidad: combina ruido determinista (coherente)
+   * y variación de personalidad (semi-determinista) para direcciones suaves.
    */
   const intelligentWander = useCallback((entity: Entity): Vector2D => {
     const time = performance.now() / 1000;
@@ -317,8 +323,9 @@ export const useIntelligentMovement = (
 
   
   /**
-   * Calcula la nueva posición de una entidad
-   * CORRIGIDO: Elimina movimiento aleatorio, usa navegación inteligente
+   * Calcula la nueva posición aplicando steering compuesto:
+   * seek (objetivo/waypoint) + avoid (obstáculos) + separate (vecinos),
+   * con saturación a velocidad máxima y dt normalizado.
    */
   const calculateNewPosition = useCallback((entity: Entity, deltaTime: number): Vector2D => {
     if (entity.isDead) return entity.position;
@@ -497,6 +504,8 @@ export const useIntelligentMovement = (
   
 
   
+  // Intersección línea-segmento con círculo: resuelve a*t^2 + b*t + c = 0 para t∈[0,1]
+  // a = |d|^2, b = 2 f·d, c = |f|^2 - r^2 con d = end-start, f = start-center
   const lineIntersectsCircle = (start: Vector2D, end: Vector2D, center: Vector2D, radius: number): boolean => {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
