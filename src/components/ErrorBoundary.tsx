@@ -16,7 +16,7 @@ export default class ErrorBoundary extends React.Component<React.PropsWithChildr
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Minimal logging without spamming
+
     console.error('UI crash captured by ErrorBoundary', { error, info });
   }
 

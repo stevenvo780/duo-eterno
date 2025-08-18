@@ -53,7 +53,7 @@ interface SessionArchive {
   id: string;
   startTime: number;
   endTime: number;
-  compressedData: string; // JSON.stringify + basic compression
+  compressedData: string;
   metadata: {
     totalLogs: number;
     totalSnapshots: number;
@@ -73,41 +73,41 @@ interface MemoryUsageStats {
 }
 
 export class OptimizedDynamicsLogger {
-  // === CONFIGURACIÓN OPTIMIZADA ===
+
   private readonly config = {
-    maxSessionLogs: 50,           // Máximo 50 sessions en memoria activa
-    maxLogAge: 2 * 60 * 60 * 1000, // 2 horas en memoria activa
+    maxSessionLogs: 50,
+    maxLogAge: 2 * 60 * 60 * 1000,
     compressionEnabled: true,
-    maxMemoryMB: 200,            // Límite de memoria total
-    cleanupIntervalMs: 5 * 60 * 1000, // Cleanup cada 5 minutos
-    archiveIntervalMs: 15 * 60 * 1000, // Archive cada 15 minutos
-    throttleMs: 1000,            // Throttle logs del mismo tipo por 1s
-    maxArchivedSessions: 10,     // Máximo 10 sessions archivadas
-    snapshotRetentionMs: 10 * 60 * 1000, // Snapshots por 10 minutos
+    maxMemoryMB: 200,
+    cleanupIntervalMs: 5 * 60 * 1000,
+    archiveIntervalMs: 15 * 60 * 1000,
+    throttleMs: 1000,
+    maxArchivedSessions: 10,
+    snapshotRetentionMs: 10 * 60 * 1000,
   };
 
-  // === STORAGE EN MEMORIA ===
+
   private logs: LogEntry[] = [];
   private entitySnapshots: EntitySnapshot[] = [];
   private systemSnapshots: SystemSnapshot[] = [];
   private archivedSessions: SessionArchive[] = [];
   
-  // === CONTROL DE STATE ===
+
   private currentSessionId = `session_${Date.now()}`;
   private sessionStartTime = Date.now();
   private isEnabled = true;
   private lastCleanup = Date.now();
   private lastArchive = Date.now();
   
-  // === THROTTLING ===
+
   private lastLogTimes = new Map<string, number>();
   
-  // === INTERVALS ===
+
   private cleanupInterval: number | null = null;
   private archiveInterval: number | null = null;
   
-  // === EXPORT SETTINGS ===
-  // Variables reservadas para funcionalidad futura de exportación
+
+
 
   constructor() {
     this.initializeCleanupSystems();
@@ -119,20 +119,20 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-  // === INICIALIZACIÓN DE SISTEMAS DE CLEANUP ===
+
   
   private initializeCleanupSystems(): void {
-    // Cleanup automático cada 5 minutos
+
     this.cleanupInterval = window.setInterval(() => {
       this.performAutomaticCleanup();
     }, this.config.cleanupIntervalMs);
 
-    // Archive automático cada 15 minutos
+
     this.archiveInterval = window.setInterval(() => {
       this.performAutomaticArchiving();
     }, this.config.archiveIntervalMs);
 
-    // Event listener para cleanup al cerrar la página
+
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeunload', () => {
         this.performFinalCleanup();
@@ -140,22 +140,22 @@ export class OptimizedDynamicsLogger {
     }
   }
 
-  // === AUTOMATIC CLEANUP SYSTEM ===
+
   
   private performAutomaticCleanup(): void {
     const startTime = performance.now();
     const beforeStats = this.getMemoryUsageStats();
     
-    // 1. Cleanup logs antiguos
+
     this.cleanupOldLogs();
     
-    // 2. Cleanup snapshots antiguos
+
     this.cleanupOldSnapshots();
     
-    // 3. Cleanup archived sessions si exceden límite
+
     this.cleanupArchivedSessions();
     
-    // 4. Reset throttling cache
+
     this.cleanupThrottlingCache();
     
     const afterStats = this.getMemoryUsageStats();
@@ -180,7 +180,7 @@ export class OptimizedDynamicsLogger {
     
     this.logs = this.logs.filter(log => log.timestamp > cutoffTime);
     
-    // Si aún excedemos el límite, mantener solo los más recientes
+
     if (this.logs.length > this.config.maxSessionLogs) {
       this.logs = this.logs.slice(-this.config.maxSessionLogs);
     }
@@ -211,7 +211,7 @@ export class OptimizedDynamicsLogger {
   private cleanupArchivedSessions(): void {
     if (this.archivedSessions.length > this.config.maxArchivedSessions) {
       const toRemove = this.archivedSessions.length - this.config.maxArchivedSessions;
-      // Mantener las sessions más recientes
+
       this.archivedSessions = this.archivedSessions
         .sort((a, b) => b.endTime - a.endTime)
         .slice(0, this.config.maxArchivedSessions);
@@ -221,7 +221,7 @@ export class OptimizedDynamicsLogger {
   }
 
   private cleanupThrottlingCache(): void {
-    const cutoffTime = Date.now() - (this.config.throttleMs * 2); // Cleanup cache más antiguo que 2x throttle time
+    const cutoffTime = Date.now() - (this.config.throttleMs * 2);
     
     for (const [key, timestamp] of this.lastLogTimes.entries()) {
       if (timestamp < cutoffTime) {
@@ -230,14 +230,14 @@ export class OptimizedDynamicsLogger {
     }
   }
 
-  // === AUTOMATIC ARCHIVING SYSTEM ===
+
   
   private performAutomaticArchiving(): void {
     if (!this.config.compressionEnabled) return;
     
     const startTime = performance.now();
     
-    // Crear archivo de la sesión actual si tiene suficientes datos
+
     if (this.shouldArchiveCurrentSession()) {
       this.archiveCurrentSession();
     }
@@ -252,8 +252,8 @@ export class OptimizedDynamicsLogger {
     const sessionAge = Date.now() - this.sessionStartTime;
     const timeSinceLastArchive = Date.now() - this.lastArchive;
     const hasSignificantData = this.logs.length >= 50 || this.entitySnapshots.length >= 20;
-    const isOldEnough = sessionAge > this.config.maxLogAge / 2; // Archive después de 1 hora
-    const archiveIntervalReached = timeSinceLastArchive > 30000; // 30 seconds between archives
+    const isOldEnough = sessionAge > this.config.maxLogAge / 2;
+    const archiveIntervalReached = timeSinceLastArchive > 30000;
     
     return hasSignificantData && isOldEnough && archiveIntervalReached;
   }
@@ -268,7 +268,7 @@ export class OptimizedDynamicsLogger {
       endTime: Date.now()
     };
 
-    // Comprimir y archivar
+
     const compressedData = this.compressSessionData(sessionData);
     const metadata = this.calculateSessionMetadata(sessionData);
     
@@ -282,7 +282,7 @@ export class OptimizedDynamicsLogger {
 
     this.archivedSessions.push(archive);
     
-    // Limpiar datos actuales y empezar nueva sesión
+
     this.startNewSession();
     
     console.log('📦 Sesión archivada:', {
@@ -295,23 +295,23 @@ export class OptimizedDynamicsLogger {
   }
 
   private compressSessionData(sessionData: SessionData): string {
-    // Implementar compresión básica (en producción se podría usar gzip/brotli)
+
     const jsonString = JSON.stringify(sessionData);
     
     if (!this.config.compressionEnabled) {
       return jsonString;
     }
     
-    // Compresión simple: eliminar espacios y optimizar estructura
+
     const optimized = {
       i: sessionData.id,
       l: sessionData.logs.map((log: LogEntry) => [
         log.timestamp,
-        log.system[0], // Primera letra del sistema
-        log.category[0], // Primera letra de la categoría
-        log.level[0], // Primera letra del level
+        log.system[0],
+        log.category[0],
+        log.level[0],
         log.entityId || '',
-        log.message.substring(0, 100), // Truncar mensajes largos
+        log.message.substring(0, 100),
         log.data ? JSON.stringify(log.data).substring(0, 200) : null
       ]),
       e: sessionData.entitySnapshots.map((snap: EntitySnapshot) => [
@@ -358,22 +358,22 @@ export class OptimizedDynamicsLogger {
   }
 
   private startNewSession(): void {
-    // Limpiar datos actuales
+
     this.logs = [];
     this.entitySnapshots = [];
     this.systemSnapshots = [];
     
-    // Nueva sesión
+
     this.currentSessionId = `session_${Date.now()}`;
     this.sessionStartTime = Date.now();
     
     console.log(`🔄 Nueva sesión iniciada: ${this.currentSessionId}`);
   }
 
-  // === MEMORY MONITORING ===
+
   
   getMemoryUsageStats(): MemoryUsageStats {
-    // Estimación aproximada del uso de memoria
+
     const logsSize = this.estimateObjectSize(this.logs);
     const snapshotsSize = this.estimateObjectSize(this.entitySnapshots) + this.estimateObjectSize(this.systemSnapshots);
     const archivesSize = this.estimateObjectSize(this.archivedSessions);
@@ -388,11 +388,11 @@ export class OptimizedDynamicsLogger {
   }
 
   private estimateObjectSize(obj: unknown): number {
-    // Estimación aproximada del tamaño en bytes
-    return JSON.stringify(obj).length * 2; // Factor x2 por overhead de JS objects
+
+    return JSON.stringify(obj).length * 2;
   }
 
-  // === THROTTLED LOGGING ===
+
   
   private shouldThrottleLog(system: string, category: string, message: string): boolean {
     const key = `${system}:${category}:${message.substring(0, 50)}`;
@@ -401,18 +401,18 @@ export class OptimizedDynamicsLogger {
     
     if (!lastTime || now - lastTime > this.config.throttleMs) {
       this.lastLogTimes.set(key, now);
-      return false; // No throttle
+      return false;
     }
     
-    return true; // Throttle este log
+    return true;
   }
 
-  // === PUBLIC LOGGING METHODS ===
+
   
   private log(entry: Omit<LogEntry, 'timestamp'>): void {
     if (!this.isEnabled) return;
     
-    // Throttling check
+
     if (this.shouldThrottleLog(entry.system, entry.category, entry.message)) {
       return;
     }
@@ -424,7 +424,7 @@ export class OptimizedDynamicsLogger {
     
     this.logs.push(logEntry);
     
-    // Check memory usage después de cada log
+
     const memoryStats = this.getMemoryUsageStats();
     if (memoryStats.totalMemoryMB > this.config.maxMemoryMB) {
       console.warn(`⚠️ Memory limit exceeded: ${memoryStats.totalMemoryMB.toFixed(2)}MB > ${this.config.maxMemoryMB}MB`);
@@ -435,12 +435,12 @@ export class OptimizedDynamicsLogger {
   private performEmergencyCleanup(): void {
     console.log('🚨 Realizando cleanup de emergencia...');
     
-    // Cleanup más agresivo
+
     this.logs = this.logs.slice(-Math.floor(this.config.maxSessionLogs * 0.5));
     this.entitySnapshots = this.entitySnapshots.slice(-50);
     this.systemSnapshots = this.systemSnapshots.slice(-50);
     
-    // Archive inmediatamente si es posible
+
     if (this.config.compressionEnabled && this.logs.length > 0) {
       this.archiveCurrentSession();
     }
@@ -448,7 +448,7 @@ export class OptimizedDynamicsLogger {
     console.log('✅ Emergency cleanup completado');
   }
 
-  // === LOGGING METHODS (Same interface as original) ===
+
   
   logActivityChange(entityId: string, oldActivity: EntityActivity, newActivity: EntityActivity, reason: string): void {
     this.log({
@@ -556,7 +556,7 @@ export class OptimizedDynamicsLogger {
     });
   }
 
-  // === SNAPSHOT METHODS ===
+
   
   takeEntitySnapshot(entity: Entity): void {
     const snapshot: EntitySnapshot = {
@@ -584,7 +584,7 @@ export class OptimizedDynamicsLogger {
     this.systemSnapshots.push(snapshot);
   }
 
-  // === UTILITY METHODS ===
+
   
   private calculateDistance(entities: Entity[]): number {
     if (entities.length < 2) return 0;
@@ -595,7 +595,7 @@ export class OptimizedDynamicsLogger {
     );
   }
 
-  // === PUBLIC API ===
+
   
   getRecentLogs(category?: LogEntry['category'], limit = 50): LogEntry[] {
     let filtered = this.logs;
@@ -625,7 +625,7 @@ export class OptimizedDynamicsLogger {
     return [...this.archivedSessions];
   }
 
-  // === CONTROL METHODS ===
+
   
   enable(): void {
     this.isEnabled = true;
@@ -635,17 +635,17 @@ export class OptimizedDynamicsLogger {
     this.isEnabled = false;
   }
 
-  // === CLEANUP ON DESTROY ===
+
   
   private performFinalCleanup(): void {
     console.log('🏁 Realizando cleanup final...');
     
-    // Archive session actual si tiene datos
+
     if (this.logs.length > 0 && this.config.compressionEnabled) {
       this.archiveCurrentSession();
     }
     
-    // Clear intervals
+
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
@@ -664,10 +664,10 @@ export class OptimizedDynamicsLogger {
   }
 }
 
-// Export instancia optimizada
+
 export const optimizedDynamicsLogger = new OptimizedDynamicsLogger();
 
-// Hacer disponible globalmente para debugging
+
 if (typeof window !== 'undefined') {
   (window as typeof window & { 
     optimizedDynamicsLogger: OptimizedDynamicsLogger;
@@ -680,7 +680,7 @@ if (typeof window !== 'undefined') {
     };
   }).optimizedDynamicsLogger = optimizedDynamicsLogger;
   
-  // Comandos de consola útiles
+
   (window as typeof window & { 
     loggerCommands: {
       getMemoryStats: () => MemoryUsageStats;
@@ -698,7 +698,7 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// === EXPORTACIONES ADICIONALES PARA COMPATIBILIDAD ===
+
 
 export const logGeneral = {
   info: (message: string, data?: unknown) => {
@@ -813,7 +813,7 @@ export const logSurvival = {
   }
 };
 
-// Funciones de compatibilidad para el logger original (usando console.log por simplicidad)
+
 export const logGeneralCompat = (message: string, data?: unknown) => {
   console.log(`📋 [GENERAL] ${message}`, data);
 };
@@ -827,5 +827,5 @@ export const logPerformanceCompat = (message: string, data?: unknown) => {
   console.log(`⚡ [PERF] ${message}`, data);
 };
 
-// Export del logger principal como alias
+
 export { optimizedDynamicsLogger as logger };

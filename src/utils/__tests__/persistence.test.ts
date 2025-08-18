@@ -30,7 +30,7 @@ describe('persistence migrator and io', () => {
   let originalLS: Storage;
 
   beforeEach(() => {
-    // Mock localStorage
+
     originalLS = global.localStorage;
     const store = new Map<string, string>();
     global.localStorage = {

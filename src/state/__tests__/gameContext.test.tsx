@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-// Necesito extraer el reducer del GameContext para testing
+
 const createEntity = (id: string, x: number, y: number) => ({
   id,
   position: { x, y },
@@ -43,7 +43,7 @@ const initialGameState = {
   gameMode: 'balanced' as const
 };
 
-// Tests simplificados sin dependencias de React
+
 describe('GameContext reducer behavior', () => {
   it('entities have correct initial stats structure', () => {
     const circleEntity = initialGameState.entities.find(e => e.id === 'circle')!;

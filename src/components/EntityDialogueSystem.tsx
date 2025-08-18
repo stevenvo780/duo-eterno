@@ -20,24 +20,24 @@ const EntityDialogueSystem: React.FC = () => {
 
   useEffect(() => {
     if (dialogueState.visible && dialogueState.entityId) {
-      // Encontrar la entidad que está hablando
+
       const entity = gameState.entities.find(e => e.id === dialogueState.entityId);
       
       if (entity) {
         const speaker = getSpeakerForEntity(entity.id);
         
-        // Convertir coordenadas del canvas (0-800) a CSS relativo al contenedor
-        // El canvas está centrado en un contenedor de 1000x600
+
+
         const canvasWidth = 1000;
         const canvasHeight = 600;
         const gameWidth = 800;
         const gameHeight = 600;
         
-        // Calcular offset del canvas centrado
+
         const offsetX = (canvasWidth - gameWidth) / 2;
         const offsetY = (canvasHeight - gameHeight) / 2;
         
-        const cssX = offsetX + entity.position.x + 20; // +20px para centrar el canvas
+        const cssX = offsetX + entity.position.x + 20;
         const cssY = offsetY + entity.position.y + 20;
         
         const newDialogue: ActiveDialogue = {
@@ -54,7 +54,7 @@ const EntityDialogueSystem: React.FC = () => {
           duration: dialogueState.duration
         };
 
-        setActiveDialogues(prev => [...prev.slice(-2), newDialogue]); // Mantener máximo 3 diálogos
+        setActiveDialogues(prev => [...prev.slice(-2), newDialogue]);
       }
     }
   }, [dialogueState, gameState.entities]);

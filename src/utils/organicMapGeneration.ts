@@ -11,7 +11,7 @@ import { PerlinNoise, NOISE_PRESETS, generateDensityMap } from './noiseGeneratio
 import { VoronoiGenerator, createVoronoiConfig, convertVoronoiCellsToZones } from './voronoiGeneration';
 import { OrganicStreetGenerator, createOrganicStreetConfig } from './organicStreetGeneration';
 
-// Obtener configuraciones del sistema actual
+
 export const MAP_CONFIG = {
   width: 1000,
   height: 600,
@@ -184,7 +184,7 @@ export class PoissonDiskSampler {
   generatePoints(densityMap?: number[][]): Point[] {
     const points: Point[] = [];
     
-    // Punto inicial
+
     const initialPoint = {
       x: this.width / 2 + (this.noise.generateNoise2D(this.width * 0.01, this.height * 0.01) * 50),
       y: this.height / 2 + (this.noise.generateNoise2D(this.width * 0.01 + 100, this.height * 0.01 + 100) * 50)
@@ -192,14 +192,14 @@ export class PoissonDiskSampler {
     
     this.addPoint(initialPoint, points);
     
-    // Procesar lista activa
+
     while (this.activeList.length > 0) {
       const randomIndex = Math.floor(Math.random() * this.activeList.length);
       const point = this.activeList[randomIndex];
       
       let foundValidPoint = false;
       
-      // Intentar generar nuevo punto alrededor del actual
+
       for (let i = 0; i < 30; i++) {
         const candidate = this.generateCandidate(point, densityMap);
         
@@ -222,7 +222,7 @@ export class PoissonDiskSampler {
     const angle = Math.random() * 2 * Math.PI;
     let distance = this.radius + Math.random() * this.radius;
     
-    // Ajustar distancia basada en mapa de densidad
+
     if (densityMap) {
       const densityX = Math.floor(center.x * densityMap[0].length / this.width);
       const densityY = Math.floor(center.y * densityMap.length / this.height);
@@ -230,7 +230,7 @@ export class PoissonDiskSampler {
       if (densityX >= 0 && densityX < densityMap[0].length && 
           densityY >= 0 && densityY < densityMap.length) {
         const density = densityMap[densityY][densityX];
-        distance *= (2 - density); // Mayor densidad = menor distancia
+        distance *= (2 - density);
       }
     }
     
@@ -241,13 +241,13 @@ export class PoissonDiskSampler {
   }
 
   private isValidCandidate(candidate: Point): boolean {
-    // Verificar límites
+
     if (candidate.x < 0 || candidate.x >= this.width || 
         candidate.y < 0 || candidate.y >= this.height) {
       return false;
     }
     
-    // Verificar distancia con puntos en grid
+
     const gridX = Math.floor(candidate.x / this.cellSize);
     const gridY = Math.floor(candidate.y / this.cellSize);
     
@@ -281,7 +281,7 @@ export class PoissonDiskSampler {
     points.push(point);
     this.activeList.push(point);
     
-    // Agregar al grid
+
     const gridX = Math.floor(point.x / this.cellSize);
     const gridY = Math.floor(point.y / this.cellSize);
     
@@ -308,7 +308,7 @@ export class OrganicMapGenerator {
    * Generar mapa completo usando algoritmos orgánicos
    */
   generateOrganicMap(): { zones: Zone[]; mapElements: MapElement[] } {
-    // 1. Generar layout base usando Voronoi si está habilitado
+
     let zones: Zone[];
     
     if (this.config.useVoronoi) {
@@ -317,13 +317,13 @@ export class OrganicMapGenerator {
       zones = this.generateImprovedGridZones();
     }
 
-    // 2. Aplicar variación orgánica a las zonas
+
     zones = this.applyOrganicVariation(zones);
 
-    // 3. Generar decoraciones usando Poisson disk sampling
+
     const decorations = this.generateOrganicDecorations(zones);
 
-    // 4. Crear red de calles orgánicas
+
     let streets: MapElement[];
     
     if (this.config.organicStreets) {
@@ -332,7 +332,7 @@ export class OrganicMapGenerator {
       streets = this.generateImprovedStreets(zones);
     }
 
-    // 5. Combinar todos los elementos
+
     const mapElements = [...decorations, ...streets];
 
     return { zones, mapElements };
@@ -356,15 +356,15 @@ export class OrganicMapGenerator {
     const voronoi = new VoronoiGenerator(voronoiConfig);
     const cells = voronoi.generateCells();
 
-    // Seleccionar tipos de habitación
+
     const roomTypes = this.selectRoomTypesForCells(cells.length);
     const voronoiZones = convertVoronoiCellsToZones(cells, roomTypes);
 
-    // Convertir a formato Zone
+
     return voronoiZones.map((voronoiZone, index) => {
       const roomTypeName = roomTypes[index];
       
-      // Verificar que el tipo de habitación existe
+
       if (!roomTypeName || !ROOM_TYPES[roomTypeName as keyof typeof ROOM_TYPES]) {
         console.warn(`Tipo de habitación no válido: ${roomTypeName}, usando LIVING_ROOM por defecto`);
         const fallbackType = 'LIVING_ROOM';
@@ -400,25 +400,25 @@ export class OrganicMapGenerator {
    * Generar zonas mejoradas sin Voronoi (fallback)
    */
   private generateImprovedGridZones(): Zone[] {
-    // Usar el sistema existente pero con variación orgánica
+
     const roomTypes = Object.keys(ROOM_TYPES).slice(0, 6) as Array<keyof typeof ROOM_TYPES>;
     const zones: Zone[] = [];
 
     roomTypes.forEach((roomType, index) => {
       const roomConfig = ROOM_TYPES[roomType];
       
-      // Posición base con variación orgánica
+
       let baseX = 100 + (index % 3) * 250;
       let baseY = 100 + Math.floor(index / 3) * 200;
       
-      // Aplicar jitter orgánico
+
       const jitterX = this.noise.generateNoise2D(baseX * 0.01, baseY * 0.01) * 50;
       const jitterY = this.noise.generateNoise2D(baseX * 0.01 + 100, baseY * 0.01 + 100) * 50;
       
       baseX += jitterX;
       baseY += jitterY;
       
-      // Tamaño con variación orgánica
+
       const baseSize = roomConfig.baseSize;
       const sizeVariation = this.noise.generateNoise2D(index * 0.5, index * 0.3) * 0.3;
       
@@ -451,7 +451,7 @@ export class OrganicMapGenerator {
     if (this.config.densityVariation === 0) return zones;
 
     return zones.map(zone => {
-      // Aplicar variación orgánica a las posiciones
+
       const noiseX = this.noise.generateNoise2D(zone.bounds.x * 0.005, zone.bounds.y * 0.005);
       const noiseY = this.noise.generateNoise2D(zone.bounds.x * 0.005 + 50, zone.bounds.y * 0.005 + 50);
       
@@ -459,7 +459,7 @@ export class OrganicMapGenerator {
       const newX = zone.bounds.x + noiseX * variationAmount;
       const newY = zone.bounds.y + noiseY * variationAmount;
 
-      // Aplicar variación orgánica al tamaño
+
       const sizeNoiseX = this.noise.generateNoise2D(zone.bounds.x * 0.008, zone.bounds.y * 0.008);
       const sizeNoiseY = this.noise.generateNoise2D(zone.bounds.x * 0.008 + 75, zone.bounds.y * 0.008 + 75);
       
@@ -485,7 +485,7 @@ export class OrganicMapGenerator {
   private generateOrganicDecorations(zones: Zone[]): MapElement[] {
     const decorations: MapElement[] = [];
     
-    // Generar mapa de densidad
+
     const densityMap = generateDensityMap(
       MAP_CONFIG.width, 
       MAP_CONFIG.height, 
@@ -494,18 +494,18 @@ export class OrganicMapGenerator {
     );
 
     zones.forEach((zone, zoneIndex) => {
-      // Usar Poisson disk sampling para distribuir decoraciones naturalmente
+
       const sampler = new PoissonDiskSampler(
         zone.bounds.width - 20,
         zone.bounds.height - 20,
-        25, // Radio mínimo entre decoraciones
+        25,
         this.seedToNumber(this.config.seed) + zoneIndex
       );
 
-      // Generar puntos de decoración
+
       const decorationPoints = sampler.generatePoints(densityMap);
       
-      // Seleccionar tipos de decoración para esta zona
+
       const roomType = this.mapZoneTypeToRoomType(zone.type);
       const roomConfig = ROOM_TYPES[roomType];
       const availableDecorations = [
@@ -518,7 +518,7 @@ export class OrganicMapGenerator {
           const decorationType = availableDecorations[pointIndex % availableDecorations.length];
           const decorationSize = this.getDecorationSize(decorationType);
           
-          // Aplicar variación orgánica al tamaño
+
           const sizeVariation = this.noise.generateNoise2D(point.x * 0.02, point.y * 0.02) * 0.2;
           const finalWidth = Math.floor(decorationSize.width * (1 + sizeVariation));
           const finalHeight = Math.floor(decorationSize.height * (1 + sizeVariation));
@@ -560,7 +560,7 @@ export class OrganicMapGenerator {
       streetConfig
     );
 
-    // Usar centros de zona como puntos de anclaje
+
     const anchors: Point[] = zones.map(zone => ({
       x: zone.bounds.x + zone.bounds.width / 2,
       y: zone.bounds.y + zone.bounds.height / 2
@@ -568,11 +568,11 @@ export class OrganicMapGenerator {
 
     const streetNetwork = streetGenerator.generateStreetNetwork(anchors);
     
-    // Convertir calles orgánicas a MapElements
+
     const streetElements: MapElement[] = [];
 
     streetNetwork.streets.forEach(street => {
-      // Crear segmentos de calle
+
       for (let i = 0; i < street.path.length - 1; i++) {
         const start = street.path[i];
         const end = street.path[i + 1];
@@ -591,7 +591,7 @@ export class OrganicMapGenerator {
       }
     });
 
-    // Agregar intersecciones
+
     streetNetwork.intersections.forEach((intersection, index) => {
       streetElements.push({
         id: `organic_intersection_${index}`,
@@ -609,11 +609,11 @@ export class OrganicMapGenerator {
    * Generar calles mejoradas (fallback)
    */
   private generateImprovedStreets(zones: Zone[]): MapElement[] {
-    // Sistema de calles mejorado pero sin full organic generation
+
     const streets: MapElement[] = [];
     
     zones.forEach((zone, index) => {
-      // Crear conexiones más naturales entre zonas
+
       if (index < zones.length - 1) {
         const nextZone = zones[index + 1];
         
@@ -627,18 +627,18 @@ export class OrganicMapGenerator {
           y: nextZone.bounds.y + nextZone.bounds.height / 2
         };
 
-        // Crear path curvado
+
         const midPoint = {
           x: (start.x + end.x) / 2,
           y: (start.y + end.y) / 2
         };
 
-        // Aplicar curvatura con noise
+
         const curveOffset = this.noise.generateNoise2D(midPoint.x * 0.01, midPoint.y * 0.01) * 30;
         midPoint.x += curveOffset;
         midPoint.y += curveOffset;
 
-        // Crear segmentos curvados
+
         const segments = [
           { from: start, to: midPoint },
           { from: midPoint, to: end }
@@ -664,7 +664,7 @@ export class OrganicMapGenerator {
     return streets;
   }
 
-  // FUNCIONES AUXILIARES
+
 
   private seedToNumber(seed: string): number {
     return seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
@@ -674,24 +674,24 @@ export class OrganicMapGenerator {
     const allRoomTypes = Object.keys(ROOM_TYPES);
     const selectedTypes: string[] = [];
     
-    // Asegurar habitaciones esenciales
+
     const essentialRooms = ['KITCHEN', 'LIVING_ROOM', 'BEDROOM', 'BATHROOM'];
     selectedTypes.push(...essentialRooms.slice(0, Math.min(essentialRooms.length, numCells)));
     
-    // Completar con habitaciones opcionales
+
     const optionalRooms = allRoomTypes.filter(room => !essentialRooms.includes(room));
     while (selectedTypes.length < numCells && optionalRooms.length > 0) {
       const randomIndex = Math.floor(Math.random() * optionalRooms.length);
       selectedTypes.push(optionalRooms.splice(randomIndex, 1)[0]);
     }
     
-    // Si aún faltan tipos, completar con tipos aleatorios de los existentes
+
     while (selectedTypes.length < numCells) {
       const randomRoomType = allRoomTypes[Math.floor(Math.random() * allRoomTypes.length)];
       selectedTypes.push(randomRoomType);
     }
     
-    return selectedTypes.slice(0, numCells); // Asegurar que no excedamos numCells
+    return selectedTypes.slice(0, numCells);
   }
 
   private mapZoneTypeToRoomType(zoneType: Zone['type']): keyof typeof ROOM_TYPES {
@@ -818,7 +818,7 @@ export class OrganicMapGenerator {
     
     const baseColor = baseColors[decorationType] || '#64748b';
     
-    // Aplicar tinte del tema
+
     switch (this.config.theme) {
       case 'MODERN':
         return baseColor === '#64748b' ? '#9CA3AF' : baseColor;
@@ -843,14 +843,14 @@ export function generateOrganicProceduralMap(
 ): { zones: Zone[]; mapElements: MapElement[] } {
   const mapSeed = seed || Date.now().toString(36) + Math.random().toString(36).substr(2);
   
-  // Configuración por defecto con opciones orgánicas activadas
+
   const config: OrganicMapConfig = {
     seed: mapSeed,
     theme: 'MODERN',
-    useVoronoi: true,  // Usar Voronoi por defecto para eliminar grid
-    organicStreets: true,  // Usar calles orgánicas por defecto
-    densityVariation: 0.8,  // Alta variación orgánica
-    naturalClustering: true,  // Clustering natural habilitado
+    useVoronoi: true,
+    organicStreets: true,
+    densityVariation: 0.8,
+    naturalClustering: true,
     ...options
   };
   

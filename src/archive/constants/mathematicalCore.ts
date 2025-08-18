@@ -5,7 +5,7 @@
  * Estas constantes forman la base de todos los cálculos del sistema.
  */
 
-// === CONSTANTES MATEMÁTICAS UNIVERSALES ===
+
 
 /**
  * Número áureo φ (phi) = 1.618033988749...
@@ -43,7 +43,7 @@ export const SQRT_2 = Math.sqrt(2);
  */
 export const LN_2 = Math.log(2);
 
-// === PRECISIÓN Y TOLERANCIAS ===
+
 
 /**
  * Epsilon de máquina - mínima diferencia representable
@@ -65,7 +65,7 @@ export const ULTRA_PRECISION_EPSILON = 1e-15;
  */
 export const EFFECTIVE_ZERO = 1e-8;
 
-// === SECUENCIAS MATEMÁTICAS ===
+
 
 /**
  * Secuencia de Fibonacci hasta el término 12
@@ -78,37 +78,37 @@ export const FIBONACCI_SEQUENCE = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] as
  * Frecuencias que suenan "naturales" al oído humano
  */
 export const HARMONIC_RATIOS = [
-  1.0,    // Fundamental
-  1.125,  // Segunda mayor
-  1.25,   // Tercera mayor
-  1.333,  // Cuarta perfecta
-  1.5,    // Quinta perfecta
-  1.667,  // Sexta mayor
-  1.875,  // Séptima mayor
-  2.0     // Octava
+  1.0,
+  1.125,
+  1.25,
+  1.333,
+  1.5,
+  1.667,
+  1.875,
+  2.0
 ] as const;
 
-// === CONSTANTES DE FÍSICA FUNDAMENTAL ===
+
 
 /**
  * Velocidad base de propagación de "información" en el sistema
  * Equivalente a c en física, limita velocidades máximas
  */
-export const INFORMATION_SPEED_LIMIT = 1000; // píxeles por segundo
+export const INFORMATION_SPEED_LIMIT = 1000;
 
 /**
  * Constante de amortiguación universal
  * Basada en el número e para decaimiento natural
  */
-export const UNIVERSAL_DAMPING = Math.exp(-1/60); // ~0.9835 para 60fps
+export const UNIVERSAL_DAMPING = Math.exp(-1/60);
 
 /**
  * Factor de viscosidad del "medio" donde se mueven las entidades
  * Basado en la proporción áurea para comportamiento natural
  */
-export const MEDIUM_VISCOSITY = GOLDEN_RATIO_CONJUGATE; // ~0.618
+export const MEDIUM_VISCOSITY = GOLDEN_RATIO_CONJUGATE;
 
-// === CONSTANTES DE RESONANCIA ARMÓNICA ===
+
 
 /**
  * Frecuencia base del sistema (Hz)
@@ -120,7 +120,7 @@ export const BASE_FREQUENCY = 440.0;
  * Factor de decaimiento natural de resonancia
  * Basado en el coeficiente de amortiguación crítico
  */
-export const RESONANCE_DECAY_NATURAL = Math.exp(-LN_2 / 100); // ~0.99307
+export const RESONANCE_DECAY_NATURAL = Math.exp(-LN_2 / 100);
 
 /**
  * Umbral de emergencia para efectos complejos
@@ -128,7 +128,7 @@ export const RESONANCE_DECAY_NATURAL = Math.exp(-LN_2 / 100); // ~0.99307
  */
 export const EMERGENCE_THRESHOLD = GOLDEN_RATIO_CONJUGATE;
 
-// === CONSTANTES DE TIEMPO NATURAL ===
+
 
 /**
  * Duración de un "ciclo natural" en milisegundos
@@ -150,7 +150,7 @@ export const BREATHING_CYCLE_MS = 4000;
  */
 export const ATTENTION_SPAN_MS = 7000;
 
-// === VALIDACIÓN DE CONSTANTES ===
+
 
 /**
  * Valida que todas las constantes matemáticas sean correctas
@@ -174,7 +174,7 @@ export function validateMathematicalConstants(): boolean {
   return validations.every(v => v === true);
 }
 
-// Validar al cargar el módulo en desarrollo
+
 if (import.meta.env.DEV) {
   if (!validateMathematicalConstants()) {
     console.error('❌ Mathematical constants validation failed!');

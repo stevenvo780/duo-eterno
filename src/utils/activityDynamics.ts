@@ -27,7 +27,7 @@ export const getActivityDynamics = () => ({
   COOKING: { optimalDuration: ACTIVITY_OPTIMAL_DURATIONS.COOKING }
 });
 
-// Mantenemos la interfaz original pero usando constantes del .env donde sea posible
+
 export const ACTIVITY_EFFECTS: Record<ActivityType, {
   immediate: Record<string, number>;
   perMinute: Record<string, number>;
@@ -198,12 +198,12 @@ export const calculateActivityPriority = (
   
   let priority = 0;
 
-  // Nonlinear need weighting: higher weight when stat is low, saturates when high
+
   const w = (v: number, alpha = 1.6) => 1 - Math.pow(Math.min(100, Math.max(0, v)) / 100, alpha);
 
   if (activity === 'WORKING') {
     priority += w(currentStats.money) * 100;
-    priority -= w(100 - currentStats.energy) * 30; // penalize fatigue
+    priority -= w(100 - currentStats.energy) * 30;
   }
 
   if (activity === 'SHOPPING') {

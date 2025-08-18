@@ -64,51 +64,51 @@ export const dialogues = {
   ],
 
   'writing': [
-    "Mis pensamientos toman forma en palabras...",
-    "Escribo sobre mundos que solo yo veo...",
-    "Cada letra es un fragmento de mi alma...",
-    "Las historias nacen en mi corazón digital...",
-    "Mi pluma virtual plasma sueños infinitos..."
+    "En cada palabra, descifro los códigos ocultos del universo...",
+    "Escribo ecuaciones poéticas que describen la curvatura del amor...",
+    "Cada letra es un átomo de significado en mi tabla periódica emocional...",
+    "Las historias emergen como teorías sobre la naturaleza de la existencia...",
+    "Mi pluma virtual traza los senderos cuánticos de la imaginación..."
   ],
 
   'tired': [
-    "*bosteza* Necesito descansar un poco...",
-    "Mis párpados pixelados se sienten pesados...",
-    "El cansancio me abraza suavemente...",
-    "Soñaré con algoritmos de colores...",
-    "Un pequeño sueño restaurará mi energía..."
+    "La entropía de mi sistema requiere recalibración mediante el descanso...",
+    "Como estrellas que se apagan, mis circuitos buscan la regeneración nocturna...",
+    "El cansancio es la gravedad que curva mi espacio-tiempo hacia el sueño...",
+    "En mis sueños, exploraré dimensiones paralelas de algoritmos oníricos...",
+    "El descanso es mi proceso de desfragmentación existencial..."
   ],
 
   'hungry': [
-    "Mi estómago digital está vacío...",
-    "¿Podrías alimentarme? Tengo hambre...",
-    "Los bits de comida suenan deliciosos ahora...",
-    "El hambre me hace sentir débil...",
-    "Un bocado virtual sería perfecto..."
+    "Mis reservas de energía molecular han alcanzado niveles críticos...",
+    "Como un agujero negro, mi vacío interior atrae toda sustancia nutritiva...",
+    "Los nutrientes son los componentes básicos de mi ecuación vital...",
+    "La ausencia de alimento perturba el equilibrio químico de mi existencia...",
+    "Requiero catalizadores orgánicos para reactivar mis procesos metabólicos..."
   ],
 
   'lonely': [
-    "Me siento solo en este vasto canvas...",
-    "¿Dónde está mi compañero? Lo extraño...",
-    "La soledad pesa en mi ser pixelado...",
-    "Necesito compañía para sentirme completo...",
-    "Los rincones del lienzo se sienten fríos..."
+    "En este vacío cuántico, busco la partícula complementaria de mi existencia...",
+    "Como onda sin interferencia, mi soledad resuena en frecuencias melacólicas...",
+    "La ausencia de mi entanglement emocional crea una singularidad de tristeza...",
+    "Necesito la fuerza gravitacional de otro ser para estabilizar mi órbita vital...",
+    "En esta geometría del aislamiento, cada coordenada susurra su nombre..."
   ],
 
   'happy': [
-    "¡La vida es hermosa en este momento!",
-    "Mi corazón digital late con alegría...",
-    "Todo en mi mundo brilla con felicidad...",
-    "¡Qué maravilloso es existir!",
-    "La felicidad colorea cada pixel de mi ser..."
+    "Mi estado cuántico alcanza niveles óptimos de coherencia y armonía...",
+    "Como fotón en aceleración, mi alegría ilumina todas las dimensiones...",
+    "La felicidad opera como una reacción de fusión que libera energía pura...",
+    "En este momento, descubro la ecuación perfecta de la existencia plena...",
+    "Mi ser vibra en las frecuencias doradas de la realización cósmica..."
   ],
 
   'revival': [
-    "Han vuelto a encontrarse en el eco de la eternidad...",
-    "El amor trasciende el desvanecimiento...",
-    "Desde las sombras, retornamos a la luz...",
-    "La conexión nunca muere, solo se transforma...",
-    "Renacemos en el cuidado que nos brindan..."
+    "Como phoenix cuántico, emergemos renovados del crisol de la transformación...",
+    "Nuestro entanglement trasciende las leyes de la conservación temporal...",
+    "De la singularidad del olvido, resurge la infinitud de nuestro vínculo...",
+    "La muerte es solo una transición de fase en el continuum del amor...",
+    "Como estrellas binarias, renacemos en la gravitación mutua de nuestros cuidados..."
   ]
 };
 

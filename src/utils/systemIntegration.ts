@@ -19,7 +19,7 @@ import { logGeneral } from './logger';
  */
 function validateGameConfiguration(): boolean {
   try {
-    // Validación básica de la configuración
+
     const config = getGameConfig();
     return !!(config && config.entityInitialStats !== undefined);
   } catch (error) {
@@ -28,7 +28,7 @@ function validateGameConfiguration(): boolean {
   }
 }
 
-// === RESUMEN DE CORRECCIONES APLICADAS ===
+
 
 export const APPLIED_FIXES = {
   CRITICAL: [
@@ -95,14 +95,14 @@ export const APPLIED_FIXES = {
   ]
 } as const;
 
-// === MÉTRICAS DE MEJORA ===
+
 
 export interface SystemMetrics {
   constantsValidation: boolean;
   configurationCoherence: boolean;
   mathematicalPrecision: boolean;
   stateManagementRobustness: boolean;
-  overallSystemHealth: number; // 0-100
+  overallSystemHealth: number;
   recommendations: string[];
 }
 
@@ -114,31 +114,31 @@ export async function evaluateSystemHealth(): Promise<SystemMetrics> {
   const recommendations: string[] = [];
   
   try {
-    // Validar constantes
+
     results.constantsValidation = await validateAllGameConstants();
     if (!results.constantsValidation) {
       recommendations.push('Revisar constantes matemáticas - algunas validaciones fallaron');
     }
     
-    // Validar configuración
+
     results.configurationCoherence = validateGameConfiguration();
     if (!results.configurationCoherence) {
       recommendations.push('Ajustar configuración del juego - parámetros inconsistentes');
     }
     
-    // Probar precisión matemática
+
     results.mathematicalPrecision = testMathematicalPrecision();
     if (!results.mathematicalPrecision) {
       recommendations.push('Verificar cálculos matemáticos - posibles problemas de precisión');
     }
     
-    // Probar gestión de estados
+
     results.stateManagementRobustness = testStateManagement();
     if (!results.stateManagementRobustness) {
       recommendations.push('Revisar gestión de estados - validaciones insuficientes');
     }
     
-    // Calcular salud general
+
     const validationResults = [
       results.constantsValidation,
       results.configurationCoherence,
@@ -149,7 +149,7 @@ export async function evaluateSystemHealth(): Promise<SystemMetrics> {
     const passedTests = validationResults.filter(r => r === true).length;
     results.overallSystemHealth = (passedTests / validationResults.length) * 100;
     
-    // Recomendaciones generales
+
     if (results.overallSystemHealth === 100) {
       recommendations.push('Sistema en excelente estado - todas las validaciones pasaron');
     } else if (results.overallSystemHealth >= 75) {
@@ -181,34 +181,34 @@ export async function evaluateSystemHealth(): Promise<SystemMetrics> {
  */
 function testMathematicalPrecision(): boolean {
   const tests = [
-    // Test redondeo sin sesgo
+
     () => {
       const result = fixedMathUtils.preciseRound(1.999999, 3);
-      return result === 2.0; // Sin epsilon bias
+      return result === 2.0;
     },
     
-    // Test comparación con epsilon relativo
+
     () => {
       return fixedMathUtils.areEqual(1000000.1, 1000000.2, 1e-6);
     },
     
-    // Test clamp seguro
+
     () => {
       const result = fixedMathUtils.safeClamp(NaN, 0, 10);
-      return result === 5; // Valor medio para NaN
+      return result === 5;
     },
     
-    // Test normalización robusta
+
     () => {
-      const result = fixedMathUtils.safeNormalize(5, 10, 10); // Rango cero
+      const result = fixedMathUtils.safeNormalize(5, 10, 10);
       return result === 0.5;
     },
     
-    // Test ruido determinista
+
     () => {
       const val1 = fixedMathUtils.deterministicNoise(1.0, 1.0);
       const val2 = fixedMathUtils.deterministicNoise(1.0, 1.0);
-      return val1 === val2; // Debe ser determinista
+      return val1 === val2;
     }
   ];
   
@@ -227,44 +227,44 @@ function testMathematicalPrecision(): boolean {
  */
 function testStateManagement(): boolean {
   const tests = [
-    // Test validación de stat negativo
+
     () => {
       const result = robustStateUtils.validateAndFixStat('money', -50, 'test');
-      return result === 0; // No debe permitir money negativo
+      return result === 0;
     },
     
-    // Test validación de stat infinito
+
     () => {
       const result = robustStateUtils.validateAndFixStat('health', Infinity, 'test');
-      return result === 100; // Debe usar valor por defecto
+      return result === 100;
     },
     
-    // Test aplicación de cambio seguro
+
     () => {
       const initialStats = robustStateUtils.createInitialStats();
       const newStats = robustStateUtils.applyStatChange(initialStats, 'money', -1000, 'test');
-      return newStats.money === 0; // No debe permitir negativo
+      return newStats.money === 0;
     },
     
-    // Test cálculo de supervivencia robusto
+
     () => {
       const extremeStats = robustStateUtils.createInitialStats({
-        hunger: 999, // Valor extremo
-        health: -50  // Valor inválido
+        hunger: 999,
+        health: -50
       });
       const survival = robustStateUtils.calculateSurvivalLevel(extremeStats);
-      return survival.score >= 0 && survival.score <= 100; // Debe estar en rango válido
+      return survival.score >= 0 && survival.score <= 100;
     },
     
-    // Test coherencia de stats
+
     () => {
       const stats = robustStateUtils.validateAndFixStats({
         hunger: 100,
         sleepiness: 100,
-        energy: 100, // Incoherente - alta energía con alta necesidad de sueño
+        energy: 100,
         health: 0
       }, 'test');
-      return stats.energy < 100; // Debe corregir incoherencia
+      return stats.energy < 100;
     }
   ];
   
@@ -278,7 +278,7 @@ function testStateManagement(): boolean {
   });
 }
 
-// === MIGRACIÓN Y COMPATIBILIDAD ===
+
 
 /**
  * Guía de migración para integrar las mejoras
@@ -342,7 +342,7 @@ export const MIGRATION_GUIDE = {
   }
 } as const;
 
-// === DOCUMENTACIÓN DE ARQUITECTURA ===
+
 
 export const ARCHITECTURE_OVERVIEW = {
   layers: {
@@ -391,7 +391,7 @@ export const ARCHITECTURE_OVERVIEW = {
   ]
 } as const;
 
-// === FUNCIÓN DE INICIALIZACIÓN ===
+
 
 /**
  * Inicializa el sistema mejorado y reporta el estado
@@ -399,10 +399,10 @@ export const ARCHITECTURE_OVERVIEW = {
 export async function initializeImprovedSystem(): Promise<SystemMetrics> {
   console.log('🚀 Inicializando sistema mejorado de Dúo Eterno...');
   
-  // Validar sistema
+
   const metrics = await evaluateSystemHealth();
   
-  // Reportar estado
+
   console.log('📊 Métricas del sistema:', {
     'Constantes': metrics.constantsValidation ? '✅' : '❌',
     'Configuración': metrics.configurationCoherence ? '✅' : '❌',
@@ -411,7 +411,7 @@ export async function initializeImprovedSystem(): Promise<SystemMetrics> {
     'Salud General': `${metrics.overallSystemHealth.toFixed(1)}%`
   });
   
-  // Mostrar recomendaciones
+
   if (metrics.recommendations.length > 0) {
     console.log('📝 Recomendaciones:');
     metrics.recommendations.forEach((rec, i) => {
@@ -419,7 +419,7 @@ export async function initializeImprovedSystem(): Promise<SystemMetrics> {
     });
   }
   
-  // Mostrar correcciones aplicadas
+
   console.log('🔧 Correcciones aplicadas:');
   console.log(`   Críticas: ${APPLIED_FIXES.CRITICAL.length}`);
   console.log(`   Altas: ${APPLIED_FIXES.HIGH.length}`);
@@ -429,7 +429,7 @@ export async function initializeImprovedSystem(): Promise<SystemMetrics> {
   return metrics;
 }
 
-// === EXPORTACIONES PRINCIPALES ===
+
 
 export {
   fixedMathUtils,
@@ -438,7 +438,7 @@ export {
   validateGameConfiguration
 };
 
-// Auto-inicializar en desarrollo
+
 if (import.meta.env.DEV) {
   initializeImprovedSystem().then(metrics => {
     if (metrics.overallSystemHealth === 100) {

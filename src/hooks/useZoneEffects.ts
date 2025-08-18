@@ -8,7 +8,7 @@ import { logZones } from '../utils/logger';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { ZoneType } from "../constants";
 
-// Ajusta cuán intensamente actúan los efectos de las zonas sobre las estadísticas
+
 const ZONE_EFFECT_SCALE = 0.03;
 
 const zoneConfigs: Partial<Record<ZoneType, { stats: (keyof EntityStats)[]; criticalThreshold: number; label: string }>> = {
@@ -33,8 +33,8 @@ const calculateZoneEffectiveness = (
   const criticalNeed = avgStat < config.criticalThreshold;
   const needLevel = 100 - avgStat;
   const baseEffectiveness = 1 + needLevel / 50;
-  // Crowding: reduce effectiveness as occupancy grows beyond 1
-  const capacityLambda = 0.4; // tuneable; per extra occupant
+
+  const capacityLambda = 0.4;
   const crowdFactor = 1 / (1 + capacityLambda * Math.max(0, occupancy - 1));
 
   return {
@@ -63,13 +63,13 @@ export const useZoneEffects = () => {
   const gameStateRef = useRef(gameState);
   const dispatchRef = useRef(dispatch);
 
-  // Actualizar refs cuando cambien los valores
+
   useEffect(() => {
     gameStateRef.current = gameState;
     dispatchRef.current = dispatch;
   }, [gameState, dispatch]);
 
-  // Crear el intervalo solo una vez
+
   useEffect(() => {
     const { zoneEffectsInterval } = getGameIntervals();
     
@@ -118,7 +118,7 @@ export const useZoneEffects = () => {
         if (Object.keys(finalEffects).length) {
           dispatchRef.current({ type: 'UPDATE_ENTITY_STATS', payload: { entityId: entity.id, stats: finalEffects } });
           
-          // Log para análisis
+
           dynamicsLogger.logZoneEffect(entity.id, currentZone.name, finalEffects as Record<string, number>);
           
           if (gameConfig.debugMode && messageCounter.current % 10 === 0) {
@@ -140,5 +140,5 @@ export const useZoneEffects = () => {
         logZones.info('Zone Effects detenido');
       }
     };
-  }, []); // Sin dependencias - solo se ejecuta una vez
+  }, []);
 };

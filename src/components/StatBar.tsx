@@ -20,7 +20,7 @@ const StatBar: React.FC<StatBarProps> = ({
   height = 20,
   animated = true 
 }) => {
-  // Normalize value to 0-100 range for display
+
   const normalizedValue = Math.max(0, Math.min(100, (value / maxValue) * 100));
   const displayValue = Math.round(value);
   
@@ -61,7 +61,7 @@ const StatBar: React.FC<StatBarProps> = ({
         position: 'relative',
         boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
       }}>
-        {/* Background gradient for depth */}
+
         <div style={{
           position: 'absolute',
           top: 0,
@@ -72,7 +72,7 @@ const StatBar: React.FC<StatBarProps> = ({
           pointerEvents: 'none'
         }} />
         
-        {/* Filled portion */}
+
         <div style={{
           height: '100%',
           width: `${normalizedValue}%`,
@@ -82,7 +82,7 @@ const StatBar: React.FC<StatBarProps> = ({
           position: 'relative',
           boxShadow: normalizedValue > 0 ? `0 0 8px ${getStatColor(normalizedValue)}40` : 'none'
         }}>
-          {/* Shine effect */}
+
           <div style={{
             position: 'absolute',
             top: '2px',
@@ -95,7 +95,7 @@ const StatBar: React.FC<StatBarProps> = ({
           }} />
         </div>
         
-        {/* Critical warning overlay */}
+
         {normalizedValue < 20 && (
           <div style={{
             position: 'absolute',
@@ -108,7 +108,7 @@ const StatBar: React.FC<StatBarProps> = ({
           }} />
         )}
         
-        {/* Value text inside bar for wider bars */}
+
         {height >= 24 && showValue && (
           <div style={{
             position: 'absolute',
@@ -126,7 +126,7 @@ const StatBar: React.FC<StatBarProps> = ({
         )}
       </div>
       
-      {/* Status indicator */}
+
       {normalizedValue < 30 && (
         <div style={{
           fontSize: '10px',

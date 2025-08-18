@@ -26,7 +26,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
   const selectedEntity = selectedEntityId ? gameState.entities.find(e => e.id === selectedEntityId) : null;
   const totalMoney = gameState.entities.reduce((sum, entity) => sum + entity.stats.money, 0);
   
-  // Calculate entities status for quick overview
+
   const entitiesStatus = gameState.entities.map(entity => {
     const criticalStats = ['hunger', 'sleepiness', 'loneliness', 'energy', 'health'];
     const avgHealth = criticalStats.reduce((sum, stat) => sum + (entity.stats[stat as keyof typeof entity.stats] || 0), 0) / criticalStats.length;
@@ -40,13 +40,13 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
 
   const handleInteraction = (type: InteractionType, entityId?: string) => {
     if (entityId) {
-    // Apply to specific entity
+
       const entity = gameState.entities.find(e => e.id === entityId);
       if (!entity || entity.isDead) return;
 
       const result = applyInteractionEffect(entity.stats, type);
       
-      // Log de la interacción del usuario
+
       dynamicsLogger.logUserInteraction(type, entityId, result);
       
       dispatch({ type: 'UPDATE_ENTITY_STATS', payload: { entityId, stats: result.stats } });
@@ -54,7 +54,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId, mood: result.mood } });
       }
 
-      // Show dialogue
+
       const dialogueType = type.toLowerCase();
       const dialogueMap: Record<string, string> = {
         'feed': 'feeding',
@@ -66,7 +66,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
       if (dialogueMap[dialogueType]) {
         const message = getRandomDialogue(dialogueMap[dialogueType] as keyof typeof import('../utils/dialogues').dialogues);
         
-        // Log del diálogo
+
         dynamicsLogger.logDialogue(entityId as 'circle' | 'square', message, dialogueType);
         
         dispatch({
@@ -79,7 +79,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         });
       }
     } else {
-    // Apply to both entities (global interaction)
+
       gameState.entities.forEach(entity => {
         if (entity.isDead) return;
         
@@ -90,7 +90,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         }
       });
 
-      // Global resonance boost for NOURISH con atenuación por uso repetido
+
       if (type === 'NOURISH') {
         const now = Date.now();
         const w = window as unknown as { __lastNourishTime?: number };
@@ -99,9 +99,9 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         w.__lastNourishTime = now;
 
         const baseResonanceGain = 30;
-        // Atenúa si se usa varias veces en <15s: factor 1.0 → 0.5
+
         const attenuation = Math.max(0.5, Math.min(1.0, deltaSec / 15));
-        const gain = baseResonanceGain * attenuation * (1 - gameState.resonance / 120); // reducir a medida que R sube
+        const gain = baseResonanceGain * attenuation * (1 - gameState.resonance / 120);
 
         const newResonance = Math.min(100, gameState.resonance + gain);
         
@@ -156,7 +156,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Entity Panel - New Component */}
+
       {selectedEntity && (
         <EntityPanel 
           entity={selectedEntity} 
@@ -164,7 +164,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         />
       )}
 
-      {/* Global Stats Overlay */}
+
       {showStats && (
         <div style={{
           position: 'absolute',
@@ -230,7 +230,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         </div>
       )}
 
-      {/* Bottom Action Bar - Compacto */}
+
       <div style={{
         height: '50px',
         background: 'linear-gradient(90deg, #1e293b 0%, #334155 100%)',
@@ -241,7 +241,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
         padding: '0 16px',
         boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Left: Entity Selectors with Status */}
+
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ 
             fontSize: '12px', 
@@ -328,7 +328,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
                 
                 {entity.isDead && <span style={{ fontSize: '14px' }}>💀</span>}
                 
-                {/* Health indicator bar */}
+
                 {!entity.isDead && (
                   <div style={{
                     position: 'absolute',
@@ -353,7 +353,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           })}
         </div>
 
-        {/* Center: Resonance compacto */}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ 
@@ -405,7 +405,7 @@ const UIControls: React.FC<UIControlsProps> = ({ selectedEntityId, onEntitySelec
           </button>
         </div>
 
-        {/* Right: Utility Actions compacto */}
+
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             onClick={() => setShowStats(!showStats)}

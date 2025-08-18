@@ -55,14 +55,14 @@ export const migrateToLatest = (raw: unknown): PersistedStateV1 | null => {
   const data = raw as Partial<PersistedStateAny> & Record<string, unknown>;
   const version = typeof data.version === 'number' ? data.version : 1;
 
-  // Currently only V1 supported; future versions can be mapped here
+
   if (version === 1) {
-    // Basic shape validation
+
     if (!Array.isArray(data.entities) || typeof data.resonance !== 'number') return null;
     return data as PersistedStateV1;
   }
 
-  // Unknown version fallback
+
   try {
     const v1: PersistedStateV1 = {
       version: 1,
@@ -121,7 +121,7 @@ export const clearPersisted = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    // Ignore localStorage errors - not critical
+
     logStorage.warn('Failed to clear persisted state', error);
   }
 };

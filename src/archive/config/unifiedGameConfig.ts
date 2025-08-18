@@ -36,10 +36,10 @@ import {
   UNIVERSAL_DAMPING 
 } from '../constants/mathematicalCore';
 
-// === CONFIGURACIÓN PRINCIPAL DEL JUEGO ===
+
 
 export interface UnifiedGameConfig {
-  // === SISTEMA DE TIEMPO ===
+
   timing: {
     targetFPS: number;
     movementUpdateFPS: number;
@@ -48,7 +48,7 @@ export interface UnifiedGameConfig {
     adaptiveThrottling: boolean;
   };
 
-  // === SISTEMA DE DEBUG ===
+
   debug: {
     enabled: boolean;
     showPhysicsDebug: boolean;
@@ -57,7 +57,7 @@ export interface UnifiedGameConfig {
     validateConstants: boolean;
   };
 
-  // === DINÁMICAS BIOLÓGICAS ===
+
   biology: {
     decayRates: typeof BIOLOGICAL_DECAY_RATES;
     activityMultipliers: typeof ACTIVITY_METABOLIC_MULTIPLIERS;
@@ -65,7 +65,7 @@ export interface UnifiedGameConfig {
     survivalEconomics: typeof SURVIVAL_ECONOMICS;
   };
 
-  // === SISTEMA DE FÍSICA ===
+
   physics: {
     enabled: boolean;
     world: typeof PHYSICS_WORLD;
@@ -74,7 +74,7 @@ export interface UnifiedGameConfig {
     collisions: typeof COLLISION_SYSTEM;
   };
 
-  // === SISTEMA DE AI ===
+
   ai: {
     personalityInfluence: number;
     activityInertiaBonus: number;
@@ -84,7 +84,7 @@ export interface UnifiedGameConfig {
     behaviorPrediction: typeof BEHAVIOR_PREDICTION;
   };
 
-  // === SISTEMA DE RESONANCIA ===
+
   resonance: {
     dynamics: typeof RESONANCE_DYNAMICS;
     enableAdvancedEffects: boolean;
@@ -92,7 +92,7 @@ export interface UnifiedGameConfig {
     emergentBehaviors: boolean;
   };
 
-  // === SISTEMA DE EFECTOS ===
+
   effects: {
     zoneEffectivenessMultiplier: number;
     particleSystem: boolean;
@@ -100,14 +100,14 @@ export interface UnifiedGameConfig {
     soundEffects: boolean;
   };
 
-  // === PROBABILIDADES Y EVENTOS ===
+
   events: {
     criticalEventProbability: number;
     emergentEventProbability: number;
     moodChangeProbability: number;
   };
 
-  // === RENDIMIENTO Y OPTIMIZACIÓN ===
+
   performance: {
     enableObjectPooling: boolean;
     enableSpatialHashing: boolean;
@@ -117,10 +117,10 @@ export interface UnifiedGameConfig {
   };
 }
 
-// === CONFIGURACIÓN POR DEFECTO OPTIMIZADA ===
+
 
 export const defaultGameConfig: UnifiedGameConfig = {
-  // === TIMING BASADO EN CONSTANTES CIENTÍFICAS ===
+
   timing: {
     targetFPS: FRAME_RATES.TARGET_FPS,
     movementUpdateFPS: FRAME_RATES.MOVEMENT_UPDATE_FPS,
@@ -129,16 +129,16 @@ export const defaultGameConfig: UnifiedGameConfig = {
     adaptiveThrottling: true
   },
 
-  // === DEBUG CONFIGURACIÓN ===
+
   debug: {
-    enabled: false, // Cambiar a true en desarrollo
+    enabled: false,
     showPhysicsDebug: false,
     showAIDebug: false,
     showTimingDebug: false,
     validateConstants: true
   },
 
-  // === BIOLOGÍA BASADA EN PRINCIPIOS REALES ===
+
   biology: {
     decayRates: BIOLOGICAL_DECAY_RATES,
     activityMultipliers: ACTIVITY_METABOLIC_MULTIPLIERS,
@@ -146,7 +146,7 @@ export const defaultGameConfig: UnifiedGameConfig = {
     survivalEconomics: SURVIVAL_ECONOMICS
   },
 
-  // === FÍSICA REALISTA ===
+
   physics: {
     enabled: true,
     world: PHYSICS_WORLD,
@@ -155,17 +155,17 @@ export const defaultGameConfig: UnifiedGameConfig = {
     collisions: COLLISION_SYSTEM
   },
 
-  // === AI BALANCEADA ===
+
   ai: {
-    personalityInfluence: GOLDEN_RATIO_CONJUGATE * 0.5, // ≈ 0.31 (30% influencia)
-    activityInertiaBonus: 15.0, // Mantiene decisiones por tiempo realista
-    moodInfluenceStrength: 0.5, // Balance entre lógica y emoción
-    softmaxTemperature: UNIVERSAL_DAMPING, // ≈ 0.983 (decisiones suaves)
+    personalityInfluence: GOLDEN_RATIO_CONJUGATE * 0.5,
+    activityInertiaBonus: 15.0,
+    moodInfluenceStrength: 0.5,
+    softmaxTemperature: UNIVERSAL_DAMPING,
     pathfinding: PATHFINDING_CONFIG,
     behaviorPrediction: BEHAVIOR_PREDICTION
   },
 
-  // === RESONANCIA AVANZADA ===
+
   resonance: {
     dynamics: RESONANCE_DYNAMICS,
     enableAdvancedEffects: true,
@@ -173,35 +173,35 @@ export const defaultGameConfig: UnifiedGameConfig = {
     emergentBehaviors: true
   },
 
-  // === EFECTOS VISUALES Y AUDIO ===
+
   effects: {
-    zoneEffectivenessMultiplier: GOLDEN_RATIO_CONJUGATE + 0.5, // ≈ 1.12 (12% bonus)
+    zoneEffectivenessMultiplier: GOLDEN_RATIO_CONJUGATE + 0.5,
     particleSystem: true,
     visualEffects: true,
-    soundEffects: false // Deshabilitado por defecto
+    soundEffects: false
   },
 
-  // === EVENTOS PROBABILÍSTICOS ===
+
   events: {
-    criticalEventProbability: 0.02, // 2% por segundo = evento cada ~50 segundos
-    emergentEventProbability: 0.01, // 1% por segundo = comportamiento emergente raro
-    moodChangeProbability: 0.1 / 60 // 10% por minuto = cambio cada ~10 minutos
+    criticalEventProbability: 0.02,
+    emergentEventProbability: 0.01,
+    moodChangeProbability: 0.1 / 60
   },
 
-  // === OPTIMIZACIÓN AUTOMÁTICA ===
+
   performance: {
     enableObjectPooling: true,
     enableSpatialHashing: true,
-    maxEntities: 10, // Límite razonable para demo
+    maxEntities: 10,
     maxParticles: 50,
-    cullingDistance: 1200 // Fuera de pantalla + margen
+    cullingDistance: 1200
   }
 };
 
-// === CONFIGURACIONES PREESTABLECIDAS ===
+
 
 export const gamePresets = {
-  /** Configuración para desarrollo - máximo debugging */
+
   development: {
     ...defaultGameConfig,
     debug: {
@@ -213,15 +213,15 @@ export const gamePresets = {
     },
     timing: {
       ...defaultGameConfig.timing,
-      gameSpeedMultiplier: 2.0 // Más rápido para testing
+      gameSpeedMultiplier: 2.0
     },
     performance: {
       ...defaultGameConfig.performance,
-      maxParticles: 20 // Menos partículas para debugging
+      maxParticles: 20
     }
   },
 
-  /** Configuración para presentación - visualmente impresionante */
+
   presentation: {
     ...defaultGameConfig,
     effects: {
@@ -238,18 +238,18 @@ export const gamePresets = {
     },
     timing: {
       ...defaultGameConfig.timing,
-      gameSpeedMultiplier: 1.5 // Ligeramente acelerado
+      gameSpeedMultiplier: 1.5
     }
   },
 
-  /** Configuración para dispositivos lentos - máximo rendimiento */
+
   lowPerformance: {
     ...defaultGameConfig,
     physics: {
       ...defaultGameConfig.physics,
       world: {
         ...PHYSICS_WORLD,
-        MAX_TIME_STEP: 1/15 // 66ms max step
+        MAX_TIME_STEP: 1/15
       }
     },
     effects: {
@@ -261,7 +261,7 @@ export const gamePresets = {
     performance: {
       ...defaultGameConfig.performance,
       maxParticles: 10,
-      enableSpatialHashing: false, // Menos overhead para pocos objetos
+      enableSpatialHashing: false,
       cullingDistance: 800
     },
     timing: {
@@ -271,7 +271,7 @@ export const gamePresets = {
     }
   },
 
-  /** Configuración científica - máxima precisión */
+
   scientific: {
     ...defaultGameConfig,
     debug: {
@@ -281,25 +281,25 @@ export const gamePresets = {
     },
     biology: {
       ...defaultGameConfig.biology,
-      // Usar tasas de decaimiento más realistas (más lentas)
+
       decayRates: Object.fromEntries(
         Object.entries(BIOLOGICAL_DECAY_RATES).map(([key, value]) => [key, value * 0.5])
       ) as typeof BIOLOGICAL_DECAY_RATES
     },
     ai: {
       ...defaultGameConfig.ai,
-      personalityInfluence: 0.8, // Mayor influencia de personalidad
+      personalityInfluence: 0.8,
       pathfinding: PATHFINDING_CONFIG,
       behaviorPrediction: BEHAVIOR_PREDICTION
     },
     timing: {
       ...defaultGameConfig.timing,
-      gameSpeedMultiplier: 0.5 // Más lento para observación detallada
+      gameSpeedMultiplier: 0.5
     }
   }
 } as const;
 
-// === CONFIGURACIÓN GLOBAL ===
+
 
 let currentConfig: UnifiedGameConfig = defaultGameConfig;
 
@@ -319,7 +319,7 @@ export function resetToDefault(): void {
   currentConfig = { ...defaultGameConfig };
 }
 
-// === UTILIDADES DE CONFIGURACIÓN ===
+
 
 /**
  * Obtiene intervalos adaptativos basados en la configuración actual
@@ -394,7 +394,7 @@ export function getAIConfig() {
   };
 }
 
-// === VALIDACIÓN DE CONFIGURACIÓN ===
+
 
 /**
  * Valida que la configuración actual sea coherente
@@ -403,27 +403,27 @@ export function validateGameConfiguration(): boolean {
   const config = getGameConfig();
   
   const validations = [
-    // Timing
+
     config.timing.targetFPS > 0,
     config.timing.movementUpdateFPS > 0,
     config.timing.gameSpeedMultiplier > 0,
     config.timing.dialogueDuration > 0,
     
-    // AI
+
     config.ai.personalityInfluence >= 0 && config.ai.personalityInfluence <= 1,
     config.ai.activityInertiaBonus >= 0,
     config.ai.moodInfluenceStrength >= 0 && config.ai.moodInfluenceStrength <= 1,
     config.ai.softmaxTemperature > 0,
     
-    // Efectos
+
     config.effects.zoneEffectivenessMultiplier > 0,
     
-    // Eventos
+
     config.events.criticalEventProbability >= 0 && config.events.criticalEventProbability <= 1,
     config.events.emergentEventProbability >= 0 && config.events.emergentEventProbability <= 1,
     config.events.moodChangeProbability >= 0 && config.events.moodChangeProbability <= 1,
     
-    // Rendimiento
+
     config.performance.maxEntities > 0,
     config.performance.maxParticles >= 0,
     config.performance.cullingDistance > 0
@@ -439,15 +439,15 @@ export function validateGameConfiguration(): boolean {
   return isValid;
 }
 
-// === INICIALIZACIÓN ===
 
-// Auto-detectar entorno y cargar preset apropiado
+
+
 if (typeof window !== 'undefined') {
-  // Entorno browser
+
   if (import.meta.env.DEV) {
     loadPreset('development');
   } else {
-    // Detectar rendimiento del dispositivo
+
     const isLowEnd = navigator.hardwareConcurrency <= 2 || 
                     ((navigator as unknown as { deviceMemory?: number })?.deviceMemory || 4) <= 2;
     
@@ -458,16 +458,16 @@ if (typeof window !== 'undefined') {
     }
   }
 } else {
-  // Entorno Node/test
+
   loadPreset('scientific');
 }
 
-// Validar configuración inicial
+
 if (isDebugMode()) {
   validateGameConfiguration();
 }
 
-// Hacer disponible globalmente para debugging
+
 if (typeof window !== 'undefined' && isDebugMode()) {
   (window as unknown as { gameConfig: unknown }).gameConfig = {
     get: getGameConfig,

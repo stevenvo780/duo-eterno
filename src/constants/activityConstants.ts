@@ -11,25 +11,25 @@
 
 import type { EntityActivity } from '../types';
 
-// === DURACIONES ÓPTIMAS DE ACTIVIDADES ===
+
 
 export const ACTIVITY_OPTIMAL_DURATIONS = {
-  WANDERING: 60000,      // 1 minuto
-  MEDITATING: 180000,    // 3 minutos  
-  WRITING: 150000,       // 2.5 minutos
-  RESTING: 120000,       // 2 minutos
-  SOCIALIZING: 90000,    // 1.5 minutos
-  EXPLORING: 120000,     // 2 minutos
-  CONTEMPLATING: 240000, // 4 minutos
-  DANCING: 60000,        // 1 minuto
-  HIDING: 90000,         // 1.5 minutos
-  WORKING: 180000,       // 3 minutos
-  SHOPPING: 30000,       // 30 segundos
-  EXERCISING: 90000,     // 1.5 minutos
-  COOKING: 45000,        // 45 segundos
+  WANDERING: 60000,
+  MEDITATING: 180000,
+  WRITING: 150000,
+  RESTING: 120000,
+  SOCIALIZING: 90000,
+  EXPLORING: 120000,
+  CONTEMPLATING: 240000,
+  DANCING: 60000,
+  HIDING: 90000,
+  WORKING: 180000,
+  SHOPPING: 30000,
+  EXERCISING: 90000,
+  COOKING: 45000,
 } as const;
 
-// === TASAS DE DECAIMIENTO HÍBRIDO ===
+
 
 export const HYBRID_DECAY_RATES = {
   base: {
@@ -42,7 +42,7 @@ export const HYBRID_DECAY_RATES = {
   }
 } as const;
 
-// === MULTIPLICADORES DE DECAIMIENTO POR ACTIVIDAD ===
+
 
 export const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   WORKING: 1.2,
@@ -60,7 +60,7 @@ export const ACTIVITY_DECAY_MULTIPLIERS: Record<EntityActivity, number> = {
   HIDING: 0.9
 } as const;
 
-// === COSTOS DE SUPERVIVENCIA ===
+
 
 export const SURVIVAL_COSTS = {
   LIVING_COST: 0.5,
@@ -70,7 +70,7 @@ export const SURVIVAL_COSTS = {
   CRITICAL_SLEEPINESS: 20
 } as const;
 
-// === MULTIPLICADORES DE DECAIMIENTO CONFIGURABLES ===
+
 
 export const DECAY_CONFIG = {
   GENERAL_MULTIPLIER: 1.0,
@@ -78,7 +78,7 @@ export const DECAY_CONFIG = {
   ACTIVITY_BASED_ADJUSTMENT: 1.0
 } as const;
 
-// === FUNCIONES DE EFICIENCIA POR ACTIVIDAD ===
+
 
 export const EFFICIENCY_FUNCTIONS = {
   WORKING: (timeSpent: number) => {
@@ -144,11 +144,11 @@ export const EFFICIENCY_FUNCTIONS = {
   HIDING: () => 0.6
 } as const;
 
-// === VALIDACIÓN DE CONSTANTES ===
+
 
 export const validateActivityConstants = (): boolean => {
   try {
-    // Verificar que todas las actividades tienen duración óptima
+
     const activities = Object.keys(ACTIVITY_OPTIMAL_DURATIONS);
     const multipliers = Object.keys(ACTIVITY_DECAY_MULTIPLIERS);
     const efficiencyFns = Object.keys(EFFICIENCY_FUNCTIONS);

@@ -11,7 +11,7 @@ const path = require('path');
 
 console.log('🔍 Analizando código no utilizado...\n');
 
-// 1. Ejecutar ts-prune para encontrar exports no utilizados
+
 console.log('📦 Ejecutando ts-prune...');
 try {
   const tsPruneOutput = execSync('npm run find-unused', { encoding: 'utf8' });
@@ -20,7 +20,7 @@ try {
     console.log('❌ Exports no utilizados encontrados:');
     console.log(tsPruneOutput);
     
-    // Parsear salida para extraer archivos con problemas
+
     const unusedExports = tsPruneOutput
       .split('\n')
       .filter(line => line.trim())
@@ -37,7 +37,7 @@ try {
       })
       .filter(Boolean);
     
-    // Agrupar por archivo
+
     const fileGroups = unusedExports.reduce((acc, item) => {
       if (!acc[item.file]) acc[item.file] = [];
       acc[item.file].push(item);
@@ -56,7 +56,7 @@ try {
   console.log('⚠️  Error ejecutando ts-prune:', error.message);
 }
 
-// 2. Ejecutar ESLint para imports no utilizados
+
 console.log('\n🔧 Ejecutando ESLint para imports no utilizados...');
 try {
   const eslintOutput = execSync('npm run lint 2>&1 || true', { encoding: 'utf8' });
@@ -78,7 +78,7 @@ try {
   console.log('⚠️  Error ejecutando ESLint:', error.message);
 }
 
-// 3. Buscar archivos potencialmente no utilizados
+
 console.log('\n📁 Buscando archivos potencialmente no utilizados...');
 
 const srcDir = path.join(process.cwd(), 'src');
@@ -108,7 +108,7 @@ const potentiallyUnused = [];
 for (const file of sourceFiles) {
   const relativePath = path.relative(process.cwd(), file);
   
-  // Buscar imports de este archivo en otros archivos
+
   let isImported = false;
   
   for (const otherFile of sourceFiles) {
@@ -123,7 +123,7 @@ for (const file of sourceFiles) {
         break;
       }
     } catch (error) {
-      // Ignorar errores de lectura
+
     }
   }
   
@@ -140,7 +140,7 @@ if (potentiallyUnused.length > 0) {
   console.log('✅ Todos los archivos parecen estar en uso');
 }
 
-// 4. Generar reporte final
+
 console.log('\n📋 Reporte de limpieza:');
 console.log('━'.repeat(50));
 console.log('🔧 Comandos útiles para limpieza:');

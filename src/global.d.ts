@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+
 
 import type { GameConfig } from './config/gameConfig';
 

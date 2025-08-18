@@ -22,7 +22,7 @@ import {
 } from './fixedMathPrecision';
 import { MATH } from '../constants';
 
-// === INTERFACES DE FÍSICA AVANZADA ===
+
 
 export interface PhysicsState {
   position: Vector2D;
@@ -34,7 +34,7 @@ export interface PhysicsState {
   elasticity: number;
   angularVelocity: number;
   torque: number;
-  moment: number; // Momento de inercia
+  moment: number;
 }
 
 export interface AdvancedParticle {
@@ -80,10 +80,10 @@ export interface PhysicsConfiguration {
   particleCount: number;
 }
 
-// === CONFIGURACIÓN DEL MOTOR DE FÍSICA ===
+
 
 const DEFAULT_PHYSICS_CONFIG: PhysicsConfiguration = {
-  gravity: { x: 0, y: 0 }, // Sin gravedad por defecto
+  gravity: { x: 0, y: 0 },
   airResistance: 0.02,
   timeStep: 1/60,
   maxVelocity: 300,
@@ -95,7 +95,7 @@ const DEFAULT_PHYSICS_CONFIG: PhysicsConfiguration = {
   particleCount: 50
 };
 
-// === MOTOR DE FÍSICA PRINCIPAL ===
+
 
 export class AdvancedPhysicsEngine {
   private config: PhysicsConfiguration;
@@ -116,7 +116,7 @@ export class AdvancedPhysicsEngine {
     });
   }
 
-  // === GESTIÓN DE ENTIDADES ===
+
 
   registerEntity(entityId: string, entity: Entity): void {
     const physicsState: PhysicsState = {
@@ -139,18 +139,18 @@ export class AdvancedPhysicsEngine {
   unregisterEntity(entityId: string): void {
     this.entities.delete(entityId);
     this.behaviorHistory.delete(entityId);
-    this.fieldCache.clear(); // Limpiar cache cuando cambia la configuración
+    this.fieldCache.clear();
   }
 
   getEntityPhysics(entityId: string): PhysicsState | null {
     return this.entities.get(entityId) || null;
   }
 
-  // === GESTIÓN DE ZONAS ===
+
 
   addZone(zone: ZoneInfluence): void {
     this.zones.push(zone);
-    this.fieldCache.clear(); // Invalidar cache
+    this.fieldCache.clear();
   }
 
   clearZones(): void {
@@ -158,47 +158,47 @@ export class AdvancedPhysicsEngine {
     this.fieldCache.clear();
   }
 
-  // === ACTUALIZACIÓN PRINCIPAL ===
+
 
   update(entities: Entity[], deltaTime: number): { entities: Entity[]; particles: AdvancedParticle[] } {
     const currentTime = performance.now();
-    const actualDeltaTime = mathUtils.safeClamp(deltaTime / 1000, 0, 0.05); // Máximo 50ms
+    const actualDeltaTime = mathUtils.safeClamp(deltaTime / 1000, 0, 0.05);
 
-    // Registrar nuevas entidades
+
     entities.forEach(entity => {
       if (!this.entities.has(entity.id)) {
         this.registerEntity(entity.id, entity);
       }
     });
 
-    // Actualizar física de entidades
+
     const updatedEntities = entities.map(entity => {
       const physics = this.entities.get(entity.id);
       if (!physics) return entity;
 
-      // Calcular fuerzas
+
       this.calculateForces(entity.id, physics, entities);
       
-      // Integrar movimiento
+
       this.integrateMotion(physics, actualDeltaTime);
       
-      // Aplicar restricciones de límites
+
       this.applyBoundaryConstraints(physics);
       
-      // Registrar comportamiento para predicción
+
       this.recordBehavior(entity.id, physics);
 
-      // Actualizar entidad con nueva posición
+
       return {
         ...entity,
         position: { ...physics.position }
       };
     });
 
-    // Actualizar partículas
+
     this.updateParticles(actualDeltaTime);
     
-    // Generar nuevas partículas basadas en resonancia
+
     if (this.config.enableAdvancedFeatures) {
       this.generateResonanceParticles(updatedEntities);
     }
@@ -211,17 +211,17 @@ export class AdvancedPhysicsEngine {
     };
   }
 
-  // === CÁLCULO DE FUERZAS ===
+
 
   private calculateForces(entityId: string, physics: PhysicsState, allEntities: Entity[]): void {
-    // Resetear fuerzas
+
     physics.force = { x: 0, y: 0 };
 
-    // Gravedad
+
     physics.force.x += this.config.gravity.x * physics.mass;
     physics.force.y += this.config.gravity.y * physics.mass;
 
-    // Resistencia del aire
+
     const speed = vectorMath.magnitude(physics.velocity);
     if (speed > MATH.ULTRA_PRECISION_EPSILON) {
       const dragDirection = vectorMath.normalize({
@@ -234,21 +234,21 @@ export class AdvancedPhysicsEngine {
       physics.force.y += dragDirection.y * dragMagnitude;
     }
 
-    // Fuerzas de campo vectorial avanzado
+
     if (this.config.enableAdvancedFeatures) {
       const fieldForce = this.calculateFieldForces(physics.position, allEntities);
       physics.force.x += fieldForce.x * this.config.fieldStrength;
       physics.force.y += fieldForce.y * this.config.fieldStrength;
     }
 
-    // Fuerzas de zona
+
     this.zones.forEach(zone => {
       const zoneForce = this.calculateZoneForce(physics.position, zone);
       physics.force.x += zoneForce.x;
       physics.force.y += zoneForce.y;
     });
 
-    // Fuerzas de resonancia entre entidades
+
     if (this.config.enableAdvancedFeatures) {
       const resonanceForce = this.calculateResonanceForces(entityId, physics, allEntities);
       physics.force.x += resonanceForce.x * this.config.resonanceInfluence;
@@ -267,10 +267,10 @@ export class AdvancedPhysicsEngine {
       };
     }
 
-    // Calcular campo vectorial
+
     const attractors = entities.filter(e => !e.isDead).map(e => e.position);
-    const repulsors: Vector2D[] = []; // Se pueden agregar obstáculos
-    const flowField: Vector2D[][] = []; // Campo de flujo futuro
+    const repulsors: Vector2D[] = [];
+    const flowField: Vector2D[][] = [];
     
     const field = mathUtils.calculateAdvancedVectorField(
       position,
@@ -308,7 +308,7 @@ export class AdvancedPhysicsEngine {
         forceMagnitude = -zone.strength * zone.effect.totalEffect * (1 - distance / zone.radius);
         break;
       case 'VORTEX': {
-        // Fuerza tangencial para crear rotación
+
         const tangent = { x: -direction.y, y: direction.x };
         return {
           x: tangent.x * zone.strength * zone.effect.totalEffect * (1 - distance / zone.radius),
@@ -316,7 +316,7 @@ export class AdvancedPhysicsEngine {
         };
       }
       case 'FIELD': {
-        // Campo complejo basado en harmónicos
+
         const fieldEffect = Math.sin(distance / zone.radius * Math.PI * 2) * zone.effect.harmonicResonance;
         forceMagnitude = zone.strength * fieldEffect;
         break;
@@ -346,7 +346,7 @@ export class AdvancedPhysicsEngine {
         y: otherPhysics.position.y - physics.position.y
       });
 
-      // Calcular resonancia avanzada
+
       const history = this.behaviorHistory.get(entityId) || [];
       const resonanceState = mathUtils.calculateAdvancedResonance(
         distance,
@@ -355,7 +355,7 @@ export class AdvancedPhysicsEngine {
         performance.now() - this.lastUpdateTime
       );
 
-      // Fuerza de resonancia
+
       const resonanceMagnitude = resonanceState.resonanceLevel / 100 * 
                                 resonanceState.emergentProperties.synchronization *
                                 Math.exp(-distance / 200);
@@ -367,14 +367,14 @@ export class AdvancedPhysicsEngine {
     return resonanceForce;
   }
 
-  // === INTEGRACIÓN DE MOVIMIENTO ===
+
 
   private integrateMotion(physics: PhysicsState, deltaTime: number): void {
-    // Cálcular aceleración: F = ma, por lo tanto a = F/m
+
     physics.acceleration.x = physics.force.x / physics.mass;
     physics.acceleration.y = physics.force.y / physics.mass;
 
-    // Limitar aceleración
+
     const acceleration = vectorMath.magnitude(physics.acceleration);
     if (acceleration > this.config.maxAcceleration) {
       const normalized = vectorMath.normalize(physics.acceleration);
@@ -382,17 +382,17 @@ export class AdvancedPhysicsEngine {
       physics.acceleration.y = normalized.y * this.config.maxAcceleration;
     }
 
-    // Integración de Verlet para mayor estabilidad
+
     const newVelocity = {
       x: physics.velocity.x + physics.acceleration.x * deltaTime,
       y: physics.velocity.y + physics.acceleration.y * deltaTime
     };
 
-    // Aplicar fricción
+
     newVelocity.x *= (1 - physics.friction * deltaTime);
     newVelocity.y *= (1 - physics.friction * deltaTime);
 
-    // Limitar velocidad
+
     const speed = vectorMath.magnitude(newVelocity);
     if (speed > this.config.maxVelocity) {
       const normalized = vectorMath.normalize(newVelocity);
@@ -402,13 +402,13 @@ export class AdvancedPhysicsEngine {
 
     physics.velocity = newVelocity;
 
-    // Actualizar posición
+
     physics.position.x += physics.velocity.x * deltaTime;
     physics.position.y += physics.velocity.y * deltaTime;
 
-    // Integrar rotación
+
     physics.angularVelocity += (physics.torque / physics.moment) * deltaTime;
-    physics.angularVelocity *= (1 - physics.friction * deltaTime); // Fricción angular
+    physics.angularVelocity *= (1 - physics.friction * deltaTime);
   }
 
   private applyBoundaryConstraints(physics: PhysicsState): void {
@@ -416,7 +416,7 @@ export class AdvancedPhysicsEngine {
     const canvasWidth = 1000;
     const canvasHeight = 600;
 
-    // Rebote en los límites con restitución
+
     if (physics.position.x < margin) {
       physics.position.x = margin;
       physics.velocity.x *= -this.config.boundaryRestitution;
@@ -434,22 +434,22 @@ export class AdvancedPhysicsEngine {
     }
   }
 
-  // === SISTEMA DE PARTÍCULAS ===
+
 
   private updateParticles(deltaTime: number): void {
-    // Actualizar partículas existentes
+
     this.particles = this.particles.filter(particle => {
-      // Actualizar física de la partícula
+
       this.integrateMotion(particle.physics, deltaTime);
       
-      // Actualizar propiedades visuales
+
       particle.lifeTime += deltaTime * 1000;
       const lifeRatio = particle.lifeTime / particle.maxLifeTime;
       
       particle.opacity = mathUtils.lerp(1, 0, lifeRatio);
-      particle.size *= 0.99; // Encogimiento gradual
+      particle.size *= 0.99;
 
-      // Eliminar partículas muertas
+
       return particle.lifeTime < particle.maxLifeTime && particle.size > 0.1;
     });
   }
@@ -463,7 +463,7 @@ export class AdvancedPhysicsEngine {
       const physics = this.entities.get(entity.id);
       if (!physics) return;
 
-      // Generar partículas basadas en velocidad y resonancia
+
       const speed = vectorMath.magnitude(physics.velocity);
       const shouldGenerate = Math.random() < (speed / this.config.maxVelocity) * 0.1;
 
@@ -501,7 +501,7 @@ export class AdvancedPhysicsEngine {
     });
   }
 
-  // === REGISTRO DE COMPORTAMIENTO ===
+
 
   private recordBehavior(entityId: string, physics: PhysicsState): void {
     const history = this.behaviorHistory.get(entityId) || [];
@@ -523,8 +523,8 @@ export class AdvancedPhysicsEngine {
         }
       });
 
-      // Mantener solo los últimos N registros
-      if (history.length > 50) { // Valor fijo ya que PATTERN_MEMORY_DEPTH puede no existir
+
+      if (history.length > 50) {
         history.splice(0, history.length - 50);
       }
 
@@ -532,7 +532,7 @@ export class AdvancedPhysicsEngine {
     }
   }
 
-  // === DETECCIÓN DE COLISIONES ===
+
 
   detectCollision(entity1: Entity, entity2: Entity): CollisionResult {
     const physics1 = this.entities.get(entity1.id);
@@ -550,7 +550,7 @@ export class AdvancedPhysicsEngine {
     }
 
     const distance = vectorMath.distance(physics1.position, physics2.position);
-    const minDistance = 30; // Radio combinado de las entidades
+    const minDistance = 30;
 
     if (distance >= minDistance) {
       return {
@@ -563,7 +563,7 @@ export class AdvancedPhysicsEngine {
       };
     }
 
-    // Calcular detalles de la colisión
+
     const normal = vectorMath.normalize({
       x: physics2.position.x - physics1.position.x,
       y: physics2.position.y - physics1.position.y
@@ -600,14 +600,14 @@ export class AdvancedPhysicsEngine {
 
     if (!physics1 || !physics2) return;
 
-    // Separar entidades
+
     const separationForce = collision.penetration / 2;
     physics1.position.x -= collision.normal.x * separationForce;
     physics1.position.y -= collision.normal.y * separationForce;
     physics2.position.x += collision.normal.x * separationForce;
     physics2.position.y += collision.normal.y * separationForce;
 
-    // Resolver velocidades con restitución
+
     if (collision.separatingVelocity < 0) {
       const restitution = Math.min(physics1.elasticity, physics2.elasticity);
       const impulse = -(1 + restitution) * collision.separatingVelocity / (1/physics1.mass + 1/physics2.mass);
@@ -619,7 +619,7 @@ export class AdvancedPhysicsEngine {
     }
   }
 
-  // === API PÚBLICA ===
+
 
   getParticles(): AdvancedParticle[] {
     return [...this.particles];
@@ -634,7 +634,7 @@ export class AdvancedPhysicsEngine {
 
   updateConfiguration(newConfig: Partial<PhysicsConfiguration>): void {
     this.config = { ...this.config, ...newConfig };
-    this.fieldCache.clear(); // Invalidar cache
+    this.fieldCache.clear();
   }
 
   reset(): void {
@@ -646,11 +646,11 @@ export class AdvancedPhysicsEngine {
   }
 }
 
-// === INSTANCIA GLOBAL ===
+
 
 export const advancedPhysicsEngine = new AdvancedPhysicsEngine();
 
-// Hacer disponible globalmente para debugging
+
 if (typeof window !== 'undefined') {
   (window as typeof window & { 
     advancedPhysicsEngine: AdvancedPhysicsEngine;
@@ -663,7 +663,7 @@ if (typeof window !== 'undefined') {
     };
   }).advancedPhysicsEngine = advancedPhysicsEngine;
   
-  // Comandos de consola útiles
+
   (window as typeof window & { 
     physicsCommands: {
       getEntityPhysics: (id: string) => PhysicsState | null;

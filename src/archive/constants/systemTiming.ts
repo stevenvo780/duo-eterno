@@ -11,26 +11,26 @@ import {
   ATTENTION_SPAN_MS 
 } from './mathematicalCore';
 
-// === CONSTANTES DE FRAME RATE Y CICLOS ===
+
 
 /**
  * Configuración de frame rates objetivo
  * Basada en estándares de la industria y capacidades de hardware
  */
 export const FRAME_RATES = {
-  /** Frame rate ideal para renderizado suave */
+
   TARGET_FPS: 60,
   
-  /** Frame rate mínimo aceptable antes de degradación */
+
   MIN_ACCEPTABLE_FPS: 30,
   
-  /** Frame rate para actualizaciones de movimiento (menos crítico) */
+
   MOVEMENT_UPDATE_FPS: 30,
   
-  /** Frame rate para efectos de partículas */
+
   PARTICLE_UPDATE_FPS: 45,
   
-  /** Frame rate para actualizaciones de UI menos críticas */
+
   UI_UPDATE_FPS: 30
 } as const;
 
@@ -38,23 +38,23 @@ export const FRAME_RATES = {
  * Intervalos de tiempo calculados a partir de frame rates
  */
 export const FRAME_INTERVALS = {
-  /** Intervalo objetivo para renderizado (16.67ms) */
+
   TARGET_FRAME_MS: 1000 / FRAME_RATES.TARGET_FPS,
   
-  /** Intervalo mínimo antes de considerar lag (33.33ms) */
+
   MIN_FRAME_MS: 1000 / FRAME_RATES.MIN_ACCEPTABLE_FPS,
   
-  /** Intervalo para movimiento (33.33ms) */
+
   MOVEMENT_UPDATE_MS: 1000 / FRAME_RATES.MOVEMENT_UPDATE_FPS,
   
-  /** Intervalo para partículas (22.22ms) */
+
   PARTICLE_UPDATE_MS: 1000 / FRAME_RATES.PARTICLE_UPDATE_FPS,
   
-  /** Intervalo para UI (33.33ms) */
+
   UI_UPDATE_MS: 1000 / FRAME_RATES.UI_UPDATE_FPS
 } as const;
 
-// === CICLOS DE JUEGO PRINCIPALES ===
+
 
 /**
  * Intervalos de los sistemas principales del juego
@@ -66,45 +66,45 @@ export const GAME_LOOP_INTERVALS = {
    * Basado en el ciclo natural pero ajustado para rendimiento
    * 1000ms sería ideal, pero 800ms evita conflictos con otros sistemas
    */
-  MAIN_GAME_LOGIC: NATURAL_CYCLE_MS * 0.8, // 800ms
+  MAIN_GAME_LOGIC: NATURAL_CYCLE_MS * 0.8,
   
   /** 
    * Autopoiesis - procesos de vida automáticos
    * Basado en respiración natural con ajuste para estabilidad
    * 4000ms sería ideal, pero 3200ms mejora capacidad de respuesta
    */
-  AUTOPOIESIS: BREATHING_CYCLE_MS * 0.8, // 3200ms
+  AUTOPOIESIS: BREATHING_CYCLE_MS * 0.8,
   
   /** 
    * Efectos de zona - aplicación de bonificaciones
    * Más rápido que autopoiesis para respuesta inmediata
    * 1600ms permite respuesta rápida sin sobrecarga
    */
-  ZONE_EFFECTS: BREATHING_CYCLE_MS * 0.4, // 1600ms
+  ZONE_EFFECTS: BREATHING_CYCLE_MS * 0.4,
   
   /** 
    * Actualizaciones de AI - decisiones inteligentes
    * Basado en span de atención pero más frecuente
    * 3500ms permite decisiones reflexivas pero responsivas
    */
-  AI_DECISIONS: ATTENTION_SPAN_MS * 0.5, // 3500ms
+  AI_DECISIONS: ATTENTION_SPAN_MS * 0.5,
   
   /** 
    * Análisis de resonancia - cálculos complejos
    * Menos frecuente debido a complejidad computacional
    * 2000ms equilibra precisión con rendimiento
    */
-  RESONANCE_ANALYSIS: NATURAL_CYCLE_MS * 2, // 2000ms
+  RESONANCE_ANALYSIS: NATURAL_CYCLE_MS * 2,
   
   /** 
    * Guardado de estado - persistencia
    * Relativamente infrecuente para evitar I/O excesivo
    * 10000ms = cada 10 segundos es suficiente
    */
-  STATE_PERSISTENCE: NATURAL_CYCLE_MS * 10, // 10000ms
+  STATE_PERSISTENCE: NATURAL_CYCLE_MS * 10,
 } as const;
 
-// === LÍMITES TEMPORALES PARA ESTABILIDAD ===
+
 
 /**
  * Límites que previenen problemas por saltos temporales
@@ -146,7 +146,7 @@ export const TEMPORAL_LIMITS = {
   FPS_SMOOTHING_WINDOW_FRAMES: 60
 } as const;
 
-// === CONFIGURACIÓN DE THROTTLING ADAPTATIVO ===
+
 
 /**
  * Sistema que ajusta automáticamente la frecuencia según rendimiento
@@ -183,7 +183,7 @@ export const ADAPTIVE_THROTTLING = {
   RECOVERY_CONFIRMATION_FRAMES: 30
 } as const;
 
-// === TIMEOUTS Y DURACIONES ESPECIALES ===
+
 
 /**
  * Timeouts para estados especiales del juego
@@ -194,7 +194,7 @@ export const SPECIAL_TIMEOUTS = {
    * Periodo de gracia para recuperación
    * 10000ms = 10 segundos de oportunidad
    */
-  FADING_TIMEOUT_MS: NATURAL_CYCLE_MS * 10, // 10000ms
+  FADING_TIMEOUT_MS: NATURAL_CYCLE_MS * 10,
   
   /** 
    * Umbral de stat para recuperarse del fading
@@ -207,28 +207,28 @@ export const SPECIAL_TIMEOUTS = {
    * Basado en velocidad de lectura promedio
    * 2500ms permite leer ~10-15 palabras cómodamente
    */
-  DIALOGUE_DURATION_MS: NATURAL_CYCLE_MS * 2.5, // 2500ms
+  DIALOGUE_DURATION_MS: NATURAL_CYCLE_MS * 2.5,
   
   /** 
    * Duración de efectos visuales temporales
    * Para feedback visual sin ser intrusivo
    */
-  VISUAL_EFFECT_DURATION_MS: NATURAL_CYCLE_MS * 1.5, // 1500ms
+  VISUAL_EFFECT_DURATION_MS: NATURAL_CYCLE_MS * 1.5,
   
   /** 
    * Tiempo de cooldown entre eventos críticos
    * Evita spam de eventos estresantes
    */
-  CRITICAL_EVENT_COOLDOWN_MS: ATTENTION_SPAN_MS * 2, // 14000ms
+  CRITICAL_EVENT_COOLDOWN_MS: ATTENTION_SPAN_MS * 2,
   
   /** 
    * Duración máxima de animaciones de transición
    * Para mantener responsividad de UI
    */
-  MAX_TRANSITION_DURATION_MS: FRAME_INTERVALS.TARGET_FRAME_MS * 30 // 500ms
+  MAX_TRANSITION_DURATION_MS: FRAME_INTERVALS.TARGET_FRAME_MS * 30
 } as const;
 
-// === CONFIGURACIÓN DE PROBABILIDADES TEMPORALES ===
+
 
 /**
  * Probabilidades que dependen del tiempo para eventos aleatorios
@@ -259,7 +259,7 @@ export const TEMPORAL_PROBABILITIES = {
   BEHAVIOR_CORRECTION_PROBABILITY_PER_MINUTE: 0.15
 } as const;
 
-// === CONFIGURACIÓN DE ESCALADO TEMPORAL ===
+
 
 /**
  * Factores para acelerar/desacelerar el tiempo de juego
@@ -296,7 +296,7 @@ export const TIME_SCALING = {
   SPEED_CHANGE_SMOOTHING: 0.95
 } as const;
 
-// === FUNCIONES DE UTILIDAD TEMPORAL ===
+
 
 /**
  * Calcula intervalos adaptados a la velocidad actual del juego
@@ -329,10 +329,10 @@ export function shouldApplyThrottling(currentFPS: number): boolean {
  */
 export function calculateThrottlingFactor(currentFPS: number): number {
   if (currentFPS >= ADAPTIVE_THROTTLING.THROTTLING_TRIGGER_FPS) {
-    return 1.0; // Sin throttling
+    return 1.0;
   }
   
-  // Throttling gradual basado en qué tan bajo es el FPS
+
   const fpsRatio = currentFPS / ADAPTIVE_THROTTLING.THROTTLING_TRIGGER_FPS;
   return Math.max(1.0, ADAPTIVE_THROTTLING.THROTTLING_FACTOR / fpsRatio);
 }
@@ -341,47 +341,47 @@ export function calculateThrottlingFactor(currentFPS: number): number {
  * Normaliza un delta time para evitar saltos temporales extremos
  */
 export function normalizeDeltaTime(deltaTimeMs: number, maxDelta: number = TEMPORAL_LIMITS.MAX_PHYSICS_DELTA_MS): number {
-  // Clamp entre mínimo y máximo válidos
+
   return Math.max(
     TEMPORAL_LIMITS.MIN_VALID_DELTA_MS,
     Math.min(maxDelta, deltaTimeMs)
   );
 }
 
-// === VALIDACIÓN DEL SISTEMA TEMPORAL ===
+
 
 /**
  * Valida que todas las constantes temporales sean coherentes
  */
 export function validateTimingConstants(): boolean {
   const validations = [
-    // Los frame rates deben ser positivos y lógicos
+
     FRAME_RATES.TARGET_FPS > 0,
     FRAME_RATES.MIN_ACCEPTABLE_FPS > 0,
     FRAME_RATES.TARGET_FPS >= FRAME_RATES.MIN_ACCEPTABLE_FPS,
     
-    // Los intervalos deben ser positivos
+
     Object.values(FRAME_INTERVALS).every(interval => interval > 0),
     Object.values(GAME_LOOP_INTERVALS).every(interval => interval > 0),
     
-    // Los límites temporales deben ser lógicos
+
     TEMPORAL_LIMITS.MAX_PHYSICS_DELTA_MS > TEMPORAL_LIMITS.MIN_VALID_DELTA_MS,
     TEMPORAL_LIMITS.MAX_GAME_LOGIC_DELTA_MS > TEMPORAL_LIMITS.MAX_PHYSICS_DELTA_MS,
     TEMPORAL_LIMITS.PAUSE_DETECTION_THRESHOLD_MS > TEMPORAL_LIMITS.MAX_GAME_LOGIC_DELTA_MS,
     
-    // Los timeouts especiales deben ser positivos
+
     Object.values(SPECIAL_TIMEOUTS).every(timeout => timeout > 0),
     
-    // Las probabilidades deben estar entre 0 y 1
+
     Object.values(TEMPORAL_PROBABILITIES).every(prob => prob >= 0 && prob <= 1),
     
-    // Los factores de escalado deben ser válidos
+
     TIME_SCALING.MIN_SPEED_MULTIPLIER > 0,
     TIME_SCALING.MAX_SPEED_MULTIPLIER > TIME_SCALING.MIN_SPEED_MULTIPLIER,
     TIME_SCALING.NORMAL_SPEED >= TIME_SCALING.MIN_SPEED_MULTIPLIER,
     TIME_SCALING.NORMAL_SPEED <= TIME_SCALING.MAX_SPEED_MULTIPLIER,
     
-    // Los parámetros de throttling deben ser coherentes
+
     ADAPTIVE_THROTTLING.THROTTLING_TRIGGER_FPS > 0,
     ADAPTIVE_THROTTLING.RECOVERY_TARGET_FPS > ADAPTIVE_THROTTLING.THROTTLING_TRIGGER_FPS,
     ADAPTIVE_THROTTLING.THROTTLING_FACTOR > 1.0,
@@ -392,7 +392,7 @@ export function validateTimingConstants(): boolean {
   return validations.every(v => v === true);
 }
 
-// Validar al cargar el módulo en desarrollo
+
 if (import.meta.env.DEV) {
   if (!validateTimingConstants()) {
     console.error('❌ Timing constants validation failed!');

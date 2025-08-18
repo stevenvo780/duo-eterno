@@ -10,7 +10,7 @@ const path = require('path');
 
 console.log('🔧 Arreglando variables no utilizadas...');
 
-// Mapeo de archivos y variables a arreglar
+
 const fixes = [
   {
     file: 'src/archive/utils/mathPrecision.ts',
@@ -41,7 +41,7 @@ function fixFile(filePath, vars) {
   let content = fs.readFileSync(fullPath, 'utf8');
   const lines = content.split('\n');
   
-  // Ordenar por línea descendente para no afectar números de línea
+
   const sortedVars = vars.sort((a, b) => b.line - a.line);
   
   for (const varInfo of sortedVars) {
@@ -49,7 +49,7 @@ function fixFile(filePath, vars) {
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const oldLine = lines[lineIndex];
       
-      // Reemplazar solo la primera ocurrencia de la variable en esa línea
+
       const newLine = oldLine.replace(
         new RegExp(`\\b${varInfo.old}\\b`), 
         varInfo.new
@@ -71,7 +71,7 @@ function fixFile(filePath, vars) {
   }
 }
 
-// Aplicar todos los fixes
+
 for (const fix of fixes) {
   fixFile(fix.file, fix.vars);
 }

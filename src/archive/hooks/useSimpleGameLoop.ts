@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { throttle } from 'lodash';
 import type { Entity, Zone } from '../types';
 
-// Tipo simple para datos de resonancia
+
 interface ResonanceData {
   level: number;
   entities: number;
@@ -20,13 +20,13 @@ export default function useSimpleGameLoop(
 ) {
   const intervalRef = useRef<number | null>(null);
 
-  // Función simple con throttle de lodash
+
   const throttledUpdate = useRef(
     throttle(() => {
       const totalEntities = entities.length;
       const totalZones = zones.length;
       
-      // Fórmula SIMPLE de resonancia
+
       const resonanceStrength = totalEntities > 0 ? 
         ((totalEntities + totalZones) / (totalEntities * 2)) * 100 : 0;
 
@@ -37,9 +37,9 @@ export default function useSimpleGameLoop(
         timestamp: Date.now()
       };
 
-      // Copias simples - sin mutaciones
+
       onUpdate([...entities], [...zones], resonanceData);
-    }, 200) // 200ms
+    }, 200)
   );
 
     useEffect(() => {

@@ -36,7 +36,7 @@ const useTooltipSystem = () => {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Registrar zonas que pueden mostrar tooltips
+
   const registerTooltipZone = useCallback((
     x: number,
     y: number,
@@ -50,12 +50,12 @@ const useTooltipSystem = () => {
     ]);
   }, []);
 
-  // Desregistrar zona
+
   const unregisterTooltipZone = useCallback((id: string) => {
     setHoverTargets(prev => prev.filter(target => target.data.id !== id));
   }, []);
 
-  // Detectar hover sobre canvas
+
   const handleCanvasMouseMove = useCallback((
     event: React.MouseEvent<HTMLCanvasElement>
   ) => {
@@ -63,7 +63,7 @@ const useTooltipSystem = () => {
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    // Buscar si el mouse está sobre alguna zona registrada
+
     const hoveredTarget = hoverTargets.find(target =>
       mouseX >= target.x &&
       mouseX <= target.x + target.width &&
@@ -72,13 +72,13 @@ const useTooltipSystem = () => {
     );
 
     if (hoveredTarget) {
-      // Cancelar timeout de ocultación
+
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
         hideTimeoutRef.current = null;
       }
 
-      // Si ya está mostrando este tooltip, solo actualizar posición
+
       if (tooltip.visible && tooltip.data?.id === hoveredTarget.data.id) {
         setTooltip(prev => ({
           ...prev,
@@ -88,7 +88,7 @@ const useTooltipSystem = () => {
         return;
       }
 
-      // Configurar timeout para mostrar tooltip
+
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
@@ -100,10 +100,10 @@ const useTooltipSystem = () => {
           y: event.clientY - 10,
           visible: true
         });
-      }, 300); // Delay de 300ms para evitar tooltips accidentales
+      }, 300);
 
     } else {
-      // No hay hover, ocultar tooltip con delay
+
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = null;
@@ -112,12 +112,12 @@ const useTooltipSystem = () => {
       if (tooltip.visible) {
         hideTimeoutRef.current = setTimeout(() => {
           setTooltip(prev => ({ ...prev, visible: false }));
-        }, 200); // Delay para permitir mover mouse al tooltip
+        }, 200);
       }
     }
   }, [hoverTargets, tooltip]);
 
-  // Ocultar tooltip
+
   const hideTooltip = useCallback(() => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -130,7 +130,7 @@ const useTooltipSystem = () => {
     setTooltip(prev => ({ ...prev, visible: false }));
   }, []);
 
-  // Limpiar timeouts al desmontar
+
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
@@ -142,7 +142,7 @@ const useTooltipSystem = () => {
     };
   }, []);
 
-  // Datos predefinidos para zonas comunes
+
   const getZoneTooltipData = useCallback((zoneType: string, x: number, y: number): TooltipData => {
     const zoneData = {
       bedroom: {
@@ -216,12 +216,12 @@ const useTooltipSystem = () => {
     };
   }, []);
 
-  // Registrar zonas automáticamente basado en el mapa
+
   const registerGameZones = useCallback(() => {
-    // gameMap se podría usar en el futuro para zonas dinámicas
+
     const zones: HoverTarget[] = [];
 
-    // Ejemplo de zonas predefinidas (esto se podría generar dinámicamente)
+
     const zoneDefinitions = [
       { type: 'bedroom', x: 50, y: 50, width: 150, height: 100 },
       { type: 'kitchen', x: 250, y: 50, width: 120, height: 80 },

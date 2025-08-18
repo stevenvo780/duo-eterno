@@ -56,10 +56,10 @@ export class OrganicStreetGenerator {
     this.config = config;
     this.noise = new PerlinNoise(config.seed);
     
-    // Generar mapa de elevación que influye en los costos de pathfinding
+
     this.generateElevationMap();
     
-    // Inicializar grid de ocupación
+
     this.initializeOccupancyGrid();
   }
 
@@ -69,31 +69,31 @@ export class OrganicStreetGenerator {
   generateStreetNetwork(anchors: Point[]): StreetNetwork {
     this.streets = [];
     
-    // 1. Crear calle principal que conecta puntos clave
+
     const mainStreet = this.generateMainStreet(anchors);
     if (mainStreet) {
       this.streets.push(mainStreet);
       this.markStreetOccupied(mainStreet);
     }
 
-    // 2. Generar calles secundarias desde la principal
+
     const secondaryStreets = this.generateSecondaryStreets(mainStreet);
     secondaryStreets.forEach(street => {
       this.streets.push(street);
       this.markStreetOccupied(street);
     });
 
-    // 3. Conectar puntos aislados con senderos
+
     const connectionPaths = this.generateConnectionPaths(anchors);
     connectionPaths.forEach(path => {
       this.streets.push(path);
       this.markStreetOccupied(path);
     });
 
-    // 4. Calcular intersecciones
+
     const intersections = this.calculateIntersections();
 
-    // 5. Generar mapa de conectividad
+
     const connectivity = this.buildConnectivityMap();
 
     return {
@@ -134,7 +134,7 @@ export class OrganicStreetGenerator {
   private generateMainStreet(anchors: Point[]): OrganicStreet | null {
     if (anchors.length < 2) return null;
 
-    // Encontrar los dos puntos más importantes (más separados)
+
     let maxDistance = 0;
     let startPoint = anchors[0];
     let endPoint = anchors[1];
@@ -150,12 +150,12 @@ export class OrganicStreetGenerator {
       }
     }
 
-    // Pathfinding con A* modificado
+
     const path = this.findOrganicPath(startPoint, endPoint, 'main');
     
     if (!path || path.length < 2) return null;
 
-    // Suavizar el path con curvas orgánicas
+
     const smoothPath = this.smoothPath(path, this.config.curvatureAmount);
 
     return {
@@ -178,7 +178,7 @@ export class OrganicStreetGenerator {
     const branchPoints = this.selectBranchPoints(mainStreet.path);
 
     branchPoints.forEach((branchPoint, index) => {
-      // Intentar crear rama en dirección perpendicular
+
       const direction = this.calculatePerpendicularDirection(branchPoint, mainStreet.path);
       const branchEnd = this.findBranchEndpoint(branchPoint, direction);
 
@@ -210,9 +210,9 @@ export class OrganicStreetGenerator {
     const connectionPaths: OrganicStreet[] = [];
     
     anchors.forEach((anchor, index) => {
-      // Verificar si el punto ya está conectado a la red
+
       if (!this.isPointConnectedToNetwork(anchor)) {
-        // Encontrar la calle más cercana
+
         const nearestStreet = this.findNearestStreet(anchor);
         
         if (nearestStreet) {
@@ -263,19 +263,19 @@ export class OrganicStreetGenerator {
     gScores.set(startKey, 0);
 
     while (openSet.length > 0) {
-      // Encontrar nodo con menor fScore
+
       openSet.sort((a, b) => a.fScore - b.fScore);
       const current = openSet.shift()!;
       const currentKey = `${Math.floor(current.point.x)},${Math.floor(current.point.y)}`;
 
       if (this.calculateDistance(current.point, end) < 5) {
-        // Reconstruir path
+
         return this.reconstructPath(current.point, parents);
       }
 
       closedSet.add(currentKey);
 
-      // Explorar vecinos
+
       const neighbors = this.getNeighbors(current.point, streetType);
       
       for (const neighbor of neighbors) {
@@ -298,7 +298,7 @@ export class OrganicStreetGenerator {
           const heuristicScore = this.calculateDistance(neighbor, end);
           const fScore = tentativeGScore + heuristicScore;
 
-          // Añadir a openSet si no está ya
+
           const existingIndex = openSet.findIndex(item => 
             Math.floor(item.point.x) === Math.floor(neighbor.x) && 
             Math.floor(item.point.y) === Math.floor(neighbor.y)
@@ -319,7 +319,7 @@ export class OrganicStreetGenerator {
       }
     }
 
-    return null; // No se encontró path
+    return null;
   }
 
   /**
@@ -328,10 +328,10 @@ export class OrganicStreetGenerator {
   private calculateMovementCost(from: Point, to: Point, streetType: string): number {
     const distance = this.calculateDistance(from, to);
     
-    // Costo base por distancia
+
     let cost = distance;
 
-    // Factor de elevación
+
     const fromElevation = this.getElevationAt(from);
     const toElevation = this.getElevationAt(to);
     const elevationDiff = Math.abs(toElevation - fromElevation);
@@ -339,25 +339,25 @@ export class OrganicStreetGenerator {
     
     cost += elevationCost;
 
-    // Penalización por ocupación existente
+
     if (this.isPointOccupied(to)) {
-      cost += distance * 2; // Doble costo para cruzar calles existentes
+      cost += distance * 2;
     }
 
-    // Bonus por seguir gradientes naturales
+
     const gradientBonus = this.calculateGradientBonus(from, to);
     cost -= gradientBonus;
 
-    // Ajustes por tipo de calle
+
     switch (streetType) {
       case 'main':
-        cost *= 0.8; // Las calles principales prefieren rutas directas
+        cost *= 0.8;
         break;
       case 'secondary':
-        cost *= 1.0; // Costo normal
+        cost *= 1.0;
         break;
       case 'connection':
-        cost *= 1.2; // Las conexiones pueden ser más tortuosas
+        cost *= 1.2;
         break;
     }
 
@@ -371,7 +371,7 @@ export class OrganicStreetGenerator {
     const neighbors: Point[] = [];
     const stepSize = streetType === 'main' ? 8 : 6;
 
-    // 8 direcciones principales
+
     const directions = [
       { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
       { x: 1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: -1, y: 1 }
@@ -383,7 +383,7 @@ export class OrganicStreetGenerator {
         y: point.y + dir.y * stepSize
       };
 
-      // Verificar límites
+
       if (neighbor.x >= 0 && neighbor.x < this.width && 
           neighbor.y >= 0 && neighbor.y < this.height) {
         neighbors.push(neighbor);
@@ -399,23 +399,23 @@ export class OrganicStreetGenerator {
   private smoothPath(path: Point[], curvatureAmount: number): Point[] {
     if (path.length < 3) return path;
 
-    const smoothed: Point[] = [path[0]]; // Mantener primer punto
+    const smoothed: Point[] = [path[0]];
 
     for (let i = 1; i < path.length - 1; i++) {
       const prev = path[i - 1];
       const current = path[i];
       const next = path[i + 1];
 
-      // Calcular punto de control para curva de Bézier
+
       const controlPoint = this.calculateBezierControl(prev, current, next, curvatureAmount);
       
-      // Agregar puntos interpolados
+
       const segments = 3;
       for (let t = 0; t <= segments; t++) {
         const tNorm = t / segments;
         const interpolated = this.interpolateBezier(prev, controlPoint, next, tNorm);
         
-        // Agregar variación orgánica con noise
+
         const variation = this.noise.generateNoise2D(
           interpolated.x * 0.02, 
           interpolated.y * 0.02
@@ -428,7 +428,7 @@ export class OrganicStreetGenerator {
       }
     }
 
-    smoothed.push(path[path.length - 1]); // Mantener último punto
+    smoothed.push(path[path.length - 1]);
 
     return smoothed;
   }
@@ -437,11 +437,11 @@ export class OrganicStreetGenerator {
    * Calcular punto de control para curva de Bézier
    */
   private calculateBezierControl(prev: Point, current: Point, next: Point, amount: number): Point {
-    // Vector de dirección suavizada
+
     const dirX = (next.x - prev.x) * 0.5;
     const dirY = (next.y - prev.y) * 0.5;
     
-    // Perpendicular para curvatura
+
     const perpX = -dirY * amount;
     const perpY = dirX * amount;
     
@@ -467,7 +467,7 @@ export class OrganicStreetGenerator {
     };
   }
 
-  // FUNCIONES AUXILIARES
+
 
   private calculateDistance(a: Point, b: Point): number {
     return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
@@ -497,7 +497,7 @@ export class OrganicStreetGenerator {
   }
 
   private calculateGradientBonus(from: Point, to: Point): number {
-    // Bonus por seguir contornos naturales
+
     const fromElev = this.getElevationAt(from);
     const toElev = this.getElevationAt(to);
     const gradientAlignment = Math.abs(fromElev - toElev);
@@ -518,7 +518,7 @@ export class OrganicStreetGenerator {
   }
 
   private calculatePerpendicularDirection(point: Point, path: Point[]): Point {
-    // Encontrar dirección perpendicular aproximada
+
     const pathIndex = path.findIndex(p => 
       this.calculateDistance(p, point) < 10
     );
@@ -527,7 +527,7 @@ export class OrganicStreetGenerator {
       const dirX = path[pathIndex + 1].x - path[pathIndex - 1].x;
       const dirY = path[pathIndex + 1].y - path[pathIndex - 1].y;
       
-      // Perpendicular
+
       return { x: -dirY, y: dirX };
     }
     
@@ -648,7 +648,7 @@ export class OrganicStreetGenerator {
       connectivity.set(street.id, []);
     });
     
-    // Conectar calles que se intersectan
+
     for (let i = 0; i < this.streets.length; i++) {
       for (let j = i + 1; j < this.streets.length; j++) {
         const street1 = this.streets[i];

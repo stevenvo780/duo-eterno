@@ -11,7 +11,7 @@
  */
 
 import { gameConfig } from '../config/gameConfig';
-// import { MATH } from '../constants'; // No usado actualmente
+
 
 interface PerformanceMetrics {
   fps: number;
@@ -23,14 +23,14 @@ interface PerformanceMetrics {
   lastMeasurement: number;
 }
 
-// === INTERFACES EXTENDIDAS ===
+
 
 export interface PerformanceSnapshot {
   timestamp: number;
   fps: number;
   frameDuration: number;
-  memoryUsage: number; // MB
-  cpuUsage: number; // Estimado en %
+  memoryUsage: number;
+  cpuUsage: number;
   renderCalls: number;
   entityCount: number;
   particleCount: number;
@@ -47,7 +47,7 @@ export interface PerformanceAlert {
   resolved: boolean;
 }
 
-// === CONFIGURACIÓN DE THRESHOLDS ===
+
 
 const PERFORMANCE_THRESHOLDS = {
   fps: {
@@ -57,18 +57,18 @@ const PERFORMANCE_THRESHOLDS = {
     excellent: 58
   },
   memory: {
-    warning: 150, // MB
-    critical: 200, // MB
-    target: 100   // MB
+    warning: 150,
+    critical: 200,
+    target: 100
   },
   frameDuration: {
-    warning: 25,   // ms
-    critical: 40,  // ms
-    target: 16.67  // ms (60 FPS)
+    warning: 25,
+    critical: 40,
+    target: 16.67
   }
 } as const;
 
-// === ADAPTIVE THROTTLER MEJORADO ===
+
 
 class AdaptiveThrottler {
   private lastExecutionTime: number = 0;
@@ -120,19 +120,19 @@ class AdaptiveThrottler {
   }
 }
 
-// === MONITOR DE PERFORMANCE SIMPLIFICADO ===
+
 
 class SimplePerformanceMonitor {
   private snapshots: PerformanceSnapshot[] = [];
   private alerts: PerformanceAlert[] = [];
   private frameCount: number = 0;
   private renderCallCount: number = 0;
-  private readonly maxSnapshots = 60; // 1 minuto de datos
+  private readonly maxSnapshots = 60;
   
   public recordFrame(): void {
     this.frameCount++;
     
-    // Cada segundo, tomar snapshot
+
     if (this.frameCount >= 60) {
       this.takeSnapshot();
       this.frameCount = 0;
@@ -150,7 +150,7 @@ class SimplePerformanceMonitor {
     const snapshot: PerformanceSnapshot = {
       timestamp: now,
       fps: this.frameCount || 60,
-      frameDuration: 1000 / 60, // 60 FPS = ~16.67ms
+      frameDuration: 1000 / 60,
       memoryUsage,
       cpuUsage: this.estimateCPUUsage(),
       renderCalls: this.renderCallCount,
@@ -177,13 +177,13 @@ class SimplePerformanceMonitor {
         return memInfo.usedJSHeapSize / (1024 * 1024);
       }
     } catch {
-      // Ignore
+
     }
     return 0;
   }
   
   private estimateCPUUsage(): number {
-    return 50; // Valor fijo por simplicidad
+    return 50;
   }
   
   private getCurrentQualityLevel(): 'low' | 'medium' | 'high' {
@@ -230,7 +230,7 @@ class SimplePerformanceMonitor {
   }
 }
 
-// === INSTANCIAS ===
+
 
 const autopoiesisThrottler = new AdaptiveThrottler(200, 100, 1000);
 const movementThrottler = new AdaptiveThrottler(50, 25, 200);
@@ -246,7 +246,7 @@ const performanceMetrics: PerformanceMetrics = {
   lastMeasurement: Date.now()
 };
 
-// === API PÚBLICA ===
+
 
 export const shouldUpdateAutopoiesis = (): boolean => {
   return autopoiesisThrottler.shouldExecute(Date.now());
@@ -268,7 +268,7 @@ export const measureExecutionTime = <T>(name: string, fn: () => T): T => {
   const result = fn();
   const end = performance.now();
   
-  // Solo log operaciones críticas (>20ms) para reducir spam
+
   const duration = end - start;
   if (gameConfig.debugMode && duration > 20) {
     console.debug(`⚠️ ${name}: ${duration.toFixed(2)}ms`);
@@ -277,7 +277,7 @@ export const measureExecutionTime = <T>(name: string, fn: () => T): T => {
   return result;
 };
 
-// === NUEVAS EXPORTACIONES ===
+
 
 export const recordFrame = (): void => {
   performanceMonitor.recordFrame();
@@ -296,7 +296,7 @@ export const updatePerformanceThrottlers = (fps: number): void => {
   movementThrottler.updateFPS(fps);
 };
 
-// === HOOK PARA REACT ===
+
 
 export const usePerformanceMonitoring = () => {
   return {

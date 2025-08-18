@@ -16,14 +16,14 @@ export const useGameLoop = () => {
   const { gameState, dispatch } = useGame();
   const config = getGameConfig();
   
-  // Refs para control del loop y deltaTime
+
   const intervalRef = useRef<number | undefined>(undefined);
   const startedRef = useRef<boolean>(false);
   const lastTickMsRef = useRef<number>(Date.now());
   const tickCountRef = useRef<number>(0);
   const gameStateRef = useRef(gameState);
 
-  // Mantener ref sincronizado con el estado real
+
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
@@ -31,7 +31,7 @@ export const useGameLoop = () => {
   useEffect(() => {
     const { main: TICK_INTERVAL } = getGameIntervals();
 
-    // Evitar múltiples arranques
+
     if (intervalRef.current != null || startedRef.current) {
       if (config.debugMode) logGeneral.warn('Game Loop ya activo, evitando reinicio');
       return () => {};
@@ -47,24 +47,24 @@ export const useGameLoop = () => {
     const mainGameTick = () => {
       const now = Date.now();
       const deltaMs = now - lastTickMsRef.current;
-      if (deltaMs < TICK_INTERVAL * 0.8) return; // throttle básico
+      if (deltaMs < TICK_INTERVAL * 0.8) return;
       lastTickMsRef.current = now;
       tickCountRef.current++;
 
       const deltaSec = deltaMs / 1000;
 
-      // Tick base para ciclos
+
       dispatch({ type: 'TICK', payload: deltaMs });
 
       const livingEntities = gameStateRef.current.entities.filter(e => !e.isDead);
 
-      // 1) Degradación base por segundo usando constants y util robusto
+
       livingEntities.forEach((entity) => {
         let newStats = { ...entity.stats };
 
         (Object.entries(SURVIVAL.DEGRADATION_RATES) as Array<[string, number]>).forEach(([statUpper, baseRate]) => {
           const statKey = statUpper.toLowerCase() as keyof EntityStats;
-          const degradationAmount = baseRate * deltaSec; // por segundo
+          const degradationAmount = baseRate * deltaSec;
 
           newStats = robustStateUtils.applyStatChange(
             newStats,
@@ -74,7 +74,7 @@ export const useGameLoop = () => {
           );
         });
 
-        // Dispatch de cambios si hubo variación significativa
+
         const changed = (Object.keys(newStats) as Array<keyof EntityStats>).some((k) => {
           const a = newStats[k] as number;
           const b = entity.stats[k] as number;
@@ -85,7 +85,7 @@ export const useGameLoop = () => {
         }
       });
 
-      // 2) Chequeo de salud básico (cada 4 ticks)
+
       if (tickCountRef.current % 4 === 0) {
         const crit = config.survival.criticalThresholds;
         livingEntities.forEach((entity) => {
@@ -94,11 +94,11 @@ export const useGameLoop = () => {
 
           let healthChange = 0;
           if (hungerCritical || energyCritical) {
-            // Decaimiento proporcional al número de stats críticos
+
             const count = (hungerCritical ? 1 : 0) + (energyCritical ? 1 : 0);
-            healthChange = -count * 0.5 * deltaSec; // 0.5 hp/s por stat crítico
+            healthChange = -count * 0.5 * deltaSec;
           } else {
-            // Recuperación ligera cuando no hay urgencias
+
             healthChange = 0.2 * deltaSec;
           }
 
@@ -121,7 +121,7 @@ export const useGameLoop = () => {
         });
       }
 
-      // 3) Resonancia basada en proximidad + sincronía de actividad (cada 2 ticks)
+
       if (tickCountRef.current % 2 === 0 && livingEntities.length === 2) {
         const [a, b] = livingEntities as [Entity, Entity];
         const dx = a.position.x - b.position.x;
@@ -138,7 +138,7 @@ export const useGameLoop = () => {
 
         const gain = closeness * config.resonance.harmonyBonus * activityBonus * (1 - R / 100);
         const decay = config.resonance.decayRate * (R / 100);
-        const dR = (gain - decay) * (deltaSec * 100); // escalar a puntos de resonancia
+        const dR = (gain - decay) * (deltaSec * 100);
         const newRes = Math.max(0, Math.min(100, R + dR));
 
         if (Math.abs(newRes - R) > 0.001) {
@@ -147,7 +147,7 @@ export const useGameLoop = () => {
         }
       }
 
-      // 4) Snapshots y métricas periódicas (cada 50 ticks)
+
       if (tickCountRef.current % 50 === 0) {
         livingEntities.forEach(e => optimizedDynamicsLogger.takeEntitySnapshot(e));
         optimizedDynamicsLogger.takeSystemSnapshot(
@@ -159,7 +159,7 @@ export const useGameLoop = () => {
       }
     };
 
-    // Ejecutar inmediatamente y luego en intervalo
+
     mainGameTick();
     intervalRef.current = window.setInterval(mainGameTick, TICK_INTERVAL);
 

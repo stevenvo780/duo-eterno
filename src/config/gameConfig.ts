@@ -11,15 +11,15 @@
 
 import { TIMING, SURVIVAL, PHYSICS } from '../constants';
 
-// === TIPOS CONSOLIDADOS ===
+
 
 export interface GameConfig {
-  // === CORE SISTEMA ===
+
   gameSpeedMultiplier: number;
   debugMode: boolean;
   targetFPS: number;
   
-  // === TIMING UNIFICADO ===
+
   timing: {
     mainGameLogic: number;
     degradation: number;
@@ -28,7 +28,7 @@ export interface GameConfig {
     gameSpeedMultiplier: number;
   };
   
-  // === SUPERVIVENCIA BALANCEADA ===
+
   survival: {
     degradationRates: {
       hunger: number;
@@ -55,7 +55,7 @@ export interface GameConfig {
     };
   };
   
-  // === MOVIMIENTO Y FÍSICA ===
+
   movement: {
     baseSpeed: number;
     maxSpeed: number;
@@ -65,7 +65,7 @@ export interface GameConfig {
     wanderRadius: number;
   };
   
-  // === RESONANCIA Y SOCIABILIDAD ===
+
   resonance: {
     maxDistance: number;
     decayRate: number;
@@ -74,7 +74,7 @@ export interface GameConfig {
     proximityWeight: number;
   };
   
-  // === AI Y DECISIONES ===
+
   ai: {
     personalityInfluence: number;
     activityInertiaBonus: number;
@@ -83,14 +83,14 @@ export interface GameConfig {
     decisionChangeThreshold: number;
   };
   
-  // === EFECTOS DE ZONA ===
+
   zones: {
     effectivenessMultiplier: number;
     transitionSmoothness: number;
     bonusDecayRate: number;
   };
   
-  // === UI Y EXPERIENCIA ===
+
   ui: {
     dialogueDuration: number;
     animationSpeed: number;
@@ -98,7 +98,7 @@ export interface GameConfig {
     statUpdateFrequency: number;
   };
   
-  // === PERFORMANCE ===
+
   performance: {
     maxEntities: number;
     cullingDistance: number;
@@ -106,7 +106,7 @@ export interface GameConfig {
     throttleThreshold: number;
   };
 
-  // === INICIALIZACIÓN DE ENTIDADES ===
+
   entityCircleInitialX: number;
   entityCircleInitialY: number;
   entitySquareInitialX: number;
@@ -116,57 +116,57 @@ export interface GameConfig {
   entityInitialHealth: number;
   initialResonance: number;
 
-  // === THRESHOLD CONFIGURATIONS ===
+
   thresholdLow: number;
   thresholdComfortable: number;
   thresholdWarning: number;
 
-  // === ZONE CONFIGURATIONS ===
+
   zoneEffectivenessMultiplier: number;
 
-  // === AI CONFIGURATIONS ===
+
   activityInertiaBonus: number;
   aiPersonalityInfluence: number;
   moodInfluenceStrength: number;
   aiSoftmaxTau: number;
 }
 
-// === CONFIGURACIONES POR PRESET ===
+
 
 const baseConfig: GameConfig = {
-  // === CORE SISTEMA ===
+
   gameSpeedMultiplier: 1.0,
   debugMode: false,
   targetFPS: 60,
   
-  // === TIMING UNIFICADO ===
+
   timing: {
-    mainGameLogic: TIMING.MAIN_GAME_LOGIC, // 800ms
-    degradation: TIMING.DEGRADATION_UPDATE, // 2000ms
+    mainGameLogic: TIMING.MAIN_GAME_LOGIC,
+    degradation: TIMING.DEGRADATION_UPDATE,
     batchFlush: 100,
     cleanup: 60000,
     gameSpeedMultiplier: 1.0,
   },
   
-  // === SUPERVIVENCIA BALANCEADA ===
+
   survival: {
     degradationRates: {
-      hunger: SURVIVAL.DEGRADATION_RATES.HUNGER, // 0.08/s
-      energy: SURVIVAL.DEGRADATION_RATES.ENERGY, // 0.05/s
-      happiness: SURVIVAL.DEGRADATION_RATES.HAPPINESS, // 0.03/s
-      sleepiness: SURVIVAL.DEGRADATION_RATES.SLEEPINESS, // 0.04/s
-      boredom: SURVIVAL.DEGRADATION_RATES.BOREDOM, // 0.06/s
-      loneliness: SURVIVAL.DEGRADATION_RATES.LONELINESS, // 0.02/s
+      hunger: SURVIVAL.DEGRADATION_RATES.HUNGER,
+      energy: SURVIVAL.DEGRADATION_RATES.ENERGY,
+      happiness: SURVIVAL.DEGRADATION_RATES.HAPPINESS,
+      sleepiness: SURVIVAL.DEGRADATION_RATES.SLEEPINESS,
+      boredom: SURVIVAL.DEGRADATION_RATES.BOREDOM,
+      loneliness: SURVIVAL.DEGRADATION_RATES.LONELINESS,
     },
     criticalThresholds: {
-      hunger: SURVIVAL.CRITICAL_THRESHOLDS.HUNGER, // 20
-      energy: SURVIVAL.CRITICAL_THRESHOLDS.ENERGY, // 15
-      health: SURVIVAL.CRITICAL_THRESHOLDS.HEALTH, // 10
+      hunger: SURVIVAL.CRITICAL_THRESHOLDS.HUNGER,
+      energy: SURVIVAL.CRITICAL_THRESHOLDS.ENERGY,
+      health: SURVIVAL.CRITICAL_THRESHOLDS.HEALTH,
     },
     livingCosts: {
-      basic: SURVIVAL.LIVING_COSTS.BASIC, // 1.5/min
-      activity: SURVIVAL.LIVING_COSTS.ACTIVITY, // 0.5/min
-      luxury: SURVIVAL.LIVING_COSTS.LUXURY, // 2.0/min
+      basic: SURVIVAL.LIVING_COSTS.BASIC,
+      activity: SURVIVAL.LIVING_COSTS.ACTIVITY,
+      luxury: SURVIVAL.LIVING_COSTS.LUXURY,
     },
     recovery: {
       restingBonus: 1.8,
@@ -175,17 +175,17 @@ const baseConfig: GameConfig = {
     },
   },
   
-  // === MOVIMIENTO Y FÍSICA ===
+
   movement: {
-    baseSpeed: PHYSICS.BASE_MOVEMENT_SPEED, // 84
-    maxSpeed: PHYSICS.MAX_SPEED, // 120
-    acceleration: PHYSICS.ACCELERATION, // 50
-    friction: PHYSICS.FRICTION, // 0.85
+    baseSpeed: PHYSICS.BASE_MOVEMENT_SPEED,
+    maxSpeed: PHYSICS.MAX_SPEED,
+    acceleration: PHYSICS.ACCELERATION,
+    friction: PHYSICS.FRICTION,
     avoidanceDistance: 60,
     wanderRadius: 100,
   },
   
-  // === RESONANCIA Y SOCIABILIDAD ===
+
   resonance: {
     maxDistance: 400,
     decayRate: 0.02,
@@ -194,7 +194,7 @@ const baseConfig: GameConfig = {
     proximityWeight: 0.6,
   },
   
-  // === AI Y DECISIONES ===
+
   ai: {
     personalityInfluence: 0.3,
     activityInertiaBonus: 1.2,
@@ -203,14 +203,14 @@ const baseConfig: GameConfig = {
     decisionChangeThreshold: 0.15,
   },
   
-  // === EFECTOS DE ZONA ===
+
   zones: {
     effectivenessMultiplier: 1.5,
     transitionSmoothness: 0.1,
     bonusDecayRate: 0.05,
   },
   
-  // === UI Y EXPERIENCIA ===
+
   ui: {
     dialogueDuration: 3000,
     animationSpeed: 1.0,
@@ -218,7 +218,7 @@ const baseConfig: GameConfig = {
     statUpdateFrequency: 500,
   },
   
-  // === PERFORMANCE ===
+
   performance: {
     maxEntities: 10,
     cullingDistance: 1000,
@@ -226,7 +226,7 @@ const baseConfig: GameConfig = {
     throttleThreshold: 16.67,
   },
 
-  // === INICIALIZACIÓN DE ENTIDADES ===
+
   entityCircleInitialX: 200,
   entityCircleInitialY: 200,
   entitySquareInitialX: 600,
@@ -236,22 +236,22 @@ const baseConfig: GameConfig = {
   entityInitialHealth: 90,
   initialResonance: 0,
 
-  // === THRESHOLD CONFIGURATIONS ===
+
   thresholdLow: 30,
   thresholdComfortable: 70,
   thresholdWarning: 25,
 
-  // === ZONE CONFIGURATIONS ===
+
   zoneEffectivenessMultiplier: 1.5,
 
-  // === AI CONFIGURATIONS ===
+
   activityInertiaBonus: 1.2,
   aiPersonalityInfluence: 0.3,
   moodInfluenceStrength: 0.8,
   aiSoftmaxTau: 0.5,
 };
 
-// === PRESETS ESPECÍFICOS ===
+
 
 export const gamePresets = {
   development: {
@@ -261,11 +261,11 @@ export const gamePresets = {
     timing: {
       ...baseConfig.timing,
       gameSpeedMultiplier: 2.0,
-      mainGameLogic: 400, // Más rápido para testing
+      mainGameLogic: 400,
     },
     ui: {
       ...baseConfig.ui,
-      dialogueDuration: 1000, // Diálogos más rápidos
+      dialogueDuration: 1000,
     },
   },
   
@@ -275,7 +275,7 @@ export const gamePresets = {
     gameSpeedMultiplier: 1.0,
     performance: {
       ...baseConfig.performance,
-      maxEntities: 4, // Conservativo para producción
+      maxEntities: 4,
       batchSize: 15,
     },
   },
@@ -283,7 +283,7 @@ export const gamePresets = {
   testing: {
     ...baseConfig,
     debugMode: true,
-    gameSpeedMultiplier: 10.0, // Super fast para tests
+    gameSpeedMultiplier: 10.0,
     timing: {
       ...baseConfig.timing,
       gameSpeedMultiplier: 10.0,
@@ -294,7 +294,7 @@ export const gamePresets = {
       ...baseConfig.survival,
       degradationRates: {
         ...baseConfig.survival.degradationRates,
-        hunger: 0.8,  // 10x más rápido
+        hunger: 0.8,
         energy: 0.5,
         happiness: 0.3,
         sleepiness: 0.4,
@@ -309,12 +309,12 @@ export const gamePresets = {
     debugMode: false,
     timing: {
       ...baseConfig.timing,
-      mainGameLogic: 1200, // Más lento para performance
+      mainGameLogic: 1200,
       batchFlush: 200,
     },
     performance: {
       ...baseConfig.performance,
-      maxEntities: 2, // Máximo performance
+      maxEntities: 2,
       batchSize: 10,
     },
   },
@@ -328,29 +328,29 @@ export const gamePresets = {
     },
     ui: {
       ...baseConfig.ui,
-      animationSpeed: 1.3, // Más dinámico para demos
+      animationSpeed: 1.3,
       dialogueDuration: 2000,
     },
     resonance: {
       ...baseConfig.resonance,
-      harmonyBonus: 1.4, // Más espectacular
+      harmonyBonus: 1.4,
       activitySyncBonus: 1.3,
     },
   },
 } as const;
 
-// === CONFIGURACIÓN ACTIVA ===
+
 
 let activeConfig: GameConfig = gamePresets.development;
 
-// Detección automática del entorno
+
 if (import.meta.env.PROD) {
   activeConfig = gamePresets.production;
 } else if (import.meta.env.MODE === 'test') {
   activeConfig = gamePresets.testing;
 }
 
-// === API PÚBLICA ===
+
 
 export const getGameConfig = (): GameConfig => ({
   ...activeConfig,
@@ -379,21 +379,21 @@ export const getGameIntervals = () => ({
   degradation: activeConfig.timing.degradation,
   movement: Math.floor(1000 / activeConfig.targetFPS),
   ui: activeConfig.ui.statUpdateFrequency,
-  entityMovementSpeed: 2.0, // Velocidad base de movimiento de entidades
-  zoneEffectsInterval: 1000, // Zone effects update interval
+  entityMovementSpeed: 2.0,
+  zoneEffectsInterval: 1000,
 });
 
-// === UTILIDADES PARA RETROCOMPATIBILIDAD ===
+
 
 export const gameConfig = getGameConfig();
 
-// Actualizar referencia cuando cambie la configuración
+
 export const updateGameConfig = () => {
   const newConfig = getGameConfig();
   Object.assign(gameConfig, newConfig);
 };
 
-// Auto-detección de performance del dispositivo
+
 if (typeof window !== 'undefined') {
   const isLowEnd = navigator.hardwareConcurrency <= 2 || 
                   ((navigator as unknown as { deviceMemory?: number })?.deviceMemory || 4) <= 2;
@@ -403,7 +403,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// === DEBUG UTILITIES ===
+
 
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   window.gameConfig = activeConfig;
@@ -433,7 +433,7 @@ if (typeof window !== 'undefined' && import.meta.env.DEV) {
     console.table(activeConfig);
   };
   
-  // Comandos de consola útiles
+
   console.log(`
 🎮 Game Config Commands Available:
 - gameConfig: Ver configuración actual

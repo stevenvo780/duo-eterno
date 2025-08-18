@@ -110,7 +110,7 @@ const initialGameState: GameState = {
   },
   zones: [],
   mapElements: [],
-  mapSeed: generateMapSeed() // Generar semilla única para cada partida
+  mapSeed: generateMapSeed()
 };
 
 const initialDialogueState: DialogueState = {
@@ -371,11 +371,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Generar mapa inicial
+
     dispatch({ type: 'GENERATE_NEW_MAP' });
   }, []);
 
-  // Persistencia mínima (autosave 20s + beforeunload)
+
   usePersistence(gameState, dispatch);
 
 

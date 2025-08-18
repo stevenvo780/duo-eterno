@@ -46,7 +46,7 @@ export const useUnifiedGameLoop = () => {
     lastTickTime: Date.now()
   });
 
-  // Calcula el mood en base a stats y resonancia
+
   const calculateOptimizedMood = (stats: Entity['stats'], resonance: number): EntityMood => {
     const criticalFactors = [
       stats.hunger < 15,
@@ -67,7 +67,7 @@ export const useUnifiedGameLoop = () => {
     return 'SAD';
   };
 
-  // Maneja transiciones de estado basadas en la resonancia del vínculo
+
   const updateResonanceStates = useCallback(
     (entities: Entity[], resonanceLevel: number, nowMs: number) => {
       for (const entity of entities) {
@@ -110,39 +110,39 @@ export const useUnifiedGameLoop = () => {
       const deltaTime = now - loopStatsRef.current.lastTickTime;
       const loopStats = loopStatsRef.current;
       
-      // Throttling de performance
+
       if (deltaTime < gameClockInterval * 0.8) return;
       
       loopStats.lastTickTime = now;
       loopStats.totalTicks++;
 
       measureExecutionTime('unified-game-loop', () => {
-        // Ejecutar tick base
+
         dispatch({ type: 'TICK', payload: deltaTime });
         
         const livingEntities = gameStateRef.current.entities.filter(entity => !entity.isDead);
 
-        // Estados por resonancia
+
         updateResonanceStates(
           livingEntities,
           gameStateRef.current.resonance,
           now
         );
         
-        // Actualizar stats de autopoiesis
+
         if (shouldUpdateAutopoiesis() && livingEntities.length > 0) {
           loopStats.autopoiesisTicks++;
           
           measureExecutionTime('autopoiesis-system', () => {
             for (const entity of livingEntities) {
-              // Aplicar decay híbrido
+
               const newStats = applyHybridDecay(
                 entity.stats, 
                 entity.activity, 
                 deltaTime
               );
               
-              // Aplicar efectos de actividad (perMinute + costos + immediate)
+
               const statsAfterActivity = { ...newStats };
               const session = getActivitySession(entity.id);
               if (session) {
@@ -150,7 +150,7 @@ export const useUnifiedGameLoop = () => {
                 const timeSpent = now - session.startTime;
                 let efficiency = effects.efficiencyOverTime(timeSpent);
 
-                // Bonus/penalty por estar en zona preferida
+
                 const preferredZone = mapActivityToPreferredZone(session.activity);
                 const inPreferred = (() => {
                   const z = getEntityZone(entity.position, gameStateRef.current.zones);
@@ -189,7 +189,7 @@ export const useUnifiedGameLoop = () => {
                   session.immediateApplied = true;
                 }
 
-                // Actualiza efectividad/satisfacción simple
+
                 const gainKeys = Object.keys(effects.perMinute);
                 const deltaScore = gainKeys.reduce((acc, k) => {
                   const key = k as keyof Entity['stats'];
@@ -199,10 +199,10 @@ export const useUnifiedGameLoop = () => {
                 session.satisfactionLevel = Math.max(0, Math.min(1, session.satisfactionLevel * 0.8 + session.effectiveness * 0.2));
               }
 
-              // Aplicar costos de supervivencia
+
               const finalStats = applySurvivalCosts(statsAfterActivity, deltaTime);
               
-              // Detectar estadísticas críticas
+
               const criticalStats = Object.entries(finalStats)
                 .filter(([key, value]) => {
                   if (key === 'money') return false;
@@ -217,7 +217,7 @@ export const useUnifiedGameLoop = () => {
                 dynamicsLogger.logStatsCritical(entity.id, criticalStats, finalStats);
               }
               
-              // Actualizar stats si hay cambios significativos
+
               const hasSignificantChanges = Object.keys(finalStats).some(key => {
                 const statKey = key as keyof Entity['stats'];
                 return Math.abs(finalStats[statKey] - entity.stats[statKey]) > 0.1;
@@ -239,7 +239,7 @@ export const useUnifiedGameLoop = () => {
                 });
               }
               
-              // Actualizar mood
+
               const newMood = calculateOptimizedMood(finalStats, gameStateRef.current.resonance);
               if (newMood !== entity.mood) {
                 dynamicsLogger.logMoodChange(entity.id, entity.mood, newMood, finalStats);
@@ -252,14 +252,14 @@ export const useUnifiedGameLoop = () => {
           });
         }
         
-        // Eventos del reloj de juego
+
         loopStats.clockTicks++;
         
-        // Verificar salud (cada 4 ticks)
+
         if (loopStats.totalTicks % 4 === 0) {
           measureExecutionTime('death-check', () => {
             for (const entity of livingEntities) {
-              // 🔧 MEJORA MINIMALISTA: Umbral crítico más tolerante (4 en lugar de 5)
+
               const criticalCount = [
                 entity.stats.hunger < 4,
                 entity.stats.sleepiness < 4,
@@ -267,7 +267,7 @@ export const useUnifiedGameLoop = () => {
                 entity.stats.energy < 4
               ].filter(Boolean).length;
 
-              // Recuperación sujeta a resonancia; mayor vínculo ayuda
+
               let healthChange = (deltaTime / 1000) * (HEALTH_CONFIG.RECOVERY_RATE + (gameStateRef.current.resonance - 50) / 1000);
               if (criticalCount > 0) {
                 const decay = criticalCount * HEALTH_CONFIG.DECAY_PER_CRITICAL * (deltaTime / 1000);
@@ -288,7 +288,7 @@ export const useUnifiedGameLoop = () => {
                 dispatch({ type: 'KILL_ENTITY', payload: { entityId: entity.id } });
                 logGeneral.warn(`Entidad murió: ${entity.id}`, { stats: entity.stats });
               } else if (Math.abs(newHealth - entity.stats.health) > 1) {
-                // Log cambios significativos de salud
+
                 const factors = [];
                 if (criticalCount > 0) factors.push(`${criticalCount} stats críticas`);
                 else factors.push('recuperación natural');
@@ -298,7 +298,7 @@ export const useUnifiedGameLoop = () => {
           });
         }
         
-        // Actualizar tiempo juntos y resonancia (cada 2 ticks)
+
         if (loopStats.totalTicks % 2 === 0 && livingEntities.length === 2) {
           const [entity1, entity2] = livingEntities;
           const distance = Math.sqrt(
@@ -306,19 +306,19 @@ export const useUnifiedGameLoop = () => {
             Math.pow(entity1.position.y - entity2.position.y, 2)
           );
 
-          // Constantes del modelo unificado (pueden parametrizarse en config/env más adelante)
-          const BOND_DISTANCE = 80; // distancia de referencia
-          const dtSec = deltaTime / 1000;
-          const BOND_GAIN_PER_SEC = 1.8;       // ganancia base por cercanía
-          const SEPARATION_DECAY_PER_SEC = 0.2; // pérdida base por separación
-          const STRESS_DECAY_PER_SEC = 0.3;     // pérdida por cada agente con stat crítica
-          const DISTANCE_SCALE = 30;            // suaviza la transición de cercanía
-          const JOINT_BONUS_UNIT = 0.3;         // bonus por actividad/zona conjunta
 
-          // Factor de cercanía en [0,1] usando sigmoide centrada en BOND_DISTANCE
+          const BOND_DISTANCE = 80;
+          const dtSec = deltaTime / 1000;
+          const BOND_GAIN_PER_SEC = 1.8;
+          const SEPARATION_DECAY_PER_SEC = 0.2;
+          const STRESS_DECAY_PER_SEC = 0.3;
+          const DISTANCE_SCALE = 30;
+          const JOINT_BONUS_UNIT = 0.3;
+
+
           const closeness = 1 / (1 + Math.exp((distance - BOND_DISTANCE) / Math.max(1, DISTANCE_SCALE)));
 
-          // Tiempo juntos si hay suficiente cercanía
+
           if (closeness > 0.6) {
             dispatch({
               type: 'UPDATE_TOGETHER_TIME',
@@ -326,7 +326,7 @@ export const useUnifiedGameLoop = () => {
             });
           }
 
-          // Factor de humor (idéntica lógica previa, consolidada)
+
           let moodBonus = 1.0;
           if ((entity1.mood === 'HAPPY' || entity1.mood === 'EXCITED') &&
               (entity2.mood === 'HAPPY' || entity2.mood === 'EXCITED')) {
@@ -338,19 +338,19 @@ export const useUnifiedGameLoop = () => {
             moodBonus = 0.7;
           }
 
-          // Sinergia por actividad y zona compartida
+
           const sameActivity = entity1.activity === entity2.activity && ['SOCIALIZING','DANCING','CONTEMPLATING','MEDITATING','RESTING'].includes(entity1.activity);
           const zone1 = getEntityZone(entity1.position, gameStateRef.current.zones);
           const zone2 = getEntityZone(entity2.position, gameStateRef.current.zones);
           const sameSocialZone = zone1 && zone2 && zone1.id === zone2.id && (zone1.type === 'social' || zone1.type === 'comfort');
           const synergy = 1 + JOINT_BONUS_UNIT * ((sameActivity ? 1 : 0) + (sameSocialZone ? 1 : 0));
 
-          // Estrés por stats críticas
+
           const critical1 = (entity1.stats.hunger < 15 || entity1.stats.sleepiness < 15 || entity1.stats.loneliness < 15 || entity1.stats.energy < 15);
           const critical2 = (entity2.stats.hunger < 15 || entity2.stats.sleepiness < 15 || entity2.stats.loneliness < 15 || entity2.stats.energy < 15);
           const stressCount = (critical1 ? 1 : 0) + (critical2 ? 1 : 0);
 
-          // Ecuación unificada: crecimiento saturante por cercanía y humor, y decaimientos por separación y estrés
+
           const R = gameStateRef.current.resonance;
           const gain = BOND_GAIN_PER_SEC * closeness * moodBonus * synergy * (1 - R / 100);
           const sep = SEPARATION_DECAY_PER_SEC * (1 - closeness) * (R / 100);
@@ -385,7 +385,7 @@ export const useUnifiedGameLoop = () => {
         }
         
                 
-        // Tomar snapshots regulares (cada 50 ticks)
+
         if (loopStats.totalTicks % 50 === 0) {
           livingEntities.forEach(entity => {
             dynamicsLogger.takeEntitySnapshot(entity);
@@ -399,7 +399,7 @@ export const useUnifiedGameLoop = () => {
           );
         }
         
-        // Log de estadísticas de performance (cada 100 ticks)
+
         if (gameConfig.debugMode && loopStats.totalTicks % 100 === 0) {
           logGeneral.info('Estadísticas del loop unificado', {
             totalTicks: loopStats.totalTicks,
@@ -407,7 +407,7 @@ export const useUnifiedGameLoop = () => {
             efficiency: (loopStats.autopoiesisTicks / loopStats.totalTicks * 100).toFixed(1) + '%'
           });
           
-          // Mostrar reporte de dinámicas en consola si es necesario
+
         }
       });
     }, gameClockInterval);

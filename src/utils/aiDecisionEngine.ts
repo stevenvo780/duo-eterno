@@ -108,15 +108,15 @@ const shouldChangeActivity = (
   
   const personality = getPersonalityProfile(entity.id);
   
-  // Normalizar el mood antes de usar - conversión de minúsculas a mayúsculas si es necesario
+
   const normalizedMood = entity.mood.toUpperCase() as keyof typeof MOOD_MODIFIERS;
   const moodModifier = MOOD_MODIFIERS[normalizedMood];
   const inertia = calculateActivityInertia(entity, currentTime);
   
-  // Verificar que el moodModifier existe antes de acceder a sus propiedades
+
   if (!moodModifier) {
     console.warn(`🚨 Mood modifier no encontrado para mood: "${entity.mood}" (normalizado: "${normalizedMood}"). Usando valores por defecto.`);
-    return urgencyScore > 80; // Decisión simple basada en urgencia
+    return urgencyScore > 80;
   }
   
   let changeChance = moodModifier.activityChange;
@@ -128,7 +128,7 @@ const shouldChangeActivity = (
   
   if (personality.activityPersistence > 0.7) {
     const influence = Math.max(0, Math.min(1, gameConfig.aiPersonalityInfluence));
-    const damp = 1 - (1 - 0.6) * influence; // interpola entre 1 y 0.6
+    const damp = 1 - (1 - 0.6) * influence;
     changeChance *= damp;
   }
   
@@ -140,14 +140,14 @@ const applyMoodModifiers = (
   activity: EntityActivity,
   mood: EntityMood
 ): number => {
-  // Normalizar el mood antes de usar
+
   const normalizedMood = mood.toUpperCase() as keyof typeof MOOD_MODIFIERS;
   const moodModifier = MOOD_MODIFIERS[normalizedMood];
   
-  // Validación para prevenir errores undefined
+
   if (!moodModifier) {
     console.warn(`🚨 Mood modifier no encontrado para mood: "${mood}" (normalizado: "${normalizedMood}"). Usando valores por defecto.`);
-    return baseScore; // Retornar score base sin modificaciones
+    return baseScore;
   }
   
   let modifiedScore = baseScore;
@@ -186,19 +186,19 @@ const startActivitySession = (
   });
 };
 
-// Simple habit memory per entity (decays over time via normalization)
+
 const activityHabits = new Map<string, Partial<Record<EntityActivity, number>>>();
 
 const updateHabit = (entityId: string, activity: EntityActivity, reward: number) => {
   const habits = activityHabits.get(entityId) || {};
   const prev = habits[activity] ?? 0;
-  habits[activity] = Math.max(0, prev * 0.95 + reward); // decay and reinforce
+  habits[activity] = Math.max(0, prev * 0.95 + reward);
   activityHabits.set(entityId, habits);
 };
 
 const getHabitBias = (entityId: string, activity: EntityActivity): number => {
   const habits = activityHabits.get(entityId) || {};
-  return (habits[activity] ?? 0) * 5; // modest influence
+  return (habits[activity] ?? 0) * 5;
 };
 
 const softmaxPick = (scores: Array<{ activity: EntityActivity; score: number }>, temperature = 0.7) => {
@@ -240,7 +240,7 @@ export const makeIntelligentDecision = (
     activityScores.push({ activity, score: personalityModifiedScore });
   }
   
-  // Add small habit bias and pick via softmax to avoid mode-locking
+
   const biasedScores = activityScores.map(s => ({
     activity: s.activity,
     score: s.score + getHabitBias(entity.id, s.activity)
@@ -273,7 +273,7 @@ export const makeIntelligentDecision = (
         logAI.debug(`${entity.id} cambia actividad: ${entity.activity} → ${chosen}`, { urgencia: urgencyScore.toFixed(1) });
       }
       
-      // Reward habit slightly for exploration and change
+
       updateHabit(entity.id, chosen, 0.1);
       return chosen;
     }

@@ -52,16 +52,16 @@ export class VoronoiGenerator {
    * Generar células de Voronoi con distribución orgánica
    */
   generateCells(): VoronoiCell[] {
-    // 1. Generar puntos semilla con distribución orgánica
+
     const seedPoints = this.generateOrganicSeedPoints();
     
-    // 2. Relajar posiciones usando Lloyd's algorithm
+
     const relaxedPoints = this.lloydRelaxation(seedPoints);
     
-    // 3. Crear células de Voronoi
+
     this.cells = this.createVoronoiCells(relaxedPoints);
     
-    // 4. Calcular vecinos y propiedades
+
     this.calculateNeighbors();
     this.assignCellTypes();
     
@@ -75,7 +75,7 @@ export class VoronoiGenerator {
     const points: Point[] = [];
     const { width, height, numCells, minCellDistance, boundaryPadding } = this.config;
     
-    // Usar grid para acelerar búsquedas
+
     const cellSize = minCellDistance / Math.sqrt(2);
     const gridWidth = Math.ceil(width / cellSize);
     const gridHeight = Math.ceil(height / cellSize);
@@ -89,16 +89,16 @@ export class VoronoiGenerator {
       return seedValue / 233280;
     };
 
-    // Agregar puntos usando noise-guided sampling
+
     for (let attempts = 0; attempts < numCells * 10 && points.length < numCells; attempts++) {
-      // Generar candidato con bias hacia regiones de alta densidad
+
       const candidate = this.generateCandidatePoint(seededRandom);
       
-      // Verificar distancia mínima con otros puntos
+
       if (this.isValidPoint(candidate, grid, cellSize, gridWidth, gridHeight)) {
         points.push(candidate);
         
-        // Agregar al grid
+
         const gridX = Math.floor(candidate.x / cellSize);
         const gridY = Math.floor(candidate.y / cellSize);
         if (gridX >= 0 && gridX < gridWidth && gridY >= 0 && gridY < gridHeight) {
@@ -107,7 +107,7 @@ export class VoronoiGenerator {
       }
     }
 
-    // Si no tenemos suficientes puntos, agregar algunos aleatorios
+
     while (points.length < Math.max(4, numCells * 0.7)) {
       const fallbackPoint = {
         x: boundaryPadding + seededRandom() * (width - 2 * boundaryPadding),
@@ -128,7 +128,7 @@ export class VoronoiGenerator {
   private generateCandidatePoint(seededRandom: () => number): Point {
     const { width, height, boundaryPadding } = this.config;
     
-    // Usar noise para crear bias hacia áreas "habitables"
+
     let bestPoint = { x: 0, y: 0 };
     let bestScore = -Infinity;
     
@@ -138,13 +138,13 @@ export class VoronoiGenerator {
         y: boundaryPadding + seededRandom() * (height - 2 * boundaryPadding)
       };
       
-      // Score basado en noise (simula habitabilidad)
+
       const habitabilityScore = this.noise.generateNoise2D(
         candidate.x * 0.01, 
         candidate.y * 0.01
       );
       
-      // Bias hacia el centro
+
       const centerX = width / 2;
       const centerY = height / 2;
       const distanceFromCenter = Math.sqrt(
@@ -178,7 +178,7 @@ export class VoronoiGenerator {
     const gridX = Math.floor(candidate.x / cellSize);
     const gridY = Math.floor(candidate.y / cellSize);
     
-    // Verificar celdas vecinas en el grid
+
     for (let dy = -2; dy <= 2; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const checkX = gridX + dx;
@@ -212,7 +212,7 @@ export class VoronoiGenerator {
       const newPoints: Point[] = [];
       
       currentPoints.forEach(point => {
-        // Calcular centroide de la región de Voronoi
+
         const centroid = this.calculateCellCentroid(point, currentPoints);
         newPoints.push(centroid);
       });
@@ -234,7 +234,7 @@ export class VoronoiGenerator {
     let sumY = 0;
     let count = 0;
     
-    // Samplear puntos en un área alrededor del centro
+
     for (let i = 0; i < sampleSize; i++) {
       const angle = (i / sampleSize) * 2 * Math.PI;
       const distance = Math.random() * radius;
@@ -242,7 +242,7 @@ export class VoronoiGenerator {
       const sampleX = center.x + Math.cos(angle) * distance;
       const sampleY = center.y + Math.sin(angle) * distance;
       
-      // Verificar que este punto pertenece a esta célula
+
       let closestPoint = center;
       let minDistance = Math.sqrt(
         Math.pow(sampleX - center.x, 2) + Math.pow(sampleY - center.y, 2)
@@ -290,7 +290,7 @@ export class VoronoiGenerator {
         center: point,
         vertices,
         neighbors: [],
-        type: 'residential', // Se asignará después
+        type: 'residential',
         size: this.calculateCellArea(vertices),
         bounds,
         density: this.calculateCellDensity(point)
@@ -307,7 +307,7 @@ export class VoronoiGenerator {
    */
   private calculateCellVertices(center: Point, allPoints: Point[]): Point[] {
     const vertices: Point[] = [];
-    const numVertices = 8; // Aproximación octagonal
+    const numVertices = 8;
     const radius = this.config.minCellDistance * 0.7;
     
     for (let i = 0; i < numVertices; i++) {
@@ -317,7 +317,7 @@ export class VoronoiGenerator {
         y: center.y + Math.sin(angle) * radius
       };
       
-      // Ajustar vertex para que no esté más cerca de otro punto
+
       allPoints.forEach(otherPoint => {
         if (otherPoint !== center) {
           const distToOther = Math.sqrt(
@@ -330,7 +330,7 @@ export class VoronoiGenerator {
           );
           
           if (distToOther < distToCenter) {
-            // Mover vertex hacia el centro
+
             const midX = (center.x + otherPoint.x) / 2;
             const midY = (center.y + otherPoint.y) / 2;
             vertex = { x: midX, y: midY };
@@ -418,7 +418,7 @@ export class VoronoiGenerator {
       const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
       const centerNormalized = distanceFromCenter / maxDistance;
       
-      // Asignar tipo basado en distancia del centro y noise
+
       const typeNoise = this.noise.generateNoise2D(
         cell.center.x * 0.005, 
         cell.center.y * 0.005

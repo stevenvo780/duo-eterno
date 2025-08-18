@@ -71,14 +71,14 @@ class AnimationManager {
   private async loadAnimationFiles(name: string, category: string): Promise<LoadedAnimation> {
     const basePath = `/assets/animations/${category}/${name}`;
     
-    // Cargar metadata
+
     const metadataResponse = await fetch(`${basePath}.json`);
     if (!metadataResponse.ok) {
       throw new Error(`Failed to load animation metadata: ${basePath}.json`);
     }
     const metadata: AnimationMetadata = await metadataResponse.json();
 
-    // Cargar imagen
+
     const image = new Image();
     const imagePromise = new Promise<HTMLImageElement>((resolve, reject) => {
       image.onload = () => resolve(image);
@@ -88,7 +88,7 @@ class AnimationManager {
 
     await imagePromise;
 
-    // Calcular frames
+
     const frames = this.calculateFrames(metadata);
 
     return {
@@ -159,7 +159,7 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
   const animationFrameRef = useRef<number | undefined>(undefined);
   const { loadAnimation } = useAnimationSystem();
 
-  // Cargar animación
+
   useEffect(() => {
     let mounted = true;
     
@@ -182,7 +182,7 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
     };
   }, [name, category, loadAnimation]);
 
-  // Actualizar animación
+
   const updateAnimation = useCallback((timestamp: number) => {
     if (!animation || !state.isPlaying) return;
 
@@ -197,7 +197,7 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
       if (newElapsedTime >= frameDuration) {
         const nextFrame = (currentFrame + 1) % animation.frames.length;
         
-        // Si no es loop y llegamos al final, parar
+
         if (!animation.metadata.loop && nextFrame === 0 && currentFrame === animation.frames.length - 1) {
           return {
             ...prevState,
@@ -223,7 +223,7 @@ export const useAnimation = (name: string, category: string, autoPlay: boolean =
     }
   }, [animation, state.isPlaying]);
 
-  // Iniciar/parar loop de animación
+
   useEffect(() => {
     if (state.isPlaying && animation) {
       lastUpdateRef.current = performance.now();

@@ -13,16 +13,16 @@ type GameAction =
   | { type: 'KILL_ENTITY'; payload: { entityId: string } }
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number };
 
-// Persistencia mínima: autosave cada 20s y beforeunload
+
 export const usePersistence = (gameState: GameState, dispatch: (action: GameAction) => void) => {
   const lastSaveRef = useRef<number>(0);
 
-  // Load on mount
+
   useEffect(() => {
     const loaded = safeLoad();
     if (loaded) {
       logStorage.info('Persistencia: cargado estado V1');
-      // Transform loaded minimal state to full GameState via dispatch sequence
+
       dispatch({ type: 'UPDATE_RESONANCE', payload: loaded.resonance });
       loaded.entities.forEach(e => {
         dispatch({ type: 'UPDATE_ENTITY_POSITION', payload: { entityId: e.id, position: e.position } });
@@ -37,7 +37,7 @@ export const usePersistence = (gameState: GameState, dispatch: (action: GameActi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Autosave loop every 20s with minimal writes
+
   useEffect(() => {
     const handler = window.setInterval(() => {
       const now = Date.now();
@@ -51,7 +51,7 @@ export const usePersistence = (gameState: GameState, dispatch: (action: GameActi
       try { 
         safeSave(gameState); 
       } catch (error) {
-        // Ignore save errors on unload
+
         logStorage.warn('Failed to save on unload', error);
       }
     };

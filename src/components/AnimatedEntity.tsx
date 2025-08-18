@@ -4,7 +4,7 @@ import type { Entity } from '../types';
 export const getEntityAnimationName = (entity: Entity): string => {
   const { id, state, stats } = entity;
   
-  // Mapear estados del juego a estados de animación
+
   let animationMood = 'happy';
   if (state === 'dead' || state === 'DEAD' || entity.isDead) {
     animationMood = 'dying';
@@ -16,7 +16,7 @@ export const getEntityAnimationName = (entity: Entity): string => {
     animationMood = 'happy';
   }
 
-  // Formar nombre de animación
+
   return `entidad_${id}_${animationMood}_anim`;
 };
 
@@ -30,7 +30,7 @@ export const renderAnimatedEntity = (
   scale: number = 1
 ): void => {
   if (!animationHook.animation || !animationHook.getCurrentFrame) {
-    // Fallback a renderizado primitivo si no hay animación
+
     renderFallbackEntity(ctx, entity, scale);
     return;
   }
@@ -45,18 +45,18 @@ export const renderAnimatedEntity = (
   const renderWidth = frame.width * scale;
   const renderHeight = frame.height * scale;
 
-  // Centrar la entidad en su posición
+
   const renderX = position.x - renderWidth / 2;
   const renderY = position.y - renderHeight / 2;
 
   ctx.save();
   
-  // Aplicar transparencia si está muriendo
+
   if (entity.isDead || entity.state === 'dead' || entity.state === 'DEAD') {
     ctx.globalAlpha = 0.5;
   }
 
-  // Renderizar frame de animación
+
   ctx.drawImage(
     animationHook.animation.image,
     frame.x, frame.y, frame.width, frame.height,
@@ -76,7 +76,7 @@ const renderFallbackEntity = (
 
   ctx.save();
 
-  // Color basado en estado
+
   let color = `hsl(${colorHue || 200}, 70%, 50%)`;
   if (state === 'dead' || state === 'DEAD' || entity.isDead) {
     color = '#64748b';
@@ -112,7 +112,7 @@ const renderFallbackEntity = (
   ctx.restore();
 };
 
-// Hook para gestionar animación de entidad
+
 export const useEntityAnimation = (entity: Entity) => {
   const animationName = getEntityAnimationName(entity);
   const animationData = useAnimation(animationName, 'entities', true);

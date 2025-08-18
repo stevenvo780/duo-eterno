@@ -26,7 +26,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
       dispatch({ type: 'UPDATE_ENTITY_MOOD', payload: { entityId: entity.id, mood: result.mood } });
     }
 
-    // Show dialogue
+
     const dialogueMap: Record<string, string> = {
       'FEED': 'feeding',
       'PLAY': 'playing', 
@@ -128,7 +128,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
       boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
       zIndex: 1000
     }}>
-      {/* Header */}
+
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -219,7 +219,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
       </div>
 
       {entity.isDead ? (
-        /* Death Information */
+
         <div style={{
           padding: '16px',
           background: 'rgba(239, 68, 68, 0.1)',
@@ -265,7 +265,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
         </div>
       ) : (
         <>
-          {/* Overall Health */}
+
           <div style={{ marginBottom: '20px' }}>
             <StatBar
               label="Estado General"
@@ -275,7 +275,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             />
           </div>
 
-          {/* Current Activity */}
+
           <div style={{
             marginBottom: '16px',
             padding: '12px',
@@ -291,7 +291,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             </div>
           </div>
 
-          {/* Stats Grid */}
+
           <div style={{ 
             display: 'grid', 
             gap: '12px',
@@ -302,14 +302,14 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
                 key={stat}
                 label={getStatName(stat)}
                 value={value}
-                maxValue={stat === 'money' ? 200 : 100} // Money can go higher
+                maxValue={stat === 'money' ? 200 : 100}
                 height={22}
                 animated={true}
               />
             ))}
           </div>
 
-          {/* Interaction Buttons */}
+
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -355,7 +355,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             ))}
           </div>
 
-          {/* Position Info */}
+
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -379,7 +379,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
             </div>
           </div>
 
-          {/* Recent Thoughts */}
+
           {entity.thoughts.length > 0 && (
             <div style={{
               marginTop: '16px',

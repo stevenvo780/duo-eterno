@@ -5,34 +5,34 @@
  * Principio: "Determinista en lo esencial, variable en lo emergente"
  */
 
-// Removed unused imports
 
-// === CONFIGURACIÓN DE VARIABILIDAD ===
+
+
 
 interface VariabilityConfig {
-  /** Semilla base para reproducibilidad controlada */
+
   baseSeed: number;
   
-  /** Nivel de variabilidad (0 = determinista total, 1 = muy variable) */
+
   variabilityLevel: number;
   
-  /** Usa tiempo real para micro-variaciones */
+
   useTemporalNoise: boolean;
   
-  /** Permite emergencia genuina en decisiones complejas */
+
   allowEmergence: boolean;
 }
 
 const DEFAULT_VARIABILITY_CONFIG: VariabilityConfig = {
   baseSeed: 42,
-  variabilityLevel: 0.3, // 30% de variabilidad - balance ideal para juegos
+  variabilityLevel: 0.3,
   useTemporalNoise: true,
   allowEmergence: true
 };
 
 let currentConfig = { ...DEFAULT_VARIABILITY_CONFIG };
 
-// === GENERADORES HÍBRIDOS ===
+
 
 /**
  * Generador que combina determinismo con variabilidad natural
@@ -59,7 +59,7 @@ class NaturalVariabilityGenerator {
    * Siempre reproduce los mismos valores para los mismos inputs
    */
   deterministicNoise(x: number, y: number): number {
-    // Simple hash determinista
+
     let h = this.deterministicState;
     h = ((h * 1597334677) ^ (x * 3812015801)) >>> 0;
     h = ((h * 2989025573) ^ (y * 4132785409)) >>> 0;
@@ -69,7 +69,7 @@ class NaturalVariabilityGenerator {
     h = h * 0xc2b2ae35;
     h = h ^ (h >>> 16);
     
-    return (h >>> 0) / 0x100000000; // Normalizar a [0, 1]
+    return (h >>> 0) / 0x100000000;
   }
   
   /**
@@ -77,7 +77,7 @@ class NaturalVariabilityGenerator {
    * Permite que cada agente tenga "quirks" únicos pero predecibles
    */
   personalityVariation(factor: number, entityId: string): number {
-    // Hash del ID de entidad para consistencia
+
     let entityHash = 0;
     for (let i = 0; i < entityId.length; i++) {
       entityHash = ((entityHash << 5) - entityHash + entityId.charCodeAt(i)) & 0xffffffff;
@@ -88,12 +88,12 @@ class NaturalVariabilityGenerator {
       factor * 1000
     );
     
-    // Agregar micro-variación temporal si está habilitada
+
     let temporalNoise = 0;
     if (currentConfig.useTemporalNoise) {
-      // Usar tiempo en escala de minutos para variaciones lentas
+
       const timeMinutes = Math.floor(Date.now() / 60000);
-      temporalNoise = this.deterministicNoise(timeMinutes, entityHash) * 0.1; // 10% de influencia temporal
+      temporalNoise = this.deterministicNoise(timeMinutes, entityHash) * 0.1;
     }
     
     return personalityBase * (1 - currentConfig.variabilityLevel) + 
@@ -106,19 +106,19 @@ class NaturalVariabilityGenerator {
    */
   emergentChoice<T>(options: T[], contextSeed: number = 0): T {
     if (!currentConfig.allowEmergence || options.length <= 1) {
-      // Sin emergencia o solo una opción - usar determinista
+
       const index = Math.floor(this.deterministicNoise(contextSeed, this.emergenceCounter) * options.length);
       return options[index];
     }
     
     this.emergenceCounter++;
     
-    // Combinar determinismo con micro-aleatoriedad real para emergencia genuina
+
     const deterministicFactor = 1 - currentConfig.variabilityLevel;
     const emergentFactor = currentConfig.variabilityLevel;
     
     const deterministicChoice = this.deterministicNoise(contextSeed, this.emergenceCounter);
-    const emergentChoice = Math.random(); // ¡Única excepción al determinismo total!
+    const emergentChoice = Math.random();
     
     const finalChoice = deterministicChoice * deterministicFactor + emergentChoice * emergentFactor;
     const index = Math.floor(finalChoice * options.length);
@@ -133,7 +133,7 @@ class NaturalVariabilityGenerator {
   naturalTiming(baseDuration: number, entityId: string): number {
     const variation = this.personalityVariation(baseDuration / 1000, entityId);
     
-    // Variación de ±20% en timing para naturalidad
+
     const timingFactor = 0.8 + (variation * 0.4);
     
     return Math.max(baseDuration * 0.5, baseDuration * timingFactor);
@@ -146,21 +146,21 @@ class NaturalVariabilityGenerator {
   emotionalFluctuation(baseMood: number, intensity: number, entityId: string): number {
     const fluctuation = this.personalityVariation(intensity, entityId);
     
-    // Fluctuación de ±5% en mood base
+
     const moodAdjustment = (fluctuation - 0.5) * 0.1 * intensity;
     
     return Math.max(0, Math.min(100, baseMood + moodAdjustment));
   }
 }
 
-// === INSTANCIA GLOBAL ===
+
 
 let globalGenerator = new NaturalVariabilityGenerator(
   currentConfig.baseSeed, 
   0
 );
 
-// === API PÚBLICA ===
+
 
 /**
  * Configura el nivel de variabilidad del sistema
@@ -168,7 +168,7 @@ let globalGenerator = new NaturalVariabilityGenerator(
 export function setVariabilityConfig(config: Partial<VariabilityConfig>): void {
   currentConfig = { ...currentConfig, ...config };
   
-  // Recrear generador con nueva configuración
+
   globalGenerator = new NaturalVariabilityGenerator(
     currentConfig.baseSeed,
     0
@@ -224,7 +224,7 @@ export function emotionalFluctuation(baseMood: number, intensity: number, entity
   return globalGenerator.emotionalFluctuation(baseMood, intensity, entityId);
 }
 
-// === UTILIDADES DE BALANCE ===
+
 
 /**
  * Decisión inteligente entre opciones con scores
@@ -243,43 +243,43 @@ export function intelligentChoice<T>(
     return options[0].item;
   }
   
-  // Calcular scores ponderados
+
   const weightedOptions = options.map(opt => ({
     ...opt,
     weight: opt.weight ?? 1,
     adjustedScore: opt.score * (opt.weight ?? 1)
   }));
   
-  // Ordenar por score
+
   weightedOptions.sort((a, b) => b.adjustedScore - a.adjustedScore);
   
   const topScore = weightedOptions[0].adjustedScore;
-  const threshold = topScore * 0.8; // Considerar opciones dentro del 80% del mejor score
+  const threshold = topScore * 0.8;
   
   const viableOptions = weightedOptions.filter(opt => opt.adjustedScore >= threshold);
   
-  // Si solo hay una opción viable, usarla (determinista)
+
   if (viableOptions.length === 1) {
     return viableOptions[0].item;
   }
   
-  // Si hay múltiples opciones viables, usar emergencia con personalidad
+
   const personalityBias = personalityVariation(contextSeed, entityId);
   
-  // Aplicar bias de personalidad a los scores
+
   const biasedOptions = viableOptions.map((opt, index) => ({
     ...opt,
     finalScore: opt.adjustedScore + (personalityBias - 0.5) * 10 * (index + 1)
   }));
   
-  // Usar emergencia solo si la variabilidad está habilitada y hay diferencias mínimas
+
   const scoreDifference = biasedOptions[0].finalScore - biasedOptions[biasedOptions.length - 1].finalScore;
   
   if (currentConfig.allowEmergence && scoreDifference < 5) {
-    // Diferencias muy pequeñas - permitir emergencia
+
     return emergentChoice(biasedOptions.map(o => o.item), contextSeed);
   } else {
-    // Diferencias claras - usar la mejor opción
+
     biasedOptions.sort((a, b) => b.finalScore - a.finalScore);
     return biasedOptions[0].item;
   }
@@ -295,7 +295,7 @@ export function generateActivitySequence(
 ): Array<{ activity: string; duration: number; startDelay: number }> {
   return baseActivities.map((activity, index) => {
     const duration = naturalTiming(baseDuration, `${entityId}_${activity}`);
-    const personalityDelay = personalityVariation(index * 1000, entityId) * 2000; // hasta 2s de delay
+    const personalityDelay = personalityVariation(index * 1000, entityId) * 2000;
     
     return {
       activity,
@@ -305,10 +305,10 @@ export function generateActivitySequence(
   });
 }
 
-// === PRESETS DE VARIABILIDAD ===
+
 
 export const VARIABILITY_PRESETS = {
-  /** Determinista total - para testing y reproducibilidad */
+
   DETERMINISTIC: {
     baseSeed: 42,
     variabilityLevel: 0,
@@ -316,7 +316,7 @@ export const VARIABILITY_PRESETS = {
     allowEmergence: false
   },
   
-  /** Sutil - variaciones mínimas, comportamiento muy predecible */
+
   SUBTLE: {
     baseSeed: 42,
     variabilityLevel: 0.1,
@@ -324,7 +324,7 @@ export const VARIABILITY_PRESETS = {
     allowEmergence: false
   },
   
-  /** Natural - balance ideal para gameplay */
+
   NATURAL: {
     baseSeed: 42,
     variabilityLevel: 0.3,
@@ -332,7 +332,7 @@ export const VARIABILITY_PRESETS = {
     allowEmergence: true
   },
   
-  /** Dinámico - más impredecible, emergencia frecuente */
+
   DYNAMIC: {
     baseSeed: 42,
     variabilityLevel: 0.5,
@@ -340,7 +340,7 @@ export const VARIABILITY_PRESETS = {
     allowEmergence: true
   },
   
-  /** Caótico - máxima variabilidad para experimentación */
+
   CHAOTIC: {
     baseSeed: 42,
     variabilityLevel: 0.8,
@@ -356,16 +356,16 @@ export function loadVariabilityPreset(presetName: keyof typeof VARIABILITY_PRESE
   setVariabilityConfig(VARIABILITY_PRESETS[presetName]);
 }
 
-// === INICIALIZACIÓN ===
 
-// Usar preset natural por defecto para gameplay balanceado
+
+
 if (import.meta.env.DEV) {
   loadVariabilityPreset('NATURAL');
 } else {
   loadVariabilityPreset('NATURAL');
 }
 
-// Hacer disponible globalmente para debugging
+
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as unknown as { variability?: object }).variability = {
     setConfig: setVariabilityConfig,

@@ -18,60 +18,60 @@
  * - ✅ Sistema de resonancia harmónica basado en frecuencias
  */
 
-// === CONSTANTES MATEMÁTICAS DE ALTA PRECISIÓN ===
+
 
 const MATH_CONSTANTS = {
-  // Precisión decimal extendida
+
   EPSILON: Number.EPSILON,
   HIGH_PRECISION_EPSILON: 1e-10,
   ULTRA_PRECISION_EPSILON: 1e-15,
   
-  // Factores de resonancia calibrados
-  GOLDEN_RATIO: (1 + Math.sqrt(5)) / 2, // Cálculo preciso
-  RESONANCE_HARMONIC: (Math.sqrt(5) - 1) / 2, // Golden ratio conjugate
+
+  GOLDEN_RATIO: (1 + Math.sqrt(5)) / 2,
+  RESONANCE_HARMONIC: (Math.sqrt(5) - 1) / 2,
   
-  // 🔥 NUEVAS CONSTANTES FASE 2: Resonancia Harmónica Avanzada
-  HARMONIC_BASE_FREQ: 440.0, // La 440Hz como base
-  HARMONIC_RATIOS: [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2.0], // Ratios armónicos naturales
-  RESONANCE_DECAY_NATURAL: 0.99985, // Decaimiento natural de resonancia
-  FIBONACCI_SEQUENCE: [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144], // Para patrones emergentes
+
+  HARMONIC_BASE_FREQ: 440.0,
+  HARMONIC_RATIOS: [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2.0],
+  RESONANCE_DECAY_NATURAL: 0.99985,
+  FIBONACCI_SEQUENCE: [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144],
   
-  // 🔥 CONSTANTES DE FÍSICA AVANZADA
-  PHYSICS_DAMPING: 0.985, // Factor de amortiguación física
-  ATTRACTION_CONSTANT: 6.674e-11, // Constante gravitacional simulada (escalada)
-  FIELD_STRENGTH_BASE: 1.0, // Intensidad base de campo vectorial
-  TURBULENCE_SCALE: 0.01, // Escala de turbulencia Perlin
-  FLOW_VISCOSITY: 0.92, // Viscosidad del flujo de campo
+
+  PHYSICS_DAMPING: 0.985,
+  ATTRACTION_CONSTANT: 6.674e-11,
+  FIELD_STRENGTH_BASE: 1.0,
+  TURBULENCE_SCALE: 0.01,
+  FLOW_VISCOSITY: 0.92,
   
-  // 🔥 PREDICCIÓN COMPORTAMENTAL
-  PATTERN_MEMORY_DEPTH: 100, // Puntos de historia para análisis de patrones
-  PREDICTION_CONFIDENCE_THRESHOLD: 0.75, // Confianza mínima para predicciones
-  BEHAVIORAL_MOMENTUM: 0.88, // Inercia de cambios comportamentales
-  CHAOS_SENSITIVITY: 1e-6, // Sensibilidad para detección de caos
+
+  PATTERN_MEMORY_DEPTH: 100,
+  PREDICTION_CONFIDENCE_THRESHOLD: 0.75,
+  BEHAVIORAL_MOMENTUM: 0.88,
+  CHAOS_SENSITIVITY: 1e-6,
   
-  // 🔥 EFECTOS DE ZONA COMPLEJOS
-  ZONE_INFLUENCE_DECAY: 2.0, // Exponente de decaimiento de influencia
-  ZONE_RESONANCE_MULTIPLIER: 1.41421356, // sqrt(2) para efectos de zona
-  ZONE_FIELD_STRENGTH: 0.25, // Intensidad de campo de zona
-  EMERGENCE_THRESHOLD: 0.618, // Umbral para efectos emergentes (golden ratio)
+
+  ZONE_INFLUENCE_DECAY: 2.0,
+  ZONE_RESONANCE_MULTIPLIER: 1.41421356,
+  ZONE_FIELD_STRENGTH: 0.25,
+  EMERGENCE_THRESHOLD: 0.618,
   
-  // Constantes temporales (en milisegundos)
+
   FRAME_TIME_60FPS: 1000 / 60,
   FRAME_TIME_30FPS: 1000 / 30,
-  PREDICTION_TIME_HORIZON: 5000, // 5 segundos de predicción
+  PREDICTION_TIME_HORIZON: 5000,
   
-  // Factores de suavizado
+
   SMOOTH_FACTOR: 0.1,
   ULTRA_SMOOTH_FACTOR: 0.05,
   ADAPTIVE_SMOOTH_MIN: 0.01,
   ADAPTIVE_SMOOTH_MAX: 0.3,
   
-  // Rangos seguros para operaciones
+
   SAFE_MAX_VALUE: Number.MAX_SAFE_INTEGER / 1000,
   SAFE_MIN_VALUE: Number.MIN_SAFE_INTEGER / 1000
 } as const;
 
-// === FUNCIONES DE PRECISIÓN CORE ===
+
 
 /**
  * Redondeo de alta precisión que evita errores de punto flotante
@@ -110,7 +110,7 @@ export const safeClamp = (value: number, min: number, max: number): number => {
  */
 export const safeNormalize = (value: number, min: number, max: number): number => {
   if (areEqual(min, max)) {
-    return 0.5; // Valor por defecto cuando el rango es cero
+    return 0.5;
   }
   
   const range = max - min;
@@ -122,23 +122,23 @@ export const safeNormalize = (value: number, min: number, max: number): number =
   return safeClamp(normalized, 0, 1);
 };
 
-// === FUNCIONES DE EASING AVANZADAS ===
+
 
 /**
  * Easing cubic-bezier personalizado para transiciones naturales
  */
 const easingFunctions = {
-  // Entrada suave (aceleración gradual)
+
   easeInQuart: (t: number): number => t * t * t * t,
   
-  // Salida suave (desaceleración gradual)
+
   easeOutQuart: (t: number): number => 1 - Math.pow(1 - t, 4),
   
-  // Entrada y salida suave
+
   easeInOutQuart: (t: number): number => 
     t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2,
   
-  // Bounce natural para feedback visual
+
   easeOutBounce: (t: number): number => {
     const n1 = 7.5625;
     const d1 = 2.75;
@@ -154,19 +154,19 @@ const easingFunctions = {
     }
   },
   
-  // Elástico para animaciones dinámicas
+
   easeOutElastic: (t: number): number => {
     const c4 = (2 * Math.PI) / 3;
     return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   },
   
-  // Sigmoid para transiciones orgánicas
+
   sigmoid: (t: number, steepness: number = 10): number => {
     return 1 / (1 + Math.exp(-steepness * (t - 0.5)));
   }
 } as const;
 
-// === INTERPOLACIÓN AVANZADA ===
+
 
 /**
  * Interpolación lineal de alta precisión
@@ -199,7 +199,7 @@ export const expLerp = (current: number, target: number, factor: number, deltaTi
   return lerp(current, target, adjustedFactor);
 };
 
-// === CÁLCULOS DE RESONANCIA OPTIMIZADOS ===
+
 
 /**
  * Cálculo de resonancia con armónicos mejorados
@@ -210,19 +210,19 @@ export const calculateResonance = (
   timeBonus: number = 0,
   baseResonance: number = 50
 ): number => {
-  // Normalizar distancia (0 = muy cerca, 1 = muy lejos)
+
   const normalizedDistance = safeNormalize(entityDistance, 0, 500);
   
-  // Factor de proximidad con función de decaimiento suave
+
   const proximityFactor = Math.exp(-normalizedDistance * 2);
   
-  // Factor de armonía con función sigmoid
+
   const harmonyFactor = easingFunctions.sigmoid(harmonyLevel / 100, 8);
   
-  // Bonus temporal con decaimiento exponencial suave
+
   const timeFactor = timeBonus > 0 ? Math.exp(-timeBonus / 10000) * 20 : 0;
   
-  // Combinación no lineal usando golden ratio
+
   const resonanceRaw = baseResonance + 
     (proximityFactor * 30 * MATH_CONSTANTS.GOLDEN_RATIO) + 
     (harmonyFactor * 25) + 
@@ -239,16 +239,16 @@ export const calculateActivityEffectiveness = (
   aptitude: number,
   environmentBonus: number = 0
 ): number => {
-  // Curva de aprendizaje logarítmica (mejora inicial rápida, luego se estabiliza)
-  const experienceFactor = Math.log(duration / 1000 + 1) / Math.log(11); // Normalizado a [0,1] en ~10 segundos
+
+  const experienceFactor = Math.log(duration / 1000 + 1) / Math.log(11);
   
-  // Factor de aptitud natural
+
   const aptitudeFactor = easingFunctions.sigmoid(aptitude / 100, 6);
   
-  // Factor ambiental con saturación
+
   const environmentFactor = safeClamp(environmentBonus / 50, 0, 1);
   
-  // Combinación ponderada
+
   const effectiveness = (
     experienceFactor * 0.4 +
     aptitudeFactor * 0.5 +
@@ -258,7 +258,7 @@ export const calculateActivityEffectiveness = (
   return preciseRound(safeClamp(effectiveness, 0, 1), 4);
 };
 
-// === MATEMÁTICAS DE VECTORES OPTIMIZADAS ===
+
 
 export interface Vector2D {
   x: number;
@@ -269,12 +269,12 @@ export interface Vector2D {
  * Operaciones vectoriales de alta precisión
  */
 const vectorMath = {
-  // Magnitud de un vector
+
   magnitude: (vector: Vector2D): number => {
     return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
   },
   
-  // Normalización segura de vector
+
   normalize: (vector: Vector2D): Vector2D => {
     const mag = vectorMath.magnitude(vector);
     if (mag < MATH_CONSTANTS.HIGH_PRECISION_EPSILON) {
@@ -283,14 +283,14 @@ const vectorMath = {
     return { x: vector.x / mag, y: vector.y / mag };
   },
   
-  // Distancia entre dos puntos
+
   distance: (a: Vector2D, b: Vector2D): number => {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     return Math.sqrt(dx * dx + dy * dy);
   },
   
-  // Interpolación vectorial suave
+
   lerp: (start: Vector2D, end: Vector2D, t: number): Vector2D => {
     const clampedT = safeClamp(t, 0, 1);
     return {
@@ -299,7 +299,7 @@ const vectorMath = {
     };
   },
   
-  // Rotación de vector
+
   rotate: (vector: Vector2D, angle: number): Vector2D => {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
@@ -310,7 +310,7 @@ const vectorMath = {
   }
 } as const;
 
-// === FUNCIONES TEMPORALES PRECISAS ===
+
 
 /**
  * Cálculo de delta time robusto
@@ -318,8 +318,8 @@ const vectorMath = {
 export const calculateDeltaTime = (currentTime: number, lastTime: number): number => {
   const rawDelta = currentTime - lastTime;
   
-  // Clamp para evitar saltos temporales extremos
-  const clampedDelta = safeClamp(rawDelta, 0, 100); // Máximo 100ms
+
+  const clampedDelta = safeClamp(rawDelta, 0, 100);
   
   return preciseRound(clampedDelta, 3);
 };
@@ -340,7 +340,7 @@ export const getAnimationProgress = (
   return safeClamp(progress, 0, 1);
 };
 
-// === UTILIDADES DE BALANCE ===
+
 
 /**
  * Función de decaimiento exponencial para stats
@@ -373,7 +373,7 @@ export const asymptoticRecovery = (
   return preciseRound(currentValue + recovery, 2);
 };
 
-// === DEBUGGING Y VALIDACIÓN ===
+
 
 /**
  * Validador de valores numéricos para debugging
@@ -401,9 +401,9 @@ export const logPrecision = (operation: string, input: unknown, output: unknown)
   }
 };
 
-// === 🔥 NUEVOS SISTEMAS AVANZADOS FASE 2 ===
 
-// === SISTEMA DE RESONANCIA HARMÓNICA AVANZADA ===
+
+
 
 interface ResonanceHarmonic {
   frequency: number;
@@ -435,11 +435,11 @@ export const calculateAdvancedResonance = (
    
   _currentResonance: AdvancedResonanceState | null = null
 ): AdvancedResonanceState => {
-  // Calcular frecuencia fundamental basada en proximidad
+
   const distanceNorm = safeNormalize(entityDistance, 0, 500);
   const fundamentalFreq = MATH_CONSTANTS.HARMONIC_BASE_FREQ * (1 - distanceNorm * 0.5);
   
-  // Generar armónicos basados en la secuencia de Fibonacci
+
   const harmonics: ResonanceHarmonic[] = MATH_CONSTANTS.FIBONACCI_SEQUENCE
     .slice(0, 6)
     .map((ratio, index) => {
@@ -451,10 +451,10 @@ export const calculateAdvancedResonance = (
       return { frequency, amplitude, phase, decay };
     });
   
-  // Calcular coherencia usando análisis de la historia de interacciones
+
   const coherence = calculateCoherence(interactionHistory);
   
-  // Nivel de resonancia combinando múltiples factores
+
   const proximityFactor = Math.exp(-distanceNorm * 2);
   const harmonyFactor = easingFunctions.sigmoid(harmonyLevel / 100, 8);
   const coherenceFactor = coherence;
@@ -469,7 +469,7 @@ export const calculateAdvancedResonance = (
     3
   );
   
-  // Propiedades emergentes
+
   const stability = calculateStability(harmonics);
   const complexity = calculateComplexity(harmonics);
   const synchronization = calculateSynchronization(harmonics);
@@ -493,7 +493,7 @@ export const calculateAdvancedResonance = (
 const calculateCoherence = (history: number[]): number => {
   if (history.length < 3) return 0.5;
   
-  // Autocorrelación de lag-1 para medir coherencia temporal
+
   const mean = history.reduce((sum, val) => sum + val, 0) / history.length;
   const variance = history.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / history.length;
   
@@ -557,7 +557,7 @@ const calculateSynchronization = (harmonics: ResonanceHarmonic[]): number => {
   return pairCount > 0 ? phaseCoherence / pairCount : 1.0;
 };
 
-// === SISTEMA DE PREDICCIÓN COMPORTAMENTAL ===
+
 
 export interface BehaviorPattern {
   patternId: string;
@@ -597,19 +597,19 @@ export const predictBehaviorPatterns = (
     };
   }
   
-  // Análisis de frecuencias de acciones
+
   const actionFrequencies = new Map<string, number>();
   behaviorHistory.forEach(entry => {
     const count = actionFrequencies.get(entry.action) || 0;
     actionFrequencies.set(entry.action, count + 1);
   });
   
-  // Detectar patrones cíclicos usando análisis espectral simple
+
   const patterns: BehaviorPattern[] = [];
   for (const [action, frequency] of actionFrequencies.entries()) {
     const confidence = frequency / behaviorHistory.length;
     
-    if (confidence > 0.1) { // Solo patrones significativos
+    if (confidence > 0.1) {
       const cyclicalStrength = detectCyclicalPattern(behaviorHistory, action);
       const nextPredicted = predictNextOccurrence(behaviorHistory, action);
       
@@ -623,18 +623,18 @@ export const predictBehaviorPatterns = (
     }
   }
   
-  // Calcular índice caótico usando análisis de sensibilidad
+
   const chaoticIndex = calculateChaoticIndex(behaviorHistory);
   
-  // Predictabilidad general
+
   const predictability = patterns.reduce((sum, p) => sum + p.confidence * p.cyclicalStrength, 0);
   
-  // Ciclo dominante
+
   const dominantCycle = patterns.length > 0 
     ? patterns.reduce((max, p) => p.cyclicalStrength > max ? p.cyclicalStrength : max, 0)
     : 0;
   
-  // Tendencias emergentes
+
   const emergentTrends = detectEmergentTrends(behaviorHistory);
   
   return {
@@ -659,18 +659,18 @@ const detectCyclicalPattern = (
   
   if (actionIndices.length < 3) return 0;
   
-  // Calcular intervalos entre ocurrencias
+
   const intervals = [];
   for (let i = 1; i < actionIndices.length; i++) {
     intervals.push(actionIndices[i] - actionIndices[i - 1]);
   }
   
-  // Medir consistencia de intervalos (menor varianza = mayor ciclicidad)
+
   const meanInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
   const variance = intervals.reduce((sum, interval) => sum + Math.pow(interval - meanInterval, 2), 0) / intervals.length;
   
   const coefficient = variance > 0 ? meanInterval / Math.sqrt(variance) : 1;
-  return safeClamp(coefficient / 10, 0, 1); // Normalizar
+  return safeClamp(coefficient / 10, 0, 1);
 };
 
 /**
@@ -680,12 +680,12 @@ const predictNextOccurrence = (
   history: Array<{ action: string; timestamp: number; context: unknown }>,
   targetAction: string
 ): { action: string; probability: number; timeframe: number } => {
-  const recent = history.slice(-20); // Últimas 20 acciones
+  const recent = history.slice(-20);
   const actionCount = recent.filter(entry => entry.action === targetAction).length;
   const probability = actionCount / recent.length;
   
-  // Estimar timeframe basado en intervalos históricos
-  // const lastOccurrence = [...history].reverse().find(entry => entry.action === targetAction);
+
+
   const avgInterval = history.length > 1 ? 
     (history[history.length - 1].timestamp - history[0].timestamp) / history.length : 
     1000;
@@ -705,17 +705,17 @@ const calculateChaoticIndex = (
 ): number => {
   if (history.length < 10) return 0.5;
   
-  // Simular pequeña perturbación y medir divergencia
+
   const recent = history.slice(-10);
   const actionSequence = recent.map(entry => entry.action);
   
-  // Buscar secuencias similares en el pasado
+
   let maxDivergence = 0;
   for (let i = 0; i < history.length - 10; i++) {
     const pastSequence = history.slice(i, i + 5).map(entry => entry.action);
     const similarity = calculateSequenceSimilarity(actionSequence.slice(0, 5), pastSequence);
     
-    if (similarity > 0.6) { // Secuencia similar encontrada
+    if (similarity > 0.6) {
       const futureActions = history.slice(i + 5, i + 10).map(entry => entry.action);
       const currentFuture = actionSequence.slice(5);
       const divergence = 1 - calculateSequenceSimilarity(currentFuture, futureActions);
@@ -754,20 +754,20 @@ const detectEmergentTrends = (
   const recentActions = history.slice(-10).map(entry => entry.action);
   const pastActions = history.slice(-20, -10).map(entry => entry.action);
   
-  // Detectar nuevos comportamientos
+
   const newBehaviors = recentActions.filter(action => !pastActions.includes(action));
   if (newBehaviors.length > 0) {
     trends.push('new_behaviors_emerging');
   }
   
-  // Detectar aumento de diversidad
+
   const recentDiversity = new Set(recentActions).size;
   const pastDiversity = new Set(pastActions).size;
   if (recentDiversity > pastDiversity * 1.5) {
     trends.push('increasing_behavioral_diversity');
   }
   
-  // Detectar estabilización
+
   const recentVariance = calculateActionVariance(recentActions);
   const pastVariance = calculateActionVariance(pastActions);
   if (recentVariance < pastVariance * 0.5 && pastVariance > 0) {
@@ -795,7 +795,7 @@ const calculateActionVariance = (actions: string[]): number => {
   return variance;
 };
 
-// === SISTEMA DE CAMPOS VECTORIALES AVANZADOS ===
+
 
 export interface VectorField {
   strength: number;
@@ -818,7 +818,7 @@ export const calculateAdvancedVectorField = (
 ): VectorField => {
   const resultantForce = { x: 0, y: 0 };
   
-  // Fuerzas de atracción
+
   attractors.forEach(attractor => {
     const distance = vectorMath.distance(position, attractor);
     if (distance > MATH_CONSTANTS.ULTRA_PRECISION_EPSILON) {
@@ -827,14 +827,14 @@ export const calculateAdvancedVectorField = (
         y: attractor.y - position.y
       });
       
-      // Ley de gravitación modificada con comportamiento natural
+
       const force = MATH_CONSTANTS.ATTRACTION_CONSTANT / (distance * distance + 1);
       resultantForce.x += direction.x * force;
       resultantForce.y += direction.y * force;
     }
   });
   
-  // Fuerzas de repulsión
+
   repulsors.forEach(repulsor => {
     const distance = vectorMath.distance(position, repulsor);
     if (distance > MATH_CONSTANTS.ULTRA_PRECISION_EPSILON) {
@@ -843,21 +843,21 @@ export const calculateAdvancedVectorField = (
         y: position.y - repulsor.y
       });
       
-      // Repulsión exponencial
+
       const force = Math.exp(-distance / 50) * MATH_CONSTANTS.FIELD_STRENGTH_BASE;
       resultantForce.x += direction.x * force;
       resultantForce.y += direction.y * force;
     }
   });
   
-  // Turbulencia usando ruido Perlin simplificado
+
   const turbulenceX = simplexNoise(position.x * MATH_CONSTANTS.TURBULENCE_SCALE, time * 0.001) * 0.1;
   const turbulenceY = simplexNoise(position.y * MATH_CONSTANTS.TURBULENCE_SCALE, time * 0.001 + 100) * 0.1;
   
   resultantForce.x += turbulenceX;
   resultantForce.y += turbulenceY;
   
-  // Calcular propiedades del campo
+
   const strength = vectorMath.magnitude(resultantForce);
   const direction = strength > MATH_CONSTANTS.ULTRA_PRECISION_EPSILON 
     ? vectorMath.normalize(resultantForce)
@@ -865,7 +865,7 @@ export const calculateAdvancedVectorField = (
   
   const turbulence = Math.sqrt(turbulenceX * turbulenceX + turbulenceY * turbulenceY);
   
-  // Calcular gradiente, divergencia y curl (aproximaciones numéricas)
+
   const gradient = calculateGradient(position, attractors, repulsors);
   const divergence = calculateDivergence(position, attractors, repulsors);
   const curl = calculateCurl(position, attractors, repulsors);
@@ -884,7 +884,7 @@ export const calculateAdvancedVectorField = (
  * Ruido Simplex básico para turbulencia natural
  */
 const simplexNoise = (x: number, y: number): number => {
-  // Implementación simplificada de ruido Perlin/Simplex
+
   const X = Math.floor(x) & 255;
   const Y = Math.floor(y) & 255;
   
@@ -912,7 +912,7 @@ const grad = (hash: number, x: number, y: number): number => {
   return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
 };
 
-// Tabla de permutación para ruido
+
 const perm = new Array(512);
 for (let i = 0; i < 256; i++) {
   perm[i] = perm[i + 256] = Math.floor(Math.random() * 256);
@@ -1029,7 +1029,7 @@ const calculateCurl = (position: Vector2D, attractors: Vector2D[], _repulsors: V
   return dFy_dx - dFx_dy;
 };
 
-// === EFECTOS DE ZONA COMPLEJOS ===
+
 
 export interface AdvancedZoneEffect {
   baseEffect: number;
@@ -1054,11 +1054,11 @@ export const calculateAdvancedZoneEffect = (
   const distance = vectorMath.distance(entityPosition, zoneCenter);
   const normalizedDistance = safeClamp(distance / zoneRadius, 0, 1);
   
-  // Efecto base usando función de decaimiento suave
+
   const baseEffect = Math.exp(-normalizedDistance * MATH_CONSTANTS.ZONE_INFLUENCE_DECAY) * 
                     MATH_CONSTANTS.ZONE_FIELD_STRENGTH;
   
-  // Resonancia harmónica en la zona
+
   const harmonicResonance = calculateZoneResonance(
     entityPosition, 
     zoneCenter, 
@@ -1066,14 +1066,14 @@ export const calculateAdvancedZoneEffect = (
     resonanceState
   );
   
-  // Interacción con campo vectorial
+
   const fieldInteraction = calculateZoneFieldInteraction(
     entityPosition,
     zoneCenter,
     nearbyEntities
   );
   
-  // Bonus emergente basado en complejidad del sistema
+
   const emergentBonus = calculateEmergentZoneBonus(
     baseEffect,
     harmonicResonance,
@@ -1081,13 +1081,13 @@ export const calculateAdvancedZoneEffect = (
     resonanceState
   );
   
-  // Determinar tipo de efecto según las condiciones
+
   let effectType: AdvancedZoneEffect['effectType'] = 'ADDITIVE';
   if (harmonicResonance > 0.8) effectType = 'MULTIPLICATIVE';
   else if (emergentBonus > 0.5) effectType = 'EXPONENTIAL';
   else if (baseEffect < 0.2) effectType = 'LOGARITHMIC';
   
-  // Cálculo del efecto total según el tipo
+
   let totalEffect: number;
   switch (effectType) {
     case 'MULTIPLICATIVE':
@@ -1099,7 +1099,7 @@ export const calculateAdvancedZoneEffect = (
     case 'LOGARITHMIC':
       totalEffect = baseEffect + Math.log(1 + harmonicResonance + fieldInteraction + emergentBonus);
       break;
-    default: // ADDITIVE
+    default:
       totalEffect = baseEffect + harmonicResonance + fieldInteraction + emergentBonus;
   }
   
@@ -1125,12 +1125,12 @@ const calculateZoneResonance = (
   const distance = vectorMath.distance(entityPos, zoneCenter);
   const normalizedDistance = safeClamp(distance / zoneRadius, 0, 1);
   
-  // Crear onda estacionaria en la zona
+
   const waveLength = zoneRadius / 2;
   const phase = (distance / waveLength) * 2 * Math.PI;
   const standingWave = Math.abs(Math.sin(phase)) * Math.exp(-normalizedDistance);
   
-  // Interacción con armónicos de resonancia
+
   const harmonicInteraction = resonanceState.harmonics.reduce((sum, harmonic) => {
     const harmonicWave = Math.sin(phase * harmonic.frequency / resonanceState.fundamentalFreq);
     return sum + harmonic.amplitude * harmonicWave;
@@ -1149,13 +1149,13 @@ const calculateZoneFieldInteraction = (
 ): number => {
   let fieldStrength = 0;
   
-  // Calcular influencia de otras entidades en el campo de la zona
+
   nearbyEntities.forEach(entityPos2 => {
     const distanceToEntity = vectorMath.distance(entityPos, entityPos2);
     const distanceToZone = vectorMath.distance(entityPos2, zoneCenter);
     
     if (distanceToEntity > MATH_CONSTANTS.ULTRA_PRECISION_EPSILON) {
-      // Las entidades cerca de la zona amplifican el campo
+
       const zoneProximity = Math.exp(-distanceToZone / 100);
       const entityInfluence = Math.exp(-distanceToEntity / 50);
       fieldStrength += zoneProximity * entityInfluence;
@@ -1174,10 +1174,10 @@ const calculateEmergentZoneBonus = (
   fieldInteraction: number,
   resonanceState: AdvancedResonanceState
 ): number => {
-  // Umbral de emergencia basado en golden ratio
+
   const emergenceThreshold = MATH_CONSTANTS.EMERGENCE_THRESHOLD;
   
-  // Complejidad del sistema
+
   const systemComplexity = (
     baseEffect + 
     harmonicResonance + 
@@ -1186,7 +1186,7 @@ const calculateEmergentZoneBonus = (
   ) / 4;
   
   if (systemComplexity > emergenceThreshold) {
-    // Bonus exponencial para sistemas complejos
+
     const bonus = (systemComplexity - emergenceThreshold) * MATH_CONSTANTS.GOLDEN_RATIO;
     return safeClamp(bonus, 0, 1);
   }
@@ -1194,47 +1194,47 @@ const calculateEmergentZoneBonus = (
   return 0;
 };
 
-// === EXPORTACIONES AGRUPADAS FASE 1 + FASE 2 ===
+
 
 export const mathUtils = {
-  // === FASE 1: Precisión core ===
+
   preciseRound,
   areEqual,
   safeClamp,
   safeNormalize,
   
-  // Interpolación
+
   lerp,
   smoothLerp,
   expLerp,
   
-  // Cálculos específicos del juego
+
   calculateResonance,
   calculateActivityEffectiveness,
   
-  // Temporal
+
   calculateDeltaTime,
   getAnimationProgress,
   
-  // Decaimiento y recuperación
+
   exponentialDecay,
   asymptoticRecovery,
   
-  // Validación
+
   validateNumber,
   logPrecision,
   
-  // === 🔥 FASE 2: Sistemas avanzados ===
-  // Resonancia harmónica
+
+
   calculateAdvancedResonance,
   
-  // Predicción comportamental
+
   predictBehaviorPatterns,
   
-  // Campos vectoriales
+
   calculateAdvancedVectorField,
   
-  // Efectos de zona complejos
+
   calculateAdvancedZoneEffect
 } as const;
 

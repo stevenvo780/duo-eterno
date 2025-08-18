@@ -12,7 +12,7 @@ import {
   MATH
 } from '../constants';
 
-// === FUNCIONES DE PRECISIÓN CORREGIDAS ===
+
 
 /**
  * Redondeo de alta precisión SIN sesgo epsilon
@@ -30,16 +30,16 @@ export const preciseRound = (value: number, decimals: number = 6): number => {
  * CORRIGIDO: Usa epsilon relativo para números grandes
  */
 export const areEqual = (a: number, b: number, epsilon: number = MATH.HIGH_PRECISION_EPSILON): boolean => {
-  if (a === b) return true; // Optimización para casos exactos
+  if (a === b) return true;
   
   const diff = Math.abs(a - b);
   
-  // Para números cercanos a cero, usar epsilon absoluto
+
   if (Math.abs(a) < MATH.EFFECTIVE_ZERO && Math.abs(b) < MATH.EFFECTIVE_ZERO) {
     return diff <= epsilon;
   }
   
-  // Para números mayores, usar epsilon relativo
+
   const maxValue = Math.max(Math.abs(a), Math.abs(b));
   return diff <= epsilon * maxValue;
 };
@@ -49,18 +49,18 @@ export const areEqual = (a: number, b: number, epsilon: number = MATH.HIGH_PRECI
  * CORRIGIDO: Mejor validación y logging condicional
  */
 export const safeClamp = (value: number, min: number, max: number): number => {
-  // Validar parámetros
+
   if (!isFinite(min) || !isFinite(max)) {
     console.warn(`🔧 safeClamp: límites no finitos (min: ${min}, max: ${max})`);
     return isFinite(value) ? value : 0;
   }
   
   if (min > max) {
-    [min, max] = [max, min]; // Intercambio silencioso para mejor UX
+    [min, max] = [max, min];
   }
   
   if (!isFinite(value)) {
-    return (min + max) / 2; // Punto medio como fallback
+    return (min + max) / 2;
   }
   
   return Math.max(min, Math.min(max, value));
@@ -72,11 +72,11 @@ export const safeClamp = (value: number, min: number, max: number): number => {
  */
 export const safeNormalize = (value: number, min: number, max: number): number => {
   if (!isFinite(value) || !isFinite(min) || !isFinite(max)) {
-    return 0.5; // Valor seguro por defecto
+    return 0.5;
   }
   
   if (areEqual(min, max, MATH.ULTRA_PRECISION_EPSILON)) {
-    return 0.5; // Rango cero
+    return 0.5;
   }
   
   const range = max - min;
@@ -85,7 +85,7 @@ export const safeNormalize = (value: number, min: number, max: number): number =
   return safeClamp(normalized, 0, 1);
 };
 
-// === GENERADOR DE RUIDO DETERMINISTA ===
+
 
 /**
  * Generador de ruido Perlin con seed determinista
@@ -102,7 +102,7 @@ class DeterministicNoise {
    * Genera tabla de permutación determinista basada en seed
    */
   private generatePermutation(seed: number): number[] {
-    // Generador congruencial lineal simple pero efectivo
+
     let state = seed;
     const a = 1664525;
     const c = 1013904223;
@@ -113,16 +113,16 @@ class DeterministicNoise {
       return state / m;
     };
     
-    // Crear array base [0, 1, 2, ..., 255]
+
     const base = Array.from({ length: 256 }, (_, i) => i);
     
-    // Shuffle usando Fisher-Yates con generador determinista
+
     for (let i = base.length - 1; i > 0; i--) {
       const j = Math.floor(random() * (i + 1));
       [base[i], base[j]] = [base[j], base[i]];
     }
     
-    // Duplicar para evitar overflow
+
     return [...base, ...base];
   }
   
@@ -130,7 +130,7 @@ class DeterministicNoise {
    * Función de fade mejorada (quintic)
    */
   private fade(t: number): number {
-    // Quintic fade: 6t^5 - 15t^4 + 10t^3
+
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
   
@@ -173,7 +173,7 @@ class DeterministicNoise {
   }
 }
 
-// Instancia global con seed fijo para reproducibilidad
+
 const globalNoise = new DeterministicNoise(12345);
 
 /**
@@ -191,9 +191,9 @@ export const deterministicNoise = (x: number, y: number): number => {
 export const balancedNoise = (x: number, y: number, variabilityFactor: number = 0.3): number => {
   const deterministicComponent = globalNoise.noise2D(x, y);
   
-  // Solo agregar variabilidad real si se solicita explícitamente
+
   if (variabilityFactor > 0 && variabilityFactor <= 1) {
-    // Usar Math.random() SOLO para el componente variable con factor controlado
+
     const variableComponent = Math.random();
     return deterministicComponent * (1 - variabilityFactor) + variableComponent * variabilityFactor;
   }
@@ -201,7 +201,7 @@ export const balancedNoise = (x: number, y: number, variabilityFactor: number = 
   return deterministicComponent;
 };
 
-// === CÁLCULOS DE COHERENCIA MEJORADOS ===
+
 
 /**
  * Cálculo de coherencia temporal robusto
@@ -210,25 +210,25 @@ export const balancedNoise = (x: number, y: number, variabilityFactor: number = 
 export const calculateCoherence = (history: number[]): number => {
   if (history.length < 3) return 0.5;
   
-  // Filtrar valores no finitos
+
   const validHistory = history.filter(isFinite);
-  if (validHistory.length < 3) return 0.2; // Baja coherencia para datos inválidos
+  if (validHistory.length < 3) return 0.2;
   
   const n = validHistory.length;
   const mean = validHistory.reduce((sum, val) => sum + val, 0) / n;
   
-  // Calcular varianza con corrección de Bessel (n-1)
+
   const variance = validHistory.reduce((sum, val) => {
     const diff = val - mean;
     return sum + diff * diff;
   }, 0) / (n - 1);
   
-  // Manejar varianza cero o muy pequeña
+
   if (variance < MATH.ULTRA_PRECISION_EPSILON) {
-    return 1.0; // Perfectamente coherente (sin variación)
+    return 1.0;
   }
   
-  // Autocorrelación de lag-1 con mejor estabilidad numérica
+
   let numerator = 0;
   for (let i = 1; i < n; i++) {
     numerator += (validHistory[i] - mean) * (validHistory[i - 1] - mean);
@@ -236,11 +236,11 @@ export const calculateCoherence = (history: number[]): number => {
   
   const autocorr = numerator / ((n - 1) * variance);
   
-  // Convertir a coherencia positiva [0, 1]
+
   return safeClamp(Math.abs(autocorr), 0, 1);
 };
 
-// === INTERPOLACIÓN Y EASING OPTIMIZADOS ===
+
 
 /**
  * Interpolación lineal estándar
@@ -266,32 +266,32 @@ export const expLerp = (
   
   const clampedFactor = safeClamp(factor, 0, 1);
   
-  // Normalizar deltaTime a 60fps como referencia
+
   const normalizedDelta = deltaTime / (1000 / 60);
   
-  // Usar exponencial para suavizado natural
+
   const adjustedFactor = 1 - Math.pow(1 - clampedFactor, normalizedDelta);
   
   return lerp(current, target, adjustedFactor);
 };
 
-// === FUNCIONES DE EASING OPTIMIZADAS ===
+
 
 const easingFunctions = {
-  // Entrada suave con mejor precisión
+
   easeInQuart: (t: number): number => {
     const clamped = safeClamp(t, 0, 1);
     return clamped * clamped * clamped * clamped;
   },
   
-  // Salida suave optimizada
+
   easeOutQuart: (t: number): number => {
     const clamped = safeClamp(t, 0, 1);
     const inverted = 1 - clamped;
     return 1 - inverted * inverted * inverted * inverted;
   },
   
-  // Entrada y salida combinada
+
   easeInOutQuart: (t: number): number => {
     const clamped = safeClamp(t, 0, 1);
     return clamped < 0.5 
@@ -299,17 +299,17 @@ const easingFunctions = {
       : 1 - 8 * Math.pow(1 - clamped, 4);
   },
   
-  // Sigmoid mejorado con mejor control de steepness
+
   sigmoid: (t: number, steepness: number = 10): number => {
     const clamped = safeClamp(t, 0, 1);
-    const clampedSteep = safeClamp(steepness, 0.1, 50); // Evitar valores extremos
+    const clampedSteep = safeClamp(steepness, 0.1, 50);
     
     const shifted = (clamped - 0.5) * clampedSteep;
     return 1 / (1 + Math.exp(-shifted));
   }
 } as const;
 
-// === MATEMÁTICAS VECTORIALES ROBUSTAS ===
+
 
 export interface Vector2D {
   x: number;
@@ -359,7 +359,7 @@ const vectorMath = {
   }
 } as const;
 
-// === VALIDACIÓN NUMÉRICA MEJORADA ===
+
 
 /**
  * Validador numérico robusto
@@ -376,25 +376,25 @@ export const validateNumber = (
 ): boolean => {
   const { allowZero = true, allowNegative = true, maxAbsValue = 1e12 } = options;
   
-  // Verificar finitud
+
   if (!isFinite(value)) {
     console.error(`🔧 Valor no finito en ${context}: ${value}`);
     return false;
   }
   
-  // Verificar cero si no está permitido
+
   if (!allowZero && Math.abs(value) < MATH.EFFECTIVE_ZERO) {
     console.warn(`🔧 Valor demasiado cercano a cero en ${context}: ${value}`);
     return false;
   }
   
-  // Verificar negativos si no están permitidos
+
   if (!allowNegative && value < 0) {
     console.warn(`🔧 Valor negativo no permitido en ${context}: ${value}`);
     return false;
   }
   
-  // Verificar magnitud
+
   if (Math.abs(value) > maxAbsValue) {
     console.warn(`🔧 Valor demasiado grande en ${context}: ${value} (máximo: ${maxAbsValue})`);
     return false;
@@ -403,7 +403,7 @@ export const validateNumber = (
   return true;
 };
 
-// === CÁLCULOS DE RESONANCIA CORREGIDOS ===
+
 
 /**
  * Cálculo de resonancia mejorado
@@ -415,7 +415,7 @@ export const calculateResonance = (
   timeBonus: number = 0,
   baseResonance: number = 50
 ): number => {
-  // Validar inputs
+
   if (!validateNumber(entityDistance, 'entityDistance', { allowNegative: false })) {
     return 0;
   }
@@ -428,20 +428,20 @@ export const calculateResonance = (
     baseResonance = 50;
   }
   
-  // Normalizar distancia con función logarítmica más natural
+
   const maxDistance = 500;
   const normalizedDistance = Math.log(1 + entityDistance / maxDistance) / Math.log(2);
   
-  // Factor de proximidad usando función exponencial suave
+
   const proximityFactor = Math.exp(-normalizedDistance * 2);
   
-  // Factor de armonía con sigmoid mejorado
+
   const harmonyFactor = easingFunctions.sigmoid(harmonyLevel / 100, 6);
   
-  // Bonus temporal con decaimiento exponencial
+
   const timeFactor = timeBonus > 0 ? Math.exp(-timeBonus / 5000) * 15 : 0;
   
-  // Combinación usando proportión áurea para naturalidad
+
   const resonanceRaw = baseResonance + 
     (proximityFactor * 25 * MATH.GOLDEN_RATIO_CONJUGATE) + 
     (harmonyFactor * 20) + 
@@ -450,27 +450,27 @@ export const calculateResonance = (
   return preciseRound(safeClamp(resonanceRaw, 0, 100), 3);
 };
 
-// === EXPORTACIONES CONSOLIDADAS ===
+
 
 export const fixedMathUtils = {
-  // Precisión básica
+
   preciseRound,
   areEqual,
   safeClamp,
   safeNormalize,
   
-  // Interpolación
+
   lerp,
   expLerp,
   
-  // Cálculos específicos
+
   calculateResonance,
   calculateCoherence,
   
-  // Validación
+
   validateNumber,
   
-  // Ruido determinista
+
   deterministicNoise,
   balancedNoise
 } as const;

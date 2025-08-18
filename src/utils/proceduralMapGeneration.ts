@@ -10,16 +10,16 @@
 import type { Zone, MapElement } from '../types';
 import { generateOrganicProceduralMap } from './organicMapGeneration';
 
-// 📐 CONFIGURACIÓN DEL LIENZO
+
 export const MAP_CONFIG = {
   width: 1000,
   height: 600,
-  padding: 50,        // Margen desde los bordes
-  minDistance: 15,    // Distancia mínima entre elementos
-  maxAttempts: 100    // Intentos máximos para colocar un elemento
+  padding: 50,
+  minDistance: 15,
+  maxAttempts: 100
 } as const;
 
-// 🎨 TEMAS ARQUITECTÓNICOS
+
 export const ARCHITECTURAL_THEMES = {
   MODERN: {
     name: 'Casa Moderna',
@@ -70,7 +70,7 @@ export const ARCHITECTURAL_THEMES = {
   }
 } as const;
 
-// 🏗️ ALGORITMOS DE LAYOUT
+
 export const LAYOUT_ALGORITHMS = {
   TRADITIONAL_L: 'traditional_l',
   COURTYARD: 'courtyard',
@@ -79,13 +79,13 @@ export const LAYOUT_ALGORITHMS = {
   COMPACT_GRID: 'compact_grid'
 } as const;
 
-// 🏠 TIPOS DE HABITACIONES MEJORADOS CON ADYACENCIAS
+
 export const ROOM_TYPES = {
   KITCHEN: {
     name: 'Cocina',
     type: 'food' as const,
     baseSize: { width: 120, height: 80 },
-    priority: 'high', // high, medium, low
+    priority: 'high',
     adjacencyPreferences: {
       preferred: ['DINING', 'LIVING_ROOM'],
       avoided: ['BEDROOM', 'BATHROOM'],
@@ -284,12 +284,12 @@ export const ROOM_TYPES = {
 
 type RoomType = keyof typeof ROOM_TYPES;
 
-// � GENERAR SEMILLA ÚNICA PARA LA PARTIDA
+
 export function generateMapSeed(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-// 🎯 VERIFICAR COLISIONES
+
 export function checkCollision(
   rect1: { x: number; y: number; width: number; height: number },
   rect2: { x: number; y: number; width: number; height: number },
@@ -303,7 +303,7 @@ export function checkCollision(
   );
 }
 
-// �🏗️ SELECCIÓN DE TEMA Y ALGORITMO DE LAYOUT
+
 function selectThemeAndLayout(seed: string): {
   theme: keyof typeof ARCHITECTURAL_THEMES;
   layout: string;
@@ -323,7 +323,7 @@ function selectThemeAndLayout(seed: string): {
   };
 }
 
-// 🏠 ALGORITMO DE DISEÑO DE CASA MEJORADO
+
 export function generateHouseLayout(seed: string): {
   rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>;
   hallways: Array<{ x: number; y: number; width: number; height: number }>;
@@ -332,17 +332,17 @@ export function generateHouseLayout(seed: string): {
   const { theme, layout } = selectThemeAndLayout(seed);
   const themeConfig = ARCHITECTURAL_THEMES[theme];
   
-  // Usar seed para generar números pseudo-aleatorios reproducibles
+
   let seedValue = seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
   const seededRandom = () => {
     seedValue = (seedValue * 9301 + 49297) % 233280;
     return seedValue / 233280;
   };
 
-  // Seleccionar habitaciones según el tema y algoritmo
+
   const selectedRooms = selectRoomsForLayout(layout, seededRandom);
   
-  // Generar layout específico
+
   let rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
   switch (layout) {
@@ -368,20 +368,20 @@ export function generateHouseLayout(seed: string): {
   return { rooms, hallways: [], theme };
 }
 
-// 🎯 SELECCIÓN INTELIGENTE DE HABITACIONES
+
 function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomType[] {
   const allRoomTypes = Object.keys(ROOM_TYPES) as RoomType[];
   const selectedRooms: RoomType[] = [];
   
-  // Habitaciones esenciales (siempre incluidas, respetando maxInstances)
+
   const essentialRooms: RoomType[] = ['KITCHEN', 'LIVING_ROOM', 'BEDROOM', 'BATHROOM'];
   
-  // Agregar habitaciones esenciales respetando maxInstances
+
   essentialRooms.forEach(roomType => {
     const roomConfig = ROOM_TYPES[roomType];
     const maxInstances = roomConfig.maxInstances;
     
-    // Para habitaciones que permiten múltiples instancias (como BEDROOM)
+
     if (maxInstances > 1) {
       const numInstances = Math.min(
         Math.floor(seededRandom() * maxInstances) + 1,
@@ -391,19 +391,19 @@ function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomT
         selectedRooms.push(roomType);
       }
     } else {
-      // Para habitaciones únicas
+
       selectedRooms.push(roomType);
     }
   });
   
-  // Habitaciones opcionales (respetando maxInstances)
+
   const optionalRooms = allRoomTypes.filter(room => !essentialRooms.includes(room));
   const maxOptionalRooms = layout === LAYOUT_ALGORITHMS.COMPACT_GRID ? 2 : 3;
   
-  // Seleccionar habitaciones opcionales sin duplicar las que ya tienen maxInstances = 1
+
   const availableOptional = optionalRooms.filter(roomType => {
     const roomConfig = ROOM_TYPES[roomType];
-    // Solo incluir si no está ya seleccionada o si permite múltiples instancias
+
     return !selectedRooms.includes(roomType) || roomConfig.maxInstances > 1;
   });
   
@@ -412,13 +412,13 @@ function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomT
     const roomType = availableOptional[randomIndex];
     const roomConfig = ROOM_TYPES[roomType];
     
-    // Verificar si ya tenemos el máximo de instancias
+
     const currentCount = selectedRooms.filter(r => r === roomType).length;
     if (currentCount < roomConfig.maxInstances) {
       selectedRooms.push(roomType);
     }
     
-    // Si llegamos al máximo, remover de disponibles
+
     if (currentCount + 1 >= roomConfig.maxInstances) {
       availableOptional.splice(randomIndex, 1);
     }
@@ -427,7 +427,7 @@ function selectRoomsForLayout(layout: string, seededRandom: () => number): RoomT
   return selectedRooms;
 }
 
-// 🏗️ ALGORITMOS DE LAYOUT ESPECÍFICOS
+
 function generateTraditionalLLayout(
   roomTypes: RoomType[], 
   themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES],
@@ -436,7 +436,7 @@ function generateTraditionalLLayout(
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   const placedBounds: Array<{ x: number; y: number; width: number; height: number }> = [];
   
-  // 1. Colocar sala de estar en el centro
+
   const livingRoom = roomTypes.find(r => r === 'LIVING_ROOM');
   if (livingRoom) {
     const roomConfig = ROOM_TYPES[livingRoom];
@@ -452,7 +452,7 @@ function generateTraditionalLLayout(
     placedBounds.push(centerBounds);
   }
 
-  // 2. Colocar habitaciones restantes usando adyacencias
+
   const remainingRooms = roomTypes.filter(r => r !== 'LIVING_ROOM');
   
   remainingRooms.forEach(roomType => {
@@ -482,14 +482,14 @@ function generateCourtyardLayout(
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
-  // Crear patio central
+
   const courtyardSize = { width: 150, height: 120 };
   const courtyardCenter = {
     x: MAP_CONFIG.width / 2 - courtyardSize.width / 2,
     y: MAP_CONFIG.height / 2 - courtyardSize.height / 2
   };
   
-  // Distribuir habitaciones alrededor del patio
+
   const sides = ['top', 'right', 'bottom', 'left'];
   const roomsPerSide = Math.ceil(roomTypes.length / 4);
   
@@ -555,12 +555,12 @@ function generateUShapedLayout(
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
-  // Dividir habitaciones en tres grupos para las tres alas de la U
+
   const leftWing = roomTypes.slice(0, Math.ceil(roomTypes.length / 3));
   const centerWing = roomTypes.slice(Math.ceil(roomTypes.length / 3), Math.ceil(2 * roomTypes.length / 3));
   const rightWing = roomTypes.slice(Math.ceil(2 * roomTypes.length / 3));
   
-  // Posicionar cada ala
+
   [leftWing, centerWing, rightWing].forEach((wing, wingIndex) => {
     wing.forEach((roomType, roomIndex) => {
       const roomConfig = ROOM_TYPES[roomType];
@@ -569,7 +569,7 @@ function generateUShapedLayout(
       let roomBounds: { x: number; y: number; width: number; height: number };
       
       switch (wingIndex) {
-        case 0: // Left wing
+        case 0:
           roomBounds = {
             x: MAP_CONFIG.padding,
             y: MAP_CONFIG.padding + roomIndex * (size.height + 20),
@@ -577,7 +577,7 @@ function generateUShapedLayout(
             height: size.height
           };
           break;
-        case 1: // Center wing
+        case 1:
           roomBounds = {
             x: MAP_CONFIG.padding + size.width + 40,
             y: MAP_CONFIG.height - MAP_CONFIG.padding - size.height,
@@ -585,7 +585,7 @@ function generateUShapedLayout(
             height: size.height
           };
           break;
-        case 2: // Right wing
+        case 2:
           roomBounds = {
             x: MAP_CONFIG.width - MAP_CONFIG.padding - size.width,
             y: MAP_CONFIG.padding + roomIndex * (size.height + 20),
@@ -615,7 +615,7 @@ function generateCompactGridLayout(
 ): Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> {
   const rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }> = [];
   
-  // Calcular grid óptimo
+
   const gridCols = Math.ceil(Math.sqrt(roomTypes.length));
   const gridRows = Math.ceil(roomTypes.length / gridCols);
   
@@ -629,7 +629,7 @@ function generateCompactGridLayout(
     const roomConfig = ROOM_TYPES[roomType];
     let size = getAdjustedRoomSize(roomConfig.baseSize, themeConfig);
     
-    // Ajustar tamaño a la celda disponible
+
     size = {
       width: Math.min(size.width, cellWidth - 20),
       height: Math.min(size.height, cellHeight - 20)
@@ -648,7 +648,7 @@ function generateCompactGridLayout(
   return rooms;
 }
 
-// 🛠️ FUNCIONES AUXILIARES
+
 function getAdjustedRoomSize(
   baseSize: { width: number; height: number }, 
   themeConfig: typeof ARCHITECTURAL_THEMES[keyof typeof ARCHITECTURAL_THEMES]
@@ -676,11 +676,11 @@ function findBestPosition(
       height: size.height
     };
     
-    // Verificar colisiones
+
     const hasCollision = placedBounds.some(placed => checkCollision(candidate, placed, 25));
     if (hasCollision) continue;
     
-    // Calcular score basado en adyacencias preferidas
+
     const score = calculatePositionScore(roomType, candidate);
     
     if (score > bestScore) {
@@ -696,10 +696,10 @@ function calculatePositionScore(
   roomType: RoomType,
   position: { x: number; y: number; width: number; height: number }
 ): number {
-  // Score básico por estar dentro de límites
+
   let score = 1;
   
-  // Bonus por estar cerca del centro (para habitaciones sociales)
+
   const centerDistance = Math.sqrt(
     Math.pow(position.x + position.width/2 - MAP_CONFIG.width/2, 2) +
     Math.pow(position.y + position.height/2 - MAP_CONFIG.height/2, 2)
@@ -753,7 +753,7 @@ function getPositionAroundCourtyard(
   }
 }
 
-// 🎨 COLOCAR DECORACIONES MEJORADAS
+
 export function placeDecorations(
   rooms: Array<{ room: RoomType; bounds: { x: number; y: number; width: number; height: number } }>,
   seed: string,
@@ -773,7 +773,7 @@ export function placeDecorations(
     const roomConfig = ROOM_TYPES[room];
     const decorationConfig = roomConfig.decorations;
     
-    // Decoraciones esenciales
+
     decorationConfig.essential.forEach((decorationType, index) => {
       const decorationSize = getDecorationSize(decorationType);
       let attempts = 0;
@@ -807,7 +807,7 @@ export function placeDecorations(
       }
     });
 
-    // Decoraciones opcionales (basadas en probabilidad y tema)
+
     const numOptional = themeConfig.decorationStyle === 'minimal' ? 1 : 
                        themeConfig.decorationStyle === 'compact' ? 2 : 3;
     
@@ -845,7 +845,7 @@ export function placeDecorations(
       }
     }
 
-    // Decoraciones temáticas específicas
+
     const themedDecorations = decorationConfig.themed[theme.toLowerCase() as keyof typeof decorationConfig.themed] || [];
     if (themedDecorations.length > 0) {
       const decorationType = themedDecorations[Math.floor(seededRandom() * themedDecorations.length)];
@@ -885,11 +885,11 @@ export function placeDecorations(
   return decorations;
 }
 
-// 🛠️ FUNCIONES AUXILIARES MEJORADAS
+
 function getThemedDecorationColor(decorationType: string, theme: keyof typeof ARCHITECTURAL_THEMES): string {
   const baseColors = getDecorationColor(decorationType);
   
-  // Aplicar tinte del tema a los colores base
+
   switch (theme) {
     case 'MODERN':
       return baseColors === '#64748b' ? '#9CA3AF' : baseColors;
@@ -904,10 +904,10 @@ function getThemedDecorationColor(decorationType: string, theme: keyof typeof AR
   }
 }
 
-// 🛠️ FUNCIONES AUXILIARES
+
 function getDecorationSize(type: string): { width: number; height: number } {
   const sizes: Record<string, { width: number; height: number }> = {
-    // Muebles
+
     furniture_bed_simple: { width: 32, height: 20 },
     furniture_bed_double: { width: 32, height: 24 },
     furniture_sofa_modern: { width: 32, height: 16 },
@@ -915,17 +915,17 @@ function getDecorationSize(type: string): { width: number; height: number } {
     furniture_table_coffee: { width: 24, height: 16 },
     furniture_table_dining: { width: 32, height: 20 },
     
-    // Plantas
+
     plant_small: { width: 12, height: 12 },
     plant_tree: { width: 32, height: 40 },
     plant_flower: { width: 16, height: 16 },
     
-    // Decoración
+
     deco_lamp: { width: 12, height: 20 },
     deco_clock: { width: 16, height: 16 },
     deco_bookshelf: { width: 28, height: 32 },
     
-    // Legacy (mantener compatibilidad)
+
     flower: { width: 8, height: 8 },
     banco: { width: 24, height: 12 },
     lamp: { width: 16, height: 24 },
@@ -938,7 +938,7 @@ function getDecorationSize(type: string): { width: number; height: number } {
 
 function getDecorationMapType(decorationType: string): MapElement['type'] {
   const typeMap: Record<string, MapElement['type']> = {
-    // Muebles
+
     furniture_bed_simple: 'rest_zone',
     furniture_bed_double: 'rest_zone',
     furniture_sofa_modern: 'social_zone',
@@ -946,17 +946,17 @@ function getDecorationMapType(decorationType: string): MapElement['type'] {
     furniture_table_coffee: 'social_zone',
     furniture_table_dining: 'food_zone',
     
-    // Plantas
+
     plant_small: 'food_zone',
     plant_tree: 'obstacle',
     plant_flower: 'food_zone',
     
-    // Decoración
+
     deco_lamp: 'play_zone',
     deco_clock: 'play_zone',
     deco_bookshelf: 'play_zone',
     
-    // Legacy
+
     flower: 'food_zone',
     banco: 'rest_zone',
     lamp: 'play_zone',
@@ -969,7 +969,7 @@ function getDecorationMapType(decorationType: string): MapElement['type'] {
 
 function getDecorationColor(decorationType: string): string {
   const colors: Record<string, string> = {
-    // Muebles
+
     furniture_bed_simple: '#8B4513',
     furniture_bed_double: '#654321',
     furniture_sofa_modern: '#4169E1',
@@ -977,17 +977,17 @@ function getDecorationColor(decorationType: string): string {
     furniture_table_coffee: '#DEB887',
     furniture_table_dining: '#A0522D',
     
-    // Plantas
+
     plant_small: '#228B22',
     plant_tree: '#006400',
     plant_flower: '#ff6b9d',
     
-    // Decoración
+
     deco_lamp: '#f2d450',
     deco_clock: '#B5A642',
     deco_bookshelf: '#8B4513',
     
-    // Legacy
+
     flower: '#ff6b9d',
     banco: '#9e684c',
     lamp: '#f2d450',
@@ -998,11 +998,11 @@ function getDecorationColor(decorationType: string): string {
   return colors[decorationType] || '#64748b';
 }
 
-// 🎮 GENERAR MAPA COMPLETO - MIGRADO A SISTEMA ORGÁNICO
+
 export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElements: MapElement[] } {
   console.log('🌿 Generando mapa con algoritmos orgánicos...');
   
-  // Usar el nuevo sistema orgánico por defecto
+
   return generateOrganicProceduralMap(seed, {
     theme: 'MODERN',
     useVoronoi: true,
@@ -1012,11 +1012,11 @@ export function generateProceduralMap(seed?: string): { zones: Zone[]; mapElemen
   });
 }
 
-// 🎨 OBTENER COLOR TEMÁTICO PARA HABITACIONES
+
 export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof ARCHITECTURAL_THEMES): string {
   const themeConfig = ARCHITECTURAL_THEMES[theme];
   
-  // Mapear tipos de zona a colores según el tema
+
   const colorMap: Record<Zone['type'], keyof typeof themeConfig.colors> = {
     food: 'primary',
     rest: 'secondary',
@@ -1038,7 +1038,7 @@ export function getThemedRoomColor(zoneType: Zone['type'], theme: keyof typeof A
   return themeConfig.colors[colorMap[zoneType] || 'primary'];
 }
 
-// 🛠️ FUNCIONES AUXILIARES MEJORADAS (CONTINUACIÓN)
+
 
 export function getZoneEffects(zoneType: Zone['type']): Zone['effects'] {
   const effects: Record<Zone['type'], Zone['effects']> = {

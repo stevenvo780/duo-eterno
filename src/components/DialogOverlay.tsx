@@ -3,7 +3,7 @@ import { useGame } from '../hooks/useGame';
 
 const DialogOverlay: React.FC = () => {
   const { dialogueState, dispatch } = useGame();
-  // Removed obsolete sprite loading - using CSS styling instead
+
 
   useEffect(() => {
     if (dialogueState.visible) {
@@ -21,7 +21,7 @@ const DialogOverlay: React.FC = () => {
   const progress = elapsed / dialogueState.duration;
   const opacity = progress < 0.9 ? 1 : 1 - ((progress - 0.9) / 0.1);
 
-  if (dialogueState.message) { // Check if there's text to display
+  if (dialogueState.message) {
     return (
       <div
         style={{
@@ -66,7 +66,7 @@ const DialogOverlay: React.FC = () => {
     );
   }
 
-  // Fallback to original style
+
   return (
     <div
       style={{

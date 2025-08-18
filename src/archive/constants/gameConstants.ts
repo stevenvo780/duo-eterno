@@ -40,7 +40,7 @@ export const RESONANCE_THRESHOLDS = {
 } as const;
 
 export const HEALTH_CONFIG = {
-  DECAY_PER_CRITICAL: 0.07,  // 🔧 MEJORA MINIMALISTA: Reducido de 0.1 → 0.07 (30% menos agresivo)
+  DECAY_PER_CRITICAL: 0.07,
   RECOVERY_RATE: 0.05
 } as const;
 
@@ -106,7 +106,7 @@ export const TRANSLATIONS = {
   } as const
 } as const;
 
-// === IMPORTACIONES DE CONSTANTES ESPECIALIZADAS ===
+
 
 import { 
   ACTIVITY_DURATIONS,
@@ -118,7 +118,7 @@ import {
   SPECIAL_TIMEOUTS 
 } from './systemTiming';
 
-// === RE-EXPORTACIONES DE CONSTANTES ESPECIALIZADAS ===
+
 
 /**
  * Timeouts especiales - importados de systemTiming
@@ -127,7 +127,7 @@ import {
 export const FADING_TIMEOUT_MS = SPECIAL_TIMEOUTS.FADING_TIMEOUT_MS;
 export const FADING_RECOVERY_THRESHOLD = SPECIAL_TIMEOUTS.FADING_RECOVERY_THRESHOLD;
 
-// === CONFIGURACIONES CONSOLIDADAS PARA COMPATIBILIDAD ===
+
 
 /**
  * Duraciones de actividades - consolidadas desde biologicalDynamics
@@ -170,7 +170,7 @@ export const ACTIVITY_EFFECT_CONFIG = {
   MEDITATING: ACTIVITY_EFFECTS.MEDITATING
 } as const;
 
-// === VALIDACIÓN CONSOLIDADA ===
+
 
 /**
  * Valida que todas las constantes del juego sean coherentes
@@ -203,7 +203,7 @@ export async function validateAllGameConstants(): Promise<boolean> {
   return allValid;
 }
 
-// Validar al cargar en desarrollo
+
 if (import.meta.env.DEV) {
   validateAllGameConstants();
 }

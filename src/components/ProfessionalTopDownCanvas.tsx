@@ -51,20 +51,20 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
   const { shouldRender } = useRenderer();
   const { preloadAnimations } = useAnimationSystem();
   
-  // Estados del sistema profesional
+
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [tileMap, setTileMap] = useState<TileMap | null>(null);
   const [gameObjects, setGameObjects] = useState<GameObject[]>([]);
   
-  // Colecciones de tiles organizadas
+
   const [allTiles, setAllTiles] = useState<Map<string, ExtractedTile>>(new Map());
   const [grassTiles, setGrassTiles] = useState<ExtractedTile[]>([]);
   const [stoneTiles, setStoneTiles] = useState<ExtractedTile[]>([]);
   const [propTiles, setPropTiles] = useState<ExtractedTile[]>([]);
   const [plantTiles, setPlantTiles] = useState<ExtractedTile[]>([]);
 
-  // Cargar sistema completo de assets profesionales
+
   const loadProfessionalAssets = useCallback(async () => {
     if (assetsLoaded) return;
     
@@ -81,7 +81,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       
       const allTilesMap = new Map<string, ExtractedTile>();
       
-      // Cargar cada spritesheet
+
       for (let i = 0; i < spritesheets.length; i++) {
         const spritesheetName = spritesheets[i];
         const spritesheetUrl = `/assets/PixelArtProfecional/Texture/${spritesheetName}`;
@@ -91,7 +91,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
         try {
           const tiles = await loadAndExtractTiles(spritesheetUrl, spritesheetName);
           
-          // Agregar tiles al mapa principal
+
           tiles.forEach((tile, key) => {
             allTilesMap.set(key, tile);
           });
@@ -105,7 +105,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       
       setAllTiles(allTilesMap);
       
-      // Organizar tiles por tipo
+
       const grassCollection = getTilesByType(allTilesMap, 'ground').filter(t => 
         t.id.includes('grass')
       );
@@ -128,11 +128,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       setStoneTiles(stoneCollection);
       setPropTiles(propCollection);
       setPlantTiles(plantCollection);
-      // shadowTiles removed as unused
+
       
       setLoadingProgress(90);
       
-      // Precargar animaciones de caritas (conservamos sistema original)
+
       await preloadAnimations([
         { name: 'entidad_circulo_happy_anim', category: 'entities' },
         { name: 'entidad_circulo_sad_anim', category: 'entities' },
@@ -155,11 +155,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       
     } catch (error) {
       console.error('❌ Error en carga profesional:', error);
-      setAssetsLoaded(true); // Continue anyway
+      setAssetsLoaded(true);
     }
   }, [assetsLoaded, preloadAnimations]);
 
-  // Generar mapa de tiles profesional
+
   const generateProfessionalTileMap = useCallback(() => {
     if (grassTiles.length === 0) return;
     
@@ -171,13 +171,13 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     for (let y = 0; y < mapHeight; y++) {
       tiles[y] = [];
       for (let x = 0; x < mapWidth; x++) {
-        // Crear patrón natural variado
+
         if (Math.random() < 0.05 && stoneTiles.length > 0) {
-          // Ocasional tile de piedra
+
           const randomStone = stoneTiles[Math.floor(Math.random() * stoneTiles.length)];
           tiles[y][x] = randomStone.id;
         } else {
-          // Principalmente grass con variaciones
+
           const randomGrass = grassTiles[Math.floor(Math.random() * grassTiles.length)];
           tiles[y][x] = randomGrass.id;
         }
@@ -192,14 +192,14 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     });
   }, [width, height, grassTiles, stoneTiles]);
 
-  // Generar objetos del mundo profesional
+
   const generateProfessionalGameObjects = useCallback(() => {
     if (propTiles.length === 0 || plantTiles.length === 0) return;
     
     const objects: GameObject[] = [];
     let objectId = 0;
     
-    // 1. Árboles grandes como landmarks principales
+
     const treeSpots = [
       { x: 120, y: 100, priority: 'high' },
       { x: 280, y: 140, priority: 'high' },
@@ -225,27 +225,27 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     });
     
-    // 2. Mobiliario estratégicamente ubicado
+
     const furnitureZones = [
-      // Zona de lectura
+
       { 
         center: { x: 200, y: 220 },
         items: ['bookshelf', 'chair', 'table'],
         theme: 'knowledge'
       },
-      // Zona ceremonial
+
       { 
         center: { x: 350, y: 200 },
         items: ['altar', 'throne', 'statue'],
         theme: 'mystical'
       },
-      // Zona de almacenamiento
+
       { 
         center: { x: 150, y: 300 },
         items: ['chest_wood', 'barrel', 'crate_wood'],
         theme: 'storage'
       },
-      // Zona de descanso
+
       { 
         center: { x: 500, y: 280 },
         items: ['sofa', 'lamp', 'pot'],
@@ -278,7 +278,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       });
     });
     
-    // 3. Arbustos decorativos distribuidos naturalmente
+
     const bushCount = 12;
     for (let i = 0; i < bushCount; i++) {
       const bushTile = getRandomTileByType(allTiles, 'bush');
@@ -298,7 +298,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     }
     
-    // 4. Estructuras especiales
+
     const specialStructures = [
       { type: 'fountain_center', x: 380, y: 350 },
       { type: 'pillar', x: 180, y: 180 },
@@ -325,7 +325,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     });
     
-    // Ordenar por zIndex para renderizado correcto
+
     objects.sort((a, b) => a.zIndex - b.zIndex);
     
     setGameObjects(objects);
@@ -338,19 +338,19 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     
   }, [allTiles, propTiles, plantTiles, width, height]);
 
-  // Renderizar escena profesional top-down
+
   const renderProfessionalScene = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!assetsLoaded || !tileMap) return;
     
-    // Limpiar canvas
+
     ctx.clearRect(0, 0, width, height);
     
-    // Aplicar transformaciones
+
     ctx.save();
     ctx.scale(zoom, zoom);
     ctx.translate(panX, panY);
     
-    // 1. Renderizar tiles de fondo con tiles profesionales
+
     for (let y = 0; y < tileMap.height; y++) {
       for (let x = 0; x < tileMap.width; x++) {
         const tileId = tileMap.tiles[y][x];
@@ -368,7 +368,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     }
     
-    // 2. Renderizar sombras de objetos
+
     gameObjects.forEach(obj => {
       if (obj.shadow) {
         ctx.globalAlpha = 0.4;
@@ -383,7 +383,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       }
     });
     
-    // 3. Renderizar objetos del mundo (ya ordenados por zIndex)
+
     gameObjects.forEach(obj => {
       ctx.drawImage(
         obj.tile.image,
@@ -394,7 +394,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       );
     });
     
-    // 4. Renderizar entidades con caritas (conservamos sistema original)
+
     if (gameState.entities) {
       gameState.entities.forEach(entity => {
         renderTopDownEntity(ctx, entity);
@@ -405,7 +405,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetsLoaded, tileMap, allTiles, gameObjects, gameState.entities, width, height, zoom, panX, panY]);
 
-  // Renderizar entidad en vista top-down (conservado del sistema original)
+
   const renderTopDownEntity = useCallback((ctx: CanvasRenderingContext2D, entity: Entity) => {
     if (!entity.position) return;
     
@@ -413,7 +413,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     const y = entity.position.y;
     const size = 24;
     
-    // Renderizar sombra de entidad
+
     ctx.globalAlpha = 0.3;
     ctx.fillStyle = '#2c1810';
     ctx.beginPath();
@@ -421,11 +421,11 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     ctx.fill();
     ctx.globalAlpha = 1.0;
     
-    // Renderizar cuerpo de entidad (top-down view)
+
     ctx.fillStyle = entity.mood === 'HAPPY' ? '#4CAF50' : 
                    entity.mood === 'SAD' ? '#F44336' : '#FF9800';
     
-    // Determinar forma basada en ID (circle vs square)
+
     if (entity.id === 'circle') {
       ctx.beginPath();
       ctx.arc(x, y, size/2, 0, Math.PI * 2);
@@ -434,7 +434,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
       ctx.fillRect(x - size/2, y - size/2, size, size);
     }
     
-    // Renderizar cara (vista desde arriba)
+
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
@@ -443,12 +443,12 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     ctx.fillText(faceEmoji, x, y + 3);
   }, []);
 
-  // Efecto para cargar assets
+
   useEffect(() => {
     loadProfessionalAssets();
   }, [loadProfessionalAssets]);
 
-  // Efecto para generar mundo cuando assets estén listos
+
   useEffect(() => {
     if (assetsLoaded && grassTiles.length > 0) {
       generateProfessionalTileMap();
@@ -456,7 +456,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     }
   }, [assetsLoaded, grassTiles.length, generateProfessionalTileMap, generateProfessionalGameObjects]);
 
-  // Loop de renderizado
+
   useEffect(() => {
     if (!canvasRef.current || !assetsLoaded) return;
 
@@ -479,7 +479,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     };
   }, [assetsLoaded, shouldRender, renderProfessionalScene]);
 
-  // Click handler para vista top-down
+
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onEntityClick || !gameState.entities) return;
 
@@ -489,7 +489,7 @@ const ProfessionalTopDownCanvas: React.FC<ProfessionalTopDownCanvasProps> = ({
     const x = (event.clientX - rect.left) / zoom - panX;
     const y = (event.clientY - rect.top) / zoom - panY;
 
-    // Buscar entidad clickeada
+
     for (const entity of gameState.entities) {
       if (!entity.position) continue;
       

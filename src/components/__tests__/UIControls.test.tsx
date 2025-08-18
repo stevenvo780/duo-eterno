@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-// Mock simple del componente UIControls
+
 const MockUIControls = ({ 
   selectedEntityId, 
   onEntitySelect 
@@ -96,10 +96,10 @@ describe('UIControls', () => {
 
   it('should calculate stat colors', () => {
     const getStatColor = (value: number) => {
-      if (value > 75) return '#4ade80'; // green
-      if (value > 50) return '#fbbf24'; // yellow
-      if (value > 25) return '#fb7185'; // orange
-      return '#ef4444'; // red
+      if (value > 75) return '#4ade80';
+      if (value > 50) return '#fbbf24';
+      if (value > 25) return '#fb7185';
+      return '#ef4444';
     };
 
     expect(getStatColor(90)).toBe('#4ade80');

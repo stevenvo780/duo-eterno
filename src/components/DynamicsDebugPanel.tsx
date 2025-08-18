@@ -53,7 +53,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Header */}
+
       <div style={{
         padding: '12px',
         borderBottom: '1px solid #374151',
@@ -78,7 +78,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
         </button>
       </div>
 
-      {/* Controls */}
+
       <div style={{
         padding: '8px 12px',
         borderBottom: '1px solid #374151',
@@ -132,7 +132,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
         </button>
       </div>
 
-      {/* Logs */}
+
       <div style={{
         flex: 1,
         overflow: 'auto',
@@ -237,7 +237,7 @@ const DynamicsDebugPanel: React.FC<DynamicsDebugPanelProps> = ({ visible, onClos
         )}
       </div>
 
-      {/* Footer */}
+
       <div style={{
         padding: '8px 12px',
         borderTop: '1px solid #374151',

@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 describe('useOptimizedUnifiedGameLoop', () => {
   
   it('should have basic functionality tests', () => {
-    // Test funciones matemáticas utilizadas en el game loop
+
     const calculateMood = (stats: { hunger: number; sleepiness: number; energy: number }) => {
       const criticalFactors = [
         stats.hunger < 15,
@@ -34,13 +34,13 @@ describe('useOptimizedUnifiedGameLoop', () => {
     const entity1 = { position: { x: 0, y: 0 } };
     const entity2 = { position: { x: 3, y: 4 } };
 
-    expect(calculateDistance(entity1, entity2)).toBe(5); // 3-4-5 triangle
+    expect(calculateDistance(entity1, entity2)).toBe(5);
   });
 
   it('should handle performance timing', () => {
     const measureTime = () => {
       const start = performance.now();
-      // Simular trabajo
+
       for (let i = 0; i < 1000; i++) {
         Math.random();
       }

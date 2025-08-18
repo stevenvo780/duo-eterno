@@ -46,8 +46,8 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
 
   const getEmotionColor = (speaker: string) => {
     const baseColors = {
-      ISA: '#e91e63',    // Rosa profundo para Isa (círculo) 
-      STEV: '#3f51b5'    // Índigo para Stev (cuadrado)
+      ISA: '#e91e63',
+      STEV: '#3f51b5'
     };
 
     const base = baseColors[speaker as keyof typeof baseColors] || baseColors.STEV;
@@ -105,7 +105,7 @@ const DialogBubble: React.FC<DialogBubbleProps> = ({
         </div>
         {message}
         
-        {/* Flecha del bocadillo */}
+
         <div
           style={{
             position: 'absolute',

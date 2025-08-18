@@ -2,7 +2,7 @@ import type { Zone, MapElement, EntityStats } from '../types';
 
 export const createDefaultZones = (): Zone[] => {
   return [
-    // Zona alimentaria integrada (jardín + cocina) - esquina superior izquierda
+
     {
       id: 'food_complex',
       name: 'Complejo Alimentario',
@@ -17,7 +17,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Santuario de descanso - superior derecha cerca del trabajo
+
     {
       id: 'rest_sanctuary',
       name: 'Santuario de Descanso',
@@ -32,7 +32,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Área de juegos central - corazón del mapa
+
     {
       id: 'play_central',
       name: 'Plaza de Juegos Central',
@@ -48,7 +48,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Plaza social con fuente - esquina inferior izquierda
+
     {
       id: 'social_plaza',
       name: 'Plaza Social Comunitaria',
@@ -64,7 +64,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Bosque de meditación - inferior central
+
     {
       id: 'meditation_grove',
       name: 'Bosque de Meditación Zen',
@@ -81,7 +81,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Estación de trabajo - superior derecha
+
     {
       id: 'work_station',
       name: 'Centro de Trabajo Productivo',
@@ -96,7 +96,7 @@ export const createDefaultZones = (): Zone[] => {
       }
     },
     
-    // Estación energética - lateral derecha
+
     {
       id: 'energy_station',
       name: 'Reactor Energético',
@@ -116,7 +116,7 @@ export const createDefaultZones = (): Zone[] => {
 
 export const createDefaultMapElements = (): MapElement[] => {
   return [
-    // Obstáculos funcionales
+
     {
       id: 'rock_central',
       type: 'obstacle',
@@ -139,7 +139,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#059669'
     },
     
-    // Elementos decorativos - Jardín de alimentos
+
     {
       id: 'flower_garden_1',
       type: 'food_zone',
@@ -162,7 +162,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#639bff'
     },
     
-    // Decorativos - Área de descanso
+
     {
       id: 'banco_rest_1',
       type: 'rest_zone',
@@ -178,7 +178,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#9e684c'
     },
     
-    // Decorativos - Plaza social
+
     {
       id: 'fuente_social',
       type: 'social_zone',
@@ -201,7 +201,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#9e684c'
     },
     
-    // Decorativos - Área de juegos
+
     {
       id: 'lampara_juegos_1',
       type: 'play_zone',
@@ -217,7 +217,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#f2d450'
     },
     
-    // Decorativos - Estación de trabajo
+
     {
       id: 'lampara_work',
       type: 'play_zone',
@@ -226,7 +226,7 @@ export const createDefaultMapElements = (): MapElement[] => {
       color: '#f2d450'
     },
     
-    // Decorativos - Bosque de meditación
+
     {
       id: 'flower_meditation_1',
       type: 'food_zone',

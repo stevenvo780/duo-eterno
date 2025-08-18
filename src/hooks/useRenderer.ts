@@ -53,20 +53,20 @@ const QUALITY_SETTINGS: Record<QualityLevel, QualitySettings> = {
   }
 };
 
-// Hook para optimizar el rendering del canvas
+
 export const useRenderer = () => {
-  // Performance state
+
   const [qualityLevel, setQualityLevel] = useState<QualityLevel>('high');
   const [isThrottling, setIsThrottling] = useState(false);
   
-  // Performance tracking refs
+
   const frameCount = useRef<number>(0);
   const lastFrameTime = useRef<number>(performance.now());
   const fpsHistory = useRef<number[]>([]);
   const droppedFrames = useRef<number>(0);
   const lastRenderTime = useRef<number>(0);
   
-  // Current metrics ref
+
   const currentMetrics = useRef<PerformanceMetrics>({
     fps: 60,
     frameDuration: 16.67,
@@ -75,7 +75,7 @@ export const useRenderer = () => {
     lastUpdate: performance.now()
   });
 
-  // Adaptive quality adjustment based on performance (menos agresivo)
+
   const adjustQuality = useCallback(() => {
     const avgFps = fpsHistory.current.length > 0 
       ? fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length 
@@ -83,7 +83,7 @@ export const useRenderer = () => {
     
     const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
     
-    // Downgrade quality solo si el rendimiento es crítico (más conservador)
+
     if (avgFps < targetFps * 0.6 && qualityLevel !== 'low') {
       const newLevel = qualityLevel === 'high' ? 'medium' : 'low';
       setQualityLevel(newLevel);
@@ -91,7 +91,7 @@ export const useRenderer = () => {
       return;
     }
     
-    // Upgrade quality si el rendimiento es consistentemente bueno
+
     if (avgFps > targetFps * 1.3 && qualityLevel !== 'high') {
       const newLevel = qualityLevel === 'low' ? 'medium' : 'high';
       setQualityLevel(newLevel);
@@ -99,36 +99,36 @@ export const useRenderer = () => {
     }
   }, [qualityLevel]);
 
-  // Get memory usage (rough estimate)
+
   const getMemoryUsage = useCallback((): number => {
     try {
       if ('memory' in performance) {
         const memInfo = (performance as typeof performance & { 
           memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } 
         }).memory;
-        return memInfo.usedJSHeapSize / (1024 * 1024); // MB
+        return memInfo.usedJSHeapSize / (1024 * 1024);
       }
     } catch {
-      // Ignore memory API errors
+
     }
-    return 0; // Fallback if not available
+    return 0;
   }, []);
 
-  // Calculate current FPS
+
   const updateFPS = useCallback((currentTime: number) => {
     frameCount.current++;
     const deltaTime = currentTime - lastFrameTime.current;
     
-    if (deltaTime >= 1000) { // Update FPS every second
+    if (deltaTime >= 1000) {
       const fps = (frameCount.current * 1000) / deltaTime;
       
-      // Update FPS history
+
       fpsHistory.current.push(fps);
       if (fpsHistory.current.length > 10) {
-        fpsHistory.current.shift(); // Keep only last 10 measurements
+        fpsHistory.current.shift();
       }
       
-      // Update metrics
+
       currentMetrics.current = {
         fps,
         frameDuration: deltaTime / frameCount.current,
@@ -137,20 +137,20 @@ export const useRenderer = () => {
         lastUpdate: currentTime
       };
       
-      // Reset counters
+
       frameCount.current = 0;
       lastFrameTime.current = currentTime;
       droppedFrames.current = 0;
       
-      // Adjust quality if needed
+
       adjustQuality();
     }
   }, [adjustQuality, getMemoryUsage]);
 
-  // Throttle rendering to target FPS
+
   const shouldRender = useCallback((currentTime: number = performance.now()): boolean => {
     const targetFps = QUALITY_SETTINGS[qualityLevel].targetFps;
-    const minFrameDuration = 1000 / targetFps; // ms per frame
+    const minFrameDuration = 1000 / targetFps;
     const timeSinceLastRender = currentTime - lastRenderTime.current;
     
     if (timeSinceLastRender >= minFrameDuration) {
@@ -165,37 +165,37 @@ export const useRenderer = () => {
     return false;
   }, [qualityLevel, updateFPS]);
 
-  // Simple FPS counter for debugging
+
   const getFPS = useCallback((): number => {
     return currentMetrics.current.fps;
   }, []);
 
-  // Adaptive quality based on performance
+
   const getQualityLevel = useCallback((): QualityLevel => {
     return qualityLevel;
   }, [qualityLevel]);
 
-  // Get performance metrics
+
   const getMetrics = useCallback((): PerformanceMetrics => {
     return { ...currentMetrics.current };
   }, []);
 
-  // Get quality settings for current level
+
   const getQualitySettings = useCallback((): QualitySettings => {
     return QUALITY_SETTINGS[qualityLevel];
   }, [qualityLevel]);
 
-  // Manual quality override
+
   const setQuality = useCallback((level: QualityLevel) => {
     setQualityLevel(level);
     console.info(`🎚️ Calidad manual establecida: ${level}`);
   }, []);
 
-  // Performance warning system
+
   useEffect(() => {
     const checkPerformance = () => {
       const metrics = currentMetrics.current;
-      const memoryLimit = 200; // MB
+      const memoryLimit = 200;
       
       if (metrics.memoryUsage > memoryLimit) {
         console.warn(`⚠️ Uso de memoria alto: ${metrics.memoryUsage.toFixed(1)}MB (límite: ${memoryLimit}MB)`);
@@ -206,11 +206,11 @@ export const useRenderer = () => {
       }
     };
 
-    const interval = setInterval(checkPerformance, 5000); // Check every 5 seconds
+    const interval = setInterval(checkPerformance, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Initialize performance monitoring
+
   useEffect(() => {
     const startTime = performance.now();
     lastFrameTime.current = startTime;
@@ -231,19 +231,19 @@ export const useRenderer = () => {
   }, [qualityLevel]);
 
   return {
-    // Core rendering control
+
     shouldRender,
     
-    // Performance metrics
+
     getFPS,
     getMetrics,
     
-    // Quality management
+
     getQualityLevel,
     getQualitySettings,
     setQuality,
     
-    // Status information
+
     isThrottling,
     qualityLevel
   };

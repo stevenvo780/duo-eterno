@@ -13,7 +13,7 @@ export const loadDialogueData = async (): Promise<void> => {
     const response = await fetch('/assets/dialogs/dialogos_chat_isa.lite.censored_plus.json');
     dialogueData = await response.json();
     
-    // Inicializar en un punto aleatorio para variar
+
     currentIndex = Math.floor(Math.random() * dialogueData.length);
   } catch (error) {
     console.warn('No se pudo cargar el archivo de diálogos:', error);
@@ -28,7 +28,7 @@ export const getNextDialogue = (
 ): DialogueEntry | null => {
   if (dialogueData.length === 0) return null;
 
-  // Buscar el siguiente diálogo que coincida con los filtros
+
   let attempts = 0;
   const maxAttempts = Math.min(100, dialogueData.length);
   
@@ -37,12 +37,12 @@ export const getNextDialogue = (
     currentIndex = (currentIndex + 1) % dialogueData.length;
     attempts++;
 
-    // Si no hay filtros específicos, devolver el diálogo actual
+
     if (!preferredSpeaker && !preferredEmotion && !preferredActivity) {
       return dialogue;
     }
 
-    // Verificar si coincide con los filtros
+
     const speakerMatch = !preferredSpeaker || dialogue.speaker === preferredSpeaker;
     const emotionMatch = !preferredEmotion || dialogue.emotion === preferredEmotion;
     const activityMatch = !preferredActivity || dialogue.activity === preferredActivity;
@@ -52,7 +52,7 @@ export const getNextDialogue = (
     }
   }
 
-  // Si no encontramos nada específico, devolver un diálogo aleatorio
+
   return dialogueData[Math.floor(Math.random() * dialogueData.length)];
 };
 
@@ -79,7 +79,7 @@ export const getEmotionForActivity = (activity: string): string => {
 };
 
 export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
-  // Mapear entidades del juego a speakers del chat: circle=Isa, square=Stev
+
   return entityId === 'circle' ? 'ISA' : 'STEV';
 };
 

@@ -23,25 +23,25 @@ export interface TilesetConfig {
   }>;
 }
 
-// Configuraciones basadas en el análisis visual de los spritesheets
+
 export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
   'TX Tileset Grass.png': {
     tileSize: 32,
     tilesPerRow: 16,
     tilesPerCol: 16,
     mapping: [
-      // Tiles básicos de grass
+
       { id: 'grass_base', col: 0, row: 0, type: 'ground', description: 'Grass básico' },
       { id: 'grass_flower1', col: 1, row: 0, type: 'ground', description: 'Grass con flores pequeñas' },
       { id: 'grass_flower2', col: 2, row: 0, type: 'ground', description: 'Grass con flores' },
       { id: 'grass_rocks', col: 3, row: 0, type: 'ground', description: 'Grass con rocas' },
       
-      // Tiles especiales
+
       { id: 'grass_detail1', col: 0, row: 1, type: 'ground', description: 'Grass detallado' },
       { id: 'grass_detail2', col: 1, row: 1, type: 'ground', description: 'Grass con hierba alta' },
       { id: 'grass_patch', col: 2, row: 1, type: 'ground', description: 'Parche de grass' },
       
-      // Tiles de transición
+
       { id: 'grass_edge_top', col: 0, row: 2, type: 'edge', description: 'Borde superior' },
       { id: 'grass_edge_bottom', col: 1, row: 2, type: 'edge', description: 'Borde inferior' },
       { id: 'grass_edge_left', col: 2, row: 2, type: 'edge', description: 'Borde izquierdo' },
@@ -54,7 +54,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
     tilesPerRow: 8,
     tilesPerCol: 8,
     mapping: [
-      // Tiles de piedra básicos
+
       { id: 'stone_base', col: 0, row: 0, type: 'ground', description: 'Piedra básica' },
       { id: 'stone_cracked', col: 1, row: 0, type: 'ground', description: 'Piedra agrietada' },
       { id: 'stone_smooth', col: 0, row: 1, type: 'ground', description: 'Piedra lisa' },
@@ -67,7 +67,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
     tilesPerRow: 7,
     tilesPerCol: 5,
     mapping: [
-      // Fila 1 - Contenedores y mobiliario básico
+
       { id: 'crate_wood', col: 0, row: 0, type: 'container', description: 'Caja de madera' },
       { id: 'barrel', col: 1, row: 0, type: 'container', description: 'Barril' },
       { id: 'chest_wood', col: 2, row: 0, type: 'container', description: 'Cofre de madera' },
@@ -76,7 +76,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
       { id: 'chair', col: 5, row: 0, type: 'furniture', description: 'Silla' },
       { id: 'statue', col: 6, row: 0, type: 'decoration', description: 'Estatua' },
       
-      // Fila 2 - Puertas y mobiliario avanzado
+
       { id: 'door', col: 0, row: 1, type: 'structure', description: 'Puerta' },
       { id: 'crate_metal', col: 1, row: 1, type: 'container', description: 'Caja metálica' },
       { id: 'table', col: 2, row: 1, type: 'furniture', description: 'Mesa' },
@@ -85,7 +85,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
       { id: 'lamp', col: 5, row: 1, type: 'furniture', description: 'Lámpara' },
       { id: 'bookcase_tall', col: 6, row: 1, type: 'furniture', description: 'Librería alta' },
       
-      // Fila 3 - Elementos exteriores
+
       { id: 'fence_post', col: 0, row: 2, type: 'structure', description: 'Poste de cerca' },
       { id: 'sign', col: 1, row: 2, type: 'decoration', description: 'Letrero' },
       { id: 'barrel_small', col: 2, row: 2, type: 'container', description: 'Barril pequeño' },
@@ -94,7 +94,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
       { id: 'throne', col: 5, row: 2, type: 'furniture', description: 'Trono' },
       { id: 'pedestal', col: 6, row: 2, type: 'decoration', description: 'Pedestal' },
       
-      // Fila 4 - Objetos pequeños
+
       { id: 'staff', col: 0, row: 3, type: 'item', description: 'Bastón' },
       { id: 'bag', col: 1, row: 3, type: 'container', description: 'Bolsa' },
       { id: 'pot', col: 2, row: 3, type: 'container', description: 'Vasija' },
@@ -102,7 +102,7 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
       { id: 'urn', col: 4, row: 3, type: 'decoration', description: 'Urna' },
       { id: 'fountain_base', col: 5, row: 3, type: 'structure', description: 'Base de fuente' },
       
-      // Fila 5 - Elementos especiales
+
       { id: 'rock', col: 0, row: 4, type: 'environment', description: 'Roca' },
       { id: 'fountain_center', col: 4, row: 4, type: 'structure', description: 'Fuente central' }
     ]
@@ -113,12 +113,12 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
     tilesPerRow: 6,
     tilesPerCol: 4,
     mapping: [
-      // Fila 1 - Árboles grandes (vista top-down)
+
       { id: 'tree_large_1', col: 0, row: 0, type: 'tree', description: 'Árbol grande tipo 1' },
       { id: 'tree_large_2', col: 1, row: 0, type: 'tree', description: 'Árbol grande tipo 2' },
       { id: 'tree_large_3', col: 2, row: 0, type: 'tree', description: 'Árbol grande tipo 3' },
       
-      // Fila 2 - Arbustos y plantas medianas
+
       { id: 'bush_large', col: 0, row: 1, type: 'bush', description: 'Arbusto grande' },
       { id: 'bush_medium', col: 1, row: 1, type: 'bush', description: 'Arbusto mediano' },
       { id: 'bush_small', col: 2, row: 1, type: 'bush', description: 'Arbusto pequeño' },
@@ -133,17 +133,17 @@ export const TILESET_CONFIGS: Record<string, TilesetConfig> = {
     tilesPerRow: 8,
     tilesPerCol: 8,
     mapping: [
-      // Sombras redondas
+
       { id: 'shadow_round_small', col: 0, row: 0, type: 'shadow', description: 'Sombra redonda pequeña' },
       { id: 'shadow_round_medium', col: 1, row: 0, type: 'shadow', description: 'Sombra redonda mediana' },
       { id: 'shadow_round_large', col: 2, row: 0, type: 'shadow', description: 'Sombra redonda grande' },
       
-      // Sombras ovaladas
+
       { id: 'shadow_oval_small', col: 0, row: 1, type: 'shadow', description: 'Sombra oval pequeña' },
       { id: 'shadow_oval_medium', col: 1, row: 1, type: 'shadow', description: 'Sombra oval mediana' },
       { id: 'shadow_oval_large', col: 2, row: 1, type: 'shadow', description: 'Sombra oval grande' },
       
-      // Sombras irregulares
+
       { id: 'shadow_irregular_1', col: 0, row: 2, type: 'shadow', description: 'Sombra irregular 1' },
       { id: 'shadow_irregular_2', col: 1, row: 2, type: 'shadow', description: 'Sombra irregular 2' }
     ]
@@ -174,7 +174,7 @@ export async function extractTile(
     return null;
   }
   
-  // Extraer tile del spritesheet
+
   ctx.drawImage(
     spritesheet,
     tileMapping.col * config.tileSize,
@@ -187,7 +187,7 @@ export async function extractTile(
     config.tileSize
   );
   
-  // Crear imagen desde canvas
+
   const image = new Image();
   image.src = canvas.toDataURL();
   

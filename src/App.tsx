@@ -15,7 +15,7 @@ import { logGeneralCompat as logGeneral } from './utils/optimizedDynamicsLogger'
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   
-  // 🎮 GAME LOOP CONSOLIDADO - Sistema unificado optimizado
+
   useGameLoop();
   
   useDialogueSystem();

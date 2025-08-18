@@ -35,20 +35,20 @@ export const useBalancedGameLoop = () => {
     const newStats = { ...entity.stats };
     const activityMultiplier = BALANCED_DEGRADATION.ACTIVITY_MULTIPLIERS[entity.activity as keyof typeof BALANCED_DEGRADATION.ACTIVITY_MULTIPLIERS] || 1.0;
     
-    // Aplicar degradación balanceada
+
     Object.entries(BALANCED_DEGRADATION.BASE_DECAY_PER_SECOND).forEach(([stat, baseDecay]) => {
-      if (stat === 'health') return; // Health se maneja separadamente
+      if (stat === 'health') return;
       
       const finalDecay = baseDecay * activityMultiplier * deltaTimeSeconds;
       newStats[stat as keyof EntityStats] = Math.max(0, newStats[stat as keyof EntityStats] - finalDecay);
     });
 
-    // Aplicar costo de vida
+
     if (entity.activity !== 'RESTING' && entity.activity !== 'MEDITATING') {
       const livingCost = BALANCED_SURVIVAL_COSTS.BASIC_LIVING_COST_PER_MINUTE * (deltaTimeSeconds / 60);
       let costMultiplier = 1.0;
       
-      // Multiplicadores por estado
+
       if (newStats.hunger < 30) costMultiplier *= BALANCED_SURVIVAL_COSTS.HUNGER_COST_MULTIPLIER;
       if (newStats.energy < 30) costMultiplier *= BALANCED_SURVIVAL_COSTS.ENERGY_COST_MULTIPLIER;
       
@@ -56,7 +56,7 @@ export const useBalancedGameLoop = () => {
       newStats.money = Math.max(0, newStats.money - finalCost);
     }
 
-    // Bonus por riqueza
+
     if (newStats.money > BALANCED_SURVIVAL_COSTS.WEALTH_THRESHOLD) {
       const bonus = BALANCED_SURVIVAL_COSTS.WEALTH_HAPPINESS_BONUS * (deltaTimeSeconds / 60);
       newStats.happiness = Math.min(100, newStats.happiness + bonus);
@@ -72,13 +72,13 @@ export const useBalancedGameLoop = () => {
     const zoneConfig = BALANCED_ZONE_EFFECTS[zone.type as keyof typeof BALANCED_ZONE_EFFECTS];
     if (!zoneConfig) return entity.stats;
 
-    // Verificar si la entidad necesita los efectos de esta zona
+
     if (!zoneConfig.condition(entity.stats)) return entity.stats;
 
     const newStats = { ...entity.stats };
-    const effectMultiplier = deltaTimeSeconds / 60; // Por minuto
+    const effectMultiplier = deltaTimeSeconds / 60;
 
-    // Aplicar efectos primarios
+
     Object.entries(zoneConfig.primary).forEach(([stat, effect]) => {
       const finalEffect = effect * effectMultiplier;
       newStats[stat as keyof EntityStats] = Math.max(0, Math.min(100, 
@@ -86,7 +86,7 @@ export const useBalancedGameLoop = () => {
       ));
     });
 
-    // Aplicar efectos secundarios
+
     if (zoneConfig.secondary) {
       Object.entries(zoneConfig.secondary).forEach(([stat, effect]) => {
         const finalEffect = effect * effectMultiplier;
@@ -104,15 +104,15 @@ export const useBalancedGameLoop = () => {
     const criticalCount = criticalStats.filter(stat => stat < BALANCED_DEGRADATION.CRITICAL_THRESHOLDS.CRITICAL).length;
     
     if (criticalCount === 0) {
-      // Recuperación cuando no hay stats críticas
+
       const newHealth = Math.min(100, stats.health + BALANCED_DEGRADATION.HEALTH_DECAY.RECOVERY_RATE);
       return newHealth;
     }
 
-    // Degradación basada en stats críticas
+
     let decayRate = criticalCount * BALANCED_DEGRADATION.HEALTH_DECAY.DECAY_PER_CRITICAL_STAT;
     
-    // Período de gracia para salud muy baja
+
     if (stats.health < BALANCED_DEGRADATION.HEALTH_DECAY.GRACE_PERIOD_THRESHOLD) {
       decayRate *= BALANCED_DEGRADATION.HEALTH_DECAY.GRACE_PERIOD_MULTIPLIER;
     }
@@ -123,7 +123,7 @@ export const useBalancedGameLoop = () => {
   const determineMood = useCallback((stats: EntityStats): EntityMood => {
     const { happiness, energy, loneliness, boredom } = stats;
     
-    // Estados especiales
+
     if (happiness > 80 && energy > 70) return 'HAPPY';
     if (happiness < 20 || (loneliness > 80 && boredom > 80)) return 'SAD';
     if (energy < 20) return 'TIRED';
@@ -139,7 +139,7 @@ export const useBalancedGameLoop = () => {
     const deltaTime = now - statsRef.current.lastUpdate;
     const deltaTimeSeconds = deltaTime / 1000;
     
-    // Limitar delta time para evitar saltos grandes
+
     if (deltaTimeSeconds > 5) {
       statsRef.current.lastUpdate = now;
       return;
@@ -148,23 +148,23 @@ export const useBalancedGameLoop = () => {
     statsRef.current.tickCount++;
     statsRef.current.lastUpdate = now;
 
-    // Procesar cada entidad
+
     gameState.entities.forEach(entity => {
       if (entity.isDead) return;
 
-      // 1. Aplicar degradación balanceada
+
       let newStats = applyBalancedDegradation(entity, deltaTimeSeconds);
       
-      // 2. Aplicar efectos de zona
+
       newStats = applyZoneEffects({ ...entity, stats: newStats }, deltaTimeSeconds);
       
-      // 3. Actualizar salud basada en otras estadísticas
+
       newStats.health = updateHealthBasedOnStats(newStats);
       
-      // 4. Determinar nuevo mood
+
       const newMood = determineMood(newStats);
       
-      // 5. Verificar muerte
+
       if (newStats.health <= 0) {
         dispatch({ 
           type: 'KILL_ENTITY', 
@@ -181,7 +181,7 @@ export const useBalancedGameLoop = () => {
         return;
       }
 
-      // 6. Detectar situaciones críticas y loggear
+
       const attention = needsAttention(newStats);
       if (attention.urgent.length > 0) {
         const expectancy = calculateLifeExpectancy(newStats);
@@ -196,7 +196,7 @@ export const useBalancedGameLoop = () => {
         statsRef.current.survivalEvents++;
       }
 
-      // 7. Dispatch de actualizaciones
+
       dispatch({
         type: 'UPDATE_ENTITY_STATS',
         payload: { entityId: entity.id, stats: newStats }
@@ -212,25 +212,25 @@ export const useBalancedGameLoop = () => {
       statsRef.current.degradationEvents++;
     });
 
-    // Actualizar estadísticas de rendimiento
+
     const tickTime = Date.now() - now;
     statsRef.current.averageTickTime = 
       (statsRef.current.averageTickTime * 0.9) + (tickTime * 0.1);
 
   }, [gameState.entities, dispatch, applyBalancedDegradation, applyZoneEffects, updateHealthBasedOnStats, determineMood]);
 
-  // Configurar el loop principal
+
   useEffect(() => {
-    // Capturar stats para cleanup
+
     const statsForCleanup = statsRef.current;
     
-    // Limpiar loop anterior
+
     if (loopRef.current) {
       clearInterval(loopRef.current);
     }
 
-    // Establecer nuevo loop con intervalo más frecuente para suavidad
-    loopRef.current = setInterval(gameLoopTick, 2000); // Cada 2 segundos
+
+    loopRef.current = setInterval(gameLoopTick, 2000);
     
     logGeneral('🎮 Game Loop Balanceado iniciado', {
       interval: '2000ms',
@@ -243,7 +243,7 @@ export const useBalancedGameLoop = () => {
         loopRef.current = null;
       }
       
-      // Usar stats capturados al inicio del effect
+
       logGeneral('🎮 Game Loop Balanceado detenido', {
         totalTicks: statsForCleanup.tickCount,
         degradationEvents: statsForCleanup.degradationEvents,
@@ -253,7 +253,7 @@ export const useBalancedGameLoop = () => {
     };
   }, [gameLoopTick]);
 
-  // Función para obtener estadísticas del loop
+
   const getLoopStats = useCallback(() => {
     return { ...statsRef.current };
   }, []);

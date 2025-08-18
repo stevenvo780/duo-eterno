@@ -7,32 +7,32 @@
 
 import type { EntityStats } from '../types';
 
-// ✅ MEJORA 1: Umbrales críticos más tolerantes
+
 export const IMPROVED_CRITICAL_THRESHOLDS = {
-  // Antes: < 5 era crítico, ahora < 3 es crítico (más tiempo de reacción)
+
   CRITICAL: 3,
-  WARNING: 8,  // Nuevo: nivel de alerta temprana
+  WARNING: 8,
   LOW: 15,
   SAFE: 25
 } as const;
 
-// ✅ MEJORA 2: Configuración de salud más balanceada
+
 export const IMPROVED_HEALTH_CONFIG = {
-  DECAY_PER_CRITICAL: 0.05,  // Antes: 0.1, reducido a la mitad
-  RECOVERY_RATE: 0.08,       // Antes: 0.05, aumentado 60%
-  GRACE_PERIOD_THRESHOLD: 10, // Nuevo: período de gracia cuando health < 10
-  GRACE_PERIOD_MULTIPLIER: 0.3 // Decay 70% más lento en período de gracia
+  DECAY_PER_CRITICAL: 0.05,
+  RECOVERY_RATE: 0.08,
+  GRACE_PERIOD_THRESHOLD: 10,
+  GRACE_PERIOD_MULTIPLIER: 0.3
 } as const;
 
-// ✅ MEJORA 3: Multiplicadores de decay más suaves
+
 export const IMPROVED_ACTIVITY_DECAY_MULTIPLIERS = {
-  WORKING: 1.3,      // Antes: 1.6, reducido
-  SHOPPING: 1.1,     // Antes: 1.2, reducido
-  EXERCISING: 1.3,   // Antes: 1.5, reducido
-  SOCIALIZING: 1.2,  // Antes: 1.3, reducido
-  DANCING: 1.1,      // Antes: 1.2, reducido
-  EXPLORING: 1.2,    // Antes: 1.3, reducido
-  // Actividades relajantes sin cambios
+  WORKING: 1.3,
+  SHOPPING: 1.1,
+  EXERCISING: 1.3,
+  SOCIALIZING: 1.2,
+  DANCING: 1.1,
+  EXPLORING: 1.2,
+
   RESTING: 0.4,
   MEDITATING: 0.6,
   CONTEMPLATING: 0.7,
@@ -42,21 +42,21 @@ export const IMPROVED_ACTIVITY_DECAY_MULTIPLIERS = {
   COOKING: 1.1
 } as const;
 
-// ✅ MEJORA 4: Costos de supervivencia balanceados
+
 export const IMPROVED_SURVIVAL_COSTS = {
-  LIVING_COST: 1.5,          // Antes: 2, reducido 25%
-  CRITICAL_MONEY: 15,        // Antes: 20, umbral más bajo
-  CRITICAL_HUNGER: 15,       // Antes: 20, más tolerante
-  CRITICAL_ENERGY: 12,       // Antes: 15, más tolerante
-  CRITICAL_SLEEPINESS: 15,   // Antes: 20, más tolerante
-  POVERTY_MULTIPLIER: 0.7    // Nuevo: penalizaciones por pobreza menos severas
+  LIVING_COST: 1.5,
+  CRITICAL_MONEY: 15,
+  CRITICAL_HUNGER: 15,
+  CRITICAL_ENERGY: 12,
+  CRITICAL_SLEEPINESS: 15,
+  POVERTY_MULTIPLIER: 0.7
 } as const;
 
-// ✅ MEJORA 5: Sistema de alertas tempranas
+
 export interface SurvivalAlert {
   type: 'WARNING' | 'CRITICAL' | 'EMERGENCY';
   stats: string[];
-  timeToDeathEstimate: number; // en segundos
+  timeToDeathEstimate: number;
   recommendedActions: string[];
 }
 
@@ -93,7 +93,7 @@ export const calculateSurvivalAlert = (stats: EntityStats, health: number): Surv
     return {
       type: 'WARNING',
       stats: warningStats,
-      timeToDeathEstimate: 300, // 5 minutos estimados
+      timeToDeathEstimate: 300,
       recommendedActions: [
         'Atender stats en zona amarilla',
         'Buscar actividades regenerativas',
@@ -105,7 +105,7 @@ export const calculateSurvivalAlert = (stats: EntityStats, health: number): Surv
   return null;
 };
 
-// ✅ MEJORA 6: Sistema de recuperación mejorado
+
 export const applyImprovedHealthRecovery = (
   currentHealth: number,
   criticalCount: number,
@@ -120,7 +120,7 @@ export const applyImprovedHealthRecovery = (
   if (criticalCount > 0) {
     let decayRate = criticalCount * IMPROVED_HEALTH_CONFIG.DECAY_PER_CRITICAL;
     
-    // Período de gracia: decay más lento cuando health < 10
+
     if (currentHealth < IMPROVED_HEALTH_CONFIG.GRACE_PERIOD_THRESHOLD) {
       decayRate *= IMPROVED_HEALTH_CONFIG.GRACE_PERIOD_MULTIPLIER;
     }
@@ -131,7 +131,7 @@ export const applyImprovedHealthRecovery = (
   return Math.max(0, Math.min(100, currentHealth + healthChange));
 };
 
-// ✅ MEJORA 7: Función de costos de supervivencia mejorados
+
 export const applyImprovedSurvivalCosts = (
   currentStats: EntityStats,
   deltaTimeMs: number
@@ -139,10 +139,10 @@ export const applyImprovedSurvivalCosts = (
   const newStats = { ...currentStats };
   const minutesElapsed = (deltaTimeMs / 60000);
 
-  // Costo de vida reducido
+
   newStats.money = Math.max(0, newStats.money - IMPROVED_SURVIVAL_COSTS.LIVING_COST * minutesElapsed);
 
-  // Penalizaciones por pobreza más suaves
+
   if (newStats.money < IMPROVED_SURVIVAL_COSTS.CRITICAL_MONEY) {
     const desperation = (IMPROVED_SURVIVAL_COSTS.CRITICAL_MONEY - newStats.money) / IMPROVED_SURVIVAL_COSTS.CRITICAL_MONEY;
     const softPenalty = desperation * IMPROVED_SURVIVAL_COSTS.POVERTY_MULTIPLIER;
@@ -154,7 +154,7 @@ export const applyImprovedSurvivalCosts = (
   return newStats;
 };
 
-// ✅ MEJORA 8: Configuración de dificultad ajustable
+
 export const DIFFICULTY_CONFIGS = {
   EASY: {
     decayMultiplier: 0.7,

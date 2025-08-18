@@ -32,25 +32,25 @@ export class OptimizedAssetManager {
   }
 
   async loadSprite(name: string, options: AssetLoadOptions = { priority: 'medium' }): Promise<HTMLImageElement> {
-    // Check cache first
+
     if (this.cache.sprites.has(name)) {
       this.cache.lastAccess.set(name, Date.now());
       return this.cache.sprites.get(name)!;
     }
 
-    // Check if already loading
+
     if (this.loadingPromises.has(name)) {
       return this.loadingPromises.get(name)!;
     }
 
-    // Start loading
+
     const loadPromise = this.loadImageWithFallback(name, options);
     this.loadingPromises.set(name, loadPromise);
 
     try {
       const image = await loadPromise;
       
-      // Add to cache with memory management
+
       this.addToCache(name, image);
       this.loadingPromises.delete(name);
       
@@ -83,7 +83,7 @@ export class OptimizedAssetManager {
     return new Promise((resolve, reject) => {
       const img = new Image();
       
-      // Optimize loading based on priority
+
       if (options.priority === 'high') {
         img.fetchPriority = 'high';
       }
@@ -95,7 +95,7 @@ export class OptimizedAssetManager {
   }
 
   private addToCache(name: string, image: HTMLImageElement) {
-    // Memory management - remove oldest items if cache is full
+
     if (this.cache.sprites.size >= this.cache.maxCacheSize) {
       this.evictOldestItems();
     }
@@ -108,7 +108,7 @@ export class OptimizedAssetManager {
     const entries = Array.from(this.cache.lastAccess.entries())
       .sort((a, b) => a[1] - b[1]);
     
-    // Remove oldest 25% of items
+
     const itemsToRemove = Math.floor(entries.length * 0.25);
     
     for (let i = 0; i < itemsToRemove; i++) {
@@ -139,13 +139,13 @@ export class OptimizedAssetManager {
   }
 
   private estimateMemoryUsage(): number {
-    // Rough estimation: 32x32 RGBA = 4KB per sprite
-    return this.cache.sprites.size * 4; // KB
+
+    return this.cache.sprites.size * 4;
   }
 
   private calculateHitRate(): number {
-    // Implementation for cache hit rate calculation
-    return 0; // Placeholder
+
+    return 0;
   }
 }
 

@@ -12,7 +12,7 @@ import type { Entity, EntityMood, EntityStats } from '../types';
 import { TRANSLATIONS, MOVEMENT_CONFIG } from "../constants";
 import { getActivitySession } from './aiDecisionEngine';
 
-// Tipos para el sistema de feedback
+
 interface IntentionIndicator {
   type: 'SEEKING_ZONE' | 'SEEKING_COMPANION' | 'ACTIVITY_FOCUSED' | 'CRITICAL_NEED' | 'CONTENT';
   message: string;
@@ -27,12 +27,12 @@ export interface EntityFeedback {
   intention: IntentionIndicator | null;
   statusMessage: string;
   moodIndicator: string;
-  activityProgress: number; // 0-1 para mostrar progreso de actividad
+  activityProgress: number;
   needsAlert: boolean;
   lastUpdate: number;
 }
 
-// Almacén de feedback para cada entidad
+
 const entityFeedbacks = new Map<string, EntityFeedback>();
 
 /**
@@ -45,9 +45,9 @@ const generateIntentionIndicator = (
 ): IntentionIndicator | null => {
   const stats = entity.stats;
   
-  // Verificar necesidades críticas
+
   const criticalStats = Object.entries(stats).filter(([key, value]) => {
-    if (key === 'money') return false; // El dinero no es crítico para supervivencia
+    if (key === 'money') return false;
     return value < 15 || (key === 'energy' && value < 15);
   });
   
@@ -62,7 +62,7 @@ const generateIntentionIndicator = (
     };
   }
   
-  // Verificar búsqueda de compañero
+
   if (companion && !companion.isDead && stats.loneliness < 30) {
     const distance = Math.sqrt(
       Math.pow(entity.position.x - companion.position.x, 2) +
@@ -81,7 +81,7 @@ const generateIntentionIndicator = (
     }
   }
   
-  // Verificar búsqueda de zona
+
   const urgentStats = Object.entries(stats).filter(([key, value]) => {
     if (key === 'money') return false;
     return value < 40 || (key === 'energy' && value < 40);
@@ -97,7 +97,7 @@ const generateIntentionIndicator = (
     };
   }
   
-  // Verificar actividad enfocada
+
   const session = getActivitySession(entity.id);
   if (session && session.effectiveness > 0.7) {
     return {
@@ -109,7 +109,7 @@ const generateIntentionIndicator = (
     };
   }
   
-  // Estado de contentura
+
   if (stats.happiness < 30 && stats.energy > 50 && resonance > 60) {
     return {
       type: 'CONTENT',
@@ -130,7 +130,7 @@ const generateStatusMessage = (entity: Entity): string => {
   const activity = TRANSLATIONS.ACTIVITIES[entity.activity];
   const mood = TRANSLATIONS.MOODS[entity.mood];
   
-  // Estados especiales
+
   if (entity.isDead) {
     return 'Ha partido de este mundo...';
   }
@@ -143,7 +143,7 @@ const generateStatusMessage = (entity: Entity): string => {
     return `${mood}, sintiéndose desconectado`;
   }
   
-  // Estados normales con contexto
+
   const session = getActivitySession(entity.id);
   if (session) {
     const effectiveness = session.effectiveness;
@@ -179,7 +179,7 @@ const generateMoodIndicator = (mood: EntityMood, stats: EntityStats): string => 
   
   let indicator = moodEmojis[mood];
   
-  // Añadir indicadores de estado crítico
+
   if (stats.hunger < 10) indicator += '🍽️';
   if (stats.sleepiness < 10) indicator += '💤';
   if (stats.loneliness < 10) indicator += '💔';
@@ -200,7 +200,7 @@ export const updateEntityFeedback = (
   const statusMessage = generateStatusMessage(entity);
   const moodIndicator = generateMoodIndicator(entity.mood, entity.stats);
   
-  // Calcular progreso de actividad
+
   let activityProgress = 0;
   const session = getActivitySession(entity.id);
   if (session) {
@@ -208,7 +208,7 @@ export const updateEntityFeedback = (
     activityProgress = Math.min(1, elapsed / session.plannedDuration);
   }
   
-  // Verificar alertas de necesidades
+
   const needsAlert = Object.entries(entity.stats).some(([key, value]) => {
     if (key === 'money') return false;
     return value < 20 || (key === 'energy' && value < 20);
@@ -244,12 +244,12 @@ export const calculateIndicatorPosition = (
   canvasHeight: number
 ): { x: number; y: number } => {
   let x = entity.position.x;
-  let y = entity.position.y - 30; // Por encima de la entidad
+  let y = entity.position.y - 30;
   
-  // Ajustar si se sale del canvas
+
   if (x < 50) x = 50;
   if (x > canvasWidth - 50) x = canvasWidth - 50;
-  if (y < 20) y = entity.position.y + 30; // Debajo si no cabe arriba
+  if (y < 20) y = entity.position.y + 30;
   if (y > canvasHeight - 20) y = canvasHeight - 20;
   
   return { x, y };
@@ -260,13 +260,13 @@ export const calculateIndicatorPosition = (
  */
 export interface ContextualAnimation {
   type: 'PULSE' | 'GLOW' | 'TRAIL' | 'SHAKE' | 'BOUNCE';
-  intensity: number; // 0-1
+  intensity: number;
   color: string;
   duration: number;
 }
 
 export const generateContextualAnimation = (entity: Entity, resonance: number): ContextualAnimation | null => {
-  // Animación de emergencia
+
   const criticalStats = Object.values(entity.stats).filter(value => value < 10).length;
   if (criticalStats > 0) {
     return {
@@ -277,7 +277,7 @@ export const generateContextualAnimation = (entity: Entity, resonance: number): 
     };
   }
   
-  // Animación de felicidad
+
   if (entity.mood === 'EXCITED' && entity.stats.energy > 70) {
     return {
       type: 'BOUNCE',
@@ -287,7 +287,7 @@ export const generateContextualAnimation = (entity: Entity, resonance: number): 
     };
   }
   
-  // Animación de vínculo fuerte
+
   if (resonance > 80 && entity.stats.happiness < 40) {
     return {
       type: 'GLOW',
@@ -297,7 +297,7 @@ export const generateContextualAnimation = (entity: Entity, resonance: number): 
     };
   }
   
-  // Animación de desgaste
+
   if (entity.state === 'FADING') {
     return {
       type: 'PULSE',

@@ -35,7 +35,7 @@ def create_basic_sprite(size=32, bg_color=(20, 12, 28), main_color=(109, 170, 44
     draw = ImageDraw.Draw(img)
     
     # Marco básico
-    border = max(1, size // 16)
+    border = max(1, size
     draw.rectangle([border, border, size-border-1, size-border-1], 
                   fill=main_color + (255,), outline=bg_color + (255,))
     
@@ -46,22 +46,22 @@ def generate_entity_circle_happy(size=32):
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    center = size // 2
-    radius = size // 3
+    center = size
+    radius = size
     
     # Cuerpo circular
     draw.ellipse([center-radius, center-radius, center+radius, center+radius], 
                 fill=(109, 170, 44, 255))  # Verde claro
     
     # Ojos
-    eye_size = max(2, size // 16)
+    eye_size = max(2, size
     draw.ellipse([center-radius//2, center-radius//3, center-radius//2+eye_size, center-radius//3+eye_size], 
                 fill=(20, 12, 28, 255))  # Negro
     draw.ellipse([center+radius//2-eye_size, center-radius//3, center+radius//2, center-radius//3+eye_size], 
                 fill=(20, 12, 28, 255))  # Negro
     
     # Sonrisa
-    mouth_y = center + radius // 4
+    mouth_y = center + radius
     draw.arc([center-radius//2, mouth_y-radius//4, center+radius//2, mouth_y+radius//4], 
              start=0, end=180, fill=(20, 12, 28, 255), width=2)
     
@@ -72,8 +72,8 @@ def generate_entity_circle_sad(size=32):
     img = generate_entity_circle_happy(size)
     draw = ImageDraw.Draw(img)
     
-    center = size // 2
-    radius = size // 3
+    center = size
+    radius = size
     
     # Reemplazar color con tono triste
     for y in range(size):
@@ -83,7 +83,7 @@ def generate_entity_circle_sad(size=32):
                 img.putpixel((x, y), (208, 70, 72, 255))  # Rojo triste
     
     # Dibujar boca triste (arco invertido)
-    mouth_y = center + radius // 2
+    mouth_y = center + radius
     draw.arc([center-radius//2, mouth_y-radius//4, center+radius//2, mouth_y+radius//4], 
              start=180, end=360, fill=(20, 12, 28, 255), width=2)
     
@@ -94,8 +94,8 @@ def generate_entity_square_happy(size=32):
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    center = size // 2
-    square_size = size // 2
+    center = size
+    square_size = size
     
     # Cuerpo cuadrado
     draw.rectangle([center-square_size//2, center-square_size//2, 
@@ -103,7 +103,7 @@ def generate_entity_square_happy(size=32):
                   fill=(89, 125, 206, 255))  # Azul claro
     
     # Ojos
-    eye_size = max(2, size // 16)
+    eye_size = max(2, size
     draw.rectangle([center-square_size//3, center-square_size//4, 
                    center-square_size//3+eye_size, center-square_size//4+eye_size], 
                   fill=(20, 12, 28, 255))
@@ -112,7 +112,7 @@ def generate_entity_square_happy(size=32):
                   fill=(20, 12, 28, 255))
     
     # Sonrisa
-    mouth_y = center + square_size // 4
+    mouth_y = center + square_size
     draw.line([center-square_size//3, mouth_y, center+square_size//3, mouth_y], 
               fill=(20, 12, 28, 255), width=2)
     

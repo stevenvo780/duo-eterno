@@ -30,15 +30,15 @@ export const useSurvivalEnhancements = () => {
   const { gameState } = useGame();
   
   const [config, setConfig] = useState<SurvivalSystemConfig>({
-    enabled: true,        // Activar mejoras por defecto
-    difficulty: 'NORMAL', // Dificultad balanceada
-    showAlerts: true,     // Mostrar alertas
-    gracePeriodEnabled: true // Período de gracia activado
+    enabled: true,
+    difficulty: 'NORMAL',
+    showAlerts: true,
+    gracePeriodEnabled: true
   });
 
   const [alerts, setAlerts] = useState<Map<string, SurvivalAlert>>(new Map());
 
-  // Calcular alertas para todas las entidades vivas
+
   const updateSurvivalAlerts = useCallback(() => {
     if (!config.enabled || !config.showAlerts) {
       setAlerts(new Map());
@@ -59,12 +59,12 @@ export const useSurvivalEnhancements = () => {
     setAlerts(newAlerts);
   }, [gameState.entities, config.enabled, config.showAlerts]);
 
-  // Actualizar alertas cuando cambien las entidades
+
   useEffect(() => {
     updateSurvivalAlerts();
   }, [updateSurvivalAlerts]);
 
-  // Función para aplicar health recovery mejorado
+
   const applyImprovedHealthSystem = useCallback((
     entityId: string,
     currentHealth: number,
@@ -73,7 +73,7 @@ export const useSurvivalEnhancements = () => {
     resonance: number
   ): number => {
     if (!config.enabled) {
-      return currentHealth; // Usar sistema original
+      return currentHealth;
     }
 
     const criticalCount = [
@@ -90,7 +90,7 @@ export const useSurvivalEnhancements = () => {
       deltaTime
     );
 
-    // Log health recovery for debugging
+
     if (recoveredHealth !== currentHealth) {
       console.debug(`Health recovery for ${entityId}:`, {
         from: currentHealth,
@@ -103,19 +103,19 @@ export const useSurvivalEnhancements = () => {
     return recoveredHealth;
   }, [config.enabled]);
 
-  // Función para aplicar costos de supervivencia mejorados
+
   const applyImprovedSurvivalSystem = useCallback((
     stats: EntityStats,
     deltaTime: number
   ): EntityStats => {
     if (!config.enabled) {
-      return stats; // Usar sistema original
+      return stats;
     }
 
     const difficultyConfig = DIFFICULTY_CONFIGS[config.difficulty];
     const adjustedStats = applyImprovedSurvivalCosts(stats, deltaTime);
 
-    // Aplicar modificadores de dificultad
+
     if (difficultyConfig.decayMultiplier !== 1.0) {
       Object.keys(adjustedStats).forEach(key => {
         if (key !== 'money' && key !== 'health') {
@@ -131,10 +131,10 @@ export const useSurvivalEnhancements = () => {
     return adjustedStats;
   }, [config.enabled, config.difficulty]);
 
-  // Obtener multiplicador de decay para actividad (mejorado)
+
   const getImprovedActivityDecayMultiplier = useCallback((activity: string): number => {
     if (!config.enabled) {
-      return 1.0; // Usar sistema original
+      return 1.0;
     }
 
     const multiplier = IMPROVED_ACTIVITY_DECAY_MULTIPLIERS[activity as keyof typeof IMPROVED_ACTIVITY_DECAY_MULTIPLIERS];
@@ -143,12 +143,12 @@ export const useSurvivalEnhancements = () => {
     return (multiplier || 1.0) * difficultyConfig.decayMultiplier;
   }, [config.enabled, config.difficulty]);
 
-  // Verificar si una entidad está en peligro crítico
+
   const isEntityInCriticalDanger = useCallback((entityId: string): boolean => {
     return alerts.has(entityId) && alerts.get(entityId)?.type === 'EMERGENCY';
   }, [alerts]);
 
-  // Obtener estadísticas del sistema
+
   const getSystemStats = useCallback(() => {
     const livingEntities = gameState.entities.filter(e => !e.isDead);
     const entitiesInDanger = livingEntities.filter(e => alerts.has(e.id));
@@ -166,7 +166,7 @@ export const useSurvivalEnhancements = () => {
     };
   }, [gameState.entities, alerts, isEntityInCriticalDanger, config]);
 
-  // Funciones de configuración
+
   const toggleSystem = useCallback(() => {
     setConfig(prev => ({ ...prev, enabled: !prev.enabled }));
   }, []);
@@ -184,27 +184,27 @@ export const useSurvivalEnhancements = () => {
   }, []);
 
   return {
-    // Estado
+
     config,
     alerts,
     systemStats: getSystemStats(),
     
-    // Funciones principales
+
     applyImprovedHealthSystem,
     applyImprovedSurvivalSystem,
     getImprovedActivityDecayMultiplier,
     
-    // Utilidades
+
     isEntityInCriticalDanger,
     updateSurvivalAlerts,
     
-    // Configuración
+
     toggleSystem,
     setDifficulty,
     toggleAlerts,
     toggleGracePeriod,
     
-    // Constantes para referencia
+
     thresholds: IMPROVED_CRITICAL_THRESHOLDS,
     difficultyConfigs: DIFFICULTY_CONFIGS
   };

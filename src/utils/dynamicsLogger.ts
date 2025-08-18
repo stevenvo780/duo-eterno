@@ -42,7 +42,7 @@ export class DynamicsLogger {
   private isEnabled = true;
   private lastProximityLog = 0;
 
-  // Configuración de qué logs mostrar
+
   private config = {
     showAutonomy: true,
     showLove: true,
@@ -53,7 +53,7 @@ export class DynamicsLogger {
   };
 
   constructor() {
-    // Auto-limpiar logs antiguos cada 30 segundos
+
     setInterval(() => this.cleanup(), 30000);
     
     console.log('🚀 DynamicsLogger iniciado en modo local');
@@ -64,7 +64,7 @@ export class DynamicsLogger {
       this.logs = this.logs.slice(-this.maxLogSize * 0.8);
     }
     
-    // Mantener solo snapshots de las últimas 5 minutos
+
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     this.entitySnapshots = this.entitySnapshots.filter(s => s.timestamp > fiveMinutesAgo);
     this.systemSnapshots = this.systemSnapshots.filter(s => s.timestamp > fiveMinutesAgo);
@@ -98,10 +98,10 @@ export class DynamicsLogger {
     
     this.logs.push(logEntry);
     
-    // Solo almacenar el registro, evitando spam en consola
+
   }
 
-  // === LOGS DE AUTONOMÍA ===
+
   
   logActivityChange(entityId: string, oldActivity: EntityActivity, newActivity: EntityActivity, reason: string) {
     this.log({
@@ -136,7 +136,7 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE AMOR ===
+
   
   logResonanceChange(oldResonance: number, newResonance: number, reason: string, entities: Entity[]) {
     const change = newResonance - oldResonance;
@@ -160,7 +160,7 @@ export class DynamicsLogger {
   logProximityEffect(entities: Entity[], distance: number, effect: 'BONDING' | 'SEPARATION' | 'NEUTRAL') {
     if (effect === 'NEUTRAL') return;
     
-    // Reducir spam: solo loguear cada 5 segundos
+
     const now = Date.now();
     if (!this.lastProximityLog || now - this.lastProximityLog > 5000) {
       this.log({
@@ -190,7 +190,7 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE SUPERVIVENCIA ===
+
   
   logStatsCritical(entityId: string, criticalStats: string[], stats: Entity['stats']) {
     this.log({
@@ -239,7 +239,7 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE ZONA ===
+
   
   logZoneEffect(entityId: string, zoneName: string, effects: Record<string, number>) {
     const significantEffects = Object.entries(effects).filter(([, value]) => Math.abs(value) > 1);
@@ -255,7 +255,7 @@ export class DynamicsLogger {
     });
   }
 
-  // === LOGS DE INTERACCIONES ===
+
   
   logUserInteraction(interactionType: string, entityId: string | undefined, effect: unknown) {
     this.log({
@@ -279,7 +279,7 @@ export class DynamicsLogger {
     });
   }
 
-  // === SNAPSHOTS ===
+
   
   takeEntitySnapshot(entity: Entity) {
     const snapshot: EntitySnapshot = {
@@ -307,7 +307,7 @@ export class DynamicsLogger {
     this.systemSnapshots.push(snapshot);
   }
 
-  // === ANÁLISIS Y REPORTES ===
+
   
   getRecentLogs(category?: LogEntry['category'], limit = 50): LogEntry[] {
     let filtered = this.logs;
@@ -327,7 +327,7 @@ export class DynamicsLogger {
   } {
     const snapshots = this.entitySnapshots
       .filter(s => s.entityId === entityId)
-      .slice(-20); // Últimas 20 snapshots
+      .slice(-20);
     
     const activityChanges = this.logs
       .filter(log => log.entityId === entityId && log.message.includes('cambió actividad'))
@@ -379,7 +379,7 @@ export class DynamicsLogger {
     };
   }
 
-  // === UTILIDADES ===
+
   
   private calculateDistance(entities: Entity[]): number {
     if (entities.length < 2) return 0;
@@ -390,7 +390,7 @@ export class DynamicsLogger {
     );
   }
 
-  // === CONFIGURACIÓN ===
+
   
   setConfig(config: Partial<typeof this.config>) {
     this.config = { ...this.config, ...config };
@@ -404,7 +404,7 @@ export class DynamicsLogger {
     this.isEnabled = false;
   }
 
-  // === REPORTE COMPLETO ===
+
   
   generateReport(): string {
     const loveStats = this.getLoveStats();
@@ -437,10 +437,10 @@ ${recentErrors.map(err => `- ${err.message}`).join('\n')}
   }
 }
 
-// Instancia global del logger
+
 export const dynamicsLogger = new DynamicsLogger();
 
-// Hacer disponible globalmente para debugging
+
 if (typeof window !== 'undefined') {
   (window as unknown as { dynamicsLogger: DynamicsLogger }).dynamicsLogger = dynamicsLogger;
 }

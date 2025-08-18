@@ -12,25 +12,25 @@ export const useDialogueSystem = () => {
   const { gameState, dispatch } = useGame();
   const [dialoguesLoaded, setDialoguesLoaded] = useState(false);
 
-  // Cargar datos de diálogos al inicializar
+
   useEffect(() => {
     loadDialogueData().then(() => {
       setDialoguesLoaded(true);
     });
   }, []);
 
-  // Sistema de diálogos automáticos
+
   useEffect(() => {
     if (!dialoguesLoaded) return;
 
-    // Mostrar diálogos durante animaciones de conexión
+
     if (gameState.connectionAnimation.active) {
       const animationAge = Date.now() - gameState.connectionAnimation.startTime;
-      if (animationAge < 100) { // Recién iniciado
+      if (animationAge < 100) {
         const isFading = gameState.entities.some(entity => entity.state === 'FADING');
         
         if (isFading) {
-          // Usar diálogos originales para revivals
+
           dispatch({
             type: 'SHOW_DIALOGUE',
             payload: { 
@@ -39,7 +39,7 @@ export const useDialogueSystem = () => {
             }
           });
         } else {
-          // Usar diálogos del chat para nutrición
+
           const dialogue = getNextDialogue(undefined, 'LOVE', 'SOCIALIZING');
           if (dialogue) {
             dispatch({
@@ -56,16 +56,16 @@ export const useDialogueSystem = () => {
     }
   }, [gameState.connectionAnimation, gameState.entities, dispatch, dialoguesLoaded]);
 
-  // Diálogos automáticos según actividad de las entidades
+
   useEffect(() => {
     if (!dialoguesLoaded) return;
 
     const interval = setInterval(() => {
-      // Solo mostrar diálogos si no hay animaciones activas
+
       if (!gameState.connectionAnimation.active) {
         gameState.entities.forEach(entity => {
-          // Probabilidad de hablar basada en el estado y actividad
-          const shouldSpeak = Math.random() < 0.05; // 5% de probabilidad cada segundo (aumentado para testing)
+
+          const shouldSpeak = Math.random() < 0.05;
           
           if (shouldSpeak && !entity.isDead) {
             const speaker = getSpeakerForEntity(entity.id);

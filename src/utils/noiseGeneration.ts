@@ -32,13 +32,13 @@ export class PerlinNoise {
   }
 
   private initializePermutation(seed: number): void {
-    // Crear tabla de permutación seeded
+
     this.permutation = [];
     for (let i = 0; i < 256; i++) {
       this.permutation[i] = i;
     }
 
-    // Shuffle usando seed reproducible
+
     let seedValue = seed;
     const seededRandom = () => {
       seedValue = (seedValue * 9301 + 49297) % 233280;
@@ -50,14 +50,14 @@ export class PerlinNoise {
       [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
     }
 
-    // Duplicar para evitar wrapping
+
     for (let i = 0; i < 256; i++) {
       this.permutation[i + 256] = this.permutation[i];
     }
   }
 
   private initializeGradients(): void {
-    // Vectores de gradiente 2D
+
     this.gradients = [
       { x: 1, y: 1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: -1 },
       { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }
@@ -65,7 +65,7 @@ export class PerlinNoise {
   }
 
   private fade(t: number): number {
-    // Función de fade suave: 6t^5 - 15t^4 + 10t^3
+
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
 
@@ -82,25 +82,25 @@ export class PerlinNoise {
    * Generar ruido Perlin en un punto específico
    */
   generateNoise2D(x: number, y: number): number {
-    // Coordenadas de la celda
+
     const xi = Math.floor(x) & 255;
     const yi = Math.floor(y) & 255;
 
-    // Posición relativa dentro de la celda
+
     const xf = x - Math.floor(x);
     const yf = y - Math.floor(y);
 
-    // Coordenadas suavizadas
+
     const u = this.fade(xf);
     const v = this.fade(yf);
 
-    // Hash de las esquinas
+
     const aa = this.permutation[this.permutation[xi] + yi];
     const ab = this.permutation[this.permutation[xi] + yi + 1];
     const ba = this.permutation[this.permutation[xi + 1] + yi];
     const bb = this.permutation[this.permutation[xi + 1] + yi + 1];
 
-    // Gradientes en las esquinas
+
     const x1 = this.lerp(
       this.grad(aa, xf, yf),
       this.grad(ba, xf - 1, yf),
@@ -144,7 +144,7 @@ export class PerlinNoise {
       elevationMap[y] = [];
       for (let x = 0; x < width; x++) {
         const noise = this.generateFractalNoise(x / width, y / height, config);
-        elevationMap[y][x] = (noise + 1) * 0.5; // Normalizar a 0-1
+        elevationMap[y][x] = (noise + 1) * 0.5;
       }
     }
 
@@ -274,7 +274,7 @@ export function generateDensityMap(
     for (let x = 0; x < width; x++) {
       let density = noise.generateFractalNoise(x / width, y / height, config);
       
-      // Agregar bias hacia el centro si se solicita
+
       if (centerBias) {
         const centerX = width / 2;
         const centerY = height / 2;

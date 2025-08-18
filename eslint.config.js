@@ -25,7 +25,7 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      // Detectar código no utilizado automáticamente
+
       '@typescript-eslint/no-unused-vars': ['error', { 
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
@@ -38,7 +38,7 @@ export default tseslint.config(
         args: 'after-used',
         argsIgnorePattern: '^_',
       }],
-      // Detectar funciones y expresiones no utilizadas
+
       'no-unused-expressions': 'error',
       'no-unreachable': 'error',
       'no-unused-labels': 'error',

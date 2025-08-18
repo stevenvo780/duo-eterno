@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Lista de sprites requeridos según la documentación
+
 const REQUIRED_SPRITES = [
   'barra_estadistica',
   'canvas_base',
