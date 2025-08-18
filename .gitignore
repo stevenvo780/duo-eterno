@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 artifacts*
 .playwright-mcp
+.vercel
+*__pycache__*
+*.pyc
+*venv*
