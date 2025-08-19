@@ -5,7 +5,6 @@ import { getRandomDialogue } from '../utils/dialogues';
 import { dynamicsLogger } from '../utils/dynamicsLogger';
 import type { Entity, InteractionType } from '../types';
 import StatBar from './StatBar';
-import { TRANSLATIONS } from '../constants';
 
 interface EntityPanelProps {
   entity: Entity;
@@ -40,13 +39,13 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
       const message = getRandomDialogue(
         dialogueMap[type] as keyof typeof import('../utils/dialogues').dialogues
       );
-      dynamicsLogger.logDialogue(entity.id as 'circle' | 'square', message, dialogueMap[type]);
+      dynamicsLogger.logDialogue(entity.id as 'isa' | 'stev', message, dialogueMap[type]);
 
       dispatch({
         type: 'SHOW_DIALOGUE',
         payload: {
           message,
-          speaker: entity.id as 'circle' | 'square',
+          speaker: entity.id as 'isa' | 'stev',
           duration: 3000
         }
       });
@@ -79,34 +78,52 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
     });
   };
   const getEntityIcon = (id: string): string => {
-    return id === 'circle' ? '●' : '■';
+    return id === 'isa' ? '👩' : '👨';
   };
 
   const getEntityName = (id: string): string => {
-    return TRANSLATIONS.ENTITIES[id as keyof typeof TRANSLATIONS.ENTITIES] || id;
+    return id === 'isa' ? 'Isa' : 'Stev';
   };
 
   const getActivityName = (activity: string): string => {
-    return TRANSLATIONS.ACTIVITIES[activity as keyof typeof TRANSLATIONS.ACTIVITIES] || activity;
+    const activities: Record<string, string> = {
+      'RESTING': 'Descansando',
+      'WORKING': 'Trabajando', 
+      'PLAYING': 'Jugando',
+      'EATING': 'Comiendo'
+    };
+    return activities[activity] || activity;
   };
 
   const getMoodName = (mood: string): string => {
-    return TRANSLATIONS.MOODS[mood as keyof typeof TRANSLATIONS.MOODS] || mood;
+    return mood; // Los moods ya son emojis
   };
 
   const getStatName = (stat: string): string => {
-    return TRANSLATIONS.STATS[stat as keyof typeof TRANSLATIONS.STATS] || stat;
+    const stats: Record<string, string> = {
+      'hunger': 'Hambre',
+      'sleepiness': 'Sueño',
+      'loneliness': 'Soledad',
+      'happiness': 'Felicidad',
+      'energy': 'Energía',
+      'boredom': 'Aburrimiento',
+      'money': 'Dinero',
+      'health': 'Salud'
+    };
+    return stats[stat] || stat;
   };
 
   const getMoodColor = (mood: string): string => {
     const moodColors: Record<string, string> = {
-      HAPPY: '#22c55e',
-      CONTENT: '#3b82f6',
-      CALM: '#8b5cf6',
-      EXCITED: '#f59e0b',
-      SAD: '#ef4444',
-      TIRED: '#6b7280',
-      ANXIOUS: '#f97316'
+      '😊': '#22c55e', // HAPPY/CONTENT
+      '😢': '#ef4444', // SAD
+      '😡': '#f97316', // ANGRY
+      '😌': '#3b82f6', // CALM
+      '🤩': '#a855f7', // EXCITED
+      '😑': '#6b7280', // BORED
+      '😔': '#ec4899', // LONELY
+      '😰': '#f59e0b', // ANXIOUS
+      '😴': '#64748b'  // TIRED
     };
     return moodColors[mood] || '#64748b';
   };
@@ -155,7 +172,7 @@ const EntityPanel: React.FC<EntityPanelProps> = ({ entity, onClose }) => {
         <div
           style={{
             fontSize: '28px',
-            color: entity.id === 'circle' ? '#ff6b6b' : '#4ecdc4',
+            color: entity.id === 'isa' ? '#ff6b9d' : '#4ade80',
             filter: entity.isDead ? 'grayscale(100%) opacity(0.5)' : 'none'
           }}
         >

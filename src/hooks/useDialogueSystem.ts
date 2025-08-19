@@ -146,7 +146,7 @@ export const useDialogueSystem = () => {
     const { type: interactionType, entityId } = gameState.connectionAnimation;
 
     // The INTERACT action should have the entityId in its payload
-    const targetEntityId = (entityId as 'circle' | 'square') || 'circle'; // Fallback for safety
+    const targetEntityId = (entityId as 'isa' | 'stev') || 'isa'; // Fallback for safety
 
     const dialogue = getDialogueForInteraction(interactionType, targetEntityId);
 

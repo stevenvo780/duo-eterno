@@ -127,7 +127,6 @@ export const useMapNavigation = ({
 
   // Controles de mouse para drag
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    console.log('🗺️ Navigation: handleMouseDown called');
     setState(prev => ({ ...prev, isDragging: true }));
     lastMousePos.current = { x: e.clientX, y: e.clientY };
   }, []);

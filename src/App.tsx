@@ -17,7 +17,6 @@ import { safeLoad, markIntroAsSeen } from './utils/persistence';
 
 const GameContent: React.FC = React.memo(() => {
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  // Mostrar la intro solo si no existe partida guardada O si existe pero no ha visto la intro
   const [showIntro, setShowIntro] = useState<boolean>(() => {
     const savedGame = safeLoad();
     return !savedGame || !savedGame.hasSeenIntro;
@@ -36,7 +35,6 @@ const GameContent: React.FC = React.memo(() => {
     logGeneral('Aplicación Dúo Eterno iniciada', { debugMode: gameConfig.debugMode });
   }, []);
 
-  // Manejar redimensionado de ventana
   React.useEffect(() => {
     const handleResize = () => {
       setWindowSize({
@@ -49,18 +47,18 @@ const GameContent: React.FC = React.memo(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleEntitySelect = React.useCallback((entity: Entity) => {
-    setSelectedEntityId(entity.id);
-  }, []);
-
-  const handleEntitySelectString = React.useCallback((entityId: string | null) => {
-    setSelectedEntityId(entityId);
-  }, []);
-
-  const handleIntroComplete = React.useCallback(() => {
+  const handleIntroComplete = () => {
     setShowIntro(false);
     markIntroAsSeen();
-  }, []);
+  };
+
+  const handleEntitySelect = (entity: Entity) => {
+    setSelectedEntityId(entity.id);
+  };
+
+  const handleEntitySelectString = (entityId: string | null) => {
+    setSelectedEntityId(entityId);
+  };
 
   return (
     <div
@@ -74,7 +72,6 @@ const GameContent: React.FC = React.memo(() => {
         fontFamily: 'system-ui, sans-serif'
       }}
     >
-      {/* Narrativa de introducción */}
       {showIntro && <IntroScene onComplete={handleIntroComplete} />}
 
       <div

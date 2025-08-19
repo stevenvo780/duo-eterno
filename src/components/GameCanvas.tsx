@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { useGame } from '../hooks/useGame';
 import { useRenderer } from '../hooks/useRenderer';
 import { useDayNightCycle } from '../hooks/useDayNightCycle';
-import { DayNightClock } from './DayNightClock';
 import { mapRenderer, type Viewport, type SceneData } from '../utils/rendering/MapRenderer';
 import { assetManager } from '../utils/modernAssetManager';
 import { entityAnimationRenderer } from '../utils/rendering/EntityAnimationRenderer';

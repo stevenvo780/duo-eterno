@@ -129,7 +129,7 @@ export const getEmotionForActivity = (activity: string): string => {
 };
 
 export const getSpeakerForEntity = (entityId: string): 'ISA' | 'STEV' => {
-  return entityId === 'circle' ? 'ISA' : 'STEV';
+  return entityId === 'isa' ? 'ISA' : 'STEV';
 };
 // Mapeo de tipos de interacción a emociones/actividades del chat
 export const getDialogueForInteraction = (

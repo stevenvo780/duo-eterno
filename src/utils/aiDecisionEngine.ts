@@ -20,14 +20,14 @@ interface PersonalityProfile {
   energyEfficiency: number;
 }
 
-const ENTITY_PERSONALITIES: Record<'circle' | 'square', PersonalityProfile> = {
-  circle: {
+const ENTITY_PERSONALITIES: Record<'isa' | 'stev', PersonalityProfile> = {
+  isa: {
     socialPreference: 0.7,
     activityPersistence: 0.6,
     riskTolerance: 0.4,
     energyEfficiency: 0.5
   },
-  square: {
+  stev: {
     socialPreference: 0.5,
     activityPersistence: 0.8,
     riskTolerance: 0.6,
@@ -69,11 +69,10 @@ interface ActivitySession {
 const activitySessions = new Map<string, ActivitySession>();
 
 const getPersonalityProfile = (entityId: string): PersonalityProfile => {
-  // Default to 'circle' personality if entityId doesn't match known types
-  if (entityId === 'square') {
-    return ENTITY_PERSONALITIES.square;
+  if (entityId === 'stev') {
+    return ENTITY_PERSONALITIES.stev;
   }
-  return ENTITY_PERSONALITIES.circle;
+  return ENTITY_PERSONALITIES.isa;
 };
 
 /**

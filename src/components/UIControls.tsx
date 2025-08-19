@@ -8,7 +8,6 @@ import EntityPanel from './EntityPanel';
 import StatBar from './StatBar';
 import Spinner from './Spinner';
 import type { InteractionType } from '../types';
-import { TRANSLATIONS } from '../constants';
 import { gameConfig } from '../config/gameConfig';
 
 interface UIControlsProps {
@@ -83,7 +82,7 @@ const UIControls: React.FC<UIControlsProps> = ({
       if (dialogue) {
         // Log para análisis
         dynamicsLogger.logDialogue(
-          entityId as 'circle' | 'square',
+          entityId as 'isa' | 'stev',
           dialogue.text,
           type.toLowerCase()
         );
@@ -92,7 +91,7 @@ const UIControls: React.FC<UIControlsProps> = ({
           type: 'SHOW_DIALOGUE',
           payload: {
             message: dialogue.text,
-            speaker: entityId as 'circle' | 'square',
+            speaker: entityId as 'isa' | 'stev',
             entityId: entityId,
             emotion: dialogue.emotion,
             position: { x: entity.position.x, y: entity.position.y },
@@ -195,11 +194,11 @@ const UIControls: React.FC<UIControlsProps> = ({
   };
 
   const getEntityIcon = (id: string): string => {
-    return id === 'circle' ? '●' : '■';
+    return id === 'isa' ? '👩' : '👨';
   };
 
   const getEntityName = (id: string): string => {
-    return TRANSLATIONS.ENTITIES[id as keyof typeof TRANSLATIONS.ENTITIES] || id;
+    return id === 'isa' ? 'Isa' : 'Stev';
   };
 
   const toggleDebugMode = () => {

@@ -412,8 +412,8 @@ export class DynamicsLogger {
 
   generateReport(): string {
     const loveStats = this.getLoveStats();
-    const circleStats = this.getEntityStats('circle');
-    const squareStats = this.getEntityStats('square');
+    const isaStats = this.getEntityStats('isa');
+    const stevStats = this.getEntityStats('stev');
     const recentErrors = this.getRecentLogs().filter(log => log.level === 'ERROR');
 
     return `
@@ -426,12 +426,12 @@ export class DynamicsLogger {
 - Tiempo máximo juntos: ${(loveStats.maxTogetherTime / 1000).toFixed(1)}s
 
 🤖 AUTONOMÍA DE AGENTES:
-- Círculo: ${circleStats.activityChanges} cambios de actividad, ${circleStats.moodChanges} cambios de humor
-- Cuadrado: ${squareStats.activityChanges} cambios de actividad, ${squareStats.moodChanges} cambios de humor
+- Isa: ${isaStats.activityChanges} cambios de actividad, ${isaStats.moodChanges} cambios de humor
+- Stev: ${stevStats.activityChanges} cambios de actividad, ${stevStats.moodChanges} cambios de humor
 
 🏠 SUPERVIVENCIA:
-- Salud promedio Círculo: ${circleStats.avgHealth.toFixed(1)}
-- Salud promedio Cuadrado: ${squareStats.avgHealth.toFixed(1)}
+- Salud promedio Isa: ${isaStats.avgHealth.toFixed(1)}
+- Salud promedio Stev: ${stevStats.avgHealth.toFixed(1)}
 
 ⚠️ ERRORES RECIENTES: ${recentErrors.length}
 ${recentErrors.map(err => `- ${err.message}`).join('\n')}
