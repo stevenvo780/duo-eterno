@@ -35,14 +35,16 @@ export const NavigableGameCanvas: React.FC<NavigableGameCanvasProps> = ({
   const worldSize = gameState.worldSize;
   
   const navigation = useMapNavigation({
-    initialX: worldSize.width / 2, // Center on unified world size
-    initialY: worldSize.height / 2,
+    initialX: worldSize.width / 2 - width / 2, // Center properly
+    initialY: worldSize.height / 2 - height / 2,
     initialZoom: 1,
     minZoom: 0.2,
     maxZoom: 4,
-    mapWidth: worldSize.width, // Use unified world bounds
+    mapWidth: worldSize.width,
     mapHeight: worldSize.height,
-    panSpeed: 12
+    panSpeed: 12,
+    canvasWidth: width,
+    canvasHeight: height
   });
 
   const entityDrag = useEntityDrag();
@@ -120,56 +122,23 @@ export const NavigableGameCanvas: React.FC<NavigableGameCanvasProps> = ({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!canvasRef.current) return;
 
-    // Prevent default to avoid any browser drag behavior
-    e.preventDefault();
-
-    // First check if we're clicking on an entity that can be dragged
-    const entity = entityDrag.checkEntityAtPosition(
-      e.clientX, e.clientY, canvasRef.current, 
-      navigation.state.zoom, navigation.state.panX, navigation.state.panY
-    );
-
-    if (entity) {
-      // For manual control entities, try to start drag
-      if (entity.controlMode === 'manual') {
-        const success = entityDrag.startDrag(
-          entity, e.clientX, e.clientY, canvasRef.current,
-          navigation.state.zoom, navigation.state.panX, navigation.state.panY
-        );
-        if (success) {
-          return; // Don't start map navigation
-        }
-      }
-      // For any entity (including autonomous), prevent map navigation in entity area
-      return; // Don't start map navigation near entities
-    }
-
-    // If no entity nearby, handle map navigation
+    console.log('🖱️ Mouse down event received');
+    
+    // Simplify: always start navigation, no entity interference
     navigation.handleMouseDown(e);
-  }, [entityDrag, navigation]);
+  }, [navigation]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!canvasRef.current) return;
 
-    if (entityDrag.dragState.isDragging) {
-      // Update entity drag
-      entityDrag.updateDrag(
-        e.clientX, e.clientY, canvasRef.current,
-        navigation.state.zoom, navigation.state.panX, navigation.state.panY
-      );
-    } else {
-      // Handle map navigation
-      navigation.handleMouseMove(e);
-    }
-  }, [entityDrag, navigation]);
+    // Simplify: only handle navigation
+    navigation.handleMouseMove(e);
+  }, [navigation]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    if (entityDrag.dragState.isDragging) {
-      entityDrag.endDrag();
-    } else {
-      navigation.handleMouseUp(e);
-    }
-  }, [entityDrag, navigation]);
+    // Simplify: only handle navigation
+    navigation.handleMouseUp(e);
+  }, [navigation]);
 
   const handleEntityClick = useCallback((entity: Entity) => {
     // Only trigger entity click if we're not dragging
@@ -185,8 +154,7 @@ export const NavigableGameCanvas: React.FC<NavigableGameCanvasProps> = ({
         width, 
         height, 
         overflow: 'hidden',
-        cursor: entityDrag.dragState.isDragging ? 'grabbing' : 
-                navigation.state.isDragging ? 'grabbing' : 'grab'
+        cursor: navigation.state.isDragging ? 'grabbing' : 'grab'
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

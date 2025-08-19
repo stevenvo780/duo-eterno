@@ -68,8 +68,12 @@ interface ActivitySession {
 
 const activitySessions = new Map<string, ActivitySession>();
 
-const getPersonalityProfile = (entityId: 'circle' | 'square'): PersonalityProfile => {
-  return ENTITY_PERSONALITIES[entityId];
+const getPersonalityProfile = (entityId: string): PersonalityProfile => {
+  // Default to 'circle' personality if entityId doesn't match known types
+  if (entityId === 'square') {
+    return ENTITY_PERSONALITIES.square;
+  }
+  return ENTITY_PERSONALITIES.circle;
 };
 
 /**

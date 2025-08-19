@@ -37,7 +37,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   const { getSkyColor, getLightIntensity, phase, currentTime } = useDayNightCycle();
   useAnimationSystem();
 
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = useState(true); // TEMPORAL: forzar assetsLoaded para debug
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [rendererInitialized, setRendererInitialized] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
@@ -62,11 +62,13 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   }), [panX, panY, width, height, zoom]);
 
   useEffect(() => {
+    console.log('🎬 GameCanvas: useEffect iniciando, initializationStarted:', initializationStarted.current);
     if (initializationStarted.current) return; // Evita reiniciar carga
     initializationStarted.current = true;
     
-    const loadAssets = async () => {
+    const initializeEverything = async () => {
       try {
+        // Paso 1: Cargar assets
         setLoadingProgress(10);
         console.log('🎨 Iniciando carga de assets...');
 
@@ -79,45 +81,30 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
           'environmental_objects'
         ]);
         
-        setLoadingProgress(60);
+        setLoadingProgress(40);
         console.log('🎯 Assets por carpetas completados, iniciando precarga adicional...');
 
         await assetManager.preloadEssentialAssets();
         
-        setLoadingProgress(80);
+        setLoadingProgress(60);
         console.log('🎯 Precarga adicional completada, precargando animaciones...');
 
         await entityAnimationRenderer.preloadCommonAnimations();
 
-        setLoadingProgress(90);
-        console.log('🎭 Animaciones precargadas, obteniendo stats...');
-
+        setLoadingProgress(70);
+        console.log('🎭 Animaciones precargadas, marcando assets como cargados...');
         console.log('✅ Assets cargados:', assetManager.getStats());
-        setLoadingProgress(100);
-        console.log('🎯 Marcando assets como cargados...');
         setAssetsLoaded(true);
         
-      } catch (error) {
-        console.error('❌ Error cargando assets:', error);
-        setAssetsLoaded(true); // Continuar con modo fallback
-      }
-    };
-
-    loadAssets();
-  }, []);
-
-  useEffect(() => {
-    if (!assetsLoaded || rendererInitialized) return;
-    
-    const initializeRenderer = async () => {
-      try {
-        console.log('🎬 Inicializando renderer...');
+        // Paso 2: Inicializar renderer
+        setLoadingProgress(80);
+        console.log('� GameCanvas: Inicializando renderer...');
         
         let zones = gameState.zones;
         let mapElements = gameState.mapElements;
         
         if (zones.length === 0) {
-          console.log('🏗️ Generando zonas por defecto...');
+          console.log('🏗️ GameCanvas: Generando zonas por defecto...');
           zones = createDefaultZones();
           mapElements = createDefaultMapElements();
           
@@ -127,7 +114,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         }
         
         const initialData: SceneData = {
-          terrainTiles: gameState.terrainTiles, // F3: Use actual terrain tiles from unified generation
+          terrainTiles: gameState.terrainTiles || [], // F3: Use actual terrain tiles from unified generation
           roads: [], // F3: Start with empty roads
           zones,
           mapElements,
@@ -135,23 +122,34 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
           worldSize: { width: 2000, height: 1500 } // F3: Dynamic world size
         };
         
+        console.log('🎯 GameCanvas: Inicializando mapRenderer con datos:', {
+          terrainTiles: initialData.terrainTiles.length,
+          zones: initialData.zones.length,
+          mapElements: initialData.mapElements.length,
+          entities: initialData.entities.length
+        });
+        
         await mapRenderer.initialize(initialData);
         
+        setLoadingProgress(100);
         setRendererInitialized(true);
-        console.log('✅ Renderer inicializado');
+        console.log('✅ GameCanvas: Renderer inicializado correctamente');
         
       } catch (error) {
-        console.error('❌ Error inicializando renderer:', error);
+        console.error('❌ Error en inicialización:', error);
+        // Forzar inicialización en caso de error para evitar pantalla de carga infinita
+        setAssetsLoaded(true);
+        setRendererInitialized(true);
       }
     };
 
-    initializeRenderer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetsLoaded, rendererInitialized, dispatch, gameState.mapSeed]); // Only re-initialize when essential data changes
+    initializeEverything();
+  }, []); // ✅ VACÍO - solo ejecuta UNA VEZ al montar el componente
 
   const renderScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      if (!assetsLoaded || !rendererInitialized) {
+      if (!rendererInitialized) {
+        console.log('🎬 GameCanvas.renderScene: renderer no inicializado, mostrando pantalla de carga');
         ctx.fillStyle = getSkyColor();
         ctx.fillRect(0, 0, width, height);
         
@@ -159,7 +157,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         ctx.font = '18px system-ui';
         ctx.textAlign = 'center';
         ctx.fillText(
-          `Inicializando sistema profesional... ${loadingProgress}%`,
+          `Inicializando sistema de renderizado... ${loadingProgress}%`,
           width / 2,
           height / 2
         );
@@ -167,6 +165,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         return;
       }
 
+      // console.log('🎨 GameCanvas.renderScene: renderizando mapa completo'); // Comentado para reducir spam de logs
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(-panX, -panY);
@@ -181,7 +180,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
       
       ctx.restore();
     },
-    [assetsLoaded, rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height, zoom, panX, panY]
+    [rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height, zoom, panX, panY]
   );
 
   const updateFPS = useCallback(() => {
@@ -212,16 +211,15 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    if (assetsLoaded) {
-      animate();
-    }
+    // Comenzar animación inmediatamente - renderScene manejará los estados internamente
+    animate();
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [assetsLoaded, shouldRender, renderScene, updateFPS]);
+  }, [assetsLoaded, rendererInitialized]); // ✅ Solo estados, no funciones
 
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onEntityClick || !canvasRef.current) return;
@@ -248,7 +246,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
     mapRenderer.toggleDebugMode();
   }, [debugMode]);
 
-  if (!assetsLoaded) {
+  if (!rendererInitialized) {
     return (
       <div style={{ 
         display: 'flex', 
@@ -263,10 +261,10 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
       }}>
         <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🎨</div>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem', fontWeight: 'bold' }}>
-          Sistema de Renderizado Profesional
+          Inicializando Renderer
         </div>
         <div style={{ fontSize: '1rem', marginBottom: '1.5rem', opacity: 0.9 }}>
-          Cargando assets y configurando tiles...
+          Configurando sistema de renderizado...
         </div>
         <div style={{ 
           width: '300px', 
@@ -287,11 +285,6 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         </div>
         <div style={{ fontSize: '1rem', marginTop: '1rem', opacity: 0.8 }}>
           {loadingProgress}% completado
-        </div>
-        <div style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.6 }}>
-          {loadingProgress < 60 ? 'Cargando assets...' : 
-           loadingProgress < 80 ? 'Inicializando terreno...' : 
-           loadingProgress < 95 ? 'Generando objetos...' : 'Finalizando...'}
         </div>
       </div>
     );
@@ -331,7 +324,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         border: '1px solid rgba(255,255,255,0.2)'
       }}>
         <div>🎨 Assets: {assetManager.getStats().totalLoaded}</div>
-        <div>🏗️ Objetos: {sceneData.mapElements.length}</div>
+        <div>� Tiles: {sceneData.terrainTiles.length}</div>
         <div>📊 FPS: {fpsCounter.current.fps}</div>
         <div>🎛️ Zoom: {zoom.toFixed(1)}x</div>
         <div>📍 Pos: {Math.round(panX)}, {Math.round(panY)}</div>

@@ -137,8 +137,8 @@ export const useEntityDrag = () => {
       );
       
       if (distance < detectionRadius && distance < closestDistance) {
-        // Prioritize manual control entities or allow clicking on any entity
-        if (entity.controlMode === 'manual' || !closestEntity) {
+        // Only return entities in manual control mode for dragging
+        if (entity.controlMode === 'manual') {
           closestEntity = entity;
           closestDistance = distance;
         }

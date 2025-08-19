@@ -87,26 +87,28 @@ export class EntityAnimationRenderer {
   private getAnimationKey(entity: Entity): string {
     // Mapear IDs de entidades a nombres de animaciones
     const entityMap: Record<string, string> = {
-      'circle': 'circulo',
-      'square': 'square'
+      'isa': 'women',
+      'stev': 'women'
     };
     
     const entityType = entityMap[entity.id] || entity.id;
     let animState = 'happy';
     
-    // Determinar estado de animación
+    // Determinar estado de animación basado en emojis
     if (entity.stats?.health !== undefined && entity.stats.health <= 10) {
       animState = 'dying';
     } else if (entity.mood) {
       switch (entity.mood) {
-        case 'SAD':
-        case 'LONELY':
-        case 'BORED':
+        case '😢': // SAD
+        case '😔': // LONELY  
+        case '😑': // BORED
+        case '😰': // ANXIOUS
           animState = 'sad';
           break;
-        case 'HAPPY':
-        case 'EXCITED':
-        case 'CONTENT':
+        case '😊': // HAPPY/CONTENT
+        case '🤩': // EXCITED
+        case '😌': // CALM
+        case '😴': // TIRED
         default:
           animState = 'happy';
           break;
@@ -292,7 +294,7 @@ export class EntityAnimationRenderer {
     const pulse = 1 + Math.sin(time / pulseSpeed) * pulseAmount;
     const adjustedSize = size * pulse;
     
-    if (entity.id === 'circle') {
+    if (entity.id === 'isa') {
       ctx.fillStyle = this.getEntityColor(entity);
       ctx.beginPath();
       ctx.arc(x, y, adjustedSize / 2, 0, 2 * Math.PI);
@@ -300,7 +302,7 @@ export class EntityAnimationRenderer {
       ctx.strokeStyle = '#333';
       ctx.lineWidth = 2;
       ctx.stroke();
-    } else if (entity.id === 'square') {
+    } else if (entity.id === 'stev') {
       ctx.fillStyle = this.getEntityColor(entity);
       ctx.fillRect(x - adjustedSize / 2, y - adjustedSize / 2, adjustedSize, adjustedSize);
       ctx.strokeStyle = '#333';
@@ -347,17 +349,17 @@ export class EntityAnimationRenderer {
         case 'HAPPY':
         case 'EXCITED':
         case 'CONTENT':
-          return entity.id === 'circle' ? '#4ade80' : '#60a5fa'; // Verde/Azul vibrante
+          return entity.id === 'isa' ? '#ff6b9d' : '#4ade80'; // Rosa/Verde vibrante
         case 'SAD':
         case 'LONELY':
         case 'BORED':
           return '#f87171'; // Rojo
         default:
-          return entity.id === 'circle' ? '#10b981' : '#3b82f6'; // Verde/Azul normal
+          return entity.id === 'isa' ? '#e91e63' : '#10b981'; // Rosa/Verde normal
       }
     }
 
-    return entity.id === 'circle' ? '#10b981' : '#3b82f6'; // Verde/Azul por defecto
+    return entity.id === 'isa' ? '#e91e63' : '#10b981'; // Rosa/Verde por defecto
   }
 
   /**

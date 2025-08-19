@@ -26,7 +26,7 @@ interface DialogueState {
   message: string;
   startTime: number;
   duration: number;
-  speaker?: 'circle' | 'square' | 'system';
+  speaker?: 'isa' | 'stev' | 'system';
   entityId?: string;
   emotion?: string;
   position?: { x: number; y: number };
@@ -61,7 +61,7 @@ type GameAction =
       payload: {
         message: string;
         duration?: number;
-        speaker?: 'circle' | 'square' | 'system';
+        speaker?: 'isa' | 'stev' | 'system';
         entityId?: string;
         emotion?: string;
         position?: { x: number; y: number };
@@ -96,7 +96,7 @@ const initialConversationState: ConversationState = {
 const initialGameState: GameState = {
   entities: [
     {
-      id: 'circle',
+      id: 'isa',
       position: { x: gameConfig.entityCircleInitialX, y: gameConfig.entityCircleInitialY },
       state: 'idle',
       activity: 'RESTING',
@@ -115,14 +115,14 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: 0,
       colorHue: 200,
-      mood: 'CONTENT',
+      mood: '😊',
       thoughts: [],
       isDead: false,
       controlMode: 'autonomous',
       isBeingDragged: false
     },
     {
-      id: 'square',
+      id: 'stev',
       position: { x: gameConfig.entitySquareInitialX, y: gameConfig.entitySquareInitialY },
       state: 'idle',
       activity: 'RESTING',
@@ -141,7 +141,7 @@ const initialGameState: GameState = {
       lastInteraction: Date.now(),
       pulsePhase: Math.PI,
       colorHue: 300,
-      mood: 'CONTENT',
+      mood: '😊',
       thoughts: [],
       isDead: false,
       controlMode: 'autonomous',

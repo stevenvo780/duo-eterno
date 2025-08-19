@@ -34,6 +34,8 @@ interface UseMapNavigationProps {
   mapWidth?: number;
   mapHeight?: number;
   panSpeed?: number;
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 export const useMapNavigation = ({
@@ -44,7 +46,9 @@ export const useMapNavigation = ({
   maxZoom = 3,
   mapWidth = 2000,
   mapHeight = 1500,
-  panSpeed = 5
+  panSpeed = 5,
+  canvasWidth = 800,
+  canvasHeight = 600
 }: UseMapNavigationProps = {}): NavigationControls => {
   
   const [state, setState] = useState<NavigationState>({
@@ -92,8 +96,8 @@ export const useMapNavigation = ({
       }
 
       // Limitar panning dentro de los límites del mapa
-      newX = Math.max(0, Math.min(mapWidth - 400 / prev.zoom, newX));
-      newY = Math.max(0, Math.min(mapHeight - 300 / prev.zoom, newY));
+      newX = Math.max(0, Math.min(mapWidth - canvasWidth / prev.zoom, newX));
+      newY = Math.max(0, Math.min(mapHeight - canvasHeight / prev.zoom, newY));
 
       return {
         ...prev,
@@ -123,6 +127,7 @@ export const useMapNavigation = ({
 
   // Controles de mouse para drag
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    console.log('🗺️ Navigation: handleMouseDown called');
     setState(prev => ({ ...prev, isDragging: true }));
     lastMousePos.current = { x: e.clientX, y: e.clientY };
   }, []);
@@ -138,8 +143,8 @@ export const useMapNavigation = ({
       let newY = prev.panY - deltaY;
 
       // Limitar panning dentro de los límites del mapa
-      newX = Math.max(0, Math.min(mapWidth - 400 / prev.zoom, newX));
-      newY = Math.max(0, Math.min(mapHeight - 300 / prev.zoom, newY));
+      newX = Math.max(0, Math.min(mapWidth - canvasWidth / prev.zoom, newX));
+      newY = Math.max(0, Math.min(mapHeight - canvasHeight / prev.zoom, newY));
 
       return {
         ...prev,
@@ -165,15 +170,15 @@ export const useMapNavigation = ({
       const newZoom = Math.max(minZoom, Math.min(maxZoom, prev.zoom * zoomFactor));
       
       // Ajustar pan para mantener el centro aproximadamente en el mismo lugar
-      const centerX = prev.panX + (400 / prev.zoom) / 2;
-      const centerY = prev.panY + (300 / prev.zoom) / 2;
+      const centerX = prev.panX + (canvasWidth / prev.zoom) / 2;
+      const centerY = prev.panY + (canvasHeight / prev.zoom) / 2;
       
-      let newX = centerX - (400 / newZoom) / 2;
-      let newY = centerY - (300 / newZoom) / 2;
+      let newX = centerX - (canvasWidth / newZoom) / 2;
+      let newY = centerY - (canvasHeight / newZoom) / 2;
       
       // Limitar panning
-      newX = Math.max(0, Math.min(mapWidth - 400 / newZoom, newX));
-      newY = Math.max(0, Math.min(mapHeight - 300 / newZoom, newY));
+      newX = Math.max(0, Math.min(mapWidth - canvasWidth / newZoom, newX));
+      newY = Math.max(0, Math.min(mapHeight - canvasHeight / newZoom, newY));
       
       return {
         ...prev,
@@ -211,10 +216,10 @@ export const useMapNavigation = ({
   const moveToPosition = useCallback((x: number, y: number) => {
     setState(prev => ({
       ...prev,
-      panX: x - (400 / prev.zoom) / 2,
-      panY: y - (300 / prev.zoom) / 2
+      panX: x - (canvasWidth / prev.zoom) / 2,
+      panY: y - (canvasHeight / prev.zoom) / 2
     }));
-  }, []);
+  }, [canvasWidth, canvasHeight]);
 
   return {
     state,

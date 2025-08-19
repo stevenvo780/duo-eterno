@@ -37,16 +37,16 @@ export type EntityStateType =
   | 'dead'
   | 'fading';
 export type MoodType =
-  | 'HAPPY'
-  | 'SAD'
-  | 'ANGRY'
-  | 'CALM'
-  | 'EXCITED'
-  | 'BORED'
-  | 'LONELY'
-  | 'CONTENT'
-  | 'ANXIOUS'
-  | 'TIRED';
+  | '😊' // HAPPY
+  | '😢' // SAD  
+  | '😡' // ANGRY
+  | '😌' // CALM
+  | '🤩' // EXCITED
+  | '😑' // BORED
+  | '😔' // LONELY
+  | '😊' // CONTENT
+  | '😰' // ANXIOUS
+  | '😴'; // TIRED
 
 export interface Position {
   x: number;
@@ -65,7 +65,7 @@ export interface EntityStats {
 }
 
 export interface Entity {
-  id: 'circle' | 'square';
+  id: 'isa' | 'stev';
   position: Position;
   state: EntityStateType;
   activity: ActivityType;

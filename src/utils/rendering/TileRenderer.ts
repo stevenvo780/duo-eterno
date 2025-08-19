@@ -88,6 +88,11 @@ export class TileRenderer {
             tags: ['grass', 'ground']
           }
         };
+        
+        // Register asset in the main assetManager so it can be found by getAssetById
+        // For now, store it locally until we can properly integrate with assetManager
+        // assetManager.addAsset(assetPath, asset);
+        
         resolve(asset);
       };
       img.onerror = () => resolve(null);
@@ -131,7 +136,7 @@ export class TileRenderer {
           terrainTile.y >= 0 && terrainTile.y < height) {
         tiles[terrainTile.y][terrainTile.x] = {
           tileId: terrainTile.assetId,
-          assetPath: terrainTile.assetId, // Use direct assetId since it's already the full path
+          assetPath: `/assets/terrain/base/${terrainTile.assetId}.png`, // Build full path for potential fallback use
           x: terrainTile.x * tileSize,
           y: terrainTile.y * tileSize,
           variant: terrainTile.variant?.toString()
@@ -301,20 +306,41 @@ export class TileRenderer {
     // Force pixel-perfect rendering
     ctx.imageSmoothingEnabled = false;
     
+    // console.log(`🎨 TileRenderer.renderTerrain: Iniciando render - viewport: ${viewportX},${viewportY} size: ${viewportWidth}x${viewportHeight} zoom: ${zoom}`); // Comentado para reducir spam
+    
     // Calcular qué tiles están visibles
     const startTileX = Math.floor(viewportX / (TILE_SIZE * zoom));
     const endTileX = Math.ceil((viewportX + viewportWidth) / (TILE_SIZE * zoom));
     const startTileY = Math.floor(viewportY / (TILE_SIZE * zoom));
     const endTileY = Math.ceil((viewportY + viewportHeight) / (TILE_SIZE * zoom));
+    
+    // console.log(`🎨 TileRenderer.renderTerrain: Rango de tiles visibles - X: ${startTileX} to ${endTileX}, Y: ${startTileY} to ${endTileY}`); // Comentado para reducir spam
+
+    // console.log(`🎨 TileRenderer.renderTerrain: Rango de tiles visibles - X: ${startTileX} to ${endTileX}, Y: ${startTileY} to ${endTileY}`); // Comentado para reducir spam
+
+    let tilesRendered = 0;
+    let tilesSkipped = 0;
+    let assetsNotFound = 0;
 
     // Renderizar solo tiles visibles para optimización
     for (let tileY = Math.max(0, startTileY); tileY < Math.min(terrainMap.height, endTileY); tileY++) {
       for (let tileX = Math.max(0, startTileX); tileX < Math.min(terrainMap.width, endTileX); tileX++) {
         const tile = terrainMap.tiles[tileY]?.[tileX];
-        if (!tile || !tile.assetPath) continue;
+        if (!tile || !tile.tileId || tile.tileId === 'empty') {
+          tilesSkipped++;
+          continue;
+        }
 
-        const asset = assetManager.getAssetByPath(tile.assetPath);
-        if (!asset?.image) continue;
+        const asset = assetManager.getAssetById(tile.tileId) || this.getTerrainAssetById(tile.tileId);
+        if (!asset?.image) {
+          assetsNotFound++;
+          console.warn(`⚠️ TileRenderer: Asset no encontrado para tileId: ${tile.tileId} - terrainAssets: ${this.terrainAssets.length}`);
+          // Debug: mostrar uno de los terrainAssets disponibles
+          if (assetsNotFound === 1 && this.terrainAssets.length > 0) {
+            // console.log(`🔍 TileRenderer: Primer terrainAsset ejemplo:`, this.terrainAssets[0]);
+          }
+          continue;
+        }
 
         const screenX = tile.x * zoom - viewportX;
         const screenY = tile.y * zoom - viewportY;
@@ -327,8 +353,12 @@ export class TileRenderer {
           tileSize,
           tileSize
         );
+        
+        tilesRendered++;
       }
     }
+    
+    // console.log(`🎨 TileRenderer.renderTerrain: Render completado - rendered: ${tilesRendered}, skipped: ${tilesSkipped}, assetsNotFound: ${assetsNotFound}`); // Comentado para reducir spam
   }
 
   /**
@@ -358,6 +388,27 @@ export class TileRenderer {
     // Use index-based selection instead of name heuristics
     const index = Math.floor(noiseValue * this.terrainAssets.length);
     return this.terrainAssets[Math.min(index, this.terrainAssets.length - 1)];
+  }
+
+  /**
+   * Método auxiliar para obtener assets de terrain desde el TileRenderer
+   */
+  private getTerrainAssetById(assetId: string): { image: HTMLImageElement } | null {
+    const assetPath = this.terrainAssets.find((asset: Asset) => {
+      const fileName = asset.path.split('/').pop()?.replace('.png', '');
+      return fileName === assetId;
+    });
+    
+    // Debug extendido - COMENTADO PARA REDUCIR SPAM
+    // console.log(`🔍 TileRenderer.getTerrainAssetById: buscando ${assetId}`);
+    // console.log(`🔍 TileRenderer.getTerrainAssetById: terrainAssets disponibles:`, this.terrainAssets.map(a => a.path.split('/').pop()?.replace('.png', '')));
+    // console.log(`🔍 TileRenderer.getTerrainAssetById: encontrado:`, assetPath ? assetPath.path : 'null');
+    
+    if (assetPath?.image) {
+      return { image: assetPath.image };
+    }
+    
+    return null;
   }
 
   /**
