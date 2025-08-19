@@ -2,10 +2,12 @@
  * Renderizador principal: compone tiles, objetos, entidades y efectos.
  */
 
-import { tileRenderer, type TerrainMap } from './TileRenderer';
+import { tileRenderer, TileRenderer, type TerrainMap } from './TileRenderer';
 import { objectRenderer } from './ObjectRenderer';
 import { entityAnimationRenderer } from './EntityAnimationRenderer';
-import type { Zone, MapElement, Entity } from '../../types';
+import { RoadRenderer } from './RoadRenderer'; // F3: Import RoadRenderer
+import type { Zone, MapElement, Entity, TerrainTile, WorldSize, RoadPolyline } from '../../types';
+import { telemetry } from '../telemetry'; // F4: Add telemetry
 
 export interface Viewport {
   x: number;
@@ -24,18 +26,24 @@ export interface RenderSettings {
 }
 
 export interface SceneData {
-  terrainMap: TerrainMap;
+  terrainMap?: TerrainMap; // Optional - can be built from terrainTiles
+  terrainTiles: TerrainTile[]; // New unified source
+  roads: RoadPolyline[]; // F3: Road polylines
   zones: Zone[];
   mapElements: MapElement[];
   entities: Entity[];
+  worldSize: WorldSize; // New unified world bounds
 }
 
 export class MapRenderer {
   private terrainMap: TerrainMap | null = null;
+  private roadRenderer: RoadRenderer; // F3: Road renderer instance
   private settings: RenderSettings;
   private initialized = false;
+  private worldBounds: WorldSize = { width: 2000, height: 1500 }; // Default fallback
 
   constructor() {
+    this.roadRenderer = new RoadRenderer(); // F3: Initialize road renderer
     this.settings = {
       enableShadows: true,
       enableLighting: true,
@@ -46,23 +54,66 @@ export class MapRenderer {
   }
 
   /**
+   * Set world bounds for navigation and rendering
+   */
+  public setWorldBounds(bounds: WorldSize): void {
+    this.worldBounds = bounds;
+    console.log('🌍 MapRenderer: World bounds set to', bounds);
+  }
+
+  /**
+   * Get current world bounds
+   */
+  public getWorldBounds(): WorldSize {
+    return this.worldBounds;
+  }
+
+  /**
    * Inicializa el renderer con los datos de la escena
    */
   public async initialize(sceneData: SceneData): Promise<void> {
-    console.log('🎬 MapRenderer: Inicializando...');
+    console.log('🎬 MapRenderer: Inicializando con fuente única de verdad...');
     
     try {
-      // Generar mapa de terreno
-      this.terrainMap = tileRenderer.generateTerrainMap(
-        sceneData.zones.reduce((max, zone) => Math.max(max, zone.bounds.x + zone.bounds.width), 800),
-        sceneData.zones.reduce((max, zone) => Math.max(max, zone.bounds.y + zone.bounds.height), 600)
-      );
+      // Set world bounds from sceneData
+      if (sceneData.worldSize) {
+        this.setWorldBounds(sceneData.worldSize);
+      }
 
-      // Generar objetos del juego
-      objectRenderer.generateGameObjects(sceneData.zones, sceneData.mapElements);
+      // Use terrainMap from sceneData if available, otherwise build from terrainTiles
+      if (sceneData.terrainMap) {
+        console.log('📍 Usando terrainMap existente del sceneData');
+        this.terrainMap = sceneData.terrainMap;
+      } else if (sceneData.terrainTiles && sceneData.terrainTiles.length > 0) {
+        console.log('🔧 Construyendo terrainMap desde terrainTiles unificados');
+        const rawTerrainMap = TileRenderer.fromUnifiedTiles(sceneData.terrainTiles); // F3: Static method
+        this.terrainMap = tileRenderer.applyAutotiles(rawTerrainMap); // F3: Apply autotiles
+      } else {
+        console.warn('⚠️ No hay terrainTiles disponibles, usando fallback');
+        // Fallback: generate basic terrain if no data available
+        this.terrainMap = tileRenderer.generateTerrainMap(
+          this.worldBounds.width,
+          this.worldBounds.height
+        );
+      }
+
+      // Generate objects from mapElements (no internal object generation)
+      if (sceneData.mapElements && sceneData.mapElements.length > 0) {
+        console.log('🏗️ Configurando objetos desde mapElements unificados');
+        objectRenderer.setObjectsFromMapElements(sceneData.mapElements);
+      } else {
+        console.log('📦 Generando objetos desde zonas (fallback)');
+        objectRenderer.generateGameObjects(sceneData.zones, sceneData.mapElements);
+      }
 
       this.initialized = true;
-      console.log('✅ MapRenderer: Inicialización completada');
+      console.log('✅ MapRenderer: Inicialización completada con fuente única de verdad');
+      console.log('📊 Estadísticas:', {
+        terrainTiles: sceneData.terrainTiles?.length || 0,
+        zones: sceneData.zones.length,
+        mapElements: sceneData.mapElements.length,
+        worldSize: this.worldBounds
+      });
     } catch (error) {
       console.error('❌ Error inicializando MapRenderer:', error);
     }
@@ -78,12 +129,17 @@ export class MapRenderer {
     lightIntensity: number = 1,
     skyColor: string = '#87CEEB'
   ): void {
+    const frameStart = performance.now(); // F4: Track frame time
+    
     if (!this.initialized || !this.terrainMap) {
       this.renderFallback(ctx, viewport, skyColor);
       return;
     }
 
     ctx.save();
+
+    // Force pixel-perfect rendering (no image smoothing)
+    ctx.imageSmoothingEnabled = false;
 
     // 1. Limpiar canvas
     this.clearCanvas(ctx, viewport, skyColor);
@@ -94,31 +150,45 @@ export class MapRenderer {
     // 3. Renderizar terreno (capa base)
     this.renderTerrain(ctx, viewport);
 
-    // 4. Renderizar zonas de debug si está habilitado
+    // 4. F3: Renderizar carreteras sobre terreno
+    this.renderRoads(ctx, viewport, sceneData.roads);
+
+    // 5. Renderizar zonas de debug si está habilitado
     if (this.settings.debugMode) {
       this.renderZonesDebug(ctx, sceneData.zones, viewport);
     }
 
-    // 5. Renderizar objetos en capas
+    // 6. Renderizar objetos en capas
     this.renderObjects(ctx, viewport);
 
-    // 6. Renderizar entidades
+    // 7. Renderizar entidades
     this.renderEntities(ctx, sceneData.entities, viewport);
 
-    // 7. Aplicar efectos de iluminación
+    // 8. Aplicar efectos de iluminación
     if (this.settings.enableLighting) {
       this.applyLightingEffects(ctx, viewport, lightIntensity);
     }
 
-    // 8. Renderizar efectos de partículas
+    // 9. Renderizar efectos de partículas
     if (this.settings.enableParticles) {
       this.renderParticles(ctx, viewport);
     }
 
     ctx.restore();
 
-    // 9. Renderizar UI y debug info
+    // 10. Renderizar UI y debug info
     this.renderUI(ctx, viewport, sceneData);
+    
+    // F4: Log frame telemetry
+    const frameTime = performance.now() - frameStart;
+    const drawnTiles = this.estimateDrawnTiles(viewport);
+    const drawnSprites = sceneData.entities.length + sceneData.mapElements.length;
+    
+    telemetry.logRenderFrame({
+      dt: frameTime,
+      drawnTiles,
+      drawnSprites
+    });
   }
 
   private clearCanvas(ctx: CanvasRenderingContext2D, viewport: Viewport, skyColor: string): void {
@@ -143,6 +213,15 @@ export class MapRenderer {
       viewport.height,
       viewport.zoom
     );
+  }
+
+  /**
+   * F3: Render roads on top of terrain
+   */
+  private renderRoads(ctx: CanvasRenderingContext2D, viewport: Viewport, roads: RoadPolyline[]): void {
+    if (!roads || roads.length === 0) return;
+
+    this.roadRenderer.render(ctx, roads, viewport.x, viewport.y, viewport.width, viewport.height, viewport.zoom);
   }
 
   private renderObjects(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
@@ -268,6 +347,17 @@ export class MapRenderer {
   public updateSettings(newSettings: Partial<RenderSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
     console.log('🎛️ MapRenderer: Configuración actualizada', this.settings);
+  }
+
+  /**
+   * F4: Estimate number of tiles drawn in viewport
+   */
+  private estimateDrawnTiles(viewport: Viewport): number {
+    if (!this.terrainMap) return 0;
+    
+    const tilesInView = Math.ceil(viewport.width / this.terrainMap.tileSize) * 
+                      Math.ceil(viewport.height / this.terrainMap.tileSize);
+    return Math.min(tilesInView, this.terrainMap.width * this.terrainMap.height);
   }
 
   /**

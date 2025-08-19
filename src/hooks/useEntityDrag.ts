@@ -75,7 +75,9 @@ export const useEntityDrag = () => {
   const endDrag = useCallback(() => {
     if (!dragState.isDragging || !dragState.draggedEntity) return;
 
-    const entity = dragState.draggedEntity;
+    // Get the current entity state from gameState (it has the updated position)
+    const entity = gameState.entities.find(e => e.id === dragState.draggedEntity!.id);
+    if (!entity) return;
     
     // Check if entity is in a beneficial zone and apply effects
     const currentZone = getEntityZone(entity.position, gameState.zones);
@@ -114,22 +116,36 @@ export const useEntityDrag = () => {
       });
     }
     setDragState(initialDragState);
-  }, [dragState.draggedEntity, dispatch]);
+  }, [dragState.draggedEntity, dispatch, gameState.entities, gameState.zones]);
 
   const checkEntityAtPosition = useCallback((mouseX: number, mouseY: number, canvasElement: HTMLCanvasElement, zoom: number, panX: number, panY: number): Entity | null => {
     const rect = canvasElement.getBoundingClientRect();
     const worldX = (mouseX - rect.left) / zoom + panX;
     const worldY = (mouseY - rect.top) / zoom + panY;
 
-    return gameState.entities.find(entity => {
-      if (entity.isDead || entity.controlMode !== 'manual') return false;
+    // Find closest entity, prioritizing manual control entities
+    let closestEntity = null;
+    let closestDistance = Infinity;
+    const detectionRadius = Math.max(50, 80 / zoom); // Dynamic radius based on zoom
+
+    for (const entity of gameState.entities) {
+      if (entity.isDead) continue;
       
       const distance = Math.sqrt(
         Math.pow(worldX - entity.position.x, 2) + 
         Math.pow(worldY - entity.position.y, 2)
       );
-      return distance < 30; // Click radius
-    }) || null;
+      
+      if (distance < detectionRadius && distance < closestDistance) {
+        // Prioritize manual control entities or allow clicking on any entity
+        if (entity.controlMode === 'manual' || !closestEntity) {
+          closestEntity = entity;
+          closestDistance = distance;
+        }
+      }
+    }
+
+    return closestEntity;
   }, [gameState.entities]);
 
   return {

@@ -127,9 +127,17 @@ export class ObjectRenderer {
   }
 
   /**
-   * Obtiene el tamaño apropiado para un asset de forma síncrona (usa cache)
+   * F2: Obtiene el tamaño apropiado usando dimensiones naturales del asset
    */
   private getAssetSize(asset: Asset, fallbackSize: number = ObjectRenderer.BASE_RESOLUTION): { width: number; height: number } {
+    // F2: Priorizar dimensiones naturales del asset si están disponibles
+    if (asset.naturalWidth && asset.naturalHeight) {
+      return {
+        width: asset.naturalWidth,
+        height: asset.naturalHeight
+      };
+    }
+    
     const cached = this.resolutionCache.get(asset.path);
     if (cached) {
       return cached;
@@ -141,7 +149,14 @@ export class ObjectRenderer {
       const naturalHeight = asset.image.naturalHeight;
       
       if (naturalWidth > 0 && naturalHeight > 0) {
-        // Calcular tamaño apropiado basado en la resolución real
+        // F2: Para pixel art, usar dimensiones exactas sin escalar
+        if (asset.isPixelArt) {
+          const naturalSize = { width: naturalWidth, height: naturalHeight };
+          this.resolutionCache.set(asset.path, naturalSize);
+          return naturalSize;
+        }
+        
+        // Para non-pixel art, aplicar lógica de escalado existente
         const maxDimension = Math.max(naturalWidth, naturalHeight);
         let scaleFactor = ObjectRenderer.BASE_RESOLUTION / maxDimension;
         
@@ -190,26 +205,33 @@ export class ObjectRenderer {
 
   private async initializeAssets(): Promise<void> {
     try {
-      // Cargar assets de TODAS las categorías disponibles
+      // F2: Cargar assets usando las carpetas reales del catálogo
       await Promise.all([
         assetManager.loadAssetsByFolderName('structures'),
-        assetManager.loadAssetsByFolderName('natural_elements'),
-        assetManager.loadAssetsByFolderName('furniture_objects'),
-        assetManager.loadAssetsByFolderName('environmental_objects'), // Muchos más objetos
-        assetManager.loadAssetsByFolderName('building'),              // Elementos de construcción
-        assetManager.loadAssetsByFolderName('consumable_items')       // Objetos consumibles
+        assetManager.loadAssetsByFolderName('props'),
+        assetManager.loadAssetsByFolderName('foliage'),
+        assetManager.loadAssetsByFolderName('rocks'),
+        assetManager.loadAssetsByFolderName('ruins'),
+        assetManager.loadAssetsByFolderName('consumable_items'),
+        assetManager.loadAssetsByFolderName('decals'),
+        assetManager.loadAssetsByFolderName('mushrooms')
       ]);
 
-      // Obtener assets cargados incluyendo las nuevas categorías
-      this.structureAssets = assetManager.getAssetsByType('structures');
-      this.naturalAssets = [
-        ...assetManager.getAssetsByType('natural_elements'),
-        ...assetManager.getAssetsByType('environmental_objects')  // Combinar ambos
+      // F2: Usar taxonomía real en lugar de tipos hardcodeados
+      this.structureAssets = [
+        ...assetManager.getAssetsByCategory('buildings'),
+        ...assetManager.getAssetsByCategory('structures')
       ];
+      
+      this.naturalAssets = [
+        ...assetManager.getAssetsByCategory('nature'),
+        ...assetManager.getAssetsByCategory('terrain')
+      ];
+      
       this.furnitureAssets = [
-        ...assetManager.getAssetsByType('furniture_objects'),
-        ...assetManager.getAssetsByType('building'),             // Elementos de construcción como muebles
-        ...assetManager.getAssetsByType('consumable_items')      // Items como decoraciones
+        ...assetManager.getAssetsByCategory('items'),
+        ...assetManager.getAssetsByCategory('objects'),
+        ...assetManager.getAssetsByCategory('decoration')
       ];
 
       // Cargar assets animados dinámicamente
@@ -254,6 +276,23 @@ export class ObjectRenderer {
     } catch (error) {
       console.error('❌ Error cargando assets animados:', error);
     }
+  }
+
+  /**
+   * Set objects directly from unified MapElements (new unified approach)
+   */
+  public setObjectsFromMapElements(mapElements: MapElement[]): void {
+    console.log('🏗️ ObjectRenderer: Configurando objetos desde MapElements unificados');
+    this.clearAllLayers();
+
+    mapElements.forEach(element => {
+      const gameObject = this.createObjectFromElement(element);
+      if (gameObject) {
+        this.addObjectToLayer(gameObject);
+      }
+    });
+
+    console.log(`✅ ObjectRenderer: ${mapElements.length} objetos configurados desde MapElements`);
   }
 
   /**
@@ -602,6 +641,19 @@ export class ObjectRenderer {
     }
 
     ctx.save();
+
+    // F2: Configurar pixel-perfect rendering para assets pixel-art
+    if (obj.asset.isPixelArt) {
+      ctx.imageSmoothingEnabled = false;
+      // Fallbacks para compatibilidad con navegadores antiguos
+      const ctxAny = ctx as any;
+      ctxAny.webkitImageSmoothingEnabled = false;
+      ctxAny.mozImageSmoothingEnabled = false;
+      ctxAny.msImageSmoothingEnabled = false;
+    } else {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
 
     // Aplicar anclaje
     const anchorX = obj.metadata.anchor?.x || 0.5;

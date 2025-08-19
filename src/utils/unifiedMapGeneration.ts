@@ -6,6 +6,8 @@ import type { Zone, MapElement, ZoneType } from '../types';
 import { assetManager } from './modernAssetManager';
 import { generateOrganicProceduralMap } from './organicMapGeneration';
 import { createDefaultZones, createDefaultMapElements } from './mapGeneration';
+import { TILE_SIZE } from '../constants/mapConstants';
+import { telemetry } from './telemetry'; // F4: Add telemetry
 
 export interface UnifiedMapConfig {
   width: number;
@@ -55,7 +57,7 @@ export class UnifiedMapGenerator {
       density: 0.7,
       useRealAssets: true,
       preloadAssets: true,
-      tileSize: 32,
+      tileSize: TILE_SIZE, // Use unified TILE_SIZE
       generateTerrain: true,
       ...config
     };
@@ -65,6 +67,7 @@ export class UnifiedMapGenerator {
    * Generar mapa usando el algoritmo seleccionado
    */
   async generateMap(): Promise<MapGenerationResult> {
+    const startTime = performance.now(); // F4: Track generation time
     console.log(`🗺️ Generando mapa usando algoritmo: ${this.config.algorithm}`);
 
     // Precargar assets si está habilitado
@@ -98,6 +101,16 @@ export class UnifiedMapGenerator {
     }
 
     const stats = assetManager.getStats();
+    const generationTime = performance.now() - startTime; // F4: Calculate generation time
+    
+    // F4: Log telemetry
+    telemetry.logMapGenerated({
+      seed: this.config.seed || 'unknown',
+      tiles: terrainTiles.length,
+      roads: 0, // No roads generated yet in F4
+      ms: generationTime
+    });
+
     return {
       zones,
       mapElements,
@@ -200,18 +213,29 @@ export class UnifiedMapGenerator {
     const tilesX = Math.ceil(this.config.width / this.config.tileSize);
     const tilesY = Math.ceil(this.config.height / this.config.tileSize);
     
-    // Cargar assets de terreno
-    await assetManager.loadAssetsByFolderName('terrain_tiles');
-    const grassAssets = assetManager.getAssetsByType('terrain_tiles');
+    // F2: Cargar assets de terreno desde las carpetas reales
+    console.log('🌱 Cargando assets de terrain...');
     
-    if (grassAssets.length === 0) {
-      console.warn('⚠️ No se encontraron assets de terreno');
-      return tiles;
-    }
+    // Load the real terrain assets from /terrain/base/
+    const terrainBaseAssets = [
+      'cesped1', 'cesped2', 'cesped3', 'cesped4', 'cesped5',
+      'cesped6', 'cesped7', 'cesped8', 'cesped9', 'cesped10',
+      'cesped11', 'cesped12', 'cesped13', 'cesped14', 'cesped15',
+      'cesped16', 'cesped17', 'cesped18', 'cesped19', 'cesped20',
+      'cesped21', 'cesped22', 'cesped23', 'cesped24', 'cesped25',
+      'Grass_Middle', 'TexturedGrass'
+    ];
+    
+    // Load water assets
+    await assetManager.loadAssetsByFolderName('water');
+    const waterAssets = assetManager.getAssetsByType('water');
+    
+    console.log(`🌱 Assets disponibles: ${terrainBaseAssets.length} césped, ${waterAssets.length} agua`);
 
     // Generar noise para variación de terreno
     const noiseScale = 0.1;
     
+    // Generar todos los tiles para llenar el mundo completamente 
     for (let y = 0; y < tilesY; y++) {
       for (let x = 0; x < tilesX; x++) {
         const worldX = x * this.config.tileSize;
@@ -223,30 +247,25 @@ export class UnifiedMapGenerator {
         let tileType: 'grass' | 'stone' | 'water' | 'path' = 'grass';
         let assetId = '';
         
-        if (noiseValue > 0.7) {
+        if (noiseValue > 0.6) {
           tileType = 'water';
-          // Intentar usar assets de agua si están disponibles
-          const waterAssets = assetManager.getAssetsByType('water');
+          // Usar assets de agua si están disponibles
           if (waterAssets.length > 0) {
-            assetId = waterAssets[Math.floor(Math.random() * waterAssets.length)].id || 'default-water';
+            assetId = waterAssets[Math.floor(Math.random() * waterAssets.length)].id || 'water_01';
           } else {
-            assetId = 'default-water';
+            assetId = 'water_01';
           }
-        } else if (noiseValue < -0.3) {
+        } else if (noiseValue < -0.2) {
           tileType = 'stone';
-          // Usar un asset de césped diferente para stone
-          assetId = grassAssets[Math.floor(Math.random() * Math.min(5, grassAssets.length))]?.id || 'default-grass';
+          // Usar césped para stone (variación)
+          assetId = terrainBaseAssets[Math.floor(Math.random() * Math.min(8, terrainBaseAssets.length))];
         } else {
           tileType = 'grass';
-          // Usar variaciones de césped
-          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)]?.id || 'default-grass';
+          // Usar variaciones de césped disponibles
+          assetId = terrainBaseAssets[Math.floor(Math.random() * terrainBaseAssets.length)];
         }
         
-        // Si no se encontró asset específico, usar césped por defecto
-        if (!assetId && grassAssets.length > 0) {
-          assetId = grassAssets[Math.floor(Math.random() * grassAssets.length)]?.id || 'default-grass';
-        }
-        
+        // Crear tile con asset real
         if (assetId) {
           tiles.push({
             x: worldX,
@@ -259,7 +278,7 @@ export class UnifiedMapGenerator {
       }
     }
     
-    console.log(`✅ Generados ${tiles.length} tiles de terreno`);
+    console.log(`✅ Generados ${tiles.length} tiles de terreno (${tilesX}×${tilesY})`);
     return tiles;
   }
 

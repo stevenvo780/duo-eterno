@@ -396,15 +396,15 @@ const UIControls: React.FC<UIControlsProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>{getEntityName(entity.id)}</span>
-                    {!entity.isDead && (
+                    {!entity.isDead && entity.controlMode === 'manual' && (
                       <span 
                         style={{ 
                           fontSize: '8px', 
-                          color: entity.controlMode === 'manual' ? '#f59e0b' : '#10b981',
+                          color: '#f59e0b',
                           fontWeight: '600'
                         }}
                       >
-                        {entity.controlMode === 'manual' ? '🎮' : '🤖'}
+                        🎮
                       </span>
                     )}
                   </div>
@@ -438,20 +438,20 @@ const UIControls: React.FC<UIControlsProps> = ({
                     }}
                     style={{
                       background: entity.controlMode === 'manual' 
-                        ? 'rgba(245, 158, 11, 0.2)' 
-                        : 'rgba(16, 185, 129, 0.2)',
-                      border: `1px solid ${entity.controlMode === 'manual' ? '#f59e0b' : '#10b981'}`,
+                        ? 'rgba(245, 158, 11, 0.3)' 
+                        : 'rgba(100, 116, 139, 0.2)',
+                      border: `1px solid ${entity.controlMode === 'manual' ? '#f59e0b' : '#64748b'}`,
                       borderRadius: '4px',
-                      padding: '2px 4px',
+                      padding: '2px 6px',
                       color: '#f1f5f9',
                       cursor: 'pointer',
-                      fontSize: '10px',
+                      fontSize: '9px',
                       fontWeight: '500',
                       marginLeft: 'auto'
                     }}
                     title={entity.controlMode === 'manual' ? 'Activar autonomía' : 'Tomar control manual'}
                   >
-                    {entity.controlMode === 'manual' ? '🎮' : '🤖'}
+                    {entity.controlMode === 'manual' ? 'CTRL' : 'AUTO'}
                   </button>
                 )}
 

@@ -164,6 +164,34 @@ export interface InteractionEffect {
 
 export type EntityActivity = ActivityType;
 
+export interface TerrainTile {
+  x: number;
+  y: number;
+  assetId: string;
+  type: 'grass' | 'stone' | 'water' | 'path';
+  variant?: number;
+}
+
+export interface RoadPolyline {
+  id: string;
+  points: Position[];
+  width: number;
+  type: 'main' | 'secondary' | 'path';
+}
+
+export interface ObjectLayer {
+  id: string;
+  name: string;
+  objects: MapElement[];
+  zIndex: number;
+  visible: boolean;
+}
+
+export interface WorldSize {
+  width: number;
+  height: number;
+}
+
 export interface GameState {
   entities: Entity[];
   resonance: number;
@@ -180,4 +208,10 @@ export interface GameState {
   mapElements: MapElement[];
   mapSeed?: string;
   currentConversation: ConversationState;
+  // New unified map fields
+  terrainTiles: TerrainTile[];
+  roads: RoadPolyline[];
+  objectLayers: ObjectLayer[];
+  worldSize: WorldSize;
+  generatorVersion: string;
 }

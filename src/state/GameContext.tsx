@@ -7,11 +7,19 @@ import type {
   DialogueEntry,
   ConversationState,
   ActivityType,
-  EntityStateType
+  EntityStateType,
+  TerrainTile,
+  RoadPolyline,
+  ObjectLayer,
+  WorldSize,
+  Zone,
+  MapElement
 } from '../types';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
+import { generateUnifiedMap } from '../utils/unifiedMapGeneration';
 import { usePersistence } from '../hooks/usePersistence';
 import { gameConfig } from '../config/gameConfig';
+import { WORLD_SIZE, TILE_SIZE, GENERATOR_VERSION } from '../constants/mapConstants';
 
 interface DialogueState {
   visible: boolean;
@@ -64,6 +72,14 @@ type GameAction =
   | { type: 'UPDATE_TOGETHER_TIME'; payload: number }
   | { type: 'RESET_GAME' }
   | { type: 'GENERATE_NEW_MAP'; payload?: { seed?: string } }
+  | { type: 'SET_UNIFIED_MAP_DATA'; payload: { 
+      zones: Zone[]; 
+      mapElements: MapElement[]; 
+      terrainTiles: TerrainTile[]; 
+      roads: RoadPolyline[]; 
+      objectLayers: ObjectLayer[]; 
+      mapSeed: string; 
+    } }
   | { type: 'LOAD_SAVED_STATE'; payload: GameState }
   | { type: 'START_CONVERSATION'; payload: { participants: string[] } }
   | { type: 'ADVANCE_CONVERSATION'; payload: { speaker: string; dialogue: DialogueEntry } }
@@ -144,7 +160,13 @@ const initialGameState: GameState = {
   zones: [],
   mapElements: [],
   mapSeed: Date.now().toString(36),
-  currentConversation: initialConversationState
+  currentConversation: initialConversationState,
+  // New unified map fields
+  terrainTiles: [],
+  roads: [],
+  objectLayers: [],
+  worldSize: WORLD_SIZE,
+  generatorVersion: GENERATOR_VERSION
 };
 
 const initialDialogueState: DialogueState = {
@@ -356,28 +378,56 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
     case 'RESET_GAME': {
       const newSeed = Date.now().toString(36);
-      // Generar mapa usando el sistema básico por ahora
+      
+      // Por ahora usar fallback síncrono, la generación asíncrona se maneja en useEffect
       const zones = createDefaultZones();
       const mapElements = createDefaultMapElements();
+      
       return {
         ...initialGameState,
         cycles: 0,
         mapSeed: newSeed,
         zones,
-        mapElements
+        mapElements,
+        terrainTiles: [],
+        roads: [],
+        objectLayers: [],
+        worldSize: WORLD_SIZE,
+        generatorVersion: GENERATOR_VERSION
       };
     }
 
     case 'GENERATE_NEW_MAP': {
       const newSeed = action.payload?.seed || Date.now().toString(36);
-      // Generar mapa usando el sistema básico por ahora
+      
+      // Por ahora usar fallback síncrono, la generación asíncrona se maneja en useEffect
       const zones = createDefaultZones();
       const mapElements = createDefaultMapElements();
+      
       return {
         ...state,
         mapSeed: newSeed,
         zones,
-        mapElements
+        mapElements,
+        terrainTiles: [],
+        roads: [],
+        objectLayers: [],
+        worldSize: WORLD_SIZE,
+        generatorVersion: GENERATOR_VERSION
+      };
+    }
+
+    case 'SET_UNIFIED_MAP_DATA': {
+      return {
+        ...state,
+        zones: action.payload.zones,
+        mapElements: action.payload.mapElements,
+        terrainTiles: action.payload.terrainTiles,
+        roads: action.payload.roads,
+        objectLayers: action.payload.objectLayers,
+        mapSeed: action.payload.mapSeed,
+        worldSize: WORLD_SIZE,
+        generatorVersion: GENERATOR_VERSION
       };
     }
 
@@ -460,6 +510,59 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     gameDispatch(action);
     dialogueDispatch(action);
   };
+
+  // Handle async map generation
+  useEffect(() => {
+    const generateMapAsync = async () => {
+      try {
+        console.log('🗺️ Generando mapa unificado...');
+        const mapResult = await generateUnifiedMap({
+          seed: gameState.mapSeed,
+          width: WORLD_SIZE.width,
+          height: WORLD_SIZE.height,
+          tileSize: TILE_SIZE,
+          algorithm: 'organic'
+        });
+
+        // Convert objectLayers from mapElements (temporary until proper objectLayers are implemented)
+        const objectLayers: ObjectLayer[] = [
+          {
+            id: 'main-objects',
+            name: 'Objetos principales',
+            objects: mapResult.mapElements,
+            zIndex: 1,
+            visible: true
+          }
+        ];
+
+        dispatch({
+          type: 'SET_UNIFIED_MAP_DATA',
+          payload: {
+            zones: mapResult.zones,
+            mapElements: mapResult.mapElements,
+            terrainTiles: mapResult.terrainTiles,
+            roads: [], // TODO: implement roads in unifiedMapGeneration
+            objectLayers,
+            mapSeed: gameState.mapSeed || Date.now().toString(36)
+          }
+        });
+
+        console.log('✅ Mapa unificado generado:', {
+          zones: mapResult.zones.length,
+          mapElements: mapResult.mapElements.length,
+          terrainTiles: mapResult.terrainTiles.length,
+          assetStats: mapResult.assetStats
+        });
+      } catch (error) {
+        console.error('❌ Error generando mapa unificado:', error);
+      }
+    };
+
+    // Only generate if we have a mapSeed but no terrainTiles (initial load or new map)
+    if (gameState.mapSeed && gameState.terrainTiles.length === 0) {
+      generateMapAsync();
+    }
+  }, [gameState.mapSeed, gameState.terrainTiles.length]);
 
   useEffect(() => {
     dispatch({ type: 'GENERATE_NEW_MAP' });

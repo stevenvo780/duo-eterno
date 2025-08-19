@@ -9,6 +9,7 @@ import { entityAnimationRenderer } from '../utils/rendering/EntityAnimationRende
 import { useAnimationSystem } from '../hooks/useAnimationSystem';
 import { createDefaultZones, createDefaultMapElements } from '../utils/mapGeneration';
 import type { Entity } from '../types';
+import { TelemetryDebugPanel } from './TelemetryDebugPanel'; // F4: Add telemetry panel
 
 interface Props {
   width: number;
@@ -33,7 +34,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   const fpsCounter = useRef({ frames: 0, lastTime: 0, fps: 60 });
   
   const { shouldRender } = useRenderer();
-  const { getSkyColor, getLightIntensity, phase } = useDayNightCycle();
+  const { getSkyColor, getLightIntensity, phase, currentTime } = useDayNightCycle();
   useAnimationSystem();
 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -44,16 +45,13 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
 
   // Datos de la escena: memo para evitar renders innecesarios
   const sceneData: SceneData = useMemo(() => ({
-    terrainMap: {
-      width: 2000, // Mapa más grande y navegable
-      height: 1500,
-      tileSize: 64,
-      tiles: [] // Se generará en el renderer
-    },
+    terrainTiles: gameState.terrainTiles || [], // F3: Use unified terrain data
+    roads: gameState.roads || [], // F3: Include roads
     zones: gameState.zones || [],
     mapElements: gameState.mapElements || [],
-    entities: gameState.entities || []
-  }), [gameState.zones, gameState.mapElements, gameState.entities]);
+    entities: gameState.entities || [],
+    worldSize: gameState.worldSize || { width: 2000, height: 1500 } // F3: Dynamic world size
+  }), [gameState.terrainTiles, gameState.roads, gameState.zones, gameState.mapElements, gameState.entities, gameState.worldSize]);
 
   const viewport: Viewport = useMemo(() => ({
     x: panX,
@@ -129,15 +127,12 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         }
         
         const initialData: SceneData = {
-          terrainMap: {
-            width: 2000, // Mapa expandido
-            height: 1500,
-            tileSize: 64,
-            tiles: []
-          },
+          terrainTiles: gameState.terrainTiles, // F3: Use actual terrain tiles from unified generation
+          roads: [], // F3: Start with empty roads
           zones,
           mapElements,
-          entities: gameState.entities
+          entities: gameState.entities,
+          worldSize: { width: 2000, height: 1500 } // F3: Dynamic world size
         };
         
         await mapRenderer.initialize(initialData);
@@ -151,7 +146,8 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
     };
 
     initializeRenderer();
-  }, [assetsLoaded, rendererInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assetsLoaded, rendererInitialized, dispatch, gameState.mapSeed]); // Only re-initialize when essential data changes
 
   const renderScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
@@ -365,31 +361,54 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         </button>
       </div>
 
+      {/* Reloj mejorado */}
       <div style={{
         position: 'absolute',
-        top: '10px',
-        left: '10px'
+        top: '80px',
+        left: '10px',
+        background: 'rgba(0, 0, 0, 0.8)',
+        color: 'white',
+        padding: '12px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        fontFamily: 'monospace',
+        border: '2px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+        zIndex: 1000,
+        minWidth: '100px',
+        textAlign: 'center'
       }}>
-        <DayNightClock />
+        {/* Hora digital */}
+        <div style={{
+          fontSize: '16px',
+          fontWeight: 'bold',
+          marginBottom: '6px',
+          color: '#fff'
+        }}>
+          🕐 {currentTime.hour.toString().padStart(2, '0')}:{currentTime.minute.toString().padStart(2, '0')}
+        </div>
+        
+        {/* Fase del día */}
+        <div style={{
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px',
+          opacity: 0.9
+        }}>
+          <span style={{ fontSize: '14px' }}>
+            {phase === 'dawn' && '🌅'}
+            {phase === 'day' && '☀️'}
+            {phase === 'dusk' && '🌇'}
+            {phase === 'night' && '🌙'}
+          </span>
+          <span style={{ textTransform: 'capitalize' }}>{phase}</span>
+        </div>
       </div>
       
-      <div style={{
-        position: 'absolute',
-        top: '70px',
-        left: '10px',
-        background: 'rgba(0,0,0,0.7)',
-        color: 'white',
-        padding: '5px 10px',
-        borderRadius: '15px',
-        fontSize: '12px',
-        fontFamily: 'system-ui'
-      }}>
-        {phase === 'dawn' && '🌅'} 
-        {phase === 'day' && '☀️'} 
-        {phase === 'dusk' && '🌇'} 
-        {phase === 'night' && '🌙'} 
-        {phase}
-      </div>
+      {/* F4: Telemetry Debug Panel */}
+      <TelemetryDebugPanel />
     </div>
   );
 });
