@@ -151,7 +151,8 @@ export const useRenderer = () => {
       droppedFrames.current++;
       return false;
     },
-    [qualityLevel, updateFPS]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // Temporalmente sin dependencias para detener el bucle infinito
   );
 
   const getFPS = useCallback((): number => {

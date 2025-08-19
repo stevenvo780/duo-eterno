@@ -146,6 +146,9 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
     initializeEverything();
   }, []); // ✅ VACÍO - solo ejecuta UNA VEZ al montar el componente
 
+  // Usar useRef para estabilizar renderScene - evita recreación constante del animation loop
+  const renderSceneRef = useRef<(ctx: CanvasRenderingContext2D) => void>(null!);
+  
   const renderScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       if (!rendererInitialized) {
@@ -185,14 +188,20 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
       
       ctx.restore();
     },
-    [rendererInitialized, viewport, sceneData, loadingProgress, width, height, zoom, panX, panY, getLightIntensity, getSkyColor] // ✅ Incluidas las funciones para que ESLint esté contento
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rendererInitialized, viewport, sceneData, loadingProgress, width, height, zoom, panX, panY] // getLightIntensity y getSkyColor se llaman directamente dentro de la función
   );
 
+  // Actualizar la referencia cuando renderScene cambie
   useEffect(() => {
-    console.log('🎬 GameCanvas: Animation loop useEffect triggered, assetsLoaded:', assetsLoaded, 'rendererInitialized:', rendererInitialized);
+    renderSceneRef.current = renderScene;
+  }, [renderScene]);
+
+  useEffect(() => {
+    // console.log('🎬 GameCanvas: Animation loop useEffect triggered, assetsLoaded:', assetsLoaded, 'rendererInitialized:', rendererInitialized);
     
     if (!assetsLoaded || !rendererInitialized) {
-      console.log('🎬 GameCanvas: Esperando assets o renderer, no iniciando animation loop');
+      // console.log('🎬 GameCanvas: Esperando assets o renderer, no iniciando animation loop');
       return;
     }
     
@@ -204,7 +213,10 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         const ctx = canvasRef.current.getContext('2d');
         if (ctx && shouldRender()) {
           // console.log('🎨 Rendering scene'); // Comentado para reducir spam
-          renderScene(ctx);
+          // Usar la referencia actual de renderScene para evitar dependencias estales
+          if (renderSceneRef.current) {
+            renderSceneRef.current(ctx);
+          }
         }
       }
 
@@ -220,7 +232,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [assetsLoaded, rendererInitialized, renderScene, shouldRender]); // ✅ Incluir todas las dependencias
+  }, [assetsLoaded, rendererInitialized, shouldRender]); // ❌ REMOVIDO renderScene de dependencias para evitar bucle infinito
 
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onEntityClick || !canvasRef.current) return;
