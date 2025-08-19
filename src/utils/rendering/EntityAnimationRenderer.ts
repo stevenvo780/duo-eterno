@@ -289,8 +289,8 @@ export class EntityAnimationRenderer {
     this.applyEntityEffects(ctx, entity);
     
     // Animación de pulsación o respiración
-    const pulseSpeed = entity.mood === 'HAPPY' ? 300 : 800;
-    const pulseAmount = entity.mood === 'HAPPY' ? 0.15 : 0.05;
+    const pulseSpeed = entity.mood === '😊' ? 300 : 800;
+    const pulseAmount = entity.mood === '😊' ? 0.15 : 0.05;
     const pulse = 1 + Math.sin(time / pulseSpeed) * pulseAmount;
     const adjustedSize = size * pulse;
     
@@ -329,7 +329,7 @@ export class EntityAnimationRenderer {
     }
 
     // Efectos basados en mood
-    if (entity.mood === 'HAPPY' || entity.mood === 'EXCITED') {
+    if (entity.mood === '😊' || entity.mood === '🤩') {
       // Brillo sutil para entidades felices
       ctx.shadowColor = this.getEntityColor(entity);
       ctx.shadowBlur = 5;
@@ -346,13 +346,13 @@ export class EntityAnimationRenderer {
 
     if (entity.mood) {
       switch (entity.mood) {
-        case 'HAPPY':
-        case 'EXCITED':
-        case 'CONTENT':
+        case '😊': // HAPPY/CONTENT
+        case '🤩': // EXCITED
+        case '😌': // CALM
           return entity.id === 'isa' ? '#ff6b9d' : '#4ade80'; // Rosa/Verde vibrante
-        case 'SAD':
-        case 'LONELY':
-        case 'BORED':
+        case '😢': // SAD
+        case '😔': // LONELY
+        case '😑': // BORED
           return '#f87171'; // Rojo
         default:
           return entity.id === 'isa' ? '#e91e63' : '#10b981'; // Rosa/Verde normal

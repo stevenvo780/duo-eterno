@@ -186,9 +186,9 @@ export const useRenderer = () => {
         );
       }
 
-      if (metrics.fps < 20) {
-        console.error(`🚨 FPS crítico: ${metrics.fps.toFixed(1)} FPS`);
-      }
+      // if (metrics.fps < 20) {
+      //   console.error(`🚨 FPS crítico: ${metrics.fps.toFixed(1)} FPS`);
+      // }
     };
 
     const interval = setInterval(checkPerformance, 5000);

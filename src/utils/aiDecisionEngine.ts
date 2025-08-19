@@ -44,16 +44,15 @@ const MOOD_MODIFIERS: Record<
     energyConservation: number;
   }
 > = {
-  HAPPY: { activityChange: 0.3, socialSeek: 0.7, riskTaking: 0.6, energyConservation: 0.3 },
-  EXCITED: { activityChange: 0.8, socialSeek: 0.8, riskTaking: 0.8, energyConservation: 0.2 },
-  CONTENT: { activityChange: 0.2, socialSeek: 0.5, riskTaking: 0.4, energyConservation: 0.4 },
-  CALM: { activityChange: 0.1, socialSeek: 0.4, riskTaking: 0.3, energyConservation: 0.6 },
-  SAD: { activityChange: 0.4, socialSeek: 0.9, riskTaking: 0.2, energyConservation: 0.7 },
-  ANXIOUS: { activityChange: 0.7, socialSeek: 0.6, riskTaking: 0.1, energyConservation: 0.8 },
-  ANGRY: { activityChange: 0.6, socialSeek: 0.3, riskTaking: 0.7, energyConservation: 0.4 },
-  BORED: { activityChange: 0.8, socialSeek: 0.4, riskTaking: 0.5, energyConservation: 0.3 },
-  LONELY: { activityChange: 0.5, socialSeek: 0.9, riskTaking: 0.3, energyConservation: 0.6 },
-  TIRED: { activityChange: 0.1, socialSeek: 0.2, riskTaking: 0.1, energyConservation: 0.9 }
+  '😊': { activityChange: 0.3, socialSeek: 0.7, riskTaking: 0.6, energyConservation: 0.3 }, // HAPPY/CONTENT
+  '🤩': { activityChange: 0.8, socialSeek: 0.8, riskTaking: 0.8, energyConservation: 0.2 }, // EXCITED
+  '😌': { activityChange: 0.1, socialSeek: 0.4, riskTaking: 0.3, energyConservation: 0.6 }, // CALM
+  '😢': { activityChange: 0.4, socialSeek: 0.9, riskTaking: 0.2, energyConservation: 0.7 }, // SAD
+  '😰': { activityChange: 0.7, socialSeek: 0.6, riskTaking: 0.1, energyConservation: 0.8 }, // ANXIOUS
+  '😡': { activityChange: 0.6, socialSeek: 0.3, riskTaking: 0.7, energyConservation: 0.4 }, // ANGRY
+  '😑': { activityChange: 0.8, socialSeek: 0.4, riskTaking: 0.5, energyConservation: 0.3 }, // BORED
+  '😔': { activityChange: 0.5, socialSeek: 0.9, riskTaking: 0.3, energyConservation: 0.6 }, // LONELY
+  '😴': { activityChange: 0.1, socialSeek: 0.2, riskTaking: 0.1, energyConservation: 0.9 }  // TIRED
 };
 
 interface ActivitySession {

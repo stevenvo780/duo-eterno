@@ -3,30 +3,30 @@ import type { InteractionType, InteractionEffect, EntityStats, EntityMood } from
 const interactionEffects: Record<InteractionType, InteractionEffect> = {
   NOURISH: {
     stats: { happiness: 15, energy: 10 },
-    mood: 'CONTENT'
+    mood: '😊'
   },
   FEED: {
     stats: { hunger: 40, happiness: 20, energy: 15 },
-    mood: 'HAPPY'
+    mood: '😊'
   },
   PLAY: {
     stats: { boredom: 50, happiness: 30, energy: -10, loneliness: 20 },
-    mood: 'EXCITED'
+    mood: '🤩'
   },
   COMFORT: {
     stats: { loneliness: 30, happiness: 25, sleepiness: 10 },
-    mood: 'CALM'
+    mood: '😌'
   },
   DISTURB: {
     stats: { happiness: -20, energy: -15, boredom: -10 },
-    mood: 'ANXIOUS'
+    mood: '😰'
   },
   WAKE_UP: {
     stats: { sleepiness: -50, energy: 20, happiness: -10 }
   },
   LET_SLEEP: {
     stats: { sleepiness: 30, energy: 30, happiness: 10 },
-    mood: 'CALM'
+    mood: '😌'
   }
 };
 

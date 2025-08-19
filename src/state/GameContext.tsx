@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect, useRef } from 'react';
 import type {
   GameState,
   EntityMood,
@@ -11,7 +11,6 @@ import type {
   TerrainTile,
   RoadPolyline,
   ObjectLayer,
-  WorldSize,
   Zone,
   MapElement
 } from '../types';
@@ -511,6 +510,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dialogueDispatch(action);
   };
 
+  // Ref to prevent multiple simultaneous map generations
+  const isGeneratingMap = useRef(false);
+
   // Handle async map generation
   useEffect(() => {
     const generateMapAsync = async () => {
@@ -559,14 +561,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Only generate if we have a mapSeed but no terrainTiles (initial load or new map)
-    if (gameState.mapSeed && gameState.terrainTiles.length === 0) {
-      generateMapAsync();
+    if (gameState.mapSeed && gameState.terrainTiles.length === 0 && !isGeneratingMap.current) {
+      isGeneratingMap.current = true;
+      generateMapAsync().finally(() => {
+        isGeneratingMap.current = false;
+      });
     }
   }, [gameState.mapSeed, gameState.terrainTiles.length]);
 
   useEffect(() => {
-    dispatch({ type: 'GENERATE_NEW_MAP' });
-  }, []);
+    // Only generate initial map if no mapSeed exists
+    if (!gameState.mapSeed) {
+      dispatch({ type: 'GENERATE_NEW_MAP' });
+    }
+  }, [gameState.mapSeed]);
 
   usePersistence(gameState, dispatch);
 

@@ -28,6 +28,7 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   onEntityClick
 }, ref) => {
   const { gameState, dispatch } = useGame();
+  // console.log('🎬 GameCanvas: Componente renderizándose, gameState.terrainTiles.length:', gameState.terrainTiles.length);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const fpsCounter = useRef({ frames: 0, lastTime: 0, fps: 60 });
@@ -148,8 +149,9 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
   const renderScene = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       if (!rendererInitialized) {
-        console.log('🎬 GameCanvas.renderScene: renderer no inicializado, mostrando pantalla de carga');
-        ctx.fillStyle = getSkyColor();
+        // console.log('🎬 GameCanvas.renderScene: renderer no inicializado, mostrando pantalla de carga (rendererInitialized:', rendererInitialized, ')');
+        const currentSkyColor = getSkyColor(); // Obtener valor actual
+        ctx.fillStyle = currentSkyColor;
         ctx.fillRect(0, 0, width, height);
         
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -164,61 +166,61 @@ const GameCanvas = React.forwardRef<HTMLCanvasElement, Props>(({
         return;
       }
 
-      // console.log('🎨 GameCanvas.renderScene: renderizando mapa completo'); // Comentado para reducir spam de logs
+      // console.log('🎨 GameCanvas.renderScene: renderizando mapa completo (rendererInitialized:', rendererInitialized, ')');
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(-panX, -panY);
+      
+      // Obtener valores actuales de tiempo para evitar dependencias cambiantes
+      const currentLightIntensity = getLightIntensity();
+      const currentSkyColor = getSkyColor();
       
       mapRenderer.render(
         ctx,
         viewport,
         sceneData,
-        getLightIntensity(),
-        getSkyColor()
+        currentLightIntensity,
+        currentSkyColor
       );
       
       ctx.restore();
     },
-    [rendererInitialized, viewport, sceneData, getLightIntensity, getSkyColor, loadingProgress, width, height, zoom, panX, panY]
+    [rendererInitialized, viewport, sceneData, loadingProgress, width, height, zoom, panX, panY, getLightIntensity, getSkyColor] // ✅ Incluidas las funciones para que ESLint esté contento
   );
 
-  const updateFPS = useCallback(() => {
-    const now = performance.now();
-    fpsCounter.current.frames++;
-    
-    if (now - fpsCounter.current.lastTime >= 1000) {
-      fpsCounter.current.fps = fpsCounter.current.frames;
-      fpsCounter.current.frames = 0;
-      fpsCounter.current.lastTime = now;
-      
-      if (rendererInitialized) {
-        mapRenderer.adjustQuality(fpsCounter.current.fps);
-      }
-    }
-  }, [rendererInitialized]);
-
   useEffect(() => {
+    console.log('🎬 GameCanvas: Animation loop useEffect triggered, assetsLoaded:', assetsLoaded, 'rendererInitialized:', rendererInitialized);
+    
+    if (!assetsLoaded || !rendererInitialized) {
+      console.log('🎬 GameCanvas: Esperando assets o renderer, no iniciando animation loop');
+      return;
+    }
+    
+    console.log('🎬 GameCanvas: Iniciando animation loop NOW!');
+    
     const animate = () => {
-      if (shouldRender() && canvasRef.current) {
+      // console.log('🎬 Animation frame called'); // Comentado para reducir spam
+      if (canvasRef.current) {
         const ctx = canvasRef.current.getContext('2d');
-        if (ctx) {
+        if (ctx && shouldRender()) {
+          // console.log('🎨 Rendering scene'); // Comentado para reducir spam
           renderScene(ctx);
-          updateFPS();
         }
       }
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    // Comenzar animación inmediatamente - renderScene manejará los estados internamente
+    // Comenzar animación
     animate();
 
     return () => {
+      console.log('🎬 GameCanvas: Cleaning up animation loop');
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [assetsLoaded, rendererInitialized]); // ✅ Solo estados, no funciones
+  }, [assetsLoaded, rendererInitialized, renderScene, shouldRender]); // ✅ Incluir todas las dependencias
 
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!onEntityClick || !canvasRef.current) return;
